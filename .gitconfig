@@ -1,0 +1,14 @@
+[user]
+	name = Aaron Tribou
+	email = aaron.tribou@gmail.com
+[core]
+	editor = mvim -v
+[credential]
+[color]
+	ui = true
+	interactive = true
+	diff = true
+[alias]
+	tree = log --graph --pretty=oneline --abbrev-commit --decorate
+[push]
+	default = simple
