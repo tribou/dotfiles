@@ -40,6 +40,18 @@ alias drmi='docker rmi'
 alias drm='docker rm'
 alias dc='docker-compose'
 
+# docker-machine shortcuts
+## first init docker-vm
+eval "$(docker-machine env docker-vm)"
+## add aliases
+alias bd='docker-machine'
+alias dm='docker-machine'
+alias dminit='eval "$(docker-machine env docker-vm)"'
+## source dmupdate script
+if [ -e $DEVPATH/dotfiles/scripts/dm_update_ip.sh ]; then source $DEVPATH/dotfiles/scripts/dm_update_ip.sh; fi
+## run dmupdate
+dmupdate
+
 # Less Colors for Man Pages
 export LESS_TERMCAP_mb=$'\E[01;31m'       # begin blinking
 export LESS_TERMCAP_md=$'\E[01;38;5;74m'  # begin bold
@@ -59,10 +71,10 @@ export ANDROID_HOME=/usr/local/opt/android-sdk
 export PATH=/usr/local/git/bin:$PATH
 
 #source ~/sys/ansible/hacking/env-setup
-export ANSIBLE_HOSTS=~/dev/sys/ansible/ansible-hosts
-export ANSIBLE_CONFIG=~/dev/sys/ansible/ansible.cfg
+export ANSIBLE_HOSTS=$DEVPATH/sys/ansible/ansible-hosts
+export ANSIBLE_CONFIG=$DEVPATH/sys/ansible/ansible.cfg
 
-cd ~/dev
+cd $DEVPATH
 
 # brew install bash-completion
 if [ -f $(brew --prefix)/etc/bash_completion ]; then
@@ -72,13 +84,8 @@ fi
 # import api keys
 source "$HOME/.ssh/api_keys"
 
-# init 
-$(docker-machine env docker-vm)
-alias bd='docker-machine'
-alias dm='docker-machine'
 
 # Clear and write aliases
-clear
 echo 'alias: digitalocean droplets   - list all do droplets'
 echo 'alias: digitalocean regions    - list all do regions'
 echo 'alias: digitalocean images     - list all do images'
