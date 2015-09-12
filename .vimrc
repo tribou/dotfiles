@@ -19,10 +19,14 @@ Plug 'suan/vim-instant-markdown'
 
 call plug#end()
 
+" various settings
 syntax on
 colorscheme SlateDark
 filetype plugin on
 set number
+
+" crontab editing
+autocmd filetype crontab setlocal nobackup nowritebackup
 
 " vim-airline
 let g:airline#extensions#tabline#enabled = 1

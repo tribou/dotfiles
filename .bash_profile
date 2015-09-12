@@ -5,6 +5,9 @@ export LSCOLORS=GxFxCxDxBxegedabagaced
 # Change bash prompt
 export PS1="\[$(tput setaf 2)\]\h:\W> \[$(tput sgr0)\]"
 
+# Set default editor
+export EDITOR='vim'
+
 # Aliases
 alias ls='ls -G'
 alias ll='ls -lah'
@@ -69,10 +72,10 @@ fi
 # import api keys
 source "$HOME/.ssh/api_keys"
 
-# init boot2docker
-$(boot2docker shellinit)
-alias bd='boot2docker'
-alias bd-mongo-node='docker pull mongo && docker pull node && docker run --name mongodb -p 27017:27017 -d mongo && docker run --name nodeapp -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp -p 8000:8000 --link mongodb:mongodb --env MONGO_HOST=`docker inspect -f '"'"'{{ .NetworkSettings.IPAddress }}'"'"' mongodb` node:latest node index.js'
+# init 
+$(docker-machine env docker-vm)
+alias bd='docker-machine'
+alias dm='docker-machine'
 
 # Clear and write aliases
 clear
@@ -95,15 +98,5 @@ echo 'alias: gpl                     - git pull'
 echo 'alias: top                     - top -o cpu'
 echo 'alias: sub                     - sublime text 2 shortcut'
 echo 'alias: bd                      - boot2docker'
-echo 'alias: bd-mongo-node           - spin up mongo and node linked containers'
 echo ''
-echo 'docker mongo:'
-echo ''
-echo 'docker run --name mongodb -p 27017:27017 -d mongo'
-echo ''
-echo 'docker run -it --rm --name hapic -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp -p 8000:8000 node:latest node index.js'
-echo ''
-echo 'docker node/mongo linked:'
-echo 'docker run --name mongodb -p 27017:27017 -d mongo'
-echo 'docker run --name nodeapp -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp -p 8000:8000 --link mongodb:mongodb --env MONGO_HOST=`docker inspect -f '"'"'{{ .NetworkSettings.IPAddress }}'"'"' mongodb` node:latest node index.js'
-echo ''
+
