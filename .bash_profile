@@ -2,6 +2,9 @@
 export CLICOLOR=1
 export LSCOLORS=GxFxCxDxBxegedabagaced
 
+# Set dev path
+export DEVPATH=$HOME/dev
+
 # Change bash prompt
 export PS1="\[$(tput setaf 2)\]\h:\W> \[$(tput sgr0)\]"
 
@@ -61,7 +64,6 @@ export LESS_TERMCAP_so=$'\E[38;5;246m'    # begin standout-mode - info box
 export LESS_TERMCAP_ue=$'\E[0m'           # end underline
 export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
 
-export DEVPATH=$HOME/dev
 export GOPATH=$DEVPATH/go
 export PATH=/usr/local/sbin:/usr/local/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin
 export ANDROID_HOME=/usr/local/opt/android-sdk
