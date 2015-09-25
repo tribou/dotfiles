@@ -24,6 +24,9 @@ syntax on
 colorscheme SlateDark
 filetype plugin on
 set number
+set tabstop=4
+set shiftwidth=4
+autocmd Filetype yaml setlocal ts=2 sts=2 sw=2
 
 " crontab editing
 autocmd filetype crontab setlocal nobackup nowritebackup

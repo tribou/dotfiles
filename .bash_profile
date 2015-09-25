@@ -83,6 +83,12 @@ if [ -f $(brew --prefix)/etc/bash_completion ]; then
   . $(brew --prefix)/etc/bash_completion
 fi
 
+# gcloud sourcing
+source '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc'
+source '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc'
+alias gc='gcloud compute'
+alias gci='gcloud compute instances'
+
 # import api keys
 source "$HOME/.ssh/api_keys"
 
