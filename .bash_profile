@@ -89,6 +89,10 @@ source '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/com
 alias gc='gcloud compute'
 alias gci='gcloud compute instances'
 
+# kubernetes aliases
+alias kg='kubectl get pods,rc,svc -o wide'
+alias kd='kubectl describe'
+
 # import api keys
 source "$HOME/.ssh/api_keys"
 
