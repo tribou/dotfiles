@@ -11,6 +11,24 @@ export PS1="\[$(tput setaf 2)\]\h:\W> \[$(tput sgr0)\]"
 # Set default editor
 export EDITOR='vim'
 
+# Set hostname vars
+export HOSTNAME="$(hostname)"
+export HOSTNAME_SHORT="${HOSTNAME%%.*}"
+
+# History settings
+export HISTSIZE=5000
+export HISTFILESIZE=$HISTSIZE
+export HISTCONTROL=ignorespace
+export HISTTIMEFORMAT='%F %T '
+export HISTDIR="${HOME}/.history/$(date -u +%Y/%m)"
+mkdir -p $HISTDIR
+export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
+histgrep ()
+{
+  grep -r "$@" ~/.history
+  history | grep "$@"
+}
+
 # Aliases
 alias ls='ls -G'
 alias ll='ls -lah'
@@ -69,6 +87,8 @@ export PATH=/usr/local/sbin:/usr/local/bin:$PATH:/usr/local/share/npm/bin:$GOPAT
 export ANDROID_HOME=/usr/local/opt/android-sdk
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+
+. ~/.nvm/nvm.sh
 
 export PATH=/usr/local/git/bin:$PATH
 
