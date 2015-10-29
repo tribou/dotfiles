@@ -50,6 +50,17 @@ alias r='git remote -v'
 alias vim='mvim -v'
 alias v='vim'
 
+# Watchman shortcuts
+WATCHMAN_PREFIX="$(brew --prefix watchman)"
+WATCHMAN_DIR="${WATCHMAN_PREFIX}/var/run/watchman/${USER}-state"
+## cat the current watchman state
+alias wmans="cat ${WATCHMAN_DIR}/state"
+## cat the current watchman log
+alias wmanl="cat ${WATCHMAN_DIR}/log"
+## set npm test trigger in current dir
+alias 'watchman-npmtest'='watchman -- trigger ./ npmtest -I "*.js" "*.jsx" "*.html" "*.scss" "*.css" -X "node_modules/*" -- npm test'
+alias 'watchman-npmtest-delete'='watchman trigger-del "$PWD" npmtest'
+
 # Digital Ocean shortcuts
 function digitalocean() { curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool ;}
 
