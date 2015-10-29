@@ -10,11 +10,14 @@ files=(
   ".bash_profile"
   ".vimrc"
   ".gitconfig"
+  ".zshrc"
 )
 for file in "${files[@]}"; do
 	if [ -e ~/$file -a ! -L ~/$file ]; then
+    echo "Backing up ${file}"
 		mv ~/$file ~/${file}.backup
-	fi
+  fi
+  echo "Creating a symlink for ${file}"
 	ln -sf ${THIS_DIR}/${file} ~/${file}
 done
 
