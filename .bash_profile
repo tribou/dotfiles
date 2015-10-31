@@ -11,6 +11,12 @@ export PS1="\[$(tput setaf 2)\]\h:\W> \[$(tput sgr0)\]"
 # Set default editor
 export EDITOR='vim'
 
+# Case insensitive auto-completion
+bind "set completion-ignore-case on"
+
+# Single tab shows all matching directories/files
+bind "set show-all-if-ambiguous on"
+
 # Set hostname vars
 export HOSTNAME="$(hostname)"
 export HOSTNAME_SHORT="${HOSTNAME%%.*}"
@@ -99,15 +105,14 @@ export ANDROID_HOME=/usr/local/opt/android-sdk
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
-. ~/.nvm/nvm.sh
+export NVM_DIR=~/.nvm
+source $(brew --prefix nvm)/nvm.sh
 
 export PATH=/usr/local/git/bin:$PATH
 
 #source ~/sys/ansible/hacking/env-setup
 export ANSIBLE_HOSTS=$DEVPATH/sys/ansible/ansible-hosts
 export ANSIBLE_CONFIG=$DEVPATH/sys/ansible/ansible.cfg
-
-cd $DEVPATH
 
 # brew install bash-completion
 if [ -f $(brew --prefix)/etc/bash_completion ]; then
@@ -127,6 +132,7 @@ alias kd='kubectl describe'
 # import api keys
 source "$HOME/.ssh/api_keys"
 
+cd $DEVPATH
 
 # Clear and write aliases
 echo 'alias: digitalocean droplets   - list all do droplets'
