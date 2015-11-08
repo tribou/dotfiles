@@ -35,6 +35,13 @@ histgrep ()
   history | grep "$@"
 }
 
+# File search functions
+## Source recursive file search
+if [ -e $DEVPATH/dotfiles/scripts/search.sh ]
+then
+  source $DEVPATH/dotfiles/scripts/search.sh
+fi
+
 # Aliases
 alias ls='ls -G'
 alias ll='ls -lah'
