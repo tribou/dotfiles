@@ -105,8 +105,15 @@ export ANDROID_HOME=/usr/local/opt/android-sdk
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
+# Node.js
 export NVM_DIR=~/.nvm
 source $(brew --prefix nvm)/nvm.sh
+alias ni='npm install'
+alias nis='npm install --save'
+alias nisd='npm install --save-dev'
+alias nr='npm run'
+alias nrs='npm rm --save'
+alias nrsd='npm rm --save-dev'
 
 export PATH=/usr/local/git/bin:$PATH
 
