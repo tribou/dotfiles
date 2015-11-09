@@ -22,7 +22,7 @@ search() {
   fi
 
   grep \
-    -rnw "$search_dir" \
+    -rn "$search_dir" \
     -e "$1" \
     --exclude-dir={.git,.svn,node_modules} \
     --exclude=bundle*.js \

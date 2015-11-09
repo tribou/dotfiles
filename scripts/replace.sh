@@ -2,6 +2,37 @@
 
 # Recursively performs a perl replace on files in current or specified directory
 
+# But first a convenience function that just finds all the files
+findfiles() {
+
+  usage='Usage: findfiles [directory]'
+  search_dir='.'
+
+  # Return usage if more than 1 arg is passed
+  if [ $# -gt 1 ]
+  then
+    echo "$usage"
+    return 1
+  fi
+
+  # Optional first arg
+  if [ $# -eq 1 ]
+  then
+    # Remove trailing slash if any
+    search_dir=`echo "$1" | sed 's/\/$//'`
+  fi
+
+  find \
+    "$search_dir" \
+    -type f \
+    ! -name "bundle*.js" \
+    ! -path "*/node_modules/*" \
+    ! -path "*/.git/*" \
+    ! -path "*/.svn/*"
+
+}
+
+
 replace() {
 
   usage='Usage: replace PATTERN [directory]'
