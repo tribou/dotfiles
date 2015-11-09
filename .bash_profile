@@ -35,11 +35,16 @@ histgrep ()
   history | grep "$@"
 }
 
-# File search functions
+# File search and replace functions
 ## Source recursive file search
 if [ -e $DEVPATH/dotfiles/scripts/search.sh ]
 then
   source $DEVPATH/dotfiles/scripts/search.sh
+fi
+## Source recursive string replace
+if [ -e $DEVPATH/dotfiles/scripts/replace.sh ]
+then
+  source $DEVPATH/dotfiles/scripts/replace.sh
 fi
 
 # Aliases
