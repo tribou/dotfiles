@@ -24,6 +24,7 @@ call plug#end()
 
 " various settings
 syntax on
+set background=dark
 colorscheme SlateDark
 set number
 filetype plugin indent on
