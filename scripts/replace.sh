@@ -26,6 +26,7 @@ findfiles() {
     "$search_dir" \
     -type f \
     ! -name "bundle*.js" \
+    ! -name "coverage.html" \
     ! -path "*/node_modules/*" \
     ! -path "*/.git/*" \
     ! -path "*/.svn/*"

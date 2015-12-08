@@ -25,7 +25,7 @@ search() {
     -rn "$search_dir" \
     -e "$1" \
     --exclude-dir={.git,.svn,node_modules} \
-    --exclude=bundle*.js \
+    --exclude={bundle*.js,coverage.html} \
     --color
 
 }
