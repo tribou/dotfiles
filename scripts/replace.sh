@@ -25,10 +25,13 @@ findfiles() {
   find \
     "$search_dir" \
     -type f \
+    ! -name "*.log" \
     ! -name "bundle*.js" \
     ! -name "coverage.html" \
     ! -path "*/node_modules/*" \
+    ! -path "*/tmp/*" \
     ! -path "*/.git/*" \
+    ! -path "*/.tmp/*" \
     ! -path "*/.svn/*"
 
 }
