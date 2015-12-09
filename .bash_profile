@@ -67,6 +67,7 @@ alias top='top -o cpu'
 alias r='git remote -v'
 alias vim='mvim -v'
 alias v='vim'
+alias tree='tree -I node_modules'
 
 # Watchman shortcuts
 WATCHMAN_PREFIX="$(brew --prefix watchman)"

@@ -3,6 +3,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'airblade/vim-gitgutter'
 Plug 'bling/vim-airline'
 Plug 'editorconfig/editorconfig-vim'
+Plug 'elixir-lang/vim-elixir'
 Plug 'flazz/vim-colorschemes'
 Plug 'jiangmiao/auto-pairs'
 Plug 'kien/ctrlp.vim'
@@ -24,6 +25,7 @@ call plug#end()
 
 " various settings
 syntax on
+set background=dark
 colorscheme SlateDark
 set number
 filetype plugin indent on
