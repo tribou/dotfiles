@@ -24,7 +24,7 @@ search() {
   grep \
     -rn "$search_dir" \
     -e "$1" \
-    --exclude-dir={.git,.svn,.tmp,node_modules,tmp} \
+    --exclude-dir={.git,.svn,.tmp,bower_components,dist,node_modules,tmp} \
     --exclude={*.log,bundle*.js,coverage.html} \
     --color
 

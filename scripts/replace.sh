@@ -28,6 +28,8 @@ findfiles() {
     ! -name "*.log" \
     ! -name "bundle*.js" \
     ! -name "coverage.html" \
+    ! -path "*/bower_components/*" \
+    ! -path "*/dist/*" \
     ! -path "*/node_modules/*" \
     ! -path "*/tmp/*" \
     ! -path "*/.git/*" \
