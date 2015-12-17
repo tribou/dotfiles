@@ -13,7 +13,7 @@ Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
-Plug 'scrooloose/syntastic'
+"Plug 'scrooloose/syntastic'
 Plug 'suan/vim-instant-markdown'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-sensible'
@@ -21,6 +21,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-ragtag'
 Plug 'tpope/vim-repeat'
 Plug 'Valloric/YouCompleteMe'
+Plug 'vim-scripts/nginx.vim'
 
 call plug#end()
 
@@ -35,15 +36,19 @@ set shiftwidth=2
 set expandtab ts=2 sw=2 ai
 
 " custom filetype settings
-au BufNewFile,BufRead *.Dockerfile set filetype=dockerfile
-au BufNewFile,BufRead .eslintrc set filetype=json
+autocmd BufNewFile,BufRead *.Dockerfile set filetype=dockerfile
+autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
+autocmd BufNewFile,BufRead *.conf set filetype=conf
 
 " crontab editing
 autocmd filetype crontab setlocal nobackup nowritebackup
 
+" NERDTree
+map <c-t> :NERDTreeToggle<CR>
+
 " syntastic
-let g:syntastic_javascript_checkers = ['eslint']
-let g:syntastic_javascript_eslint_exec = 'eslint_d'
+"let g:syntastic_javascript_checkers = ['eslint']
+"let g:syntastic_javascript_eslint_exec = 'eslint_d'
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
