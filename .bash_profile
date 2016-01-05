@@ -63,6 +63,7 @@ alias t='git log --graph --abbrev-commit --date=local --date=short --pretty=form
 alias f='git fetch'
 alias b='git branch -a'
 alias gbd='git branch -d'
+alias gr2='git rebase -i head~2'
 alias top='top -o cpu'
 alias r='git remote -v'
 alias vim='mvim -v'
