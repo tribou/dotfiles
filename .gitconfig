@@ -9,6 +9,6 @@
 	interactive = true
 	diff = true
 [alias]
-	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(green)%d %Creset%s %C(blue)<%aN>\"
+	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(green)%d %Creset%s %C(blue)<%aN>\" --all
 [push]
 	default = simple
