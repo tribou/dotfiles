@@ -1,10 +1,10 @@
 call plug#begin('~/.vim/plugged')
 
 Plug 'airblade/vim-gitgutter'
+Plug 'altercation/vim-colors-solarized'
 Plug 'bling/vim-airline'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'elixir-lang/vim-elixir'
-Plug 'flazz/vim-colorschemes'
 Plug 'jiangmiao/auto-pairs'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'mattn/emmet-vim'
@@ -16,6 +16,7 @@ Plug 'scrooloose/nerdtree'
 "Plug 'scrooloose/syntastic'
 Plug 'suan/vim-instant-markdown'
 Plug 'terryma/vim-multiple-cursors'
+Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-ragtag'
@@ -26,9 +27,16 @@ Plug 'vim-scripts/nginx.vim'
 call plug#end()
 
 " various settings
-syntax on
+syntax enable
+" colorscheme SlateDark
+" solarized options 
+"let g:solarized_visibility = "high"
+"let g:solarized_contrast = "high"
+"let g:solarized_termtrans = 1
+"let g:solarized_termcolors=256
+colorscheme solarized
 set background=dark
-colorscheme SlateDark
+
 set number
 filetype plugin indent on
 set tabstop=2
@@ -69,9 +77,15 @@ let g:ctrlp_custom_ignore = {
 let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
 
 let g:ctrlp_working_path_mode = 'r'
+
+" editorconfig-vim
 let g:EditorConfig_core_mode = 'external_command'
-let g:EditorConfig_verbose=1
+let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
+"let g:EditorConfig_verbose=1
 
 " vim-instant-markdown
 let g:instant_markdown_slow = 1
+
+" vim-fugitive
+"set statusline+=%{fugitive#statusline()}
 
