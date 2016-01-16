@@ -1,12 +1,8 @@
-# Colorize LS
-export CLICOLOR=1
-export LSCOLORS=GxFxCxDxBxegedabagaced
-
 # Set dev path
 export DEVPATH=$HOME/dev
 
 # Change bash prompt
-export PS1="\[$(tput setaf 2)\]\h:\W> \[$(tput sgr0)\]"
+export PS1="\[\033[0;34m\]\h:\W> \[$(tput sgr0)\]"
 
 # Set default editor
 export EDITOR='vim'
