@@ -7,8 +7,22 @@
 [color]
 	ui = true
 	interactive = true
-	diff = true
+  diff = true
+[color "branch"]
+  current = yellow reverse
+  local = yellow
+  remote = red
+[color "diff"]
+  meta = yellow
+  frag = blue
+  old = red bold
+  new = green
+[color "status"]
+  added = green
+  changed = red
+  untracked = cyan
 [alias]
-	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(green)%d %Creset%s %C(blue)<%aN>\" --all
+	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(red bold)%d %Creset%s %C(blue)<%aN>\" --all
 [push]
-	default = simple
+  default = simple
+
