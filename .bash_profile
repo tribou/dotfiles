@@ -68,6 +68,7 @@ alias vim='mvim -v'
 alias v='vim'
 alias tree='tree -I node_modules'
 alias search='git grep -n -I --untracked'
+alias count='wc -l | xargs'
 
 # Watchman shortcuts
 WATCHMAN_PREFIX="$(brew --prefix watchman)"
