@@ -67,6 +67,7 @@ alias r='git remote -v'
 alias vim='mvim -v'
 alias v='vim'
 alias tree='tree -I node_modules'
+alias search='git grep -n -I --untracked'
 
 # Watchman shortcuts
 WATCHMAN_PREFIX="$(brew --prefix watchman)"

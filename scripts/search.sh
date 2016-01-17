@@ -2,7 +2,7 @@
 
 # Recursively greps files for pattern match
 
-search() {
+searchit() {
 
   usage='Usage: search PATTERN [directory]'
   search_dir='.'
