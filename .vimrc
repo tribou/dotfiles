@@ -71,8 +71,8 @@ let g:airline#extensions#tabline#enabled = 1
 
 " ctrlp
 let g:ctrlp_custom_ignore = {
-  \ 'dir':  'node_modules$\|\.(git|hg|svn|vagrant)$',
-  \ 'file': '\v\.(exe|so|dll)$',
+  \ 'dir':  'node_modules$\|\.(git|hg|svn|tmp|vagrant)$',
+  \ 'file': '\v\.(exe|so|swp|dll)$',
   \ }
 let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
 
