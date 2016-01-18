@@ -64,11 +64,14 @@ alias gr2='git rebase -i head~2'
 alias gall='git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias top='top -o cpu'
 alias r='git remote -v'
-alias vim='mvim -v'
-alias v='vim'
 alias tree='tree -I node_modules'
 alias search='git grep -n -I --untracked'
 alias count='wc -l | xargs'
+
+# Vim
+alias vim='mvim -v'
+alias v='vim'
+alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer'
 
 # Watchman shortcuts
 WATCHMAN_PREFIX="$(brew --prefix watchman)"
