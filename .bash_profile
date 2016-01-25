@@ -65,7 +65,7 @@ alias gall='git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'
 alias top='top -o cpu'
 alias r='git remote -v'
 alias tree='tree -I node_modules'
-alias search='git grep -n -I --untracked'
+alias search='git grep -n -I --untracked --break'
 alias count='wc -l | xargs'
 
 # Vim

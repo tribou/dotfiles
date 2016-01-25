@@ -89,3 +89,6 @@ let g:instant_markdown_slow = 1
 " vim-fugitive
 "set statusline+=%{fugitive#statusline()}
 
+" YouCompleteMe
+let g:ycm_autoclose_preview_window_after_completion = 1
+
