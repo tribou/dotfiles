@@ -67,6 +67,21 @@ alias r='git remote -v'
 alias tree='tree -I node_modules'
 alias search='git grep -n -I --untracked --break'
 alias count='wc -l | xargs'
+gr ()
+{
+
+  usage='Usage: gr NUMBER'
+  search_dir='.'
+
+  # Return usage if 0 or more than 2 args are passed
+  if [ $# -ne 1 ]
+  then
+    echo "$usage"
+    return 1
+  fi
+
+  git rebase -i head~$1
+}
 
 # Vim
 alias vim='mvim -v'
