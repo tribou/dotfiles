@@ -172,6 +172,9 @@ alias gci='gcloud compute instances'
 alias kg='kubectl get pods,rc,svc -o wide'
 alias kd='kubectl describe'
 
+# AWS CLI
+complete -C aws_completer aws
+
 # import api keys
 source "$HOME/.ssh/api_keys"
 
