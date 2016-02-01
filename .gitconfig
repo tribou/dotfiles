@@ -17,12 +17,14 @@
   frag = blue
   old = red bold
   new = green
+[color "decorate"]
+  head = reverse red
 [color "status"]
   added = green
   changed = red
   untracked = cyan
 [alias]
-	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(red bold)%d %Creset%s %C(blue)<%aN>\" --all
+	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
 [push]
   default = simple
 
