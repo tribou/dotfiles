@@ -15,6 +15,7 @@ Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 "Plug 'scrooloose/syntastic'
 Plug 'suan/vim-instant-markdown'
+Plug 't9md/vim-surround_custom_mapping'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-sensible'
@@ -28,12 +29,6 @@ call plug#end()
 
 " various settings
 syntax enable
-" colorscheme SlateDark
-" solarized options 
-"let g:solarized_visibility = "high"
-"let g:solarized_contrast = "high"
-"let g:solarized_termtrans = 1
-"let g:solarized_termcolors=256
 colorscheme solarized
 set background=dark
 
@@ -50,6 +45,20 @@ autocmd BufNewFile,BufRead *.conf set filetype=conf
 
 " crontab editing
 autocmd filetype crontab setlocal nobackup nowritebackup
+
+" ctrlp
+let g:ctrlp_custom_ignore = {
+  \ 'dir':  'node_modules$\|\.(git|hg|svn|tmp|vagrant)$',
+  \ 'file': '\v\.(exe|so|swp|dll)$',
+  \ }
+let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
+
+let g:ctrlp_working_path_mode = 'r'
+
+" editorconfig-vim
+let g:EditorConfig_core_mode = 'external_command'
+let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
+"let g:EditorConfig_verbose=1
 
 " NERDTree
 map <c-t> :NERDTreeToggle<CR>
@@ -69,26 +78,18 @@ map <c-t> :NERDTreeToggle<CR>
 " vim-airline
 let g:airline#extensions#tabline#enabled = 1
 
-" ctrlp
-let g:ctrlp_custom_ignore = {
-  \ 'dir':  'node_modules$\|\.(git|hg|svn|tmp|vagrant)$',
-  \ 'file': '\v\.(exe|so|swp|dll)$',
-  \ }
-let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
-
-let g:ctrlp_working_path_mode = 'r'
-
-" editorconfig-vim
-let g:EditorConfig_core_mode = 'external_command'
-let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
-"let g:EditorConfig_verbose=1
-
 " vim-instant-markdown
 let g:instant_markdown_slow = 1
 
 " vim-fugitive
 "set statusline+=%{fugitive#statusline()}
 
+" vim-surround_custom_mapping
+let g:surround_custom_mapping = {}
+let g:surround_custom_mapping.javascript = {
+  \ 'j':  "/* \r */",
+  \ 'x':  "{/* \r */}",
+  \ }
+
 " YouCompleteMe
 let g:ycm_autoclose_preview_window_after_completion = 1
-
