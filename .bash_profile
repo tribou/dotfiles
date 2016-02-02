@@ -33,14 +33,14 @@ histgrep ()
 
 # File search and replace functions
 ## Source recursive file search
-if [ -e $DEVPATH/dotfiles/scripts/search.sh ]
+if [ -f $DEVPATH/dotfiles/scripts/search.sh ]
 then
-  source $DEVPATH/dotfiles/scripts/search.sh
+  . $DEVPATH/dotfiles/scripts/search.sh
 fi
 ## Source recursive string replace
-if [ -e $DEVPATH/dotfiles/scripts/replace.sh ]
+if [ -f $DEVPATH/dotfiles/scripts/replace.sh ]
 then
-  source $DEVPATH/dotfiles/scripts/replace.sh
+  . $DEVPATH/dotfiles/scripts/replace.sh
 fi
 
 # Aliases
@@ -64,7 +64,7 @@ alias gr2='git rebase -i head~2'
 alias gall='git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias top='top -o cpu'
 alias r='git remote -v'
-alias tree='tree -I node_modules'
+alias tree='tree -I "bower_components|node_modules|temp|tmp"'
 alias search='git grep -n -I --untracked --break'
 alias count='wc -l | xargs'
 gr ()
@@ -118,7 +118,10 @@ alias bd='docker-machine'
 alias dm='docker-machine'
 alias dminit='eval "$(docker-machine env docker-vm)"'
 ## source dmupdate script
-if [ -e $DEVPATH/dotfiles/scripts/dm_update_ip.sh ]; then source $DEVPATH/dotfiles/scripts/dm_update_ip.sh; fi
+if [ -f $DEVPATH/dotfiles/scripts/dm_update_ip.sh ]
+then
+  . $DEVPATH/dotfiles/scripts/dm_update_ip.sh
+fi
 ## run dmupdate
 dmupdate
 
@@ -158,13 +161,14 @@ export ANSIBLE_HOSTS=$DEVPATH/sys/ansible/ansible-hosts
 export ANSIBLE_CONFIG=$DEVPATH/sys/ansible/ansible.cfg
 
 # brew install bash-completion
-if [ -f $(brew --prefix)/etc/bash_completion ]; then
+if [ -f $(brew --prefix)/etc/bash_completion ]
+then
   . $(brew --prefix)/etc/bash_completion
 fi
 
 # gcloud sourcing
-source '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc'
-source '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc'
+. '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc'
+. '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc'
 alias gc='gcloud compute'
 alias gci='gcloud compute instances'
 
@@ -175,8 +179,14 @@ alias kd='kubectl describe'
 # AWS CLI
 complete -C aws_completer aws
 
+# z
+if [ -f `brew --prefix`/etc/profile.d/z.sh ]
+then
+  . `brew --prefix`/etc/profile.d/z.sh
+fi
+
 # import api keys
-source "$HOME/.ssh/api_keys"
+. "$HOME/.ssh/api_keys"
 
 cd $DEVPATH
 
