@@ -151,8 +151,9 @@ alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
 
 # Ember.js
-alias edlp='ember deploy:list --environment production'
 alias edld='ember deploy:list --environment development'
+alias edlp='ember deploy:list --environment production'
+alias edls='ember deploy:list --environment staging'
 
 export PATH=/usr/local/git/bin:$PATH
 
