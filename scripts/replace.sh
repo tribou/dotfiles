@@ -45,7 +45,7 @@ replace() {
 
 Example:
   replace '"'"'original'"'"' '"'"'replacewith'"'"'
-  replace '"'"'old\\\\/path\\\\.js'"'"' '"'"'new\\\\/path\\\\.jsx'"'"'
+  replace '"'"'old\\/path\\.js'"'"' '"'"'new\\/path\\.jsx'"'"'
 '
 
   # Return usage if not 2 args are passed
