@@ -92,6 +92,7 @@ gr ()
 # Vim
 alias vim='mvim -v'
 alias v='vim'
+alias vc='vimcat'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer'
 
 # Watchman shortcuts
