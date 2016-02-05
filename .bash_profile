@@ -2,7 +2,7 @@
 export DEVPATH=$HOME/dev
 
 # Change bash prompt
-export PS1="\[\033[0;34m\]\h:\W> \[$(tput sgr0)\]"
+export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
 
 # Set default editor
 export EDITOR='vim'
