@@ -13,6 +13,9 @@ bind "set completion-ignore-case on"
 # Single tab shows all matching directories/files
 bind "set show-all-if-ambiguous on"
 
+# Glob includes hidden files
+shopt -s dotglob
+
 # Set hostname vars
 export HOSTNAME="$(hostname)"
 export HOSTNAME_SHORT="${HOSTNAME%%.*}"
@@ -67,6 +70,9 @@ alias r='git remote -v'
 alias tree='tree -I "bower_components|node_modules|temp|tmp"'
 alias search='git grep -n -I --untracked --break'
 alias count='wc -l | xargs'
+alias convertdos='git ls-files -z | xargs -0 dos2unix'
+alias setdotglob='shopt -s dotglob'
+alias unsetdotglob='shopt -u dotglob'
 gr ()
 {
 
