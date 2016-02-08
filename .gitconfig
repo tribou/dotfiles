@@ -26,6 +26,7 @@
 [alias]
 	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
 	forget = reset head --hard
+	tree-short = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
 [push]
   default = simple
 
