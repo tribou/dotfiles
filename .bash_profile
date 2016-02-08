@@ -69,10 +69,11 @@ alias top='top -o cpu'
 alias r='git remote -v'
 alias tree='tree -I "bower_components|node_modules|temp|tmp"'
 alias search='echo; echo; git grep -n -I --untracked --break'
-alias count='wc -l | xargs'
+alias count='sed "/^\s*$/d" | wc -l | xargs'
 alias convertdos='git ls-files -z | xargs -0 dos2unix'
 alias setdotglob='shopt -s dotglob'
 alias unsetdotglob='shopt -u dotglob'
+alias sprofile='. ~/.bash_profile; cd $OLDPWD'
 gr ()
 {
 
