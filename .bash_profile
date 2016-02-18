@@ -157,6 +157,32 @@ alias nisd='npm install --save-dev'
 alias nr='npm run'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
+npm-install-global()
+{
+  # Crazy logic bc npm dist-tags aren't standardized
+  if [ "$1" == "2" ]
+  then
+    NPM_VERSION='latest-2'
+  elif [ "$1" == "3" ]
+  then
+    NPM_VERSION='3.x-latest'
+  else
+    NPM_VERSION='latest'
+  fi
+
+  npm install -g npm@$NPM_VERSION \
+    && npm install -g \
+    babel-node-debug \
+    bower \
+    instant-markdown-d \
+    newman \
+    node-inspector \
+    nodemon \
+    nsp \
+    react-native-cli \
+    slush \
+    typescript
+}
 
 # Ember.js
 alias edld='ember deploy:list --environment development'
