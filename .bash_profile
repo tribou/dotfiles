@@ -76,6 +76,10 @@ alias convert-tabs-spaces="replace '	' '  '"
 alias setdotglob='shopt -s dotglob'
 alias unsetdotglob='shopt -u dotglob'
 alias sprofile='. ~/.bash_profile; cd $OLDPWD'
+sizes ()
+{
+  ls -lrt -d -1 ${PWD}/${1}* | xargs du -sh
+}
 gr ()
 {
 
