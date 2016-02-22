@@ -190,6 +190,20 @@ npm-install-global()
     slush \
     typescript
 }
+# Read the .nvmrc and switch nvm versions if exists upon dir changes
+read_nvmrc()
+{
+  if [ "$PWD" != "$PREV_PWD" ]
+	then
+    PREV_PWD="$PWD";
+
+    if [ -e ".nvmrc" ]
+		then
+      nvm use;
+    fi
+  fi
+}
+export PROMPT_COMMAND="$PROMPT_COMMAND read_nvmrc ;"
 
 # Ember.js
 alias edld='ember deploy:list --environment development'
