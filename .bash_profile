@@ -76,6 +76,7 @@ alias convert-tabs-spaces="replace '	' '  '"
 alias setdotglob='shopt -s dotglob'
 alias unsetdotglob='shopt -u dotglob'
 alias sprofile='. ~/.bash_profile; cd $OLDPWD'
+alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
 sizes ()
 {
   ls -lrt -d -1 ${PWD}/${1}* | xargs du -sh
