@@ -83,6 +83,9 @@ let g:airline#extensions#tabline#enabled = 1
 " vim-instant-markdown
 let g:instant_markdown_slow = 1
 
+" vim-flow
+"let g:flow#autoclose = 1
+
 " vim-fugitive
 "set statusline+=%{fugitive#statusline()}
 
