@@ -126,19 +126,25 @@ alias drm='docker rm'
 alias dc='docker-compose'
 
 # docker-machine shortcuts
-## first init docker-vm
-eval "$(docker-machine env docker-vm)"
+## get local running machine name
+DM_LS=`docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"`
 ## add aliases
 alias bd='docker-machine'
 alias dm='docker-machine'
-alias dminit='eval "$(docker-machine env docker-vm)"'
+alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
 ## source dmupdate script
 if [ -f $DEVPATH/dotfiles/scripts/dm_update_ip.sh ]
 then
   . $DEVPATH/dotfiles/scripts/dm_update_ip.sh
 fi
-## run dmupdate
-dmupdate
+## If the local docker-machine is available
+if ! [[ -z "$DM_LS"  ]]
+then 
+  ## first init docker-vm
+  dminit
+  ## run dmupdate
+  dmupdate
+fi
 
 # Less Colors for Man Pages
 #export LESS_TERMCAP_mb=$'\E[01;31m'       # begin blinking
