@@ -30,8 +30,8 @@ mkdir -p $HISTDIR
 export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 histgrep ()
 {
-  grep -r "$@" ~/.history
-  history | grep "$@"
+  grep -r "$1" ~/.history
+  history | grep "$1"
 }
 
 # File search and replace functions
