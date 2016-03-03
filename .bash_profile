@@ -35,15 +35,17 @@ histgrep ()
 }
 
 # File search and replace functions
-## Source recursive file search
-if [ -f $DEVPATH/dotfiles/scripts/search.sh ]
+## Source recursive string replace script
+SOURCE_SCRIPT=$DEVPATH/dotfiles/scripts/replace.sh
+if [ -f "$SOURCE_SCRIPT" ]
 then
-  . $DEVPATH/dotfiles/scripts/search.sh
+  . "$SOURCE_SCRIPT"
 fi
-## Source recursive string replace
-if [ -f $DEVPATH/dotfiles/scripts/replace.sh ]
+## Source remind script
+SOURCE_SCRIPT=$DEVPATH/dotfiles/scripts/remind.sh
+if [ -f "$SOURCE_SCRIPT" ]
 then
-  . $DEVPATH/dotfiles/scripts/replace.sh
+  . "$SOURCE_SCRIPT"
 fi
 
 # Aliases
