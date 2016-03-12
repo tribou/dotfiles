@@ -223,6 +223,21 @@ export PATH=/usr/local/git/bin:$PATH
 #source ~/sys/ansible/hacking/env-setup
 export ANSIBLE_HOSTS=$DEVPATH/sys/ansible/ansible-hosts
 export ANSIBLE_CONFIG=$DEVPATH/sys/ansible/ansible.cfg
+install-swap()
+{
+
+  usage='Usage: install-swap HOST'
+
+  # Return usage if 0 or more than 2 args are passed
+  if [ $# -ne 1 ]
+  then
+    echo "$usage"
+    return 1
+  fi
+
+  ansible-playbook $DEVPATH/ansible-swap/site.yml --extra-vars "target=$1"
+
+}
 
 # brew install bash-completion
 if [ -f $(brew --prefix)/etc/bash_completion ]
