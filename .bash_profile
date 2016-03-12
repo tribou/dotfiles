@@ -189,6 +189,7 @@ npm-install-global()
     && npm install -g \
     babel-node-debug \
     bower \
+    ember-cli \
     instant-markdown-d \
     newman \
     node-inspector \
