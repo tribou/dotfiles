@@ -196,6 +196,7 @@ npm-install-global()
     nodemon \
     nsp \
     react-native-cli \
+    serverless \
     slush \
     typescript
 }
