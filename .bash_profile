@@ -192,7 +192,6 @@ npm-install-global()
     bower \
     ember-cli \
     instant-markdown-d \
-    newman \
     node-inspector \
     nodemon \
     nsp \
