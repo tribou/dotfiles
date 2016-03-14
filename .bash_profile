@@ -185,6 +185,7 @@ npm-install-global()
     NPM_VERSION='latest'
   fi
 
+  echo "Installing NPM@$NPM_VERSION and global modules"
   npm install -g npm@$NPM_VERSION \
     && npm install -g \
     babel-node-debug \
