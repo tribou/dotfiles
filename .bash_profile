@@ -190,7 +190,7 @@ npm-install-global()
     && npm install -g \
     babel-node-debug \
     bower \
-    ember-cli \
+    ember-cli@^1 \
     instant-markdown-d \
     node-inspector \
     nodemon \
