@@ -24,6 +24,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-ragtag'
 Plug 'tpope/vim-repeat'
 Plug 'Valloric/YouCompleteMe'
+Plug 'vim-scripts/marvim'
 Plug 'vim-scripts/nginx.vim'
 
 call plug#end()
@@ -61,6 +62,11 @@ let g:ctrlp_working_path_mode = 'r'
 let g:EditorConfig_core_mode = 'external_command'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 "let g:EditorConfig_verbose=1
+
+" marvim
+let marvim_find_key = 'mf'      " change find key from <F2> to 'space' 
+let marvim_store_key = 'ms'     " change store key from <F3> to 'ms' 
+let marvim_register = 'q'       " change used register from 'q' to 'c' 
 
 " NERDTree
 map <c-t> :NERDTreeToggle<CR>
