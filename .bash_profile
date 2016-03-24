@@ -16,6 +16,9 @@ bind "set show-all-if-ambiguous on"
 # Glob includes hidden files
 shopt -s dotglob
 
+# Increase open files limit
+ulimit -n 10000
+
 # Set hostname vars
 export HOSTNAME="$(hostname)"
 export HOSTNAME_SHORT="${HOSTNAME%%.*}"
