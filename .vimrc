@@ -6,6 +6,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'elixir-lang/vim-elixir'
+Plug 'heavenshell/vim-jsdoc'
 Plug 'jiangmiao/auto-pairs'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'mattn/emmet-vim'
@@ -94,6 +95,14 @@ let g:instant_markdown_slow = 1
 
 " vim-fugitive
 "set statusline+=%{fugitive#statusline()}
+
+" vim-jsdoc
+let g:jsdoc_allow_input_prompt = 1
+let g:jsdoc_input_description = 1
+let g:jsdoc_access_descriptions = 1
+let g:jsdoc_underscore_private = 1
+let g:jsdoc_enable_es6 = 1
+nmap <c-1> <Plug>(jsdoc)
 
 " vim-surround_custom_mapping
 let g:surround_custom_mapping = {}
