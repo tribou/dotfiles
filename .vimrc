@@ -110,6 +110,9 @@ let g:surround_custom_mapping.javascript = {
   \ 'j':  "/* \r */",
   \ 'x':  "{/* \r */}",
   \ }
+let g:surround_custom_mapping._ = {
+  \ 'h':  "{{!-- \r --}}",
+  \ }
 
 " YouCompleteMe
 let g:ycm_autoclose_preview_window_after_completion = 1
