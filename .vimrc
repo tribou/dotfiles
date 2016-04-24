@@ -16,7 +16,7 @@ Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
-"Plug 'scrooloose/syntastic'
+Plug 'scrooloose/syntastic'
 Plug 'suan/vim-instant-markdown'
 Plug 't9md/vim-surround_custom_mapping'
 Plug 'terryma/vim-multiple-cursors'
@@ -74,16 +74,17 @@ let marvim_register = 'q'       " change used register from 'q' to 'c'
 map <c-t> :NERDTreeToggle<CR>
 
 " syntastic
-"let g:syntastic_javascript_checkers = ['eslint']
-"let g:syntastic_javascript_eslint_exec = 'eslint_d'
+let g:syntastic_javascript_checkers = ['eslint', 'flow']
+let g:syntastic_javascript_eslint_exec = 'eslint_d'
 "let g:statline_syntastic = 0
-"set statusline+=%#warningmsg#
-"set statusline+=%{SyntasticStatuslineFlag()}
-"set statusline+=%*
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
 "let g:syntastic_always_populate_loc_list = 1
 "let g:syntastic_auto_loc_list = 1
-"let g:syntastic_check_on_open = 0
-"let g:syntastic_check_on_wq = 0
+let g:syntasitc_ignore_files = ['node_modules']
+let g:syntastic_check_on_open = 0
+let g:syntastic_check_on_wq = 0
 
 " vim-airline
 let g:airline#extensions#tabline#enabled = 1
