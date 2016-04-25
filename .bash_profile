@@ -194,6 +194,8 @@ npm-install-global()
     babel-node-debug \
     bower \
     ember-cli@^1 \
+    eslint_d \
+    flow-bin \
     instant-markdown-d \
     newman \
     node-inspector \
@@ -201,8 +203,7 @@ npm-install-global()
     nsp \
     react-native-cli \
     serverless \
-    slush \
-    typescript
+    slush
 }
 # Read the .nvmrc and switch nvm versions if exists upon dir changes
 read_nvmrc()
