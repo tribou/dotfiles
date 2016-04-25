@@ -194,6 +194,7 @@ npm-install-global()
     babel-node-debug \
     bower \
     ember-cli@^1 \
+    eslint \
     eslint_d \
     flow-bin \
     instant-markdown-d \
