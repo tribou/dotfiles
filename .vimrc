@@ -33,6 +33,7 @@ call plug#end()
 
 " various settings
 syntax enable
+set clipboard+=unnamed
 colorscheme solarized
 set background=dark
 
