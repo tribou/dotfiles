@@ -100,6 +100,7 @@ let g:instant_markdown_slow = 1
 
 " indentLine
 let g:indentLine_char = '.'
+let g:indentLine_conceallevel = 0
 
 " vim-jsdoc
 let g:jsdoc_allow_input_prompt = 1
