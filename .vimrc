@@ -35,6 +35,7 @@ call plug#end()
 " various settings
 syntax enable
 set clipboard+=unnamed
+set conceallevel=0
 colorscheme solarized
 set background=dark
 
