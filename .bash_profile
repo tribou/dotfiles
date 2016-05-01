@@ -201,6 +201,7 @@ npm-install-global()
     instant-markdown-d \
     node-inspector \
     nodemon \
+    npm-check-updates \
     nsp \
     react-native-cli \
     serverless \
