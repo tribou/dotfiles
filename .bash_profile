@@ -202,6 +202,7 @@ npm-install-global()
     newman \
     node-inspector \
     nodemon \
+    npm-check-updates \
     nsp \
     react-native-cli \
     serverless \
