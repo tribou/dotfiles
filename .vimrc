@@ -77,7 +77,7 @@ let marvim_register = 'q'       " change used register from 'q' to 'c'
 map <c-t> :NERDTreeToggle<CR>
 
 " syntastic
-let g:syntastic_javascript_checkers = ['eslint', 'flow']
+let g:syntastic_javascript_checkers = ['eslint']
 let g:syntastic_javascript_eslint_exec = 'eslint_d'
 "let g:statline_syntastic = 0
 set statusline+=%#warningmsg#
