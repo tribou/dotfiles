@@ -50,6 +50,12 @@ if [ -f "$SOURCE_SCRIPT" ]
 then
   . "$SOURCE_SCRIPT"
 fi
+## Source curlit script
+SOURCE_SCRIPT=$DEVPATH/dotfiles/scripts/curl_it.sh
+if [ -f "$SOURCE_SCRIPT" ]
+then
+  . "$SOURCE_SCRIPT"
+fi
 
 # Aliases
 alias ls='ls -G'
