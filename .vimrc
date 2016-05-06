@@ -1,7 +1,9 @@
 call plug#begin('~/.vim/plugged')
 
+Plug 'aaronj1335/underscore-templates.vim'
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
+Plug 'apple/swift', { 'rtp': 'utils/vim' }
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'editorconfig/editorconfig-vim'
@@ -28,6 +30,7 @@ Plug 'tpope/vim-repeat'
 Plug 'Valloric/YouCompleteMe'
 Plug 'vim-scripts/marvim'
 Plug 'vim-scripts/nginx.vim'
+Plug 'wavded/vim-stylus'
 Plug 'Yggdroot/indentLine'
 
 call plug#end()
