@@ -171,7 +171,8 @@ export GOPATH=$DEVPATH/go
 export PATH=/usr/local/sbin:/usr/local/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin
 export ANDROID_HOME=/usr/local/opt/android-sdk
 
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+# ruby rbenv
+if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
