@@ -32,8 +32,8 @@ function dmupdate {
 	echo -e "$DM_IP\t$DM_HOSTS" >> /tmp/hosts
 
 	# Move temp file to /etc/hosts
+  echo "Updating docker-vm IP to $DM_IP"
 	sudo mv /tmp/hosts /etc/hosts
-
 
 }
 
