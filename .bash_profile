@@ -66,6 +66,7 @@ alias s='git status -sb'
 alias ga='git add --all'
 alias c='git commit -S -ev'
 alias commit='git commit -ev' # non-signed commit
+alias cherry='git cherry-pick -S'
 alias tag='git tag -s -m ""'
 alias co='git checkout'
 alias gps='git push'
