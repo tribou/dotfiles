@@ -1,6 +1,7 @@
 [user]
 	name = Aaron Tribou
 	email = aaron.tribou@gmail.com
+	signingkey = E2B6AA91
 [core]
 	editor = mvim -v
 [credential]
