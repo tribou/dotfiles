@@ -85,6 +85,7 @@ alias search='echo; echo; git grep -n -I --untracked --break'
 alias count='sed "/^\s*$/d" | wc -l | xargs'
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
 alias convert-tabs-spaces="replace '	' '  '"
+alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
 alias setdotglob='shopt -s dotglob'
 alias unsetdotglob='shopt -u dotglob'
 alias sprofile='. ~/.bash_profile; cd $OLDPWD'
