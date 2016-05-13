@@ -31,11 +31,6 @@ export HISTTIMEFORMAT='%F %T '
 export HISTDIR="${HOME}/.history/$(date -u +%Y/%m)"
 mkdir -p $HISTDIR
 export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
-histgrep ()
-{
-  grep -r "$1" ~/.history
-  history | grep "$1"
-}
 
 # File search and replace functions
 ## Source recursive string replace script
@@ -57,68 +52,12 @@ then
   . "$SOURCE_SCRIPT"
 fi
 
-# Aliases
-alias ls='ls -G'
-alias ll='ls -lah'
-alias lt='ls -lath'
-alias survey='sudo nmap -sP 10.0.1.1/24'
-alias s='git status -sb'
-alias ga='git add --all'
-alias c='git commit -S -ev'
-alias commit='git commit -ev' # non-signed commit
-alias cherry='git cherry-pick -S'
-alias tag='git tag -s -m ""'
-alias co='git checkout'
-alias gps='git push'
-alias gpst='git push && git push --tags'
-alias gpl='git pull'
-#alias t='git log --graph --decorate --oneline --relative-date'
-#alias t='git log --graph --abbrev-commit --date=local --date=short --pretty=format:"%C(yellow)%h %C(cyan)%cd%C(green)%d %Creset%s %C(blue)<%aN>"'
-alias t='echo; echo; git tree'
-alias f='git fetch'
-alias b='git branch -a'
-alias gbd='git branch -d'
-alias gbdr='git branch -d -r'
-alias gr2='git rebase -S -i head~2'
-alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
-alias gf='git flow'
-alias top='top -o cpu'
-alias r='git remote -v'
-alias tree='tree -I "bower_components|node_modules|temp|tmp"'
-alias search='echo; echo; git grep -n -I --untracked --break'
-alias count='sed "/^\s*$/d" | wc -l | xargs'
-alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
-alias convert-tabs-spaces="replace '	' '  '"
-alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
-alias setdotglob='shopt -s dotglob'
-alias unsetdotglob='shopt -u dotglob'
-alias sprofile='. ~/.bash_profile; cd $OLDPWD'
-alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
-sizes ()
-{
-  ls -lrt -d -1 ${PWD}/${1}* | xargs du -sh
-}
-gr ()
-{
-
-  usage='Usage: gr NUMBER'
-  search_dir='.'
-
-  # Return usage if 0 or more than 2 args are passed
-  if [ $# -ne 1 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  git rebase -S -i head~$1
-}
-
-# Vim
-alias vim='mvim -v'
-alias v='vim'
-alias vc='vimcat'
-alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer'
+# Commands and Aliases
+SOURCE_SCRIPT=$DEVPATH/dotfiles/lib/commands.sh
+if [ -f "$SOURCE_SCRIPT" ]
+then
+  . "$SOURCE_SCRIPT"
+fi
 
 # Watchman shortcuts
 WATCHMAN_PREFIX="$(brew --prefix watchman)"
@@ -131,24 +70,9 @@ alias wmanl="cat ${WATCHMAN_DIR}/log"
 alias 'watchman-npmtest'='watchman -- trigger ./ npmtest -I "*.js" "*.jsx" "*.html" "*.scss" "*.css" -X "node_modules/*" -- npm test'
 alias 'watchman-npmtest-delete'='watchman trigger-del "$PWD" npmtest'
 
-# Digital Ocean shortcuts
-function digitalocean() { curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool ;}
-
-# Docker shortcuts
-alias dps='docker ps'
-alias dpsa='docker ps -a'
-alias di='docker images'
-alias drmi='docker rmi'
-alias drm='docker rm'
-alias dc='docker-compose'
-
-# docker-machine shortcuts
+# docker-machine
 ## get local running machine name
 DM_LS=`docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"`
-## add aliases
-alias bd='docker-machine'
-alias dm='docker-machine'
-alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
 ## source dmupdate script
 if [ -f $DEVPATH/dotfiles/scripts/dm_update_ip.sh ]
 then
@@ -182,43 +106,6 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
-alias ni='npm install'
-alias nis='npm install --save'
-alias nisd='npm install --save-dev'
-alias nr='npm run'
-alias nrs='npm rm --save'
-alias nrsd='npm rm --save-dev'
-npm-install-global()
-{
-  # Crazy logic bc npm dist-tags aren't standardized
-  if [ "$1" == "2" ]
-  then
-    NPM_VERSION='latest-2'
-  elif [ "$1" == "3" ]
-  then
-    NPM_VERSION='3.x-latest'
-  else
-    NPM_VERSION='latest'
-  fi
-
-  echo "Installing NPM@$NPM_VERSION and global modules"
-  npm install -g npm@$NPM_VERSION \
-    && npm install -g \
-    babel-node-debug \
-    bower \
-    ember-cli@^1 \
-    eslint \
-    eslint_d \
-    flow-bin \
-    instant-markdown-d \
-    node-inspector \
-    nodemon \
-    npm-check-updates \
-    nsp \
-    react-native-cli \
-    serverless \
-    slush
-}
 # Read the .nvmrc and switch nvm versions if exists upon dir changes
 read_nvmrc()
 {
@@ -234,31 +121,11 @@ read_nvmrc()
 }
 export PROMPT_COMMAND="$PROMPT_COMMAND read_nvmrc ;"
 
-# Ember.js
-alias edld='ember deploy:list --environment development'
-alias edlp='ember deploy:list --environment production'
-alias edls='ember deploy:list --environment staging'
-
 export PATH=/usr/local/git/bin:$PATH
 
 #source ~/sys/ansible/hacking/env-setup
 export ANSIBLE_HOSTS=$DEVPATH/sys/ansible/ansible-hosts
 export ANSIBLE_CONFIG=$DEVPATH/sys/ansible/ansible.cfg
-install-swap()
-{
-
-  usage='Usage: install-swap HOST'
-
-  # Return usage if 0 or more than 2 args are passed
-  if [ $# -ne 1 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  ansible-playbook $DEVPATH/ansible-swap/site.yml --extra-vars "target=$1"
-
-}
 
 # brew install bash-completion
 if [ -f $(brew --prefix)/etc/bash_completion ]
@@ -269,12 +136,6 @@ fi
 # gcloud sourcing
 . '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc'
 . '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc'
-alias gc='gcloud compute'
-alias gci='gcloud compute instances'
-
-# kubernetes aliases
-alias kg='kubectl get pods,rc,svc -o wide'
-alias kd='kubectl describe'
 
 # AWS CLI
 complete -C aws_completer aws
@@ -311,4 +172,3 @@ echo 'alias: top                     - top -o cpu'
 echo 'alias: sub                     - sublime text 2 shortcut'
 echo 'alias: bd                      - boot2docker'
 echo ''
-
