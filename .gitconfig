@@ -25,8 +25,9 @@
   changed = red
   untracked = cyan
 [alias]
+  forget = reset head --hard
+  history = log --follow -p --
 	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
-	forget = reset head --hard
 	tree-short = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
 	changes = log --format=%B --since=\"midnight\" --date=local
 [push]
