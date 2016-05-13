@@ -79,7 +79,7 @@ alias f='git fetch'
 alias b='git branch -a'
 alias gbd='git branch -d'
 alias gbdr='git branch -d -r'
-alias gr2='git rebase -i head~2'
+alias gr2='git rebase -S -i head~2'
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gf='git flow'
 alias top='top -o cpu'
@@ -111,7 +111,7 @@ gr ()
     return 1
   fi
 
-  git rebase -i head~$1
+  git rebase -S -i head~$1
 }
 
 # Vim
