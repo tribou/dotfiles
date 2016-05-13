@@ -1,6 +1,7 @@
 #!/bin/bash -l
 
 # Commands and aliases
+alias amend='git commit -S --amend'
 alias b='git branch -a'
 alias bd='docker-machine'
 alias c='git commit -S -ev'
@@ -78,6 +79,7 @@ alias kd='kubectl describe'
 alias ll='ls -lah'
 alias ls='ls -G'
 alias lt='ls -lath'
+alias merge='git merge -S'
 alias ni='npm install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
