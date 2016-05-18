@@ -3,6 +3,7 @@
 # Commands and aliases
 alias amend='git commit -S --amend'
 alias b='git branch -a'
+alias back='cd $OLDPWD'
 alias bd='docker-machine'
 alias c='git commit -S -ev'
 alias cherry='git cherry-pick -S'
