@@ -19,7 +19,26 @@ digitalocean ()
   curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool
 }
 alias dm='docker-machine'
-alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
+#alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
+dminit ()
+{
+  usage='Usage: dminit [NAME]'
+  dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
+
+  # Return usage if 0 or more than 2 args are passed
+  if [ $# -gt 1 ]
+  then
+    echo "$usage"
+    return 1
+  fi
+
+  if [ $# -eq 1 ]
+  then
+    dm_name="$1"
+  fi
+
+  eval "$(docker-machine env $dm_name)"
+}
 alias dps='docker ps'
 alias dpsa='docker ps -a'
 alias drm='docker rm'
@@ -132,7 +151,7 @@ alias survey='sudo nmap -sP 10.0.1.1/24'
 alias t='echo; echo; git tree'
 alias tag='git tag -s -m ""'
 alias top='top -o cpu'
-alias tree='tree -I "bower_components|node_modules|temp|tmp"'
+alias tree='tree -I "bower_components|dist|node_modules|temp|tmp"'
 alias unsetdotglob='shopt -u dotglob'
 alias v='vim'
 alias vc='vimcat'
