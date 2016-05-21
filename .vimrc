@@ -50,7 +50,7 @@ set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 
 " custom filetype settings
-autocmd BufNewFile,BufRead *.Dockerfile set filetype=dockerfile
+autocmd BufNewFile,BufRead Dockerfile.* set filetype=dockerfile
 autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
 autocmd BufNewFile,BufRead *.conf set filetype=conf
 autocmd BufNewFile,BufRead *.css set filetype=scss
