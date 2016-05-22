@@ -6,6 +6,7 @@ Plug 'altercation/vim-colors-solarized'
 Plug 'apple/swift', { 'rtp': 'utils/vim' }
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'docker/docker', { 'rtp': 'contrib/syntax/vim' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'elixir-lang/vim-elixir'
 Plug 'heavenshell/vim-jsdoc'
