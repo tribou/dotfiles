@@ -56,6 +56,7 @@ autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
 autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
 autocmd BufNewFile,BufRead *.conf set filetype=conf
 autocmd BufNewFile,BufRead *.css set filetype=scss
+autocmd BufNewFile,BufRead .env* set filetype=sh
 
 " crontab editing
 autocmd filetype crontab setlocal nobackup nowritebackup
