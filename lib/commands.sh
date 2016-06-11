@@ -126,6 +126,7 @@ npm-install-global ()
     eslint_d \
     flow-bin \
     instant-markdown-d \
+    jsonlint \
     node-inspector \
     nodemon \
     npm-check-updates \
