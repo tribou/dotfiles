@@ -125,6 +125,7 @@ npm-install-global ()
     eslint \
     eslint_d \
     flow-bin \
+    gatsby \
     instant-markdown-d \
     jsonlint \
     node-inspector \
