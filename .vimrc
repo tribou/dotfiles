@@ -38,12 +38,13 @@ Plug 'Yggdroot/indentLine'
 call plug#end()
 
 " various settings
+silent !mkdir -p $HOME/.vim/swapfiles
 syntax enable
 set clipboard+=unnamed
 set conceallevel=0
 colorscheme solarized
 set background=dark
-
+set directory=$HOME/.vim/swapfiles//
 set number
 filetype plugin indent on
 set tabstop=2
