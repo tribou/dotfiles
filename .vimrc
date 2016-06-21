@@ -6,6 +6,7 @@ Plug 'altercation/vim-colors-solarized'
 Plug 'apple/swift', { 'rtp': 'utils/vim' }
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'cespare/vim-toml'
 Plug 'docker/docker', { 'rtp': 'contrib/syntax/vim' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'elixir-lang/vim-elixir'
@@ -116,6 +117,9 @@ let g:jsdoc_access_descriptions = 2
 let g:jsdoc_underscore_private = 1
 let g:jsdoc_enable_es6 = 1
 nmap <c-1> <Plug>(jsdoc)
+
+" vim-jsx
+let g:jsx_ext_required = 0
 
 " vim-surround_custom_mapping
 let g:surround_custom_mapping = {}
