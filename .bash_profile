@@ -4,6 +4,13 @@ export DEVPATH=$HOME/dev
 # Change bash prompt
 export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
 
+# Set iTerm2 badge
+set_badge()
+{
+  printf "\e]1337;SetBadgeFormat=%s\a"   $((git branch 2> /dev/null) | grep \* | cut -c3- | base64)
+}
+export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
+
 # Set default editor
 export EDITOR='vim'
 
@@ -152,23 +159,5 @@ fi
 cd $DEVPATH
 
 # Clear and write aliases
-echo 'alias: digitalocean droplets   - list all do droplets'
-echo 'alias: digitalocean regions    - list all do regions'
-echo 'alias: digitalocean images     - list all do images'
-echo 'alias: digitalocean sizes      - list all do sizes'
-echo 'alias: ll                      - ls -lah'
-echo 'alias: lt                      - ls -lath (sort by time modified)'
-echo 'alias: survey                  - nmap -sP 10.0.1.1/24'
-echo 'alias: s                       - git status -sb'
-echo 'alias: c                       - git commit -ev'
-echo 'alias: ga                      - git add --all'
-echo 'alias: co                      - git checkout'
-echo 'alias: t                       - git log --graph --decorate --oneline'
-echo 'alias: f                       - git fetch'
-echo 'alias: b                       - git branch'
-echo 'alias: gps                     - git push'
-echo 'alias: gpl                     - git pull'
-echo 'alias: top                     - top -o cpu'
-echo 'alias: sub                     - sublime text 2 shortcut'
-echo 'alias: bd                      - boot2docker'
+echo 'Welcome.'
 echo ''
