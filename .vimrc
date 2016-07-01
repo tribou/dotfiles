@@ -125,10 +125,10 @@ let g:jsx_ext_required = 0
 " vim-surround_custom_mapping
 let g:surround_custom_mapping = {}
 let g:surround_custom_mapping.javascript = {
-  \ 'j':  "/* \r */",
   \ 'x':  "{/* \r */}",
   \ }
 let g:surround_custom_mapping._ = {
+  \ 'j':  "/* \r */",
   \ 'h':  "{{!-- \r --}}",
   \ }
 
