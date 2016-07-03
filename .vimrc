@@ -51,6 +51,7 @@ set tabstop=2
 set shiftwidth=2
 set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
+set hidden
 
 " custom filetype settings
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
