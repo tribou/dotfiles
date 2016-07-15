@@ -158,6 +158,5 @@ fi
 
 cd $DEVPATH
 
-# Clear and write aliases
-echo 'Welcome.'
-echo ''
+# Welcome message
+remind 'Welcome.'
