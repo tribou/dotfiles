@@ -6,10 +6,13 @@ Plug 'altercation/vim-colors-solarized'
 Plug 'apple/swift', { 'rtp': 'utils/vim' }
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'JulesWang/css.vim'
+Plug 'cakebaker/scss-syntax.vim'
 Plug 'cespare/vim-toml'
 Plug 'docker/docker', { 'rtp': 'contrib/syntax/vim' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'elixir-lang/vim-elixir'
+Plug 'flowtype/vim-flow'
 Plug 'heavenshell/vim-jsdoc'
 Plug 'jiangmiao/auto-pairs'
 Plug 'kchmck/vim-coffee-script'
@@ -104,6 +107,10 @@ let g:airline#extensions#tabline#enabled = 1
 
 " vim-instant-markdown
 let g:instant_markdown_slow = 1
+
+" vim-flow
+let g:flow#autoclose = 1
+" let g:flow#enable = 1
 
 " vim-fugitive
 "set statusline+=%{fugitive#statusline()}
