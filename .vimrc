@@ -24,6 +24,7 @@ Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'scrooloose/syntastic'
+Plug 'chrisbra/unicode.vim'
 Plug 'suan/vim-instant-markdown'
 Plug 't9md/vim-surround_custom_mapping'
 Plug 'terryma/vim-multiple-cursors'
@@ -110,7 +111,7 @@ let g:instant_markdown_slow = 1
 
 " vim-flow
 let g:flow#autoclose = 1
-" let g:flow#enable = 1
+let g:flow#enable = 0
 
 " vim-fugitive
 "set statusline+=%{fugitive#statusline()}
