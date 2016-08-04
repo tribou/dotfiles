@@ -68,6 +68,14 @@ autocmd BufNewFile,BufRead .env* set filetype=sh
 " crontab editing
 autocmd filetype crontab setlocal nobackup nowritebackup
 
+" macros
+" camelCase what is dasherized
+let @c = '/-x~'
+" CSS: create image mixin with braces
+let @i = 'VS{jwi@mixin image A, 100px, 100px;jAj'
+" CSS: add image classname
+let @n = '/@wwwv/,hykPa I.jj'
+
 " ctrlp
 let g:ctrlp_custom_ignore = {
   \ 'dir':  'node_modules$\|\.(git|hg|svn|tmp|vagrant)$',
