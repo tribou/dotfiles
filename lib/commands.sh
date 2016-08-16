@@ -136,7 +136,7 @@ npm-install-global ()
     serverless \
     slush
 }
-alias nr='npm run'
+alias nr='npm run --silent'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
 alias r='git remote -v'
