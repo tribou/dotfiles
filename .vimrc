@@ -38,6 +38,7 @@ Plug 'vim-scripts/marvim'
 Plug 'vim-scripts/nginx.vim'
 Plug 'wavded/vim-stylus'
 Plug 'Yggdroot/indentLine'
+Plug 'fatih/vim-go'
 
 call plug#end()
 
