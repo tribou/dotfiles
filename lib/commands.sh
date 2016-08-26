@@ -139,6 +139,7 @@ npm-install-global ()
 alias nr='npm run --silent'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
+alias prettyjson='python -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
