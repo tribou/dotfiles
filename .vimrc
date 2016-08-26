@@ -105,6 +105,9 @@ let g:syntastic_mode_map = {
   \ "passive_filetypes": ["scss"] }
 let g:syntastic_javascript_checkers = ['eslint']
 let g:syntastic_javascript_eslint_exec = 'eslint_d'
+let g:syntastic_flow_checkers = ['']
+"let g:syntastic_javascript_flow_exe = 'flow'
+"let g:syntastic_javascript_checkers = ['eslint', 'flow']
 "let g:statline_syntastic = 0
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
@@ -131,6 +134,10 @@ let g:flow#enable = 0
 " indentLine
 let g:indentLine_char = '.'
 let g:indentLine_conceallevel = 0
+
+" vim-javascript
+let g:javascript_plugin_flow = 1
+let g:javascript_plugin_jsdoc = 1
 
 " vim-jsdoc
 let g:jsdoc_allow_input_prompt = 1
