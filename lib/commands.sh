@@ -14,13 +14,13 @@ alias convert-tabs-spaces="replace '	' '  '"
 alias count='sed "/^\s*$/d" | wc -l | xargs'
 alias dc='docker-compose'
 alias di='docker images'
-digitalocean () 
+function digitalocean () 
 {
   curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool
 }
 alias dm='docker-machine'
 #alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
-dminit ()
+function dminit ()
 {
   usage='Usage: dminit [NAME]'
   dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
@@ -58,7 +58,7 @@ alias gf='git flow'
 alias gps='git push'
 alias gpst='git push && git push --tags'
 alias gpl='git pull'
-gr ()
+function gr ()
 {
 
   usage='Usage: gr NUMBER'
@@ -74,12 +74,12 @@ gr ()
   git rebase -S -i head~$1
 }
 alias gr2='git rebase -S -i head~2'
-histgrep ()
+function histgrep ()
 {
   grep -r "$1" ~/.history
   history | grep "$1"
 }
-install-swap ()
+function install-swap ()
 {
 
   usage='Usage: install-swap HOST'
@@ -103,7 +103,7 @@ alias merge='git merge -S'
 alias ni='npm install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
-npm-install-global ()
+function npm-install-global ()
 {
   # Crazy logic bc npm dist-tags aren't standardized
   if [ "$1" == "2" ]
@@ -144,9 +144,24 @@ alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
 alias s='git status -sb'
-alias search='echo; echo; git grep -n -I --untracked --break'
+function search ()
+{
+
+  usage='Usage: search PATTERN'
+
+  # Return usage if 0 or more than 2 args are passed
+  if [ $# -ne 1 ]
+  then
+    echo "$usage"
+    return 1
+  fi
+
+  echo
+  echo
+  git grep -n -I --untracked --break "$1" -- './*' ':!build/**' ':!public/**' ':!vendor/**'
+}
 alias setdotglob='shopt -s dotglob'
-sizes ()
+function sizes ()
 {
   ls -lrt -d -1 ${PWD}/${1}* | xargs du -sh
 }

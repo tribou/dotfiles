@@ -56,6 +56,7 @@ Example:
   fi
 
   git grep --untracked -I -l "$1" \
+    -- './*' ':!build/**' ':!public/**' ':!vendor/**' \
     | xargs sed -i '' -e ''s/"$1"/"$2"/g''
 }
 
