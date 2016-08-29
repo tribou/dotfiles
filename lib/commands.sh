@@ -7,6 +7,15 @@ alias back='cd $OLDPWD'
 alias bd='docker-machine'
 alias c='git commit -S -ev'
 alias cherry='git cherry-pick -S'
+function clean () {
+
+  git clean -f -- build/ public/ vendor/ 
+  if [[ $? -ne 0 ]]; then return 1; fi
+  if [ -d "build/" ]; then git checkout build/; fi
+  if [ -d "public/" ]; then git checkout public/; fi
+  if [ -d "vendor/" ]; then git checkout vendor/; fi
+
+}
 alias co='git checkout'
 alias commit='git commit -ev' # non-signed commit
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
