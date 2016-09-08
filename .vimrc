@@ -107,6 +107,7 @@ let g:syntastic_javascript_checkers = ['eslint']
 let g:syntastic_javascript_eslint_exec = 'eslint_d'
 let g:syntastic_flow_checkers = ['']
 let g:syntastic_go_checkers = ['gofmt', 'golint']
+let g:syntastic_yaml_checkers = ['jsyaml']
 "let g:syntastic_go_checkers = ['gofmt', 'golint', 'go']
 "let g:syntastic_javascript_flow_exe = 'flow'
 "let g:syntastic_javascript_checkers = ['eslint', 'flow']
