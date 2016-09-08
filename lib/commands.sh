@@ -103,6 +103,7 @@ function install-swap ()
   ansible-playbook $DEVPATH/ansible-swap/site.yml --extra-vars "target=$1"
 
 }
+alias k='kubectl'
 alias kg='kubectl get pods,rc,svc -o wide'
 alias kd='kubectl describe'
 alias ll='ls -lah'
