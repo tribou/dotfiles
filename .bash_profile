@@ -5,9 +5,9 @@ export DEVPATH=$HOME/dev
 export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
 
 # Set iTerm2 badge
-set_badge()
+function set_badge()
 {
-  printf "\e]1337;SetBadgeFormat=%s\a"   $((git branch 2> /dev/null) | grep \* | cut -c3- | base64)
+  printf "\e]1337;SetBadgeFormat=%s\a"   $(printf '%q\n' "${PWD##*/}:$(git rev-parse --abbrev-ref HEAD 2> /dev/null)" | base64)
 }
 export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 
