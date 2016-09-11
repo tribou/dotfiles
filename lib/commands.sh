@@ -91,7 +91,7 @@ function histgrep ()
 function install-swap ()
 {
 
-  usage='Usage: install-swap HOST [PRIVATE_KEY_PATH]'
+  usage='Usage: install-swap HOST'
 
   # Return usage if 0 or more than 2 args are passed
   if [ $# -lt 1 ]
@@ -104,17 +104,10 @@ function install-swap ()
     echo "$usage"
     return 1
   fi
-  if [ -z "$2" ]
-  then
-    PRIVATE_KEY_PATH='~/.ssh/id_rsa'
-  else
-    PRIVATE_KEY_PATH="$2"
-  fi
 
   ansible-playbook $DEVPATH/ansible-swap/site.yml \
     -i "${1}," \
-    --extra-vars "target=${1}" \
-    --private-key "${PRIVATE_KEY_PATH}"
+    --extra-vars "target=${1}"
 
 }
 alias k='kubectl'
@@ -127,7 +120,7 @@ alias merge='git merge -S'
 function new-docker ()
 {
 
-  usage='Usage: new-docker [NAME] [ACCESS_TOKEN] [PRIVATE_KEY_PATH]'
+  usage='Usage: new-docker [NAME] [ACCESS_TOKEN]'
 
   if [ $# -gt 3 ]
   then
@@ -145,30 +138,21 @@ function new-docker ()
   if [ -z "$2" ]
   then
     ACCESS_TOKEN="${DIGITALOCEAN_RS_TOKEN}"
-    PRIVATE_KEY='~/.ssh/rs'
   else
     ACCESS_TOKEN="$2"
-    PRIVATE_KEY='~/.ssh/id_rsa'
-  fi
-
-  if [ -z "$3" ]
-  then
-    PRIVATE_KEY="${PRIVATE_KEY}"
-  else
-    PRIVATE_KEY="$3"
   fi
 
   echo "Creating ${MACHINE_NAME}..."
 
   docker-machine create --driver digitalocean \
     --digitalocean-access-token "${DIGITALOCEAN_RS_TOKEN}" \
-    --digitalocean-image docker \
+    --digitalocean-image ubuntu-16-04-x64 \
     --digitalocean-region nyc3 \
     --digitalocean-size 2gb \
     --digitalocean-ssh-key-fingerprint "77:70:98:0d:d6:48:01:79:7b:41:f4:66:00:95:54:12" \
     "${MACHINE_NAME}"
   MACHINE_IP=$(docker-machine ip "$MACHINE_NAME") && \
-  install-swap "${MACHINE_IP}" "${PRIVATE_KEY}" && \
+  install-swap "${MACHINE_IP}" && \
   dminit "${MACHINE_NAME}"
 
 }
@@ -192,18 +176,18 @@ function new-docker-generic ()
     MACHINE_NAME="$2"
   fi
 
-  if [ -z "$3" ]
-  then
-    PRIVATE_KEY='~/.ssh/id_rsa'
-  else
-    PRIVATE_KEY="$3"
-  fi
+  # if [ -z "$3" ]
+  # then
+  #   PRIVATE_KEY='~/.ssh/id_rsa'
+  # else
+  #   PRIVATE_KEY="$3"
+  # fi
 
   docker-machine create --driver generic \
     --generic-ip-address "${MACHINE_IP}" \
-    --generic-ssh-key "${PRIVATE_KEY}" \
+    # --generic-ssh-key "${PRIVATE_KEY}" \
     "${MACHINE_NAME}" && \
-  install-swap "${MACHINE_IP}" "${PRIVATE_KEY}" && \
+  install-swap "${MACHINE_IP}" && \
   dminit "${MACHINE_NAME}"
 
 }
