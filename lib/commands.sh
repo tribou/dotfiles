@@ -111,7 +111,7 @@ function install-swap ()
 
 }
 alias k='kubectl'
-alias kg='kubectl get pods,rc,svc -o wide'
+alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
 alias kd='kubectl describe'
 alias ll='ls -lah'
 alias ls='ls -G'
