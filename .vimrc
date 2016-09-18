@@ -143,6 +143,7 @@ let g:indentLine_conceallevel = 0
 " vim-javascript
 let g:javascript_plugin_flow = 1
 let g:javascript_plugin_jsdoc = 1
+let g:javascript_opfirst = 1
 
 " vim-jsdoc
 let g:jsdoc_allow_input_prompt = 1
