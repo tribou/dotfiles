@@ -1,44 +1,65 @@
 call plug#begin('~/.vim/plugged')
 
-Plug 'aaronj1335/underscore-templates.vim'
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
-Plug 'apple/swift', { 'rtp': 'utils/vim' }
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'JulesWang/css.vim'
-Plug 'cakebaker/scss-syntax.vim'
-Plug 'cespare/vim-toml'
-Plug 'docker/docker', { 'rtp': 'contrib/syntax/vim' }
-Plug 'editorconfig/editorconfig-vim'
-Plug 'elixir-lang/vim-elixir'
-Plug 'flowtype/vim-flow'
-Plug 'heavenshell/vim-jsdoc'
 Plug 'jiangmiao/auto-pairs'
-Plug 'kchmck/vim-coffee-script'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'mattn/emmet-vim'
-Plug 'mustache/vim-mustache-handlebars'
-Plug 'mxw/vim-jsx'
-Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-Plug 'scrooloose/syntastic'
-Plug 'chrisbra/unicode.vim'
-Plug 'suan/vim-instant-markdown'
-Plug 't9md/vim-surround_custom_mapping'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-ragtag'
 Plug 'tpope/vim-repeat'
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
-Plug 'vim-scripts/marvim'
-Plug 'vim-scripts/nginx.vim'
-Plug 'wavded/vim-stylus'
+Plug 't9md/vim-surround_custom_mapping'
 Plug 'Yggdroot/indentLine'
+Plug 'vim-scripts/marvim'
+
+" Syntax/Auto-complete
+Plug 'scrooloose/syntastic'
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
+Plug 'editorconfig/editorconfig-vim'
+
+" JavaScript
+Plug 'kchmck/vim-coffee-script'
+Plug 'flowtype/vim-flow'
+Plug 'pangloss/vim-javascript'
+Plug 'heavenshell/vim-jsdoc'
+Plug 'mxw/vim-jsx'
+Plug 'aaronj1335/underscore-templates.vim'
+
+" Other webdev
+Plug 'mattn/emmet-vim'
+Plug 'JulesWang/css.vim'
+Plug 'cakebaker/scss-syntax.vim'
+Plug 'wavded/vim-stylus'
+Plug 'mustache/vim-mustache-handlebars'
+
+" Markdown
+Plug 'suan/vim-instant-markdown'
+
+" Golang
 Plug 'fatih/vim-go'
+
+" HashiCorp
+Plug 'hashivim/vim-consul'
+Plug 'hashivim/vim-nomadproject'
+Plug 'hashivim/vim-ottoproject'
+Plug 'hashivim/vim-packer'
+Plug 'hashivim/vim-terraform'
+Plug 'hashivim/vim-vagrant'
+Plug 'hashivim/vim-vaultproject'
+
+" Other Languages
+Plug 'docker/docker', { 'rtp': 'contrib/syntax/vim' }
+Plug 'elixir-lang/vim-elixir'
+Plug 'vim-scripts/nginx.vim'
+Plug 'apple/swift', { 'rtp': 'utils/vim' }
+Plug 'cespare/vim-toml'
+Plug 'chrisbra/unicode.vim'
 
 call plug#end()
 
