@@ -77,23 +77,6 @@ alias wmanl="cat ${WATCHMAN_DIR}/log"
 alias 'watchman-npmtest'='watchman -- trigger ./ npmtest -I "*.js" "*.jsx" "*.html" "*.scss" "*.css" -X "node_modules/*" -- npm test'
 alias 'watchman-npmtest-delete'='watchman trigger-del "$PWD" npmtest'
 
-# docker-machine
-## get local running machine name
-DM_LS=`docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"`
-## source dmupdate script
-if [ -f $DEVPATH/dotfiles/scripts/dm_update_ip.sh ]
-then
-  . $DEVPATH/dotfiles/scripts/dm_update_ip.sh
-fi
-## If the local docker-machine is available
-if ! [[ -z "$DM_LS"  ]]
-then 
-  ## first init docker-vm
-  dminit
-  ## run dmupdate
-  dmupdate
-fi
-
 # Less Colors for Man Pages
 #export LESS_TERMCAP_mb=$'\E[01;31m'       # begin blinking
 #export LESS_TERMCAP_md=$'\E[01;38;5;74m'  # begin bold
