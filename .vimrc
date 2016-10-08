@@ -1,12 +1,12 @@
 call plug#begin('~/.vim/plugged')
 
+" Misc
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'jiangmiao/auto-pairs'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-fugitive'
@@ -15,7 +15,6 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-ragtag'
 Plug 'tpope/vim-repeat'
 Plug 't9md/vim-surround_custom_mapping'
-Plug 'Yggdroot/indentLine'
 Plug 'vim-scripts/marvim'
 
 " Syntax/Auto-complete
@@ -23,20 +22,22 @@ Plug 'scrooloose/syntastic'
 Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
 Plug 'editorconfig/editorconfig-vim'
 
-" JavaScript
-Plug 'kchmck/vim-coffee-script'
-Plug 'flowtype/vim-flow'
-Plug 'pangloss/vim-javascript'
-Plug 'heavenshell/vim-jsdoc'
-Plug 'mxw/vim-jsx'
-Plug 'aaronj1335/underscore-templates.vim'
-
 " Other webdev
 Plug 'mattn/emmet-vim'
 Plug 'JulesWang/css.vim'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'wavded/vim-stylus'
 Plug 'mustache/vim-mustache-handlebars'
+
+" JavaScript
+Plug 'bigfish/vim-js-context-coloring'
+Plug 'kchmck/vim-coffee-script'
+Plug 'flowtype/vim-flow'
+Plug 'heavenshell/vim-jsdoc'
+Plug 'mxw/vim-jsx'
+Plug 'aaronj1335/underscore-templates.vim'
+" Plug 'pangloss/vim-javascript'
+Plug '~/dev/vim-syntax-js'
 
 " Markdown
 Plug 'suan/vim-instant-markdown'
@@ -128,6 +129,7 @@ let g:syntastic_mode_map = {
   \ "passive_filetypes": ["scss"] }
 let g:syntastic_javascript_checkers = ['eslint']
 let g:syntastic_javascript_eslint_exec = 'eslint_d'
+let g:syntastic_javascript_eslint_args = '--cache'
 let g:syntastic_flow_checkers = ['']
 let g:syntastic_go_checkers = ['gofmt', 'golint']
 let g:syntastic_yaml_checkers = ['jsyaml']
@@ -164,7 +166,9 @@ let g:indentLine_conceallevel = 0
 " vim-javascript
 let g:javascript_plugin_flow = 1
 let g:javascript_plugin_jsdoc = 1
-let g:javascript_opfirst = 1
+" let g:javascript_opfirst = 1
+" let g:javascript_opfirst = '\%([<>,?^%|*&]\|\/[^/*]\|\([-:+]\)\1\@!\|=>\@!\|in\%(stanceof\)\=\>\)'
+" let g:javascript_continuation = '\%([<=,?/*^%|&:]\|+\@<!+\|-\@<!-\|=\@<!>\|\<in\%(stanceof\)\=\)'
 
 " vim-jsdoc
 let g:jsdoc_allow_input_prompt = 1
