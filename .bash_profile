@@ -14,6 +14,9 @@ export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 # Set default editor
 export EDITOR='vim'
 
+# Set GPG TTY
+export GPG_TTY=$(tty)
+
 # Case insensitive auto-completion
 bind "set completion-ignore-case on"
 
