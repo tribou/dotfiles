@@ -1,5 +1,6 @@
 call plug#begin('~/.vim/plugged')
 
+
 " Misc
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
@@ -29,16 +30,6 @@ Plug 'cakebaker/scss-syntax.vim'
 Plug 'wavded/vim-stylus'
 Plug 'mustache/vim-mustache-handlebars'
 
-" JavaScript
-Plug 'bigfish/vim-js-context-coloring'
-Plug 'kchmck/vim-coffee-script'
-Plug 'flowtype/vim-flow'
-Plug 'heavenshell/vim-jsdoc'
-Plug 'mxw/vim-jsx'
-Plug 'aaronj1335/underscore-templates.vim'
-" Plug 'pangloss/vim-javascript'
-Plug '~/dev/vim-syntax-js'
-
 " Markdown
 Plug 'suan/vim-instant-markdown'
 
@@ -61,6 +52,17 @@ Plug 'vim-scripts/nginx.vim'
 Plug 'apple/swift', { 'rtp': 'utils/vim' }
 Plug 'cespare/vim-toml'
 Plug 'chrisbra/unicode.vim'
+
+" JavaScript
+Plug 'jelera/vim-javascript-syntax'
+Plug 'bigfish/vim-js-context-coloring'
+Plug 'kchmck/vim-coffee-script'
+Plug 'flowtype/vim-flow'
+Plug 'heavenshell/vim-jsdoc'
+Plug 'mxw/vim-jsx'
+Plug 'aaronj1335/underscore-templates.vim'
+" Plug 'pangloss/vim-javascript'
+Plug '~/dev/vim-syntax-js'
 
 call plug#end()
 
