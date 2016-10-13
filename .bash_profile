@@ -99,16 +99,24 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
+
 # Read the .nvmrc and switch nvm versions if exists upon dir changes
-read_nvmrc()
+function read_nvmrc()
 {
+  # If we actually changed directories
   if [ "$PWD" != "$PREV_PWD" ]
 	then
     PREV_PWD="$PWD";
 
+    # If there's an .nvmrc here
     if [ -e ".nvmrc" ]
 		then
-      nvm use;
+
+      # If the .nvmrc is different than the current version
+      if [ "$(nvm current)" != "$(nvm version $(cat .nvmrc))" ]
+      then
+        nvm use
+      fi
     fi
   fi
 }

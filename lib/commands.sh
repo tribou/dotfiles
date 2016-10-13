@@ -212,12 +212,12 @@ function npm-install-global ()
     && npm install -g \
     babel-node-debug \
     bower \
-    ember-cli@^1 \
     eslint \
     eslint_d \
     flow-bin \
     gatsby \
     instant-markdown-d \
+    js-yaml \
     jsonlint \
     node-inspector \
     nodemon \
@@ -225,7 +225,8 @@ function npm-install-global ()
     nsp \
     react-native-cli \
     serverless \
-    slush
+    slush \
+    yarn
 }
 alias nr='npm run --silent'
 alias nrs='npm rm --save'
