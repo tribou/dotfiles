@@ -1,0 +1,49 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "0.0.1",
+  "private": true,
+  "description": "",
+  "author": "tribou",
+  "license": "Apache-2.0",
+  "main": "lib/index.js",
+  "engines": {
+    "node": ">=6.4.0 <7",
+    "npm": ">=3.10.3 <4"
+  },
+  "homepage": "https://{{SCM_HOST}}/{{ORG_NAME}}/{{PROJECT_NAME}}#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://{{SCM_HOST}}/{{ORG_NAME}}/{{PROJECT_NAME}}.git"
+  },
+  "bugs": {
+    "url": "https://{{SCM_HOST}}/{{ORG_NAME}}/{{PROJECT_NAME}}/issues"
+  },
+  "keywords": [
+  ],
+  "devDependencies": {
+    "babel-eslint": "^6.1.2",
+    "code": "^4.0.0",
+    "coveralls": "^2.11.14",
+    "eslint": "^3.7.1",
+    "eslint-config-airbnb": "^10.0.1",
+    "eslint-config-standard": "^6.0.0",
+    "eslint-config-tribou": "^1.9.0",
+    "eslint-plugin-flowtype": "^2.11.4",
+    "eslint-plugin-import": "^1.14.0",
+    "eslint-plugin-jsx-a11y": "^2.2.0",
+    "eslint-plugin-promise": "^2.0.1",
+    "eslint-plugin-react": "^6.2.0",
+    "eslint-plugin-standard": "^2.0.0",
+    "lab": "^11.1.0",
+    "nodemon": "^1.11.0"
+  },
+  "dependencies": {
+  },
+  "scripts": {
+    "deploy": "",
+    "cover": "npm test -- -s -r lcov | coveralls",
+    "lint": "eslint --cache --ignore-path .gitignore .",
+    "test": "lab -c -L -v -a code -t 100 -P '_test' lib",
+    "watch": "nodemon -x npm test"
+  }
+}

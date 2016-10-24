@@ -1,5 +1,6 @@
-# Set dev path
+# Set dev paths
 export DEVPATH=$HOME/dev
+export DOTFILES=$DEVPATH/dotfiles
 
 # Change bash prompt
 export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
@@ -44,26 +45,32 @@ export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 
 # File search and replace functions
 ## Source recursive string replace script
-SOURCE_SCRIPT=$DEVPATH/dotfiles/scripts/replace.sh
+SOURCE_SCRIPT=$DOTFILES/scripts/replace.sh
 if [ -f "$SOURCE_SCRIPT" ]
 then
   . "$SOURCE_SCRIPT"
 fi
 ## Source remind script
-SOURCE_SCRIPT=$DEVPATH/dotfiles/scripts/remind.sh
+SOURCE_SCRIPT=$DOTFILES/scripts/remind.sh
 if [ -f "$SOURCE_SCRIPT" ]
 then
   . "$SOURCE_SCRIPT"
 fi
 ## Source curlit script
-SOURCE_SCRIPT=$DEVPATH/dotfiles/scripts/curl_it.sh
+SOURCE_SCRIPT=$DOTFILES/scripts/curl_it.sh
+if [ -f "$SOURCE_SCRIPT" ]
+then
+  . "$SOURCE_SCRIPT"
+fi
+## Source init script
+SOURCE_SCRIPT=$DOTFILES/scripts/init_project.sh
 if [ -f "$SOURCE_SCRIPT" ]
 then
   . "$SOURCE_SCRIPT"
 fi
 
 # Commands and Aliases
-SOURCE_SCRIPT=$DEVPATH/dotfiles/lib/commands.sh
+SOURCE_SCRIPT=$DOTFILES/lib/commands.sh
 if [ -f "$SOURCE_SCRIPT" ]
 then
   . "$SOURCE_SCRIPT"
