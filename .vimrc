@@ -89,6 +89,7 @@ autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=js
 autocmd BufNewFile,BufRead *.conf set filetype=conf
 autocmd BufNewFile,BufRead *.css set filetype=scss
 autocmd BufNewFile,BufRead .env* set filetype=sh
+autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
 
 " crontab editing
 autocmd filetype crontab setlocal nobackup nowritebackup
