@@ -61,7 +61,8 @@ Plug 'flowtype/vim-flow'
 Plug 'heavenshell/vim-jsdoc'
 Plug 'mxw/vim-jsx'
 Plug 'aaronj1335/underscore-templates.vim'
-" Plug 'pangloss/vim-javascript'
+Plug 'ruanyl/vim-fixmyjs'
+Plug 'pangloss/vim-javascript'
 Plug '~/dev/vim-syntax-js'
 
 call plug#end()
@@ -154,6 +155,11 @@ let g:airline#extensions#tabline#enabled = 1
 
 " vim-instant-markdown
 let g:instant_markdown_slow = 1
+
+" vim-fixmyjs
+noremap <Leader><Leader>f :Fixmyjs<CR>   
+let g:fixmyjs_use_local = 1
+let g:fixmyjs_executable = 'eslint_d'
 
 " vim-flow
 let g:flow#autoclose = 1
