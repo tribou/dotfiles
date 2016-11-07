@@ -34,7 +34,7 @@ Plug 'mustache/vim-mustache-handlebars'
 Plug 'suan/vim-instant-markdown'
 
 " Golang
-Plug 'fatih/vim-go'
+Plug 'fatih/vim-go', { 'tag': '*' }
 
 " HashiCorp
 Plug 'hashivim/vim-consul'
@@ -54,16 +54,16 @@ Plug 'cespare/vim-toml'
 Plug 'chrisbra/unicode.vim'
 
 " JavaScript
-Plug 'jelera/vim-javascript-syntax'
-Plug 'bigfish/vim-js-context-coloring'
+Plug 'jelera/vim-javascript-syntax', { 'tag': '*' }
+Plug 'pangloss/vim-javascript', { 'tag': 'v1.2.2' } | Plug 'mxw/vim-jsx'
+"Plug 'bigfish/vim-js-context-coloring'
 Plug 'kchmck/vim-coffee-script'
 Plug 'flowtype/vim-flow'
 Plug 'heavenshell/vim-jsdoc'
-Plug 'mxw/vim-jsx'
-Plug 'aaronj1335/underscore-templates.vim'
+"Plug 'aaronj1335/underscore-templates.vim'
 Plug 'ruanyl/vim-fixmyjs'
-Plug 'pangloss/vim-javascript'
 Plug '~/dev/vim-syntax-js'
+
 
 call plug#end()
 
@@ -202,3 +202,11 @@ let g:surround_custom_mapping._ = {
 
 " YouCompleteMe
 let g:ycm_autoclose_preview_window_after_completion = 1
+
+
+" Other
+"function! SyntaxItem()
+"  return synIDattr(synID(line("."),col("."),1),"name")
+"endfunction
+"
+"set statusline+=%{SyntaxItem()}
