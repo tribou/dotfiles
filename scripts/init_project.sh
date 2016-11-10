@@ -7,10 +7,17 @@ function init() {
   usage='Usage: init'
   target_dir='.'
 
-  # Return usage if 0 or more than 1 args are passed
+  # Return error if DOTFILES env var is not set
   if [ -z $DOTFILES ]
   then
     echo "DOTFILES env var is not set"
+    return 1
+  fi
+
+  # Return usage if args are passed
+  if [ $# -gt 0 ]
+  then
+    echo "$usage"
     return 1
   fi
 
@@ -125,14 +132,14 @@ function init() {
 
   fi
 
-  git add --all
-
   if [ -n "$(which yarn)" ]
   then
 
     yarn
 
   fi
+
+  git add --all
 
   echo
   echo "🚀  Project's ready for launch!"

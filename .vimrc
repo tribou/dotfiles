@@ -158,6 +158,7 @@ let g:instant_markdown_slow = 1
 
 " vim-fixmyjs
 noremap <Leader><Leader>f :Fixmyjs<CR>   
+let g:fixmyjs_engine = 'eslint'
 let g:fixmyjs_use_local = 1
 let g:fixmyjs_executable = 'eslint_d'
 
