@@ -6,6 +6,7 @@ function init() {
 
   usage='Usage: init'
   target_dir='.'
+  YEAR=$(date +%Y)
 
   # Return error if DOTFILES env var is not set
   if [ -z $DOTFILES ]
@@ -21,7 +22,6 @@ function init() {
     return 1
   fi
 
-  template_variables=( 'SCM_NAME' 'SCM_HOST' 'PROJECT_NAME' 'ORG_NAME' )
   template_dir=$DOTFILES/templates/init
 
   # SCM info
@@ -133,6 +133,8 @@ function init() {
     sed -i '' -e ''s/\{\{SCM_NAME\}\}/"$SCM_NAME"/g'' $file
     sed -i '' -e ''s/\{\{PROJECT_NAME\}\}/"$PROJECT_NAME"/g'' $file
     sed -i '' -e ''s/\{\{ORG_NAME\}\}/"$ORG_NAME"/g'' $file
+    sed -i '' -e ''s/\{yyyy\}/"$YEAR"/g'' $file
+    sed -i '' -e ''s/\{name.of.copyright.owner\}/"$ORG_NAME"/g'' $file
 
   done
 
