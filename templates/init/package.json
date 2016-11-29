@@ -18,27 +18,25 @@
   "bugs": {
     "url": "https://{{SCM_HOST}}/{{ORG_NAME}}/{{PROJECT_NAME}}/issues"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "devDependencies": {
-    "babel-eslint": "^6.1.2",
+    "babel-eslint": "^7.1.1",
     "code": "^4.0.0",
     "coveralls": "^2.11.14",
-    "eslint": "^3.7.1",
-    "eslint-config-airbnb": "^10.0.1",
-    "eslint-config-standard": "^6.0.0",
-    "eslint-config-tribou": "^1.9.0",
-    "eslint-plugin-flowtype": "^2.11.4",
-    "eslint-plugin-import": "^1.14.0",
-    "eslint-plugin-jsx-a11y": "^2.2.0",
-    "eslint-plugin-promise": "^2.0.1",
-    "eslint-plugin-react": "^6.2.0",
-    "eslint-plugin-standard": "^2.0.0",
+    "eslint": "^3.11.1",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-config-tribou": "^3.0.0",
+    "eslint-plugin-flowtype": "^2.28.2",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-react": "^6.7.1",
+    "eslint-plugin-standard": "^2.0.1",
     "lab": "^11.1.0",
     "nodemon": "^1.11.0"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "scripts": {
     "deploy": "",
     "cover": "npm test -- -s -r lcov | coveralls",

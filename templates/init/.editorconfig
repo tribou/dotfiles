@@ -15,6 +15,7 @@ insert_final_newline = true
 # Two trailing spaces in a Markdown file acts as a newline and is more
 # compatible across platforms such as GitHub and Bitbucket
 trim_trailing_whitespace = false
+indent_size = 4
 
 [Makefile]
 # Makefiles need tabs for best experience

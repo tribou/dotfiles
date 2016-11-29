@@ -22,8 +22,7 @@ findfiles() {
     search_dir=`echo "$1" | sed 's/\/$//'`
   fi
 
-  find \
-    "$search_dir" \
+  find "$search_dir" \
     -type f \
     ! -name "*.log" \
     ! -name "bundle*.js" \

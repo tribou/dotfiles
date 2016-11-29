@@ -113,7 +113,19 @@ function init() {
   cp -Rn $template_dir/* $target_dir
 
   # Replace vars in templates
-  templates=$(find "$target_dir" -type f)
+  templates=$(find "$target_dir" \
+    -type f \
+    ! -name "*.log" \
+    ! -name "bundle*.js" \
+    ! -name "coverage.html" \
+    ! -path "*/bower_components/*" \
+    ! -path "*/dist/*" \
+    ! -path "*/node_modules/*" \
+    ! -path "*/tmp/*" \
+    ! -path "*/.git/*" \
+    ! -path "*/.tmp/*" \
+    ! -path "*/.svn/*"
+    )
   for file in "$templates"
   do
 
