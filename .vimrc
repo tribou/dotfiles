@@ -1,24 +1,7 @@
 call plug#begin('~/.vim/plugged')
 
 
-" Misc
-Plug 'airblade/vim-gitgutter'
-Plug 'altercation/vim-colors-solarized'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'jiangmiao/auto-pairs'
-Plug 'ctrlpvim/ctrlp.vim'
-Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-Plug 'terryma/vim-multiple-cursors'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-sensible'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-ragtag'
-Plug 'tpope/vim-repeat'
-Plug 't9md/vim-surround_custom_mapping'
-Plug 'vim-scripts/marvim'
-
-" Syntax/Auto-complete
+"" Syntax/Auto-complete
 Plug 'scrooloose/syntastic'
 Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
 Plug 'editorconfig/editorconfig-vim'
@@ -33,36 +16,56 @@ Plug 'mustache/vim-mustache-handlebars'
 " Markdown
 Plug 'suan/vim-instant-markdown'
 
-" Golang
-Plug 'fatih/vim-go', { 'tag': '*' }
+"" Golang
+"Plug 'fatih/vim-go', { 'tag': '*' }
 
-" HashiCorp
-Plug 'hashivim/vim-consul'
-Plug 'hashivim/vim-nomadproject'
-Plug 'hashivim/vim-ottoproject'
-Plug 'hashivim/vim-packer'
-Plug 'hashivim/vim-terraform'
-Plug 'hashivim/vim-vagrant'
-Plug 'hashivim/vim-vaultproject'
+"" HashiCorp
+"Plug 'hashivim/vim-consul'
+"Plug 'hashivim/vim-nomadproject'
+"Plug 'hashivim/vim-ottoproject'
+"Plug 'hashivim/vim-packer'
+"Plug 'hashivim/vim-terraform'
+"Plug 'hashivim/vim-vagrant'
+"Plug 'hashivim/vim-vaultproject'
 
-" Other Languages
-Plug 'docker/docker', { 'rtp': 'contrib/syntax/vim' }
+"" Other Languages
+"Plug 'docker/docker', { 'branch': '1.12.x', 'rtp': 'contrib/syntax/vim' }
 Plug 'elixir-lang/vim-elixir'
 Plug 'vim-scripts/nginx.vim'
-Plug 'apple/swift', { 'rtp': 'utils/vim' }
+"Plug 'apple/swift', { 'branch': 'swift-2.3-branch', 'rtp': 'utils/vim' }
 Plug 'cespare/vim-toml'
-Plug 'chrisbra/unicode.vim'
+"Plug 'chrisbra/unicode.vim'
+
+" Misc
+Plug 'airblade/vim-gitgutter'
+Plug 'altercation/vim-colors-solarized'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'jiangmiao/auto-pairs'
+Plug 'ctrlpvim/ctrlp.vim'
+"Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
+Plug 'terryma/vim-multiple-cursors'
+Plug 'tpope/vim-fugitive'
+"Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-surround'
+"Plug 'tpope/vim-ragtag'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-commentary'
+Plug 't9md/vim-surround_custom_mapping'
+"Plug 'vim-scripts/marvim'
 
 " JavaScript
-Plug 'jelera/vim-javascript-syntax', { 'tag': '*' }
-Plug 'pangloss/vim-javascript', { 'tag': 'v1.2.2' } | Plug 'mxw/vim-jsx'
+"Plug 'jelera/vim-javascript-syntax', { 'tag': '*' }
 "Plug 'bigfish/vim-js-context-coloring'
 Plug 'kchmck/vim-coffee-script'
-Plug 'flowtype/vim-flow'
 Plug 'heavenshell/vim-jsdoc'
 "Plug 'aaronj1335/underscore-templates.vim'
 Plug 'ruanyl/vim-fixmyjs'
 Plug '~/dev/vim-syntax-js'
+Plug 'flowtype/vim-flow'
+Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
+Plug 'mxw/vim-jsx'
 
 
 call plug#end()
@@ -170,8 +173,8 @@ let g:flow#enable = 0
 "set statusline+=%{fugitive#statusline()}
 
 " indentLine
-let g:indentLine_char = '.'
-let g:indentLine_conceallevel = 0
+"let g:indentLine_char = '.'
+"let g:indentLine_conceallevel = 0
 
 " vim-javascript
 let g:javascript_plugin_flow = 1
