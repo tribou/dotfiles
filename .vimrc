@@ -1,6 +1,25 @@
 call plug#begin('~/.vim/plugged')
 
 
+" Misc
+Plug 'airblade/vim-gitgutter'
+Plug 'altercation/vim-colors-solarized'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'jiangmiao/auto-pairs'
+Plug 'ctrlpvim/ctrlp.vim'
+"Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
+Plug 'terryma/vim-multiple-cursors'
+Plug 'tpope/vim-fugitive'
+"Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-surround'
+"Plug 'tpope/vim-ragtag'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-commentary'
+Plug 't9md/vim-surround_custom_mapping'
+"Plug 'vim-scripts/marvim'
+
 "" Syntax/Auto-complete
 Plug 'scrooloose/syntastic'
 Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
@@ -35,25 +54,6 @@ Plug 'vim-scripts/nginx.vim'
 "Plug 'apple/swift', { 'branch': 'swift-2.3-branch', 'rtp': 'utils/vim' }
 Plug 'cespare/vim-toml'
 "Plug 'chrisbra/unicode.vim'
-
-" Misc
-Plug 'airblade/vim-gitgutter'
-Plug 'altercation/vim-colors-solarized'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'jiangmiao/auto-pairs'
-Plug 'ctrlpvim/ctrlp.vim'
-"Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-Plug 'terryma/vim-multiple-cursors'
-Plug 'tpope/vim-fugitive'
-"Plug 'tpope/vim-sensible'
-Plug 'tpope/vim-surround'
-"Plug 'tpope/vim-ragtag'
-Plug 'tpope/vim-repeat'
-Plug 'tpope/vim-unimpaired'
-Plug 'tpope/vim-commentary'
-Plug 't9md/vim-surround_custom_mapping'
-"Plug 'vim-scripts/marvim'
 
 " JavaScript
 "Plug 'jelera/vim-javascript-syntax', { 'tag': '*' }
@@ -155,6 +155,8 @@ let g:syntastic_check_on_wq = 0
 
 " vim-airline
 let g:airline#extensions#tabline#enabled = 1
+let g:airline_theme='solarized'
+set laststatus=2
 
 " vim-instant-markdown
 let g:instant_markdown_slow = 1
