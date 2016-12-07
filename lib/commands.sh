@@ -215,7 +215,9 @@ function npm-install-global ()
     eslint \
     eslint_d \
     flow-bin \
+    flow-typed \
     gatsby \
+    getstorybook \
     instant-markdown-d \
     js-yaml \
     jsonlint \
@@ -225,7 +227,6 @@ function npm-install-global ()
     nsp \
     react-native-cli \
     serverless \
-    slush \
     yarn
 }
 alias nr='npm run --silent'
