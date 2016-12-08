@@ -166,6 +166,7 @@ noremap <Leader><Leader>f :Fixmyjs<CR>
 let g:fixmyjs_engine = 'eslint'
 let g:fixmyjs_use_local = 1
 let g:fixmyjs_executable = 'eslint_d'
+let g:fixmyjs_rc_filename = '.eslintrc.yml'
 
 " vim-flow
 let g:flow#autoclose = 1
