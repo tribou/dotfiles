@@ -210,6 +210,7 @@ function npm-install-global ()
   echo "Installing NPM@$NPM_VERSION and global modules"
   npm install -g npm@$NPM_VERSION \
     && npm install -g \
+    babel-cli \
     babel-node-debug \
     bower \
     eslint \
