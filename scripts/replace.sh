@@ -27,8 +27,10 @@ findfiles() {
     ! -name "*.log" \
     ! -name "bundle*.js" \
     ! -name "coverage.html" \
+    ! -path "*/bin/*" \
     ! -path "*/bower_components/*" \
     ! -path "*/dist/*" \
+    ! -path "*/flow-typed/*" \
     ! -path "*/node_modules/*" \
     ! -path "*/tmp/*" \
     ! -path "*/.git/*" \
@@ -55,7 +57,7 @@ Example:
   fi
 
   git grep --untracked -I -l "$1" \
-    -- './*' ':!build/**' ':!public/**' ':!vendor/**' \
+    -- './*' ':!build/**' ':!bin/**' ':!flow-typed/**' ':!public/**' ':!vendor/**' \
     | xargs sed -i '' -e ''s/"$1"/"$2"/g''
 }
 

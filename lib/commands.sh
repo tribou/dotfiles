@@ -252,7 +252,12 @@ function search ()
 
   echo
   echo
-  git grep -n -I --untracked --break "$1" -- './*' ':!build/**' ':!public/**' ':!vendor/**'
+  git grep -n -I --untracked --break "$1" -- './*' \
+    ':!build/**' \
+    ':!bin/**' \
+    ':!flow-typed/**' \
+    ':!public/**' \
+    ':!vendor/**'
 }
 alias setdotglob='shopt -s dotglob'
 function sizes ()
