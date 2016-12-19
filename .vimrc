@@ -110,10 +110,10 @@ let @n = '/@wwwv/,hykPa I.jj'
 
 " ctrlp
 let g:ctrlp_custom_ignore = {
-  \ 'dir':  '^(build|node_modules|\.(git|hg|svn|tmp|vagrant))$',
+  \ 'dir':  '^(build|dist|node_modules|\.(git|hg|svn|tmp|vagrant))$',
   \ 'file': '\v\.(exe|so|swp|dll)$',
   \ }
-let g:ctrlp_user_command = ['.git/', 'cd %s && git ls-files -oc --exclude-standard | grep -v "build/\|node_modules/\|public/\|vendor/\|\..*/"']
+let g:ctrlp_user_command = ['.git/', 'cd %s && git ls-files -oc --exclude-standard | grep -v "build/\|dist/\|node_modules/\|public/\|vendor/\|\..*/"']
 
 let g:ctrlp_working_path_mode = 'r'
 
