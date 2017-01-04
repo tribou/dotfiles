@@ -257,7 +257,8 @@ function search ()
     ':!bin/**' \
     ':!flow-typed/**' \
     ':!public/**' \
-    ':!vendor/**'
+    ':!vendor/**' \
+    ':!yarn.lock'
 }
 alias setdotglob='shopt -s dotglob'
 function sizes ()

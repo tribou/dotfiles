@@ -56,8 +56,14 @@ Example:
     return 1
   fi
 
-  git grep --untracked -I -l "$1" \
-    -- './*' ':!build/**' ':!bin/**' ':!flow-typed/**' ':!public/**' ':!vendor/**' \
+  git grep --untracked -I -l "$1" -- \
+    './*' \
+    ':!build/**' \
+    ':!bin/**' \
+    ':!flow-typed/**' \
+    ':!public/**' \
+    ':!vendor/**' \
+    ':!yarn.lock' \
     | xargs sed -i '' -e ''s/"$1"/"$2"/g''
 }
 

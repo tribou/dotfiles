@@ -25,7 +25,7 @@ searchit() {
     -rn "$search_dir" \
     -e "$1" \
     --exclude-dir={.git,.svn,.tmp,bin,bower_components,dist,flow-typed,node_modules,tmp} \
-    --exclude={*.log,bundle*.js,coverage.html} \
+    --exclude={*.log,bundle*.js,coverage.html,yarn.lock} \
     --color
 
 }
