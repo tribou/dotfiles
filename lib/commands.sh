@@ -227,8 +227,7 @@ function npm-install-global ()
     npm-check-updates \
     nsp \
     react-native-cli \
-    serverless \
-    yarn
+    serverless
 }
 alias nr='npm run --silent'
 alias nrs='npm rm --save'
