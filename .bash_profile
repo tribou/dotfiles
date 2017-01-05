@@ -43,7 +43,7 @@ export HISTDIR="${HOME}/.history/$(date -u +%Y/%m)"
 mkdir -p $HISTDIR
 export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 
-# File search and replace functions
+# File replace function
 ## Source recursive string replace script
 SOURCE_SCRIPT=$DOTFILES/scripts/replace.sh
 if [ -f "$SOURCE_SCRIPT" ]
