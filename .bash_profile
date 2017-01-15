@@ -76,6 +76,8 @@ then
   . "$SOURCE_SCRIPT"
 fi
 
+BREW_PREFIX=$(brew --prefix)
+
 # Watchman shortcuts
 WATCHMAN_PREFIX="$(brew --prefix watchman)"
 WATCHMAN_DIR="${WATCHMAN_PREFIX}/var/run/watchman/${USER}-state"
@@ -86,15 +88,6 @@ alias wmanl="cat ${WATCHMAN_DIR}/log"
 ## set npm test trigger in current dir
 alias 'watchman-npmtest'='watchman -- trigger ./ npmtest -I "*.js" "*.jsx" "*.html" "*.scss" "*.css" -X "node_modules/*" -- npm test'
 alias 'watchman-npmtest-delete'='watchman trigger-del "$PWD" npmtest'
-
-# Less Colors for Man Pages
-#export LESS_TERMCAP_mb=$'\E[01;31m'       # begin blinking
-#export LESS_TERMCAP_md=$'\E[01;38;5;74m'  # begin bold
-#export LESS_TERMCAP_me=$'\E[0m'           # end mode
-#export LESS_TERMCAP_se=$'\E[0m'           # end standout-mode
-#export LESS_TERMCAP_so=$'\E[38;5;246m'    # begin standout-mode - info box
-#export LESS_TERMCAP_ue=$'\E[0m'           # end underline
-#export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
 
 export GOPATH=$DEVPATH/go
 export PATH=/usr/local/sbin:/usr/local/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin
@@ -136,22 +129,32 @@ export ANSIBLE_HOSTS=$DEVPATH/sys/ansible/ansible-hosts
 export ANSIBLE_CONFIG=$DEVPATH/sys/ansible/ansible.cfg
 
 # brew install bash-completion
-if [ -f $(brew --prefix)/etc/bash_completion ]
+if [ -f "$BREW_PREFIX/etc/bash_completion" ]
 then
-  . $(brew --prefix)/etc/bash_completion
+  . "$BREW_PREFIX/etc/bash_completion"
 fi
 
 # gcloud sourcing
-. '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc'
-. '/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc'
+OLD_GCLOUD_PATH=/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
+NEW_GCLOUD_PATH=/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
+if [ -d "$OLD_GCLOUD_PATH" ]
+then
+  . "$OLD_GCLOUD_PATH/path.bash.inc"
+  . "$OLD_GCLOUD_PATH/completion.bash.inc"
+fi
+if [ -d "$NEW_GCLOUD_PATH" ]
+then
+  . "$NEW_GCLOUD_PATH/path.bash.inc"
+  . "$NEW_GCLOUD_PATH/completion.bash.inc"
+fi
 
 # AWS CLI
 complete -C aws_completer aws
 
 # z
-if [ -f `brew --prefix`/etc/profile.d/z.sh ]
+if [ -f "$BREW_PREFIX/etc/profile.d/z.sh" ]
 then
-  . `brew --prefix`/etc/profile.d/z.sh
+  . "$BREW_PREFIX/etc/profile.d/z.sh"
 fi
 
 # import api keys
