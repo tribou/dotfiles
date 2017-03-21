@@ -91,7 +91,7 @@ alias 'watchman-npmtest-delete'='watchman trigger-del "$PWD" npmtest'
 
 export GOPATH=$DEVPATH/go
 export PATH=/usr/local/sbin:/usr/local/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin
-export ANDROID_HOME=/usr/local/opt/android-sdk
+export ANDROID_HOME=$HOME/Library/Android/sdk
 
 # ruby rbenv
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
