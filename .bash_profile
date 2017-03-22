@@ -157,6 +157,12 @@ then
   . "$BREW_PREFIX/etc/profile.d/z.sh"
 fi
 
+# Lua/Torch
+if [ -f "$DEVPATH/torch/install/bin/torch-activate" ]
+then
+  . "$DEVPATH/torch/install/bin/torch-activate"
+fi
+
 # import api keys
 . "$HOME/.ssh/api_keys"
 
