@@ -6,7 +6,7 @@ alias b='git branch -a'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
 alias c='git commit -S -ev'
-alias cherry='git cherry-pick -S'
+alias cherry='git cherry-pick -S -x'
 function clean () {
 
   git clean -f -- build/ public/ vendor/ 
