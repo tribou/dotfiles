@@ -218,3 +218,16 @@ let g:ycm_autoclose_preview_window_after_completion = 1
 "endfunction
 "
 "set statusline+=%{SyntaxItem()}
+
+" Moving lines
+" Normal mode
+nnoremap <c-j> :m .+1<cr>==
+nnoremap <c-k> :m .-2<cr>==
+
+" Insert mode
+inoremap <C-j> <ESC>:m .+1<CR>==gi
+inoremap <C-k> <ESC>:m .-2<CR>==gi
+
+" Visual mode
+vnoremap <C-j> :m '>+1<CR>gv=gv
+vnoremap <C-k> :m '<-2<CR>gv=gv
