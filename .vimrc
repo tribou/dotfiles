@@ -10,6 +10,7 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'ctrlpvim/ctrlp.vim'
 "Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'terryma/vim-multiple-cursors'
+Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
 "Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
@@ -138,6 +139,8 @@ let g:syntastic_mode_map = {
 let g:syntastic_javascript_checkers = ['eslint']
 let g:syntastic_javascript_eslint_exec = 'eslint_d'
 let g:syntastic_javascript_eslint_args = '--cache'
+let g:syntastic_typescript_checkers = ['tslint']
+"let g:syntastic_typescript_tslint_args = ''
 let g:syntastic_flow_checkers = ['']
 let g:syntastic_go_checkers = ['gofmt', 'golint']
 let g:syntastic_yaml_checkers = ['jsyaml']

@@ -228,7 +228,9 @@ function npm-install-global ()
     nsp \
     react-native-cli \
     serverless \
-    tern
+    tern \
+    tslint \
+    typescript
 }
 alias nr='npm run --silent'
 alias nrs='npm rm --save'
