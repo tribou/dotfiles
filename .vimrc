@@ -8,7 +8,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'jiangmiao/auto-pairs'
 Plug 'ctrlpvim/ctrlp.vim'
-"Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
+Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
@@ -25,6 +25,9 @@ Plug 't9md/vim-surround_custom_mapping'
 Plug 'scrooloose/syntastic'
 Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
 Plug 'editorconfig/editorconfig-vim'
+Plug 'SirVer/ultisnips'
+"Plug 'honza/vim-snippets'
+Plug '~/dev/vim-snippets'
 
 " Other webdev
 Plug 'mattn/emmet-vim'
@@ -156,6 +159,15 @@ set statusline+=%*
 let g:syntasitc_ignore_files = ['node_modules']
 let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 0
+
+" UltiSnips
+" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+let g:UltiSnipsExpandTrigger="<c-space>"
+let g:UltiSnipsJumpForwardTrigger="<c-space>"
+let g:UltiSnipsJumpBackwardTrigger="<c-b>"
+
+" If you want :UltiSnipsEdit to split your window.
+"let g:UltiSnipsEditSplit="vertical"
 
 " vim-airline
 let g:airline#extensions#tabline#enabled = 1
