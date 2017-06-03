@@ -65,7 +65,7 @@ alias gbd='git branch -d'
 alias gbdr='git branch -d -r'
 alias gf='git flow'
 alias gps='git push'
-alias gpst='git push && git push --tags'
+alias gpst='git push --follow-tags'
 alias gpl='git pull'
 function gr ()
 {
