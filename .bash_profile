@@ -68,6 +68,12 @@ if [ -f "$SOURCE_SCRIPT" ]
 then
   . "$SOURCE_SCRIPT"
 fi
+## Source sizes script
+SOURCE_SCRIPT=$DOTFILES/scripts/sizes.sh
+if [ -f "$SOURCE_SCRIPT" ]
+then
+  . "$SOURCE_SCRIPT"
+fi
 
 # Commands and Aliases
 SOURCE_SCRIPT=$DOTFILES/lib/commands.sh

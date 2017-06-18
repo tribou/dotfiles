@@ -263,10 +263,6 @@ function search ()
     ':!yarn.lock'
 }
 alias setdotglob='shopt -s dotglob'
-function sizes ()
-{
-  ls -lrt -d -1 ${PWD}/${1}* | xargs du -sh
-}
 alias sprofile='. ~/.bash_profile; cd $OLDPWD'
 alias survey='sudo nmap -sP 10.0.1.1/24'
 alias t='echo; echo; git tree'
