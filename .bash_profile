@@ -15,8 +15,14 @@ export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 # Set default editor
 export EDITOR='vim'
 
-# Set GPG TTY
+# Set GPG TTY and start agent
 export GPG_TTY=$(tty)
+if [ -S "${GPG_AGENT_INFO%%:*}" ]
+then
+  export GPG_AGENT_INFO
+else
+  eval $(gpg-agent --daemon)
+fi
 
 # Case insensitive auto-completion
 bind "set completion-ignore-case on"
