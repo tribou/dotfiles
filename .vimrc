@@ -22,8 +22,10 @@ Plug 't9md/vim-surround_custom_mapping'
 "Plug 'vim-scripts/marvim'
 
 "" Syntax/Auto-complete
-Plug 'scrooloose/syntastic'
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
+Plug 'w0rp/ale'
+"Plug 'scrooloose/syntastic'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+"Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'SirVer/ultisnips'
 "Plug 'honza/vim-snippets'
@@ -113,6 +115,19 @@ let @m = 'VS{jwi@mixin image A, 100px, 100px;jAj'
 " CSS add image classname
 let @n = '/@wwwv/,hykPa I.jj'
 
+
+" ale
+set nocompatible
+filetype off
+let &runtimepath.=',~/.vim/bundle/ale'
+filetype plugin on
+silent! helptags ALL
+
+let g:ale_javascript_eslint_executable = 'eslint_d'
+let g:ale_javascript_eslint_args = '--cache'
+let g:ale_javascript_eslint_use_global = 1
+
+
 " ctrlp
 let g:ctrlp_custom_ignore = {
   \ 'dir':  '^(build|dist|node_modules|\.(git|hg|svn|tmp|vagrant))$',
@@ -121,6 +136,11 @@ let g:ctrlp_custom_ignore = {
 let g:ctrlp_user_command = ['.git/', 'cd %s && git ls-files -oc --exclude-standard | grep -v "build/\|dist/\|node_modules/\|public/\|vendor/\|\.gz\|\.tgz\|\.png\|\.jpg\|\.jpeg\|\.gif"']
 
 let g:ctrlp_working_path_mode = 'r'
+
+
+" deoplete
+let g:deoplete#enable_at_startup = 1
+
 
 " editorconfig-vim
 let g:EditorConfig_core_mode = 'external_command'
@@ -136,41 +156,42 @@ let marvim_register = 'q'       " change used register from 'q' to 'c'
 map <c-t> :NERDTreeToggle<CR>
 
 " syntastic
-let g:syntastic_mode_map = {
-  \ "mode": "active",
-  \ "passive_filetypes": ["scss"] }
-let g:syntastic_javascript_checkers = ['eslint']
-let g:syntastic_javascript_eslint_exec = 'eslint_d'
-let g:syntastic_javascript_eslint_args = '--cache'
-let g:syntastic_typescript_checkers = ['tslint']
-"let g:syntastic_typescript_tslint_args = ''
-let g:syntastic_flow_checkers = ['']
-let g:syntastic_go_checkers = ['gofmt', 'golint']
-let g:syntastic_yaml_checkers = ['jsyaml']
-"let g:syntastic_go_checkers = ['gofmt', 'golint', 'go']
-"let g:syntastic_javascript_flow_exe = 'flow'
-"let g:syntastic_javascript_checkers = ['eslint', 'flow']
-"let g:statline_syntastic = 0
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-"let g:syntastic_always_populate_loc_list = 1
-"let g:syntastic_auto_loc_list = 1
-let g:syntasitc_ignore_files = ['node_modules']
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 0
+" let g:syntastic_mode_map = {
+"   \ "mode": "active",
+"   \ "passive_filetypes": ["scss"] }
+" let g:syntastic_javascript_checkers = ['eslint']
+" let g:syntastic_javascript_eslint_exec = 'eslint_d'
+" let g:syntastic_javascript_eslint_args = '--cache'
+" let g:syntastic_typescript_checkers = ['tslint']
+" "let g:syntastic_typescript_tslint_args = ''
+" let g:syntastic_flow_checkers = ['']
+" let g:syntastic_go_checkers = ['gofmt', 'golint']
+" let g:syntastic_yaml_checkers = ['jsyaml']
+" "let g:syntastic_go_checkers = ['gofmt', 'golint', 'go']
+" "let g:syntastic_javascript_flow_exe = 'flow'
+" "let g:syntastic_javascript_checkers = ['eslint', 'flow']
+" "let g:statline_syntastic = 0
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+" "let g:syntastic_always_populate_loc_list = 1
+" "let g:syntastic_auto_loc_list = 1
+" let g:syntasitc_ignore_files = ['node_modules']
+" let g:syntastic_check_on_open = 0
+" let g:syntastic_check_on_wq = 0
 
 " UltiSnips
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
-let g:UltiSnipsExpandTrigger="<c-space>"
-let g:UltiSnipsJumpForwardTrigger="<c-space>"
-let g:UltiSnipsJumpBackwardTrigger="<c-b>"
+" let g:UltiSnipsExpandTrigger="<c-space>"
+" let g:UltiSnipsJumpForwardTrigger="<c-space>"
+" let g:UltiSnipsJumpBackwardTrigger="<c-b>"
 
 " If you want :UltiSnipsEdit to split your window.
 "let g:UltiSnipsEditSplit="vertical"
 
 " vim-airline
 let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#ale#enabled = 1
 let g:airline_theme='solarized'
 set laststatus=2
 
