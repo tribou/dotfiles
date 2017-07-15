@@ -129,7 +129,6 @@ let g:ale_javascript_eslint_use_global = 1
 let g:ale_javascript_prettier_options = '--single-quote --no-semi --trailing-comma es5'
 let g:ale_fixers = {
   \   'javascript': [
-  \       'prettier',
   \       'eslint',
   \   ],
   \}
