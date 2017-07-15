@@ -209,7 +209,7 @@ function npm-install-global ()
 
   echo "Installing NPM@$NPM_VERSION and global modules"
   npm install -g npm@$NPM_VERSION \
-    && npm install -g \
+    && yarn global add \
     babel-cli \
     babel-node-debug \
     bower \
@@ -226,6 +226,7 @@ function npm-install-global ()
     nodemon \
     npm-check-updates \
     nsp \
+    prettier \
     react-native-cli \
     serverless \
     tern \

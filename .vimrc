@@ -67,7 +67,7 @@ Plug 'cespare/vim-toml'
 Plug 'kchmck/vim-coffee-script'
 Plug 'heavenshell/vim-jsdoc'
 "Plug 'aaronj1335/underscore-templates.vim'
-Plug 'ruanyl/vim-fixmyjs'
+"Plug 'ruanyl/vim-fixmyjs'
 Plug '~/dev/vim-syntax-js'
 Plug 'flowtype/vim-flow'
 Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
@@ -124,8 +124,17 @@ filetype plugin on
 silent! helptags ALL
 
 let g:ale_javascript_eslint_executable = 'eslint_d'
-let g:ale_javascript_eslint_args = '--cache'
+" let g:ale_javascript_eslint_args = '--cache'
 let g:ale_javascript_eslint_use_global = 1
+let g:ale_javascript_prettier_options = '--single-quote --no-semi --trailing-comma es5'
+let g:ale_fixers = {
+  \   'javascript': [
+  \       'prettier',
+  \       'eslint',
+  \   ],
+  \}
+nmap <Leader><Leader>f <Plug>(ale_fix)
+let g:ale_fix_on_save = 1
 
 
 " ctrlp
@@ -199,11 +208,11 @@ set laststatus=2
 let g:instant_markdown_slow = 1
 
 " vim-fixmyjs
-noremap <Leader><Leader>f :Fixmyjs<CR>   
-let g:fixmyjs_engine = 'eslint'
-let g:fixmyjs_use_local = 1
-let g:fixmyjs_executable = 'eslint_d'
-let g:fixmyjs_rc_filename = '.eslintrc.yml'
+" noremap <Leader><Leader>f :Fixmyjs<CR>   
+" let g:fixmyjs_engine = 'eslint'
+" let g:fixmyjs_use_local = 1
+" let g:fixmyjs_executable = 'eslint_d'
+" let g:fixmyjs_rc_filename = '.eslintrc.yml'
 
 " vim-flow
 let g:flow#autoclose = 1
