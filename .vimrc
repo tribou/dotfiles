@@ -114,6 +114,9 @@ let @i = 'deiconst/fromdei=/''vg_S)irequire$w'
 let @m = 'VS{jwi@mixin image A, 100px, 100px;jAj'
 " CSS add image classname
 let @n = '/@wwwv/,hykPa I.jj'
+" Insert return
+let @r = 'A'
+map , @r
 
 
 " ale
