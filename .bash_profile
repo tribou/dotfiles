@@ -2,6 +2,9 @@
 export DEVPATH=$HOME/dev
 export DOTFILES=$DEVPATH/dotfiles
 
+# Set terminal language and UTF-8
+export LANG=en_US.UTF-8
+
 # Change bash prompt
 export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
 
@@ -13,7 +16,7 @@ function set_badge()
 export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 
 # Set default editor
-export EDITOR='vim'
+export EDITOR='nvim'
 
 # Set GPG TTY and start agent
 export GPG_TTY=$(tty)
