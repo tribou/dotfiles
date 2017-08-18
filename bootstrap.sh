@@ -8,7 +8,7 @@ THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
 # Backup existing files and replace with symlinks
 files=( 
   ".bash_profile"
-  ".vimrc"
+  ".config/nvim/init.vim"
   ".gitconfig"
   ".zshrc"
 )
