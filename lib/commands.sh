@@ -21,6 +21,7 @@ alias commit='git commit -ev' # non-signed commit
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
 alias convert-tabs-spaces="replace '	' '  '"
 alias count='sed "/^\s*$/d" | wc -l | xargs'
+alias d='docker'
 alias dc='docker-compose'
 alias di='docker images'
 function digitalocean () 
@@ -63,6 +64,8 @@ alias gc='gcloud compute'
 alias gci='gcloud compute instances'
 alias gbd='git branch -d'
 alias gbdr='git branch -d -r'
+alias gd='git diff'
+alias gds='git diff --staged'
 alias gf='git flow'
 alias gps='git push'
 alias gpst='git push --follow-tags'
