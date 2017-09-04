@@ -5,6 +5,7 @@ alias amend='git commit -S --amend'
 alias b='git branch -a'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
+alias bfg='java -jar bfg.jar'
 alias c='git commit -S -ev'
 alias cherry='git cherry-pick -S -x'
 function clean () {
