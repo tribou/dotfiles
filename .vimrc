@@ -39,7 +39,6 @@ Plug 'wavded/vim-stylus'
 Plug 'mustache/vim-mustache-handlebars'
 
 " Markdown
-Plug 'suan/vim-instant-markdown'
 
 "" Golang
 "Plug 'fatih/vim-go', { 'tag': '*' }
@@ -206,8 +205,8 @@ let g:airline#extensions#ale#enabled = 1
 let g:airline_theme='solarized'
 set laststatus=2
 
-" vim-instant-markdown
-let g:instant_markdown_slow = 1
+" vim-markdown-preview
+autocmd BufEnter *.md exe 'noremap <C-m> :!open %:p<CR>'
 
 " vim-fixmyjs
 " noremap <Leader><Leader>f :Fixmyjs<CR>   
