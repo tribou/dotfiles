@@ -6,7 +6,21 @@ alias b='git branch -a'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
 alias bfg='java -jar /usr/local/bin/bfg.jar'
-alias c='git commit -S -ev'
+function c ()
+{
+  if [ -f "$(which ./node_modules/.bin/git-cz)" ]
+  then 
+    # Use local commitizen if available
+    ./node_modules/.bin/git-cz -S
+  elif [ -f "$(which git-cz)" ]
+  then
+    # Then check for global commitizen
+    git-cz -S
+  else
+    # Otherwise, use normal git commit
+    git commit -S -ev
+  fi
+}
 alias cherry='git cherry-pick -S -x'
 function clean () {
 
