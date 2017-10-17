@@ -228,9 +228,6 @@ function npm-install-global ()
   echo "Installing NPM@$NPM_VERSION and global modules"
   npm install -g npm@$NPM_VERSION \
     && npm install -g \
-    # babel-cli \
-    # babel-node-debug \
-    # bower \
     eslint \
     eslint_d \
     flow-bin \
@@ -240,7 +237,6 @@ function npm-install-global ()
     instant-markdown-d \
     js-yaml \
     jsonlint \
-    # node-inspector \
     nodemon \
     npm-check-updates \
     nsp \
