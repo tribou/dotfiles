@@ -5,6 +5,7 @@ call plug#begin('~/.local/share/nvim/plugged')
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
 Plug 'itchyny/lightline.vim'
+Plug 'ap/vim-buftabline'
 " Plug 'vim-airline/vim-airline'
 " Plug 'vim-airline/vim-airline-themes'
 Plug 'jiangmiao/auto-pairs'
@@ -211,7 +212,26 @@ set laststatus=2
 set noshowmode
 let g:lightline = {
       \ 'colorscheme': 'solarized',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'readonly', 'filename' ] ],
+      \ },
+      \ 'component_function': {
+      \   'filename': 'LightlineFilename',
+      \ },
       \ }
+
+function! LightlineFilename()
+  let splitpath = split(expand('%'), '/')
+  let path = len(splitpath) < 2 ? expand('%') : join([splitpath[-2], splitpath[-1]], '/')
+  let modified = &modified ? ' +' : ''
+  return path . modified
+endfunction
+
+" buftabline
+let g:buftabline_show=2
+let g:buftabline_indicators=1
+let g:buftabline_numbers=0
 
 " vim-markdown-preview
 autocmd BufEnter *.md exe 'noremap <C-m> :!open %:p<CR>'
