@@ -4,8 +4,9 @@ call plug#begin('~/.local/share/nvim/plugged')
 " Misc
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
+Plug 'itchyny/lightline.vim'
+" Plug 'vim-airline/vim-airline'
+" Plug 'vim-airline/vim-airline-themes'
 Plug 'jiangmiao/auto-pairs'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
@@ -200,10 +201,17 @@ let g:UltiSnipsJumpBackwardTrigger="<c-b>"
 "let g:UltiSnipsEditSplit="vertical"
 
 " vim-airline
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#ale#enabled = 1
-let g:airline_theme='solarized'
+" let g:airline#extensions#tabline#enabled = 1
+" let g:airline#extensions#ale#enabled = 1
+" let g:airline_theme='solarized
+" set laststatus=2
+
+" lightline.vim
 set laststatus=2
+set noshowmode
+let g:lightline = {
+      \ 'colorscheme': 'solarized',
+      \ }
 
 " vim-markdown-preview
 autocmd BufEnter *.md exe 'noremap <C-m> :!open %:p<CR>'
