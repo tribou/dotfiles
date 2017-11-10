@@ -18,6 +18,9 @@ export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 # Set default editor
 export EDITOR='nvim'
 
+# Set React Native editor
+export REACT_EDITOR='atom'
+
 # Set GPG TTY and start agent
 export GPG_TTY=$(tty)
 if [ -S "${GPG_AGENT_INFO%%:*}" ]
