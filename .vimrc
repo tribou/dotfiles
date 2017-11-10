@@ -93,6 +93,7 @@ set shiftwidth=2
 set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
+nmap <esc><esc> :noh<return>
 
 " custom filetype settings
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
