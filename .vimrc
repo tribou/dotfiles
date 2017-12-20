@@ -30,8 +30,8 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 "Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'SirVer/ultisnips'
-"Plug 'honza/vim-snippets'
-Plug '~/dev/vim-snippets'
+Plug 'honza/vim-snippets'
+" Plug '~/dev/vim-snippets'
 
 " Other webdev
 Plug 'mattn/emmet-vim'
@@ -196,8 +196,8 @@ map <c-t> :NERDTreeToggle<CR>
 " UltiSnips
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-z>"
-let g:UltiSnipsJumpBackwardTrigger="<c-b>"
+let g:UltiSnipsJumpForwardTrigger="<c-n>"
+let g:UltiSnipsJumpBackwardTrigger="<c-p>"
 
 " If you want :UltiSnipsEdit to split your window.
 "let g:UltiSnipsEditSplit="vertical"
@@ -222,7 +222,7 @@ let g:lightline = {
       \ },
       \ }
 
-function SplitPath()
+function! SplitPath()
   let s = split(expand('%'), '/')
   if len(s) > 1
     let i = 0
