@@ -230,10 +230,12 @@ function npm-install-global ()
     && npm install -g \
     eslint \
     eslint_d \
+    babel-eslint \
+    eslint-plugin-tribou \
     flow-bin \
     flow-typed \
     gatsby \
-    getstorybook \
+    @storybook/cli \
     instant-markdown-d \
     js-yaml \
     jsonlint \
