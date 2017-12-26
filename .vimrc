@@ -5,7 +5,8 @@ call plug#begin('~/.local/share/nvim/plugged')
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
 Plug 'itchyny/lightline.vim'
-Plug 'ap/vim-buftabline'
+" Plug 'ap/vim-buftabline'
+Plug 'tribou/vim-buftabline'
 " Plug 'vim-airline/vim-airline'
 " Plug 'vim-airline/vim-airline-themes'
 Plug 'jiangmiao/auto-pairs'
@@ -251,6 +252,7 @@ endfunction
 let g:buftabline_show=2
 let g:buftabline_indicators=1
 let g:buftabline_numbers=0
+let g:buftabline_path=1
 
 " vim-markdown-preview
 autocmd BufEnter *.md exe 'noremap <C-m> :!open %:p<CR>'
