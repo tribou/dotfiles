@@ -5,6 +5,7 @@ call plug#begin('~/.local/share/nvim/plugged')
 Plug 'airblade/vim-gitgutter'
 Plug 'altercation/vim-colors-solarized'
 Plug 'itchyny/lightline.vim'
+Plug 'maximbaz/lightline-ale'
 " Plug 'ap/vim-buftabline'
 Plug 'tribou/vim-buftabline'
 " Plug 'vim-airline/vim-airline'
@@ -32,6 +33,7 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
+Plug 'tpope/vim-liquid'
 " Plug '~/dev/vim-snippets'
 
 " Other webdev
@@ -69,7 +71,7 @@ Plug 'cespare/vim-toml'
 Plug 'kchmck/vim-coffee-script'
 Plug 'heavenshell/vim-jsdoc'
 "Plug 'aaronj1335/underscore-templates.vim'
-"Plug 'ruanyl/vim-fixmyjs'
+" Plug 'ruanyl/vim-fixmyjs'
 Plug '~/dev/vim-syntax-js'
 Plug 'flowtype/vim-flow'
 Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
@@ -123,23 +125,31 @@ map , @r
 
 
 " ale
-set nocompatible
-filetype off
-let &runtimepath.=',~/.local/share/nvim/plugged/ale'
-filetype plugin on
-silent! helptags ALL
+" set nocompatible
+" filetype off
+" let &runtimepath.=',~/.local/share/nvim/plugged/ale'
+" filetype plugin on
+" silent! helptags ALL
 
 let g:ale_javascript_eslint_executable = 'eslint_d'
-" let g:ale_javascript_eslint_args = '--cache'
 let g:ale_javascript_eslint_use_global = 1
-let g:ale_javascript_prettier_options = '--single-quote --no-semi --trailing-comma es5'
+" let g:ale_javascript_prettier_options = '--single-quote --no-semi --trailing-comma es5'
+let g:ale_linters = {
+  \   'javascript': [
+  \       'eslint',
+  \       'flow',
+  \   ],
+  \}
 let g:ale_fixers = {
   \   'javascript': [
   \       'eslint',
   \   ],
+  \   'typescript': [
+  \       'prettier',
+  \   ],
   \}
-nmap <Leader><Leader>f <Plug>(ale_fix)
 let g:ale_fix_on_save = 1
+" nmap <Leader><Leader>f <Plug>(ale_fix)
 
 
 " ctrlp
@@ -203,20 +213,17 @@ let g:UltiSnipsJumpBackwardTrigger="<c-p>"
 " If you want :UltiSnipsEdit to split your window.
 "let g:UltiSnipsEditSplit="vertical"
 
-" vim-airline
-" let g:airline#extensions#tabline#enabled = 1
-" let g:airline#extensions#ale#enabled = 1
-" let g:airline_theme='solarized
-" set laststatus=2
-
 " lightline.vim
 set laststatus=2
 set noshowmode
 let g:lightline = {
       \ 'colorscheme': 'solarized',
       \ 'active': {
-      \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'readonly', 'filename' ] ],
+      \   'left': [
+      \             [ 'linter_errors', 'linter_warnings' ],
+      \             [ 'mode', 'paste' ],
+      \             [ 'readonly', 'filename' ]
+      \           ],
       \ },
       \ 'component_function': {
       \   'filename': 'LightlineFilename',
@@ -248,6 +255,18 @@ function! LightlineFilename()
   return path . modified
 endfunction
 
+" lightline-ale
+let g:lightline.component_expand = {
+      \  'linter_warnings': 'lightline#ale#warnings',
+      \  'linter_errors': 'lightline#ale#errors',
+      \ }
+
+let g:lightline.component_type = {
+      \     'linter_warnings': 'warning',
+      \     'linter_errors': 'error',
+      \ }
+
+
 " buftabline
 let g:buftabline_show=2
 let g:buftabline_indicators=1
@@ -262,7 +281,7 @@ autocmd BufEnter *.md exe 'noremap <C-m> :!open %:p<CR>'
 " let g:fixmyjs_engine = 'eslint'
 " let g:fixmyjs_use_local = 1
 " let g:fixmyjs_executable = 'eslint_d'
-" let g:fixmyjs_rc_filename = '.eslintrc.yml'
+" let g:fixmyjs_rc_filename = ['.eslintrc.yml', '.eslintrc', '.eslintrc.yml']
 
 " vim-flow
 let g:flow#autoclose = 1
