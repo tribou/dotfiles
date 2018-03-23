@@ -244,6 +244,7 @@ function npm-install-global ()
     nsp \
     prettier \
     react-native-cli \
+    react-devtools \
     serverless \
     tern \
     tslint \
