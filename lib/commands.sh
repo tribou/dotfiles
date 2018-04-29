@@ -1,6 +1,7 @@
 #!/bin/bash -l
 
 # Commands and aliases
+alias am='awsmobile'
 alias amend='git commit -S --amend'
 alias b='git branch -a'
 alias back='cd "$OLDPWD"'
@@ -293,6 +294,6 @@ alias v='vim'
 alias vc='vimcat'
 alias vim='nvim'
 alias y='npm run --silent yarn-bin --'
-alias yi='npm run --silent yarn-bin -- --ignore-scripts'
-alias yr='npm run --silent yarn-bin -- run'
+alias yi='npm run --silent yarn-bin --'
+alias yr='npm run --silent yarn-bin --'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd $OLDPWD'
