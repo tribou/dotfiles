@@ -6,6 +6,7 @@ alias amend='git commit -S --amend'
 alias b='git branch -a'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
+alias be='bundle exec'
 alias bfg='java -jar /usr/local/bin/bfg.jar'
 function c ()
 {
