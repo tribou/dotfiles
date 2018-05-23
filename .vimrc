@@ -76,6 +76,7 @@ Plug '~/dev/vim-syntax-js'
 Plug 'flowtype/vim-flow'
 Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
 Plug 'mxw/vim-jsx'
+Plug 'jparise/vim-graphql', { 'tag': '1.*' }
 Plug 'leafgarland/typescript-vim'
 
 

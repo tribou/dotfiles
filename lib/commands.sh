@@ -1,7 +1,6 @@
 #!/bin/bash -l
 
 # Commands and aliases
-alias am='awsmobile'
 alias amend='git commit -S --amend'
 alias b='git branch -a'
 alias back='cd "$OLDPWD"'
@@ -230,28 +229,38 @@ function npm-install-global ()
   echo "Installing NPM@$NPM_VERSION and global modules"
   npm install -g npm@$NPM_VERSION \
     && npm install -g \
-    eslint \
     eslint_d \
-    babel-eslint \
-    eslint-plugin-tribou \
-    flow-bin \
-    flow-typed \
-    gatsby \
-    @storybook/cli \
     instant-markdown-d \
     js-yaml \
     jsonlint \
-    nodemon \
-    npm-check-updates \
-    nsp \
     prettier \
-    react-native-cli \
-    react-devtools \
-    serverless \
     tern \
     tslint \
     typescript
 }
+# NPM GLOBAL ALIASES
+# Instead of installing ALL CLI packages globally, we can use NPX to call the
+# ones we need in bash
+alias am='npx awsmobile-cli'
+alias app-icon='npx app-icon'
+alias awsmobile='npx awsmobile-cli'
+alias babel-eslint='npx babel-eslint'
+alias eslint='npx eslint'
+alias flow='npx flow'
+alias flow-typed='npx flow-typed'
+alias rn='npx react-native-cli'
+alias react-native='npx react-native-cli'
+alias gatsby='npx gatsby'
+alias serverless='npx serverless'
+alias devtools='npx react-devtools'
+alias react-devtools='npx react-devtools'
+alias nodemon='npx nodemon'
+alias nsp='npx nsp'
+alias npm-check-updates='npx npm-check-updates'
+alias storybook='npx @storybook/cli'
+alias ember='npx ember-cli'
+
+
 alias nr='npm run --silent'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
@@ -259,7 +268,6 @@ alias prettyjson='python -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
-alias rn='react-native'
 alias s='git status -sb'
 function search ()
 {
