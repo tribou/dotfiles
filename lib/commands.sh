@@ -233,6 +233,7 @@ function npm-install-global ()
     instant-markdown-d \
     js-yaml \
     jsonlint \
+    neovim \
     prettier \
     tern \
     tslint \
