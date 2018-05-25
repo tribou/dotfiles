@@ -182,6 +182,14 @@ then
   . "$DEVPATH/torch/install/bin/torch-activate"
 fi
 
+# Rust
+export PATH="$HOME/.cargo/bin:$PATH"
+if [ -f "$HOME/.cargo/env" ]
+then
+  . "$HOME/.cargo/env"
+fi
+
+
 # import api keys
 . "$HOME/.ssh/api_keys"
 

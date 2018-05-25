@@ -230,7 +230,6 @@ function npm-install-global ()
   npm install -g npm@$NPM_VERSION \
     && npm install -g \
     eslint_d \
-    instant-markdown-d \
     js-yaml \
     jsonlint \
     neovim \

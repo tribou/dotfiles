@@ -1,5 +1,17 @@
-call plug#begin('~/.local/share/nvim/plugged')
+" Functions that have to load first
+" vim-markdown-composer
+function! BuildComposer(info)
+  if a:info.status != 'unchanged' || a:info.force
+    if has('nvim')
+      !cargo build --release
+    else
+      !cargo build --release --no-default-features --features json-rpc
+    endif
+  endif
+endfunction
 
+
+call plug#begin('~/.local/share/nvim/plugged')
 
 " Misc
 Plug 'airblade/vim-gitgutter'
@@ -44,6 +56,7 @@ Plug 'wavded/vim-stylus'
 Plug 'mustache/vim-mustache-handlebars'
 
 " Markdown
+Plug 'euclio/vim-markdown-composer', { 'do': function('BuildComposer') }
 
 "" Golang
 "Plug 'fatih/vim-go', { 'tag': '*' }
@@ -82,6 +95,7 @@ Plug 'leafgarland/typescript-vim'
 
 call plug#end()
 
+
 " various settings
 silent !mkdir -p $HOME/.vim/swapfiles
 syntax enable
@@ -99,6 +113,7 @@ set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
 nmap <esc><esc> :noh<return>
 
+
 " custom filetype settings
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
 autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
@@ -108,8 +123,10 @@ autocmd BufNewFile,BufRead *.css set filetype=scss
 autocmd BufNewFile,BufRead .env* set filetype=sh
 autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
 
+
 " crontab editing
 autocmd filetype crontab setlocal nobackup nowritebackup
+
 
 " macros/registers
 " camelCase what is dasherized
@@ -131,10 +148,8 @@ map , @r
 " let &runtimepath.=',~/.local/share/nvim/plugged/ale'
 " filetype plugin on
 " silent! helptags ALL
-
 let g:ale_javascript_eslint_executable = 'eslint_d'
 let g:ale_javascript_eslint_use_global = 1
-" let g:ale_javascript_prettier_options = '--single-quote --no-semi --trailing-comma es5'
 let g:ale_linters = {
   \   'javascript': [
   \       'eslint',
@@ -159,7 +174,6 @@ let g:ctrlp_custom_ignore = {
   \ 'file': '\v\.(exe|so|swp|dll)$',
   \ }
 let g:ctrlp_user_command = ['.git/', 'cd %s && git ls-files -oc --exclude-standard | grep -v "build/\|dist/\|node_modules/\|public/\|vendor/\|\.gz\|\.tgz\|\.png\|\.jpg\|\.jpeg\|\.gif"']
-
 let g:ctrlp_working_path_mode = 'r'
 
 
@@ -172,13 +186,16 @@ let g:EditorConfig_core_mode = 'external_command'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 "let g:EditorConfig_verbose=1
 
+
 " marvim
-let marvim_find_key = 'mf'      " change find key from <F2> to 'space' 
-let marvim_store_key = 'ms'     " change store key from <F3> to 'ms' 
-let marvim_register = 'q'       " change used register from 'q' to 'c' 
+" let marvim_find_key = 'mf'      " change find key from <F2> to 'space' 
+" let marvim_store_key = 'ms'     " change store key from <F3> to 'ms' 
+" let marvim_register = 'q'       " change used register from 'q' to 'c' 
+
 
 " NERDTree
 map <c-t> :NERDTreeToggle<CR>
+
 
 " syntastic
 " let g:syntastic_mode_map = {
@@ -205,14 +222,17 @@ map <c-t> :NERDTreeToggle<CR>
 " let g:syntastic_check_on_open = 0
 " let g:syntastic_check_on_wq = 0
 
+
 " UltiSnips
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<tab>"
 let g:UltiSnipsJumpForwardTrigger="<c-n>"
 let g:UltiSnipsJumpBackwardTrigger="<c-p>"
 
+
 " If you want :UltiSnipsEdit to split your window.
 "let g:UltiSnipsEditSplit="vertical"
+
 
 " lightline.vim
 set laststatus=2
@@ -256,6 +276,7 @@ function! LightlineFilename()
   return path . modified
 endfunction
 
+
 " lightline-ale
 let g:lightline.component_expand = {
       \  'linter_warnings': 'lightline#ale#warnings',
@@ -274,8 +295,6 @@ let g:buftabline_indicators=1
 let g:buftabline_numbers=0
 let g:buftabline_path=1
 
-" vim-markdown-preview
-autocmd BufEnter *.md exe 'noremap <C-m> :!open %:p<CR>'
 
 " vim-fixmyjs
 " noremap <Leader><Leader>f :Fixmyjs<CR>   
@@ -284,16 +303,20 @@ autocmd BufEnter *.md exe 'noremap <C-m> :!open %:p<CR>'
 " let g:fixmyjs_executable = 'eslint_d'
 " let g:fixmyjs_rc_filename = ['.eslintrc.yml', '.eslintrc', '.eslintrc.yml']
 
+
 " vim-flow
 let g:flow#autoclose = 1
 let g:flow#enable = 0
 
+
 " vim-fugitive
 "set statusline+=%{fugitive#statusline()}
+
 
 " indentLine
 "let g:indentLine_char = '.'
 "let g:indentLine_conceallevel = 0
+
 
 " vim-javascript
 let g:javascript_plugin_flow = 1
@@ -301,6 +324,7 @@ let g:javascript_plugin_jsdoc = 1
 " let g:javascript_opfirst = 1
 " let g:javascript_opfirst = '\%([<>,?^%|*&]\|\/[^/*]\|\([-:+]\)\1\@!\|=>\@!\|in\%(stanceof\)\=\>\)'
 " let g:javascript_continuation = '\%([<=,?/*^%|&:]\|+\@<!+\|-\@<!-\|=\@<!>\|\<in\%(stanceof\)\=\)'
+
 
 " vim-jsdoc
 let g:jsdoc_allow_input_prompt = 1
@@ -310,8 +334,16 @@ let g:jsdoc_underscore_private = 1
 let g:jsdoc_enable_es6 = 1
 nmap <c-1> <Plug>(jsdoc)
 
+
 " vim-jsx
 let g:jsx_ext_required = 0
+
+
+" vim-markdown-composer
+" let g:markdown_composer_custom_css = [
+"   \ 'https://cdn.jsdelivr.net/gh/sindresorhus/github-markdown-css@2/github-markdown.css',
+"   \ ]
+
 
 " vim-surround_custom_mapping
 let g:surround_custom_mapping = {}
@@ -320,6 +352,7 @@ let g:surround_custom_mapping._ = {
   \ 'h':  "{{!-- \r --}}",
   \ 'x':  "{/* \r */}",
   \ }
+
 
 " YouCompleteMe
 let g:ycm_autoclose_preview_window_after_completion = 1
