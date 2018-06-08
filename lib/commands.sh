@@ -234,6 +234,9 @@ function npm-install-global ()
     jsonlint \
     neovim \
     prettier \
+    react-native-cli \
+    react-devtools \
+    nodemon \
     tern \
     tslint \
     typescript
@@ -248,13 +251,13 @@ alias babel-eslint='npx babel-eslint'
 alias eslint='npx eslint'
 alias flow='npx flow'
 alias flow-typed='npx flow-typed'
-alias rn='npx react-native-cli'
-alias react-native='npx react-native-cli'
+alias rn='react-native'
+alias react-native='react-native'
 alias gatsby='npx gatsby'
 alias serverless='npx serverless'
-alias devtools='npx react-devtools'
-alias react-devtools='npx react-devtools'
-alias nodemon='npx nodemon'
+alias devtools='react-devtools'
+alias react-devtools='react-devtools'
+alias nodemon='nodemon'
 alias nsp='npx nsp'
 alias npm-check-updates='npx npm-check-updates'
 alias storybook='npx @storybook/cli'
