@@ -42,22 +42,36 @@ findfiles() {
 
 replace() {
 
-  usage='Usage: replace OLDPATTERN NEWPATTERN
+  usage='Usage: replace OLDPATTERN NEWPATTERN [directory]
 
-Example:
+Examples:
   replace '"'"'original'"'"' '"'"'replacewith'"'"'
   replace '"'"'old\\/path\\.js'"'"' '"'"'new\\/path\\.jsx'"'"'
+  replace '"'"'original'"'"' '"'"'replacewith'"'"' '"'"'./src/*'"'"'
 '
 
+  search_dir='./*'
+
   # Return usage if not 2 args are passed
-  if [ $# -ne 2 ]
+  if [ $# -lt 2 ]
   then
     echo -e "$usage"
     return 1
   fi
 
+  if [ $# -gt 3 ]
+  then
+    echo -e "$usage"
+    return 1
+  fi
+
+  if [ $# -eq 3 ]
+  then
+    search_dir="$3"
+  fi
+
   git grep --untracked -I -l "$1" -- \
-    './*' \
+    "$search_dir" \
     ':!build/**' \
     ':!bin/**' \
     ':!flow-typed/**' \
