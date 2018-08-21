@@ -74,6 +74,7 @@ alias edlp='ember deploy:list --environment production'
 alias edls='ember deploy:list --environment staging'
 alias f='git fetch --prune --progress'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
+alias fix='git reset HEAD~1 && git commit --amend -a --no-edit -S'
 alias ga='git add --all'
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gc='gcloud compute'
@@ -83,6 +84,7 @@ alias gbdr='git branch -d -r'
 alias gd='git diff'
 alias gds='git diff --staged'
 alias gf='git flow'
+alias gfix='git reset HEAD~1 && git commit --amend -a --no-edit -S'
 alias gps='git push'
 alias gpst='git push --follow-tags'
 alias gpl='git pull'
@@ -239,7 +241,9 @@ function npm-install-global ()
     nodemon \
     tern \
     tslint \
-    typescript
+    typescript \
+    flow-language-server \
+    javascript-typescript-langserver
 }
 # NPM GLOBAL ALIASES
 # Instead of installing ALL CLI packages globally, we can use NPX to call the
@@ -271,6 +275,7 @@ alias prettyjson='python -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
+alias revert='git revert -S HEAD'
 alias s='git status -sb'
 function search ()
 {
