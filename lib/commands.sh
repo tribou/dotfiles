@@ -74,7 +74,7 @@ alias edlp='ember deploy:list --environment production'
 alias edls='ember deploy:list --environment staging'
 alias f='git fetch --prune --progress'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
-alias fix='git reset HEAD~1 && git commit --amend -a --no-edit -S'
+alias fix='git commit --amend -a --no-edit -S'
 alias ga='git add --all'
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gc='gcloud compute'
@@ -84,7 +84,7 @@ alias gbdr='git branch -d -r'
 alias gd='git diff'
 alias gds='git diff --staged'
 alias gf='git flow'
-alias gfix='git reset HEAD~1 && git commit --amend -a --no-edit -S'
+alias gfix='git commit --amend -a --no-edit -S'
 alias gps='git push'
 alias gpst='git push --follow-tags'
 alias gpl='git pull'
@@ -242,7 +242,9 @@ function npm-install-global ()
     tern \
     tslint \
     typescript \
+    bash-language-server \
     flow-language-server \
+    vue-language-server \
     javascript-typescript-langserver
 }
 # NPM GLOBAL ALIASES

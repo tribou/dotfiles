@@ -38,7 +38,7 @@ Plug 't9md/vim-surround_custom_mapping'
 "Plug 'vim-scripts/marvim'
 
 "" Syntax/Auto-complete
-Plug 'w0rp/ale'
+Plug 'w0rp/ale', { 'tag': 'v2.*' }
 "Plug 'scrooloose/syntastic'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 "Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
@@ -47,6 +47,10 @@ Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'tpope/vim-liquid'
 " Plug '~/dev/vim-snippets'
+" Plug 'autozimu/LanguageClient-neovim', {
+"     \ 'branch': 'next',
+"     \ 'do': 'bash install.sh',
+"     \ }
 
 " Other webdev
 Plug 'mattn/emmet-vim'
@@ -86,12 +90,12 @@ Plug 'heavenshell/vim-jsdoc'
 "Plug 'aaronj1335/underscore-templates.vim'
 " Plug 'ruanyl/vim-fixmyjs'
 Plug '~/dev/vim-syntax-js'
-Plug 'flowtype/vim-flow'
+" Plug 'flowtype/vim-flow' using flow-language-server instead
 Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
 Plug 'mxw/vim-jsx'
 Plug 'jparise/vim-graphql', { 'tag': '1.*' }
-Plug 'leafgarland/typescript-vim'
-
+Plug 'HerringtonDarkholme/yats.vim'
+Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
 
 call plug#end()
 
@@ -148,6 +152,8 @@ map , @r
 " let &runtimepath.=',~/.local/share/nvim/plugged/ale'
 " filetype plugin on
 " silent! helptags ALL
+let g:ale_completion_enabled = 0 " using deoplete instead
+let g:ale_fix_on_save = 1
 let g:ale_javascript_eslint_executable = 'eslint_d'
 let g:ale_javascript_eslint_use_global = 1
 let g:ale_linters = {
@@ -155,18 +161,56 @@ let g:ale_linters = {
   \       'eslint',
   \       'flow',
   \   ],
+  \   'javascript.jsx': [
+  \       'eslint',
+  \       'flow',
+  \   ],
+  \   'elixir': [
+  \       'mix',
+  \   ],
+  \   'sh': [
+  \       'language_server',
+  \   ],
+  \   'vue': [
+  \       'vls',
+  \   ],
   \}
 let g:ale_fixers = {
   \   'javascript': [
   \       'eslint',
   \       'prettier',
   \   ],
+  \   'javascript.jsx': [
+  \       'eslint',
+  \       'prettier',
+  \   ],
+  \   'json': [
+  \       'prettier',
+  \   ],
   \   'typescript': [
   \       'prettier',
   \   ],
+  \   'scss': [
+  \       'prettier',
+  \   ],
+  \   'html': [
+  \       'tidy',
+  \   ],
+  \   'php': [
+  \       'php_cs_fixer',
+  \   ],
   \}
-let g:ale_fix_on_save = 1
+  " \   'javascript': [
+  " \       'eslint',
+  " \       'flow-language-server',
+  " \   ],
+  " \   'javascript.jsx': [
+  " \       'eslint',
+  " \       'flow-language-server',
+  " \   ],
 " nmap <Leader><Leader>f <Plug>(ale_fix)
+" nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
+" nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 
 
 " ctrlp
@@ -181,6 +225,18 @@ let g:ctrlp_working_path_mode = 'r'
 " deoplete
 let g:deoplete#enable_at_startup = 1
 
+" LanguageClient-neovim
+" let g:LanguageClient_serverCommands = {
+"     \ 'golang': ['go-langserver'],
+"     \ 'typescript': ['javascript-typescript-stdio'],
+"     \ }
+    " \ 'javascript': ['flow-language-server', '--stdio'],
+    " \ 'javascript.jsx': ['flow-language-server', '--stdio'],
+    " \ 'yaml': ['yaml-language-server'],
+" nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
+" nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
+
+let g:LanguageClient_rootMarkers = ['.flowconfig']
 
 " editorconfig-vim
 let g:EditorConfig_core_mode = 'external_command'
@@ -356,7 +412,7 @@ let g:surround_custom_mapping._ = {
 
 
 " YouCompleteMe
-let g:ycm_autoclose_preview_window_after_completion = 1
+" let g:ycm_autoclose_preview_window_after_completion = 1
 
 
 " Other
