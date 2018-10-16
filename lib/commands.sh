@@ -1,5 +1,24 @@
 #!/bin/bash -l
 
+# Use like: useLocalIfAvailable flow-typed -v
+function useLocalIfAvailable ()
+{
+  # Use local node module if available
+  if [ -f "$(which ./node_modules/.bin/${1})" ]
+  then 
+    "./node_modules/.bin/$@"
+
+  # Then check for existing global install
+  elif [ -f "$(which ${1})" ]
+  then
+    "$@"
+
+  # Otherwise, use npx
+  else
+    npx "$@"
+  fi
+}
+
 # Commands and aliases
 alias amend='git commit -S --amend'
 alias b='git branch -a'
@@ -312,6 +331,8 @@ alias unsetdotglob='shopt -u dotglob'
 alias v='vim'
 alias vc='vimcat'
 alias vim='nvim'
+alias webpack='useLocalIfAvailable webpack'
+alias webpack-bundle-analyzer='npx webpack-bundle-analyzer'
 alias y='npm run --silent yarn-bin --'
 alias yi='npm run --silent yarn-bin --'
 alias yr='npm run --silent yarn-bin --'

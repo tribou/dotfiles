@@ -190,7 +190,22 @@ let g:ale_fixers = {
   \   'typescript': [
   \       'prettier',
   \   ],
+  \   'vue': [
+  \       'prettier',
+  \   ],
   \   'scss': [
+  \       'prettier',
+  \   ],
+  \   'css': [
+  \       'prettier',
+  \   ],
+  \   'less': [
+  \       'prettier',
+  \   ],
+  \   'markdown': [
+  \       'prettier',
+  \   ],
+  \   'yaml': [
   \       'prettier',
   \   ],
   \   'html': [
@@ -198,6 +213,10 @@ let g:ale_fixers = {
   \   ],
   \   'php': [
   \       'php_cs_fixer',
+  \   ],
+  \   'go': [
+  \       'goimports',
+  \       'gofmt',
   \   ],
   \}
   " \   'javascript': [
