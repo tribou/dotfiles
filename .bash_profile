@@ -19,7 +19,7 @@ export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 export EDITOR='nvim'
 
 # Set React Native editor
-export REACT_EDITOR='atom'
+export REACT_EDITOR='vscode'
 
 # Set GPG TTY and start agent
 export GPG_TTY=$(tty)
@@ -27,7 +27,7 @@ if [ -S "${GPG_AGENT_INFO%%:*}" ]
 then
   export GPG_AGENT_INFO
 else
-  eval $(gpg-agent --daemon)
+  eval $(gpg-agent --daemon 2>/dev/null)
 fi
 
 # Case insensitive auto-completion
@@ -47,7 +47,7 @@ export HOSTNAME="$(hostname)"
 export HOSTNAME_SHORT="${HOSTNAME%%.*}"
 
 # History settings
-export HISTSIZE=5000
+export HISTSIZE=10000
 export HISTFILESIZE=$HISTSIZE
 export HISTCONTROL=ignorespace
 export HISTTIMEFORMAT='%F %T '
@@ -108,7 +108,7 @@ alias 'watchman-npmtest'='watchman -- trigger ./ npmtest -I "*.js" "*.jsx" "*.ht
 alias 'watchman-npmtest-delete'='watchman trigger-del "$PWD" npmtest'
 
 export GOPATH=$DEVPATH/go
-export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin
+export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin:$DEVPATH/bin
 export ANDROID_HOME=$HOME/Library/Android/sdk
 export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 
@@ -143,9 +143,19 @@ export PROMPT_COMMAND="$PROMPT_COMMAND read_nvmrc ;"
 
 export PATH=/usr/local/git/bin:$PATH
 
-#source ~/sys/ansible/hacking/env-setup
-export ANSIBLE_HOSTS=$DEVPATH/sys/ansible/ansible-hosts
-export ANSIBLE_CONFIG=$DEVPATH/sys/ansible/ansible.cfg
+# ansible scripts
+if [ -f "$HOME/sys/ansible/hacking/env-setup" ]
+then
+  . "$HOME/sys/ansible/hacking/env-setup"
+fi
+if [ -f "$DEVPATH/sys/ansible/ansible-hosts" ]
+then
+  export ANSIBLE_HOSTS="$DEVPATH/sys/ansible/ansible-hosts"
+fi
+if [ -f "$DEVPATH/sys/ansible/ansible.cfg" ]
+then
+  export ANSIBLE_CONFIG="$DEVPATH/sys/ansible/ansible.cfg"
+fi
 
 # brew install bash-completion
 if [ -f "$BREW_PREFIX/etc/bash_completion" ]
@@ -191,7 +201,19 @@ fi
 
 
 # import api keys
-. "$HOME/.ssh/api_keys"
+if [ -f "$HOME/.ssh/api_keys" ]
+then
+  . "$HOME/.ssh/api_keys"
+fi
+
+# ripgrep
+export RIPGREP_CONFIG_PATH="$DOTFILES/.ripgreprc"
+
+# set git signing key if GIT_SIGNING_KEY is set and config doesn't exist
+if [ -n "$GIT_SIGNING_KEY" ] && git config --global --get user.signingkey > /dev/null;
+then
+  git config --global user.signingkey ${GIT_SIGNING_KEY}
+fi
 
 cd $DEVPATH
 

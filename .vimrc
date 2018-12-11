@@ -1,4 +1,5 @@
 " Functions that have to load first
+"
 " vim-markdown-composer
 function! BuildComposer(info)
   if a:info.status != 'unchanged' || a:info.force
@@ -23,19 +24,28 @@ Plug 'tribou/vim-buftabline'
 " Plug 'vim-airline/vim-airline'
 " Plug 'vim-airline/vim-airline-themes'
 Plug 'jiangmiao/auto-pairs'
-Plug 'ctrlpvim/ctrlp.vim'
+" Using fzf instead of ctrlp
+" Plug 'ctrlpvim/ctrlp.vim'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
+Plug 'tommcdo/vim-fubitive'
 "Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
-"Plug 'tpope/vim-ragtag'
+Plug 'tpope/vim-ragtag'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-dispatch'
 Plug 't9md/vim-surround_custom_mapping'
+Plug 'tpope/vim-speeddating'
+Plug 'tpope/vim-git'
 "Plug 'vim-scripts/marvim'
+Plug 'mileszs/ack.vim'
+Plug 'justinmk/vim-sneak'
 
 "" Syntax/Auto-complete
 Plug 'w0rp/ale', { 'tag': 'v2.*' }
@@ -46,11 +56,11 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'tpope/vim-liquid'
+Plug 'autozimu/LanguageClient-neovim', {
+    \ 'branch': 'next',
+    \ 'do': 'bash install.sh',
+    \ }
 " Plug '~/dev/vim-snippets'
-" Plug 'autozimu/LanguageClient-neovim', {
-"     \ 'branch': 'next',
-"     \ 'do': 'bash install.sh',
-"     \ }
 
 " Other webdev
 Plug 'mattn/emmet-vim'
@@ -95,7 +105,7 @@ Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
 Plug 'mxw/vim-jsx'
 Plug 'jparise/vim-graphql', { 'tag': '1.*' }
 Plug 'HerringtonDarkholme/yats.vim'
-Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
+" Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
 
 call plug#end()
 
@@ -115,16 +125,17 @@ set shiftwidth=2
 set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
-nmap <esc><esc> :noh<return>
 
 
 " custom filetype settings
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
 autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
 autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
+autocmd BufNewFile,BufRead .ripgreprc set filetype=conf
 autocmd BufNewFile,BufRead *.conf set filetype=conf
 autocmd BufNewFile,BufRead *.css set filetype=scss
 autocmd BufNewFile,BufRead .env* set filetype=sh
+autocmd BufNewFile,BufRead .env*.php set filetype=php
 autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
 
 
@@ -145,6 +156,10 @@ let @n = '/@wwwv/,hykPa I.jj'
 let @r = 'A'
 map , @r
 
+" ack.vim
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
 
 " ale
 " set nocompatible
@@ -165,6 +180,10 @@ let g:ale_linters = {
   \       'eslint',
   \       'flow',
   \   ],
+  \   'typescript': [
+  \       'tslint',
+  \       'tsserver',
+  \   ],
   \   'elixir': [
   \       'mix',
   \   ],
@@ -177,17 +196,12 @@ let g:ale_linters = {
   \}
 let g:ale_fixers = {
   \   'javascript': [
-  \       'eslint',
-  \       'prettier',
   \   ],
   \   'javascript.jsx': [
   \       'eslint',
   \       'prettier',
   \   ],
   \   'json': [
-  \       'prettier',
-  \   ],
-  \   'typescript': [
   \       'prettier',
   \   ],
   \   'vue': [
@@ -208,9 +222,6 @@ let g:ale_fixers = {
   \   'yaml': [
   \       'prettier',
   \   ],
-  \   'html': [
-  \       'tidy',
-  \   ],
   \   'php': [
   \       'php_cs_fixer',
   \   ],
@@ -219,6 +230,10 @@ let g:ale_fixers = {
   \       'gofmt',
   \   ],
   \}
+  " \   'typescript': [
+  " \       'prettier',
+  " \       'tslint',
+  " \   ],
   " \   'javascript': [
   " \       'eslint',
   " \       'flow-language-server',
@@ -227,50 +242,71 @@ let g:ale_fixers = {
   " \       'eslint',
   " \       'flow-language-server',
   " \   ],
-" nmap <Leader><Leader>f <Plug>(ale_fix)
-" nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
-" nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
+  " \   'html': [
+  " \       'tidy',
+  " \   ],
 
 
 " ctrlp
 let g:ctrlp_custom_ignore = {
-  \ 'dir':  '^(build|dist|node_modules|\.(git|hg|svn|tmp|vagrant))$',
+  \ 'dir':  '^(dist|node_modules|\.(git|hg|svn|tmp|vagrant))$',
   \ 'file': '\v\.(exe|so|swp|dll)$',
   \ }
-let g:ctrlp_user_command = ['.git/', 'cd %s && git ls-files -oc --exclude-standard | grep -v "build/\|dist/\|node_modules/\|public/\|vendor/\|\.gz\|\.tgz\|\.png\|\.jpg\|\.jpeg\|\.gif"']
+let g:ctrlp_user_command = ['.git/', 'cd %s && git ls-files -oc --exclude-standard | grep -v "dist\.?.*/\|node_modules/\|vendor/\|\.gz\|\.tgz\|\.png\|\.jpg\|\.jpeg\|\.gif"']
 let g:ctrlp_working_path_mode = 'r'
 
 
 " deoplete
 let g:deoplete#enable_at_startup = 1
 
+
 " LanguageClient-neovim
-" let g:LanguageClient_serverCommands = {
-"     \ 'golang': ['go-langserver'],
-"     \ 'typescript': ['javascript-typescript-stdio'],
-"     \ }
+let g:LanguageClient_serverCommands = {
+    \ 'golang': ['go-langserver'],
+    \ 'typescript': ['javascript-typescript-stdio'],
+    \ }
     " \ 'javascript': ['flow-language-server', '--stdio'],
     " \ 'javascript.jsx': ['flow-language-server', '--stdio'],
     " \ 'yaml': ['yaml-language-server'],
-" nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
-" nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
+" Disable linting + highlighting errors... let ALE do that
+let g:LanguageClient_diagnosticsEnable = 0
 
-let g:LanguageClient_rootMarkers = ['.flowconfig']
+" let g:LanguageClient_rootMarkers = ['.flowconfig']
+
 
 " editorconfig-vim
 let g:EditorConfig_core_mode = 'external_command'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 "let g:EditorConfig_verbose=1
 
+" fzf
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
+" Customize fzf colors to match your color scheme
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Statement'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'border':  ['fg', 'Ignore'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .git'
+let $FZF_DEFAULT_OPTS = ''
+      \ . ' --ansi'  " support fd colors
 
 " marvim
 " let marvim_find_key = 'mf'      " change find key from <F2> to 'space' 
 " let marvim_store_key = 'ms'     " change store key from <F3> to 'ms' 
 " let marvim_register = 'q'       " change used register from 'q' to 'c' 
-
-
-" NERDTree
-map <c-t> :NERDTreeToggle<CR>
 
 
 " syntastic
@@ -373,7 +409,6 @@ let g:buftabline_path=1
 
 
 " vim-fixmyjs
-" noremap <Leader><Leader>f :Fixmyjs<CR>   
 " let g:fixmyjs_engine = 'eslint'
 " let g:fixmyjs_use_local = 1
 " let g:fixmyjs_executable = 'eslint_d'
@@ -408,7 +443,6 @@ let g:jsdoc_input_description = 1
 let g:jsdoc_access_descriptions = 2
 let g:jsdoc_underscore_private = 1
 let g:jsdoc_enable_es6 = 1
-nmap <c-1> <Plug>(jsdoc)
 
 
 " vim-jsx
@@ -419,6 +453,10 @@ let g:jsx_ext_required = 0
 " let g:markdown_composer_custom_css = [
 "   \ 'https://cdn.jsdelivr.net/gh/sindresorhus/github-markdown-css@2/github-markdown.css',
 "   \ ]
+
+
+"vim-sneak
+let g:sneak#label = 1
 
 
 " vim-surround_custom_mapping
@@ -441,6 +479,43 @@ let g:surround_custom_mapping._ = {
 "
 "set statusline+=%{SyntaxItem()}
 
+"
+" Key Mappings
+"
+" misc
+nnoremap <esc><esc> :noh<CR>
+nnoremap <c-a> :source %<CR>
+
+" buffer browsing
+nnoremap <Leader>d :bd<CR>
+nnoremap <Leader>j :bp<CR>
+nnoremap <Leader>k :bn<CR>
+
+" fzf
+nnoremap <silent> <c-p> :FZF<CR>
+nnoremap <silent> <c-s> :Rg<CR>
+nnoremap <silent> C :Commit<CR>
+
+" fugitive
+noremap <silent> <c-b> :Gbrowse<CR>
+
+" NERDTree
+" map <c-t> :NERDTreeToggle<CR>
+
+" ALE
+" nmap <Leader><Leader>f <Plug>(ale_fix)
+
+" vim-jsdoc
+nnoremap <c-1> <Plug>(jsdoc)
+
+" LanguageClient
+" nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
+" nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
+" Filetype-dependent key remapping
+autocmd FileType typescript nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+
+" noremap <Leader><Leader>f :Fixmyjs<CR>   
+
 " Moving lines
 " Normal mode
 " nnoremap <c-j> :m .+1<cr>==
@@ -453,3 +528,4 @@ let g:surround_custom_mapping._ = {
 " Visual mode
 " vnoremap <C-j> :m '>+1<CR>gv=gv
 " vnoremap <C-k> :m '<-2<CR>gv=gv
+"

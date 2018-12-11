@@ -20,12 +20,15 @@ function useLocalIfAvailable ()
 }
 
 # Commands and aliases
+alias ack='ag'
+alias ag='rg'
 alias amend='git commit -S --amend'
 alias b='git branch -a'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
 alias be='bundle exec'
 alias bfg='java -jar /usr/local/bin/bfg.jar'
+
 function c ()
 {
   if [ -f "$(which ./node_modules/.bin/git-cz)" ]
@@ -120,7 +123,7 @@ function gr ()
     return 1
   fi
 
-  git rebase -S -i head~$1
+  git rebase -S -i HEAD~$1
 }
 alias gr2='git rebase -S -i head~2'
 function histgrep ()
@@ -153,6 +156,7 @@ function install-swap ()
 alias k='kubectl'
 alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
 alias kd='kubectl describe'
+alias less='less -r'
 alias ll='ls -lah'
 alias ls='ls -G'
 alias lt='ls -lath'
@@ -313,10 +317,8 @@ function search ()
   echo
   echo
   git grep -n -I --untracked --break "$1" -- './*' \
-    ':!build/**' \
     ':!bin/**' \
     ':!flow-typed/**' \
-    ':!public/**' \
     ':!vendor/**' \
     ':!yarn.lock'
 }
