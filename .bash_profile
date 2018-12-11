@@ -118,6 +118,7 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
+nvm use --delete-prefix default --silent
 
 # Read the .nvmrc and switch nvm versions if exists upon dir changes
 function read_nvmrc()
