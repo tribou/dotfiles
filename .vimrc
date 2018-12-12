@@ -47,22 +47,36 @@ Plug 'tpope/vim-git'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
 
-"" Syntax/Auto-complete
-Plug 'w0rp/ale', { 'tag': 'v2.*' }
-"Plug 'scrooloose/syntastic'
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-"Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
+" Auto-formatting
 Plug 'editorconfig/editorconfig-vim'
+
+" Auto-complete
+"Plug 'scrooloose/syntastic'
+"Plug 'Valloric/YouCompleteMe', { 'do': './install.py --gocode-completer --tern-completer' }
+Plug 'w0rp/ale', { 'tag': 'v2.*' }
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" Todo - test ncm2 for autocompletion
+" Plug 'ncm2/ncm2'
+" Plug 'roxma/nvim-yarp'
+" ncm2: you need to install completion sources to get completions. Check
+" our wiki page for a list of sources: https://github.com/ncm2/ncm2/wiki
+" Plug 'ncm2/ncm2-bufword'
+" Plug 'ncm2/ncm2-tmux'
+" Plug 'ncm2/ncm2-path'
+
+" Snippets
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
+" Plug '~/dev/vim-snippets'
+
+" Misc syntax
 Plug 'tpope/vim-liquid'
 Plug 'autozimu/LanguageClient-neovim', {
     \ 'branch': 'next',
     \ 'do': 'bash install.sh',
     \ }
-" Plug '~/dev/vim-snippets'
 
-" Other webdev
+" Other JS/CSS/HTML
 Plug 'mattn/emmet-vim'
 Plug 'JulesWang/css.vim'
 Plug 'cakebaker/scss-syntax.vim'
@@ -106,6 +120,9 @@ Plug 'mxw/vim-jsx'
 Plug 'jparise/vim-graphql', { 'tag': '1.*' }
 Plug 'HerringtonDarkholme/yats.vim'
 " Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
+
+" PHP
+Plug 'roxma/LanguageServer-php-neovim',  {'do': 'composer install && composer run-script parse-stubs'}
 
 call plug#end()
 
@@ -264,6 +281,7 @@ let g:deoplete#enable_at_startup = 1
 let g:LanguageClient_serverCommands = {
     \ 'golang': ['go-langserver'],
     \ 'typescript': ['javascript-typescript-stdio'],
+    \ 'php': ['php-language-server'],
     \ }
     " \ 'javascript': ['flow-language-server', '--stdio'],
     " \ 'javascript.jsx': ['flow-language-server', '--stdio'],
@@ -307,6 +325,14 @@ let $FZF_DEFAULT_OPTS = ''
 " let marvim_find_key = 'mf'      " change find key from <F2> to 'space' 
 " let marvim_store_key = 'ms'     " change store key from <F3> to 'ms' 
 " let marvim_register = 'q'       " change used register from 'q' to 'c' 
+
+
+" ncm2
+" enable ncm2 for all buffers
+" autocmd BufEnter * call ncm2#enable_for_buffer()
+
+" IMPORTANTE: :help Ncm2PopupOpen for more information
+" set completeopt=noinsert,menuone,noselect
 
 
 " syntastic
@@ -512,6 +538,8 @@ nnoremap <c-1> <Plug>(jsdoc)
 " nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
 " nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 " Filetype-dependent key remapping
+autocmd FileType golang nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType php nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType typescript nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 
 " noremap <Leader><Leader>f :Fixmyjs<CR>   
