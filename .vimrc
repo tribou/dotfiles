@@ -47,6 +47,9 @@ Plug 'tpope/vim-git'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
 
+" Debugging
+Plug 'vim-vdebug/vdebug'
+
 " Auto-formatting
 Plug 'editorconfig/editorconfig-vim'
 
@@ -57,7 +60,6 @@ Plug 'w0rp/ale', { 'tag': 'v2.*' }
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 " Todo - test ncm2 for autocompletion
 " Plug 'ncm2/ncm2'
-" Plug 'roxma/nvim-yarp'
 " ncm2: you need to install completion sources to get completions. Check
 " our wiki page for a list of sources: https://github.com/ncm2/ncm2/wiki
 " Plug 'ncm2/ncm2-bufword'
@@ -510,7 +512,8 @@ let g:surround_custom_mapping._ = {
 "
 " misc
 nnoremap <esc><esc> :noh<CR>
-nnoremap <c-a> :source %<CR>
+nnoremap <Leader>r :source %<CR>
+nnoremap <Leader>w <c-w><c-w>
 
 " buffer browsing
 nnoremap <Leader>d :bd<CR>
@@ -520,13 +523,14 @@ nnoremap <Leader>k :bn<CR>
 " fzf
 nnoremap <silent> <c-p> :FZF<CR>
 nnoremap <silent> <c-s> :Rg<CR>
-nnoremap <silent> C :Commit<CR>
+nnoremap <silent> <Leader>c :Commit<CR>
 
 " fugitive
-noremap <silent> <c-b> :Gbrowse<CR>
+noremap <silent> <Leader>b :Gblame<CR>
+noremap <silent> <Leader>o :Gbrowse<CR>
 
 " NERDTree
-" map <c-t> :NERDTreeToggle<CR>
+map <Leader>t :NERDTreeToggle<CR>
 
 " ALE
 " nmap <Leader><Leader>f <Plug>(ale_fix)
