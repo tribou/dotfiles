@@ -22,7 +22,10 @@ curlit() {
     return 0
   fi
 
-  if [ "$2" -gt 0 ]
+  if [ $# -eq 1 ]
+  then
+    interval=1
+  elif [ "$2" -gt 0 ]
   then
     interval="$2"
   else
