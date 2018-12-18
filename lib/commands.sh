@@ -268,6 +268,8 @@ function npm-install-global ()
     bash-language-server \
     flow-language-server \
     vue-language-server \
+    vscode-css-languageserver-bin \
+    vscode-html-languageserver-bin \
     javascript-typescript-langserver
 }
 # NPM GLOBAL ALIASES

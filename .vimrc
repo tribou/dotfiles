@@ -46,12 +46,19 @@ Plug 'tpope/vim-git'
 "Plug 'vim-scripts/marvim'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
+Plug 'ap/vim-css-color'
+" Plug 'junegunn/rainbow_parentheses.vim'
+Plug 'mbbill/undotree'
 
 " Debugging
 Plug 'vim-vdebug/vdebug'
 
 " Auto-formatting
 Plug 'editorconfig/editorconfig-vim'
+" Using this only for the manual :Prettier command
+Plug 'prettier/vim-prettier', {
+  \ 'do': 'yarn install',
+  \ 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescript.tsx', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 
 " Auto-complete
 "Plug 'scrooloose/syntastic'
@@ -120,7 +127,8 @@ Plug '~/dev/vim-syntax-js'
 Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
 Plug 'mxw/vim-jsx'
 Plug 'jparise/vim-graphql', { 'tag': '1.*' }
-Plug 'HerringtonDarkholme/yats.vim'
+Plug 'HerringtonDarkholme/yats.vim'  " Typescript syntax
+Plug 'ianks/vim-tsx'
 " Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
 
 " PHP
@@ -217,11 +225,8 @@ let g:ale_fixers = {
   \   'javascript': [
   \   ],
   \   'javascript.jsx': [
-  \       'eslint',
-  \       'prettier',
   \   ],
   \   'json': [
-  \       'prettier',
   \   ],
   \   'vue': [
   \       'prettier',
@@ -259,7 +264,14 @@ let g:ale_fixers = {
   " \   ],
   " \   'javascript.jsx': [
   " \       'eslint',
+  " \       'prettier',
+  " \   ],
+  " \   'javascript.jsx': [
+  " \       'eslint',
   " \       'flow-language-server',
+  " \   ],
+  " \   'json': [
+  " \       'prettier',
   " \   ],
   " \   'html': [
   " \       'tidy',
@@ -281,8 +293,14 @@ let g:deoplete#enable_at_startup = 1
 
 " LanguageClient-neovim
 let g:LanguageClient_serverCommands = {
+    \ 'css': ['css-languageserver', '--stdio'],
     \ 'golang': ['go-langserver'],
+    \ 'html': ['html-languageserver', '--stdio'],
+    \ 'less': ['css-languageserver', '--stdio'],
+    \ 'sass': ['css-languageserver', '--stdio'],
+    \ 'scss': ['css-languageserver', '--stdio'],
     \ 'typescript': ['javascript-typescript-stdio'],
+    \ 'typescript.tsx': ['javascript-typescript-stdio'],
     \ 'php': ['php-language-server'],
     \ }
     " \ 'javascript': ['flow-language-server', '--stdio'],
@@ -483,6 +501,10 @@ let g:jsx_ext_required = 0
 "   \ ]
 
 
+" vim-prettier
+let g:prettier#autoformat = 0
+
+
 "vim-sneak
 let g:sneak#label = 1
 
@@ -532,6 +554,9 @@ noremap <silent> <Leader>o :Gbrowse<CR>
 " NERDTree
 map <Leader>t :NERDTreeToggle<CR>
 
+" undotree
+nnoremap <Leader>u :UndotreeToggle<CR>
+
 " ALE
 " nmap <Leader><Leader>f <Plug>(ale_fix)
 
@@ -542,9 +567,14 @@ nnoremap <c-1> <Plug>(jsdoc)
 " nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
 " nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 " Filetype-dependent key remapping
+autocmd FileType css nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType scss nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType less nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType golang nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType html nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType php nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType typescript nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType typescript.tsx nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 
 " noremap <Leader><Leader>f :Fixmyjs<CR>   
 
