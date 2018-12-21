@@ -2,6 +2,12 @@
 export DEVPATH=$HOME/dev
 export DOTFILES=$DEVPATH/dotfiles
 
+# import api keys and local workstation-related scripts
+if [ -f "$HOME/.ssh/api_keys" ]
+then
+  . "$HOME/.ssh/api_keys"
+fi
+
 # Set terminal language and UTF-8
 export LANG=en_US.UTF-8
 
@@ -198,13 +204,6 @@ export PATH="$HOME/.cargo/bin:$PATH"
 if [ -f "$HOME/.cargo/env" ]
 then
   . "$HOME/.cargo/env"
-fi
-
-
-# import api keys
-if [ -f "$HOME/.ssh/api_keys" ]
-then
-  . "$HOME/.ssh/api_keys"
 fi
 
 # ripgrep
