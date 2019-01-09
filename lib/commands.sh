@@ -128,7 +128,7 @@ function gr ()
 alias gr2='git rebase -S -i head~2'
 function histgrep ()
 {
-  { (history | grep "$1"); (grep -r "$1" ~/.history | sort -r) } | less
+  { (grep -r "$1" ~/.history | sort -r); (history | grep "$1") }
 }
 function install-swap ()
 {
