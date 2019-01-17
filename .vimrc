@@ -299,6 +299,8 @@ let g:LanguageClient_serverCommands = {
     \ 'less': ['css-languageserver', '--stdio'],
     \ 'sass': ['css-languageserver', '--stdio'],
     \ 'scss': ['css-languageserver', '--stdio'],
+    \ 'javascript': ['javascript-typescript-stdio', '--stdio'],
+    \ 'javascript.jsx': ['javascript-typescript-stdio', '--stdio'],
     \ 'typescript': ['javascript-typescript-stdio'],
     \ 'typescript.tsx': ['javascript-typescript-stdio'],
     \ 'php': ['php-language-server'],
@@ -306,7 +308,7 @@ let g:LanguageClient_serverCommands = {
     " \ 'javascript': ['flow-language-server', '--stdio'],
     " \ 'javascript.jsx': ['flow-language-server', '--stdio'],
     " \ 'yaml': ['yaml-language-server'],
-" Disable linting + highlighting errors... let ALE do that
+" Disable linting + highlighting errors... let ALE do that through other means
 let g:LanguageClient_diagnosticsEnable = 0
 
 " let g:LanguageClient_rootMarkers = ['.flowconfig']
@@ -573,6 +575,8 @@ autocmd FileType less nnoremap <buffer> K :call LanguageClient#textDocument_defi
 autocmd FileType golang nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType html nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType php nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType javascript nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType javascript.jsx nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType typescript nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType typescript.tsx nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 
