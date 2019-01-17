@@ -23,7 +23,7 @@ function useLocalIfAvailable ()
 alias ack='ag'
 alias ag='rg'
 alias amend='git commit -S --amend'
-alias b='git branch -a'
+alias b='git branch -a --sort=-committerdate'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
 alias be='bundle exec'
