@@ -343,6 +343,14 @@ let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .gi
 let $FZF_DEFAULT_OPTS = ''
       \ . ' --ansi'  " support fd colors
 
+command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, {'options': '--delimiter : --nth 4..'}, <bang>0)
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --pretty --smart-case --max-columns=160 '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
 " marvim
 " let marvim_find_key = 'mf'      " change find key from <F2> to 'space' 
 " let marvim_store_key = 'ms'     " change store key from <F3> to 'ms' 
@@ -546,7 +554,7 @@ nnoremap <Leader>k :bn<CR>
 
 " fzf
 nnoremap <silent> <c-p> :FZF<CR>
-nnoremap <silent> <c-s> :Rg<CR>
+nnoremap <silent> <c-s> :Rg!<CR>
 nnoremap <silent> <Leader>c :Commit<CR>
 
 " fugitive
