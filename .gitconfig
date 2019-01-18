@@ -1,7 +1,6 @@
 [user]
 	name = Aaron Tribou
 	email = aaron.tribou@gmail.com
-	signingkey = A4757543F0EA7FC584FE99F96C456206E2B6AA91
 [core]
 	editor = nvim
 [credential]
@@ -42,3 +41,4 @@
   smudge = git-lfs smudge -- %f
 [url "ssh://git@github.com/"]
 	insteadOf = https://github.com/
+[filter "omitsigningkey"]
