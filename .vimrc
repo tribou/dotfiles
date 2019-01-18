@@ -555,6 +555,7 @@ nnoremap <Leader>k :bn<CR>
 " fzf
 nnoremap <silent> <c-p> :FZF<CR>
 nnoremap <silent> <c-s> :Rg!<CR>
+nnoremap <silent> <c-b> :Buffers<CR>
 nnoremap <silent> <Leader>c :Commit<CR>
 
 " fugitive
