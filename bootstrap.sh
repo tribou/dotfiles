@@ -22,7 +22,7 @@ function linkFileToHome ()
 }
 
 # Backup existing files and replace with symlinks
-# files=( 
+# files=(
 #   ".bash_profile"
 #   ".config/nvim/init.vim"
 #   ".gitconfig"

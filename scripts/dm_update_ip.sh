@@ -4,13 +4,13 @@ function dmupdate {
 
   # Host aliases to set
   DM_HOSTS='dm dockerhost'
-  
+
   # If host is running
   DM_RUNNING=`dm ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"`
 
   # If the IP is available
   if [[ -z "$DM_RUNNING"  ]]
-  then 
+  then
     echo 'Local virtualbox docker host is not running. Skipping IP update'
     return
   fi
@@ -20,7 +20,7 @@ function dmupdate {
 
 	# Check if hosts ip is same as docker-vm ip
 	if [[ "`echo -e "$DM_IP\t$DM_HOSTS"`" == "`awk "/\t$DM_HOSTS\$/" /etc/hosts`"   ]]
-  then	
+  then
 		echo "docker-vm IP $DM_IP doesn't need to update"
 		return
 	fi

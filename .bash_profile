@@ -218,4 +218,4 @@ fi
 cd $DEVPATH
 
 # Welcome message
-remind 'Welcome.'
+remind 'Welcome. 👋'

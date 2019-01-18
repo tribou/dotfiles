@@ -5,7 +5,7 @@ function useLocalIfAvailable ()
 {
   # Use local node module if available
   if [ -f "$(which ./node_modules/.bin/${1})" ]
-  then 
+  then
     "./node_modules/.bin/$@"
 
   # Then check for existing global install
@@ -32,7 +32,7 @@ alias bfg='java -jar /usr/local/bin/bfg.jar'
 function c ()
 {
   if [ -f "$(which ./node_modules/.bin/git-cz)" ]
-  then 
+  then
     # Use local commitizen if available
     ./node_modules/.bin/git-cz -S
   elif [ -f "$(which git-cz)" ]
@@ -47,7 +47,7 @@ function c ()
 alias cherry='git cherry-pick -S -x'
 function clean () {
 
-  git clean -f -- build/ public/ vendor/ 
+  git clean -f -- build/ public/ vendor/
   if [[ $? -ne 0 ]]; then return 1; fi
   if [ -d "build/" ]; then git checkout build/; fi
   if [ -d "public/" ]; then git checkout public/; fi
@@ -62,7 +62,7 @@ alias count='sed "/^\s*$/d" | wc -l | xargs'
 alias d='docker'
 alias dc='docker-compose'
 alias di='docker images'
-function digitalocean () 
+function digitalocean ()
 {
   curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool
 }
@@ -126,6 +126,7 @@ function gr ()
   git rebase -S -i HEAD~$1
 }
 alias gr2='git rebase -S -i head~2'
+alias gs='git show'
 function histgrep ()
 {
   { (grep -r "$1" ~/.history | sort); (history | grep "$1") }
