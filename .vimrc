@@ -343,7 +343,7 @@ let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .gi
 let $FZF_DEFAULT_OPTS = ''
       \ . ' --ansi'  " support fd colors
 
-command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, {'options': '--delimiter : --nth 4..'}, <bang>0)
+" command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, {'options': '--delimiter : --nth 4..'}, <bang>0)
 command! -bang -nargs=* Rg
   \ call fzf#vim#grep(
   \   'rg --column --line-number --no-heading --pretty --smart-case --max-columns=160 '.shellescape(<q-args>), 1,
