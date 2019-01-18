@@ -1,12 +1,12 @@
 [user]
-	name = Aaron Tribou
-	email = aaron.tribou@gmail.com
+  name = Aaron Tribou
+  email = aaron.tribou@gmail.com
 [core]
-	editor = nvim
+  editor = nvim
 [credential]
 [color]
-	ui = true
-	interactive = true
+  ui = true
+  interactive = true
   diff = true
 [color "branch"]
   current = yellow reverse
@@ -27,18 +27,18 @@
   diff-word = diff --color-words="[^[:space:]]|([[:alnum:]]|UTF_8_GUARD)+"
   forget = reset head --hard
   history = log --follow -p --
-	tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
-	tree-short = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
-	changes = log --format=%B --since=\"midnight\" --date=local
+  tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
+  tree-short = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
+  changes = log --format=%B --since=\"midnight\" --date=local
 [push]
   default = simple
 [rerere]
-	enabled = true
+  enabled = true
 [filter "lfs"]
-	process = git-lfs filter-process
-	required = true
-	clean = git-lfs clean -- %f
+  process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
 [url "ssh://git@github.com/"]
-	insteadOf = https://github.com/
+  insteadOf = https://github.com/
 [filter "omitsigningkey"]

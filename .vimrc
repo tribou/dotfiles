@@ -352,9 +352,9 @@ command! -bang -nargs=* Rg
   \   <bang>0)
 
 " marvim
-" let marvim_find_key = 'mf'      " change find key from <F2> to 'space' 
-" let marvim_store_key = 'ms'     " change store key from <F3> to 'ms' 
-" let marvim_register = 'q'       " change used register from 'q' to 'c' 
+" let marvim_find_key = 'mf'      " change find key from <F2> to 'space'
+" let marvim_store_key = 'ms'     " change store key from <F3> to 'ms'
+" let marvim_register = 'q'       " change used register from 'q' to 'c'
 
 
 " ncm2
@@ -589,7 +589,7 @@ autocmd FileType javascript.jsx nnoremap <buffer> K :call LanguageClient#textDoc
 autocmd FileType typescript nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 autocmd FileType typescript.tsx nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
 
-" noremap <Leader><Leader>f :Fixmyjs<CR>   
+" noremap <Leader><Leader>f :Fixmyjs<CR>
 
 " Moving lines
 " Normal mode
