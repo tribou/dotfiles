@@ -92,6 +92,12 @@ if [ -f "$SOURCE_SCRIPT" ]
 then
   . "$SOURCE_SCRIPT"
 fi
+## Source notify script
+SOURCE_SCRIPT=$DOTFILES/scripts/notify.sh
+if [ -f "$SOURCE_SCRIPT" ]
+then
+  . "$SOURCE_SCRIPT"
+fi
 
 # Commands and Aliases
 SOURCE_SCRIPT=$DOTFILES/lib/commands.sh
