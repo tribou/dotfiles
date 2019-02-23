@@ -266,11 +266,10 @@ function npm-install-global ()
     tslint \
     typescript \
     bash-language-server \
-    flow-language-server \
+    flow-bin \
     vue-language-server \
     vscode-css-languageserver-bin \
-    vscode-html-languageserver-bin \
-    javascript-typescript-langserver
+    vscode-html-languageserver-bin
 }
 # NPM GLOBAL ALIASES
 # Instead of installing ALL CLI packages globally, we can use NPX to call the
