@@ -239,19 +239,15 @@ alias nis='npm install --save'
 alias nisd='npm install --save-dev'
 function npm-install-global ()
 {
-  # Crazy logic bc npm dist-tags aren't standardized
-  if [ "$1" == "2" ]
+  if [ ! -z "$1" ]
   then
-    local NPM_VERSION='latest-2'
-  elif [ "$1" == "3" ]
-  then
-    local NPM_VERSION='3.x-latest'
+    local NPM_VERSION="$1"
   else
-    local NPM_VERSION='latest'
+    local NPM_VERSION='lts'
   fi
 
-  echo "Installing NPM@$NPM_VERSION and global modules"
-  npm install -g npm@$NPM_VERSION \
+  echo "Installing npm@$NPM_VERSION and global modules"
+  npm install -g npm@"$NPM_VERSION" \
     && npm install -g \
     eslint_d \
     js-yaml \
