@@ -187,7 +187,7 @@ then
   git config --global user.signingkey ${GIT_SIGNING_KEY}
 fi
 
-cd $DEVPATH
+cd "$DEVPATH"
 
 # Welcome message
 remind 'Welcome. 👋'
