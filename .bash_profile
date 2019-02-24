@@ -19,7 +19,7 @@ function set_badge()
 {
   printf "\e]1337;SetBadgeFormat=%s\a"   $(printf '%q\n' "${PWD##*/}:$(git rev-parse --abbrev-ref HEAD 2> /dev/null)" | base64)
 }
-export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
+[[ $PROMPT_COMMAND != *"set_badge"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 
 # Set default editor
 export EDITOR='nvim'
@@ -118,7 +118,7 @@ function read_node_version()
     fi
   fi
 }
-export PROMPT_COMMAND="$PROMPT_COMMAND read_node_version ;"
+[[ $PROMPT_COMMAND != *"read_node_version"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND read_node_version ;"
 
 export PATH=/usr/local/git/bin:$PATH
 
