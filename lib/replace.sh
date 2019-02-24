@@ -5,8 +5,8 @@
 # But first a convenience function that just finds all the files
 findfiles() {
 
-  usage='Usage: findfiles [directory]'
-  search_dir='.'
+  local usage='Usage: findfiles [directory]'
+  local search_dir='.'
 
   # Return usage if more than 1 arg is passed
   if [ $# -gt 1 ]
@@ -19,7 +19,7 @@ findfiles() {
   if [ $# -eq 1 ]
   then
     # Remove trailing slash if any
-    search_dir=`echo "$1" | sed 's/\/$//'`
+    local search_dir=`echo "$1" | sed 's/\/$//'`
   fi
 
   find "$search_dir" \
@@ -42,7 +42,7 @@ findfiles() {
 
 replace() {
 
-  usage='Usage: replace OLDPATTERN NEWPATTERN [directory]
+  local usage='Usage: replace OLDPATTERN NEWPATTERN [directory]
 
 Examples:
   replace '"'"'original'"'"' '"'"'replacewith'"'"'
@@ -50,7 +50,7 @@ Examples:
   replace '"'"'original'"'"' '"'"'replacewith'"'"' '"'"'./src/*'"'"'
 '
 
-  search_dir='./*'
+  local search_dir='./*'
 
   # Return usage if not 2 args are passed
   if [ $# -lt 2 ]
@@ -67,7 +67,7 @@ Examples:
 
   if [ $# -eq 3 ]
   then
-    search_dir="$3"
+    local search_dir="$3"
   fi
 
   git grep --untracked -I -l "$1" -- \

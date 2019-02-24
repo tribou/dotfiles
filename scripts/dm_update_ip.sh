@@ -3,10 +3,10 @@
 function dmupdate {
 
   # Host aliases to set
-  DM_HOSTS='dm dockerhost'
+  local DM_HOSTS='dm dockerhost'
 
   # If host is running
-  DM_RUNNING=`dm ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"`
+  local DM_RUNNING=`dm ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"`
 
   # If the IP is available
   if [[ -z "$DM_RUNNING"  ]]
@@ -16,7 +16,7 @@ function dmupdate {
   fi
 
   # Get docker-vm IP
-  DM_IP=`docker-machine ip docker-vm`
+  local DM_IP=`docker-machine ip docker-vm`
 
 	# Check if hosts ip is same as docker-vm ip
 	if [[ "`echo -e "$DM_IP\t$DM_HOSTS"`" == "`awk "/\t$DM_HOSTS\$/" /etc/hosts`"   ]]
@@ -34,6 +34,4 @@ function dmupdate {
 	# Move temp file to /etc/hosts
   echo "Updating docker-vm IP to $DM_IP"
 	sudo mv /tmp/hosts /etc/hosts
-
 }
-

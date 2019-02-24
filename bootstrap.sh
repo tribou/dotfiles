@@ -7,7 +7,7 @@ THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
 
 function backupFile ()
 {
-  file=$1
+  local file=$1
 
 	if [ -e ~/$file -a ! -L ~/$file ]; then
     echo "Backing up ${file}"

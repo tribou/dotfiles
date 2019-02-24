@@ -61,63 +61,13 @@ export HISTDIR="${HOME}/.history/$(date -u +%Y/%m)"
 mkdir -p $HISTDIR
 export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 
-# File replace function
-## Source recursive string replace script
-SOURCE_SCRIPT=$DOTFILES/scripts/replace.sh
-if [ -f "$SOURCE_SCRIPT" ]
-then
-  . "$SOURCE_SCRIPT"
-fi
-## Source remind script
-SOURCE_SCRIPT=$DOTFILES/scripts/remind.sh
-if [ -f "$SOURCE_SCRIPT" ]
-then
-  . "$SOURCE_SCRIPT"
-fi
-## Source curlit script
-SOURCE_SCRIPT=$DOTFILES/scripts/curl_it.sh
-if [ -f "$SOURCE_SCRIPT" ]
-then
-  . "$SOURCE_SCRIPT"
-fi
-## Source init script
-SOURCE_SCRIPT=$DOTFILES/scripts/init_project.sh
-if [ -f "$SOURCE_SCRIPT" ]
-then
-  . "$SOURCE_SCRIPT"
-fi
-## Source sizes script
-SOURCE_SCRIPT=$DOTFILES/scripts/sizes.sh
-if [ -f "$SOURCE_SCRIPT" ]
-then
-  . "$SOURCE_SCRIPT"
-fi
-## Source notify script
-SOURCE_SCRIPT=$DOTFILES/scripts/notify.sh
-if [ -f "$SOURCE_SCRIPT" ]
-then
-  . "$SOURCE_SCRIPT"
-fi
 
-# Commands and Aliases
-SOURCE_SCRIPT=$DOTFILES/lib/commands.sh
-if [ -f "$SOURCE_SCRIPT" ]
-then
-  . "$SOURCE_SCRIPT"
-fi
+# Source all lib scripts
+. "$DOTFILES/lib/index.sh"
+
 
 BREW_PREFIX=$(brew --prefix)
 
-# Watchman shortcuts
-WATCHMAN_PREFIX="$(brew --prefix watchman)"
-WATCHMAN_DIR="${WATCHMAN_PREFIX}/var/run/watchman/${USER}-state"
-## cat the current watchman state
-alias wmans="cat ${WATCHMAN_DIR}/state"
-## cat the current watchman log
-alias wmanl="cat ${WATCHMAN_DIR}/log"
-## set npm test trigger in current dir
-alias 'watchman-npmtest'='watchman -- trigger ./ npmtest -I "*.js" "*.jsx" "*.html" "*.scss" "*.css" -X "node_modules/*" -- npm test'
-alias 'watchman-npmtest-delete'='watchman trigger-del "$PWD" npmtest'
 
 export GOPATH=$DEVPATH/go
 export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin:$DEVPATH/bin
@@ -132,27 +82,43 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
 nvm use --delete-prefix default --silent
 
-# Read the .nvmrc and switch nvm versions if exists upon dir changes
-function read_nvmrc()
+# Activate a version of Node that is read from a text file via NVM
+function use_node_version()
 {
-  # If we actually changed directories
-  if [ "$PWD" != "$PREV_PWD" ]
+  local TEXT_FILE_NAME="$1"
+  local CURRENT_VERSION=$(nvm current)
+  local PROJECT_VERSION=$(nvm version $(cat "$TEXT_FILE_NAME"))
+  # If the project file version is different than the current version
+  if [ "$CURRENT_VERSION" != "$PROJECT_VERSION" ]
+  then
+    nvm use "$PROJECT_VERSION"
+  fi
+}
+
+# Read the .nvmrc and switch nvm versions if exists upon dir changes
+function read_node_version()
+{
+  # Only run if we actually changed directories
+  if [ "$PWD" != "$READ_NODE_VERSION_PREV_PWD" ]
 	then
-    PREV_PWD="$PWD";
+    export READ_NODE_VERSION_PREV_PWD="$PWD";
 
     # If there's an .nvmrc here
     if [ -e ".nvmrc" ]
 		then
+      use_node_version ".nvmrc"
+      return
+    fi
 
-      # If the .nvmrc is different than the current version
-      if [ "$(nvm current)" != "$(nvm version $(cat .nvmrc))" ]
-      then
-        nvm use
-      fi
+    # If there's a .node_version here
+    if [ -e ".node_version" ]
+		then
+      use_node_version ".node_version"
+      return
     fi
   fi
 }
-export PROMPT_COMMAND="$PROMPT_COMMAND read_nvmrc ;"
+export PROMPT_COMMAND="$PROMPT_COMMAND read_node_version ;"
 
 export PATH=/usr/local/git/bin:$PATH
 

@@ -70,8 +70,8 @@ alias dm='docker-machine'
 #alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
 function dminit ()
 {
-  usage='Usage: dminit [NAME]'
-  dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
+  local usage='Usage: dminit [NAME]'
+  local dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
 
   # Return usage if 0 or more than 2 args are passed
   if [ $# -gt 1 ]
@@ -82,7 +82,7 @@ function dminit ()
 
   if [ $# -eq 1 ]
   then
-    dm_name="$1"
+    local dm_name="$1"
   fi
 
   eval "$(docker-machine env $dm_name)"
@@ -113,8 +113,7 @@ alias gpl='git pull'
 function gr ()
 {
 
-  usage='Usage: gr NUMBER'
-  search_dir='.'
+  local usage='Usage: gr NUMBER'
 
   # Return usage if 0 or more than 2 args are passed
   if [ $# -ne 1 ]
@@ -134,7 +133,7 @@ function histgrep ()
 function install-swap ()
 {
 
-  usage='Usage: install-swap HOST'
+  local usage='Usage: install-swap HOST'
 
   # Return usage if 0 or more than 2 args are passed
   if [ $# -lt 1 ]
@@ -164,7 +163,7 @@ alias merge='git merge -S'
 function new-docker ()
 {
 
-  usage='Usage: new-docker [NAME] [ACCESS_TOKEN]'
+  local usage='Usage: new-docker [NAME] [ACCESS_TOKEN]'
 
   if [ $# -gt 3 ]
   then
@@ -174,16 +173,16 @@ function new-docker ()
 
   if [ -z "$1" ]
   then
-    MACHINE_NAME=dev
+    local MACHINE_NAME=dev
   else
-    MACHINE_NAME="$1"
+    local MACHINE_NAME="$1"
   fi
 
   if [ -z "$2" ]
   then
-    ACCESS_TOKEN="${DIGITALOCEAN_RS_TOKEN}"
+    local ACCESS_TOKEN="${DIGITALOCEAN_RS_TOKEN}"
   else
-    ACCESS_TOKEN="$2"
+    local ACCESS_TOKEN="$2"
   fi
 
   echo "Creating ${MACHINE_NAME}..."
@@ -195,7 +194,7 @@ function new-docker ()
     --digitalocean-size 2gb \
     --digitalocean-ssh-key-fingerprint "77:70:98:0d:d6:48:01:79:7b:41:f4:66:00:95:54:12" \
     "${MACHINE_NAME}"
-  MACHINE_IP=$(docker-machine ip "$MACHINE_NAME") && \
+  local MACHINE_IP=$(docker-machine ip "$MACHINE_NAME") && \
   install-swap "${MACHINE_IP}" && \
   dminit "${MACHINE_NAME}"
 
@@ -203,7 +202,7 @@ function new-docker ()
 function new-docker-generic ()
 {
 
-  usage='Usage: new-docker-generic IP_ADDRESS [NAME] [PRIVATE_KEY_PATH]'
+  local usage='Usage: new-docker-generic IP_ADDRESS [NAME] [PRIVATE_KEY_PATH]'
 
   if [ $# -lt 1 ]
   then
@@ -211,13 +210,13 @@ function new-docker-generic ()
     return 1
   fi
 
-  MACHINE_IP="$1"
+  local MACHINE_IP="$1"
 
   if [ -z "$2" ]
   then
-    MACHINE_NAME="dev"
+    local MACHINE_NAME="dev"
   else
-    MACHINE_NAME="$2"
+    local MACHINE_NAME="$2"
   fi
 
   # if [ -z "$3" ]
@@ -243,12 +242,12 @@ function npm-install-global ()
   # Crazy logic bc npm dist-tags aren't standardized
   if [ "$1" == "2" ]
   then
-    NPM_VERSION='latest-2'
+    local NPM_VERSION='latest-2'
   elif [ "$1" == "3" ]
   then
-    NPM_VERSION='3.x-latest'
+    local NPM_VERSION='3.x-latest'
   else
-    NPM_VERSION='latest'
+    local NPM_VERSION='latest'
   fi
 
   echo "Installing NPM@$NPM_VERSION and global modules"
@@ -306,7 +305,7 @@ alias s='git status -sb'
 function search ()
 {
 
-  usage='Usage: search PATTERN'
+  local usage='Usage: search PATTERN'
 
   # Return usage if 0 or more than 2 args are passed
   if [ $# -ne 1 ]

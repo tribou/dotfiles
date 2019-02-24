@@ -8,4 +8,3 @@ brew outdated
 
 echo '##### Upgrade outdated packages'
 brew upgrade --all
-

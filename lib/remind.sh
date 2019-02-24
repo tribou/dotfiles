@@ -4,7 +4,7 @@
 
 remind() {
 
-  usage='Usage: remind MESSAGE
+  local usage='Usage: remind MESSAGE
 
 Example:
   remind '"'"'I need to remember this!!!'"'"'
@@ -17,13 +17,13 @@ Example:
     return 1
   fi
 
-  SCREEN_LINES=`tput lines`
-  SCREEN_COLUMNS=`tput cols`
-  MESSAGE_LENGTH=${#1}
-  MESSAGE_LINE=$(( $SCREEN_LINES / 2 ))
-  SCREEN_COLUMNS_HALF=$(( $SCREEN_COLUMNS / 2 ))
-  MESSAGE_LENGTH_HALF=$(( $MESSAGE_LENGTH / 2 ))
-  MESSAGE_COLUMN=$(( $SCREEN_COLUMNS_HALF - $MESSAGE_LENGTH_HALF ))
+  local SCREEN_LINES=`tput lines`
+  local SCREEN_COLUMNS=`tput cols`
+  local MESSAGE_LENGTH=${#1}
+  local MESSAGE_LINE=$(( $SCREEN_LINES / 2 ))
+  local SCREEN_COLUMNS_HALF=$(( $SCREEN_COLUMNS / 2 ))
+  local MESSAGE_LENGTH_HALF=$(( $MESSAGE_LENGTH / 2 ))
+  local MESSAGE_COLUMN=$(( $SCREEN_COLUMNS_HALF - $MESSAGE_LENGTH_HALF ))
 
   for i in `seq 1 "$SCREEN_LINES"`
   do

@@ -1,10 +1,10 @@
 #!/bin/bash -l
 
-# Curl continuously for status
+# Curl continuously for HTTP status
 
 curlit() {
 
-  usage='Usage: curlit URL [interval_seconds]
+  local usage='Usage: curlit URL [interval_seconds]
 
   Example: curlit https://www.google.com/ 5
   '
@@ -24,16 +24,16 @@ curlit() {
 
   if [ $# -eq 1 ]
   then
-    interval=1
+    local interval=1
   elif [ "$2" -gt 0 ]
   then
-    interval="$2"
+    local interval="$2"
   else
-    interval=1
+    local interval=1
   fi
 
   while true; do
-    RESULT_OUTPUT=$(curl -Is $1 | head -n1)
+    local RESULT_OUTPUT=$(curl -Is $1 | head -n1)
     printf $(date +%Y-%m-%dT%H:%M:%S%z)
     echo " $RESULT_OUTPUT"
 

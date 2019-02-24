@@ -3,7 +3,7 @@
 function notify ()
 {
 
-  usage='Usage: notify [MESSAGE]'
+  local usage='Usage: notify [MESSAGE]'
 
   if [ ! $(which osascript) ]
   then
@@ -12,9 +12,9 @@ function notify ()
   fi
 
   # Defaults
-  MESSAGE=""
-  TITLE="ALERT"
-  SUBTITLE=""
+  local MESSAGE=""
+  local TITLE="ALERT"
+  local SUBTITLE=""
 
   # Add splat (*) to the end if omitted
   # if [ $# == 0 ]
@@ -22,15 +22,15 @@ function notify ()
   #   # Use Defaults
   if [ $# -eq 1 ]
   then
-    MESSAGE="$1"
+    local MESSAGE="$1"
   elif [ $# -eq 2 ]
   then
-    MESSAGE="$1"
-    TITLE="$2"
+    local MESSAGE="$1"
+    local TITLE="$2"
   else
-    MESSAGE="$1"
-    TITLE="$2"
-    SUBTITLE="$3"
+    local MESSAGE="$1"
+    local TITLE="$2"
+    local SUBTITLE="$3"
   fi
 
   osascript -e 'display notification "'"$MESSAGE"'" with title "'"$TITLE"'" subtitle "'"$SUBTITLE"'"'
