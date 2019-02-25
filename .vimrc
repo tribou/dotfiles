@@ -490,9 +490,14 @@ nnoremap <Leader>u :UndotreeToggle<CR>
 " ALE
 nmap <Leader>ad :ALEDetail<CR>
 nmap <Leader>af :ALEFix<CR>
+nmap <Leader><Leader>f :ALEFix<CR>
 nmap <Leader>ah :ALEHover<CR>
 nmap <Leader>ai :ALEInfo<CR>
+nmap <Leader>an :ALENext<CR>
 nmap <Leader>at :ALEToggle<CR>
+
+" Prettier
+nmap <Leader><Leader>p :Prettier<CR>
 
 " vim-jsdoc
 nnoremap <c-1> <Plug>(jsdoc)
@@ -509,8 +514,6 @@ autocmd FileType javascript.jsx nnoremap <buffer> K :ALEGoToDefinition<CR>
 autocmd FileType typescript nnoremap <buffer> K :ALEGoToDefinition<CR>
 autocmd FileType typescript.tsx nnoremap <buffer> K :ALEGoToDefinition<CR>
 autocmd FileType sh nnoremap <buffer> K :ALEGoToDefinition<CR>
-
-" noremap <Leader><Leader>f :Fixmyjs<CR>
 
 " Moving lines
 " Normal mode

@@ -165,6 +165,16 @@ then
   . "$BREW_PREFIX/etc/profile.d/z.sh"
 fi
 
+# pyenv
+if [ -f "$HOME/.pyenv/bin/pyenv" ]
+then
+  export PATH="/Users/aarontribou/.pyenv/bin:$PATH"
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
+  pyenv virtualenvwrapper
+fi
+
+
 # Lua/Torch
 if [ -f "$DEVPATH/torch/install/bin/torch-activate" ]
 then
