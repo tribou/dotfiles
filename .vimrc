@@ -119,8 +119,8 @@ Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
 Plug 'mxw/vim-jsx'
 Plug 'jparise/vim-graphql', { 'tag': '1.*' }
 Plug 'HerringtonDarkholme/yats.vim'  " Typescript syntax
-Plug 'ianks/vim-tsx'
-" Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
+" Plug 'ianks/vim-tsx' " Possible indentation issues with TSX
+Plug 'mhartington/nvim-typescript', {'do': './install.sh'} " Typescript deoplete integration
 
 " PHP
 Plug 'roxma/LanguageServer-php-neovim',  {'do': 'composer install && composer run-script parse-stubs'}
@@ -451,6 +451,10 @@ let g:surround_custom_mapping._ = {
   \ }
 
 
+" nvim-typescript
+let g:nvim_typescript#diagnostics_enable = 0 " Use ALE for linting
+
+
 " Other
 "function! SyntaxItem()
 "  return synIDattr(synID(line("."),col("."),1),"name")
@@ -465,6 +469,10 @@ let g:surround_custom_mapping._ = {
 nnoremap <esc><esc> :noh<CR>
 nnoremap <Leader>r :source ~/.vimrc<CR>
 nnoremap <Leader>w <c-w><c-w>
+
+" popup menu browsing
+inoremap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"
+inoremap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"
 
 " buffer browsing
 nnoremap <Leader>d :bd<CR>
