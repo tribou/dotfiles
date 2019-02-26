@@ -97,7 +97,10 @@ alias edls='ember deploy:list --environment staging'
 alias f='git fetch --prune --progress'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
 alias fix='git commit --amend -a --no-edit -S'
-alias ga='git add --all'
+function ga()
+{
+  git add --all $@ && git status -sb
+}
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gc='gcloud compute'
 alias gci='gcloud compute instances'
