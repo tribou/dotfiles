@@ -94,7 +94,10 @@ alias drmi='docker rmi'
 alias edld='ember deploy:list --environment development'
 alias edlp='ember deploy:list --environment production'
 alias edls='ember deploy:list --environment staging'
-alias f='git fetch --prune --progress'
+function f()
+{
+  git fetch --prune --progress $@ && git status -sb
+}
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
 alias fix='git commit --amend -a --no-edit -S'
 function ga()
