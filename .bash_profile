@@ -165,6 +165,12 @@ then
   . "$BREW_PREFIX/etc/profile.d/z.sh"
 fi
 
+# fasd
+if [ $(which fasd) ]
+then
+  eval "$(fasd --init bash-hook)"
+fi
+
 # pyenv
 if [ -f "$HOME/.pyenv/bin/pyenv" ]
 then
