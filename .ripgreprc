@@ -8,7 +8,6 @@
 --glob=!git/*
 --glob=!yarn.lock
 --glob=!package-lock.json
---glob=!vendor/
 
 # Set the colors.
 # --colors=line:none
