@@ -333,7 +333,15 @@ alias tag='git tag -s -m ""'
 alias top='top -o cpu'
 alias tree='tree -I "bower_components|dist|node_modules|temp|tmp"'
 alias unsetdotglob='shopt -u dotglob'
-alias v='fasd -f -e nvim'
+function v()
+{
+  if [ ! $1 ]
+  then
+    nvim
+  else
+    fasd -f -e nvim $@
+  fi
+}
 alias vc='vimcat'
 alias vim='nvim'
 alias webpack='useLocalIfAvailable webpack'
