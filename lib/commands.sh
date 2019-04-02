@@ -91,6 +91,22 @@ alias dps='docker ps'
 alias dpsa='docker ps -a'
 alias drm='docker rm'
 alias drmi='docker rmi'
+function da()
+{
+  # Select a docker container to start and attach to
+  local cid
+  cid=$(docker ps -a | sed 1d | fzf -1 -q "$1" | awk '{print $1}')
+
+  [ -n "$cid" ] && docker start "$cid" && docker attach "$cid"
+}
+function ds()
+{
+  # Select a running docker container to stop
+  local cid
+  cid=$(docker ps | sed 1d | fzf -q "$1" | awk '{print $1}')
+
+  [ -n "$cid" ] && docker stop "$cid"
+}
 alias edld='ember deploy:list --environment development'
 alias edlp='ember deploy:list --environment production'
 alias edls='ember deploy:list --environment staging'
@@ -350,3 +366,20 @@ alias y='npm run --silent yarn-bin --'
 alias yi='npm run --silent yarn-bin --'
 alias yr='npm run --silent yarn-bin --'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
+# function to execute built-in cd
+function z_cd()
+{
+  if [ $# -le 1 ]; then
+    fasd "$@"
+  else
+    local _fasd_ret="$(fasd -e 'printf %s' "$@")"
+    [ -z "$_fasd_ret" ] && return
+    [ -d "$_fasd_ret" ] && cd "$_fasd_ret" || printf %s\n "$_fasd_ret"
+  fi
+}
+alias z='z_cd -d'
+function zz()
+{
+  local dir
+  dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
+}

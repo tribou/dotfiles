@@ -159,12 +159,6 @@ fi
 # AWS CLI
 complete -C aws_completer aws
 
-# z
-if [ -f "$BREW_PREFIX/etc/profile.d/z.sh" ]
-then
-  . "$BREW_PREFIX/etc/profile.d/z.sh"
-fi
-
 # fasd
 if [ $(which fasd) ]
 then
@@ -186,6 +180,9 @@ if [ -f "$DEVPATH/torch/install/bin/torch-activate" ]
 then
   . "$DEVPATH/torch/install/bin/torch-activate"
 fi
+
+# Marker
+[[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
 
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
