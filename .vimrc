@@ -28,6 +28,7 @@ Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-rhubarb'
 Plug 'tommcdo/vim-fubitive'
 "Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
