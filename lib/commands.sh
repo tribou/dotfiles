@@ -54,7 +54,10 @@ function clean () {
   if [ -d "vendor/" ]; then git checkout vendor/; fi
 
 }
-alias co='git checkout'
+function co()
+{
+  git checkout $@ && git status -sb
+}
 alias commit='git commit -ev' # non-signed commit
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
 alias convert-tabs-spaces="replace '	' '  '"
