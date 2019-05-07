@@ -153,7 +153,9 @@ alias gr2='git rebase -S -i head~2'
 alias gs='git show'
 function histgrep ()
 {
-  cat <(grep --line-buffered --color=never -r "$1" ~/.history | sort) <(history | grep "$1") | fzf +s --tac
+  cat <(grep --line-buffered --color=never -r "$1" ~/.history | sort) <(history | grep "$1") \
+    | fzf +s --tac \
+    | awk -F ':' '{print $NF}'
 }
 function install-swap ()
 {
