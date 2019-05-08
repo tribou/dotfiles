@@ -138,18 +138,26 @@ alias gpl='git pull'
 function gr ()
 {
 
-  local usage='Usage: gr NUMBER'
+  local usage='Usage: gr [NUMBER]'
 
   # Return usage if 0 or more than 2 args are passed
-  if [ $# -ne 1 ]
+  if [ $# -eq 0 ] || [ $1 == "-h" ] || [ $1 == "--help" ]
   then
     echo "$usage"
     return 1
   fi
 
-  git rebase -S -i HEAD~$1
+  if [ $# -gt 1 ]
+  then
+    echo 'first'
+    git rebase -S $@
+  else
+    echo 'second'
+    git rebase -S -i HEAD~$1
+  fi
+
 }
-alias gr2='git rebase -S -i head~2'
+alias gr2='git rebase -S -i HEAD~2'
 alias gs='git show'
 function histgrep ()
 {
