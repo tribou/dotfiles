@@ -13,6 +13,7 @@ android: adb shell input keyevent 82
 android: adb uninstall com.package
 android: ./gradlew assembleRelease --console plain
 docker: docker-machine create --driver google --google-machine-type n1-standard-1 --google-zone us-central1-b --google-disk-size 40 --google-disk-type pd-ssd --google-project GOOGLE_PROJECT_ID --google-machine-image=https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts tribou-dev
+git: git rebase --onto newbase oldbase branch-to-move
 imagemagick: convert -resize 50% logo@2x.png logo.png
 images: app-icon generate --platforms=ios
 images: sips -s format png yeti-icon.icns --out yeti-icon.png
