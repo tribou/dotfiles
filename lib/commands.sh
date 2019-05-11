@@ -161,9 +161,25 @@ alias gr2='git rebase -S -i HEAD~2'
 alias gs='git show'
 function histgrep ()
 {
-  cat <(grep --line-buffered --color=never -r "$1" ~/.history | sort) <(history | grep "$1") \
-    | fzf +s --tac \
-    | awk -F ':' '{print $NF}'
+  # Remove histfile directory prefix during fzf search
+  local AWK_REMOVE_HISTDIR='^\/.*\/\.history\/'
+  # Remove rest of histfile prefix from selection
+  local AWK_HISTFILE_DELIM='^[0-9]{4}\/[0-9]{2}\/[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}_.*_.*[0-9]{4}:'
+  # Remove current history result prefix from selection
+  local AWK_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} '
+
+  # Pipe results from two history sources into cat
+  local RESULT=$(cat \
+    <(grep --line-buffered --color=never -r "$1" ~/.history \
+    | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}' \
+    | sort) \
+    <(history | grep "$1") \
+    | fzf +s --tac --preview-window wrap \
+    | awk -F "$AWK_HISTFILE_DELIM" '{print $NF}' \
+    | awk -F "$AWK_HISTORY_DELIM" '{print $NF}')
+
+  echo "$RESULT"
+  printf "$RESULT" | pbcopy
 }
 function install-swap ()
 {
