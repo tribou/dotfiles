@@ -159,6 +159,7 @@ function gr ()
 }
 alias gr2='git rebase -S -i HEAD~2'
 alias gs='git show'
+alias hg='histgrep'
 function histgrep ()
 {
   # Remove histfile directory prefix during fzf search
