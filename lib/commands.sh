@@ -165,7 +165,7 @@ function histgrep ()
   # Remove histfile directory prefix during fzf search
   local AWK_REMOVE_HISTDIR='^\/.*\/\.history\/'
   # Remove rest of histfile prefix from selection
-  local AWK_HISTFILE_DELIM='^[0-9]{4}\/[0-9]{2}\/[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}_.*_.*[0-9]{4}:'
+  local AWK_HISTFILE_DELIM='^[0-9]{4}\/[0-9]{2}\/[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}_.*_.*[0-9]+:'
   # Remove current history result prefix from selection
   local AWK_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} '
 
