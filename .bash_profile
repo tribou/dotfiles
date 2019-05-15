@@ -110,10 +110,10 @@ function read_node_version()
       return
     fi
 
-    # If there's a .node_version here
-    if [ -e ".node_version" ]
+    # If there's a .node-version here
+    if [ -e ".node-version" ]
 		then
-      use_node_version ".node_version"
+      use_node_version ".node-version"
       return
     fi
   fi
