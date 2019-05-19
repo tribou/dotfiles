@@ -149,10 +149,8 @@ function gr ()
 
   if [ $# -gt 1 ]
   then
-    echo 'first'
     git rebase -S $@
   else
-    echo 'second'
     git rebase -S -i HEAD~$1
   fi
 
