@@ -487,6 +487,9 @@ nnoremap <Leader>d :bd<CR>
 nnoremap <Leader>j :bp<CR>
 nnoremap <Leader>k :bn<CR>
 
+" scratch/preview window browsing 
+nnoremap <Leader>w :pc<CR>
+
 " fzf
 nnoremap <silent> <c-p> :FZF<CR>
 nnoremap <silent> <c-s> :Rg!<CR>
