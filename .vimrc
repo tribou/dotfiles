@@ -441,6 +441,8 @@ let g:jsx_ext_required = 0
 "   \ 'https://cdn.jsdelivr.net/gh/sindresorhus/github-markdown-css@2/github-markdown.css',
 "   \ ]
 
+" vim-multiple-cursors
+let g:multi_cursor_select_all_key = '<c-a>'
 
 " vim-prettier
 let g:prettier#autoformat = 0
@@ -487,7 +489,7 @@ nnoremap <Leader>d :bd<CR>
 nnoremap <Leader>j :bp<CR>
 nnoremap <Leader>k :bn<CR>
 
-" scratch/preview window browsing 
+" scratch/preview window browsing
 nnoremap <Leader>w :pc<CR>
 
 " fzf
@@ -533,6 +535,13 @@ autocmd FileType javascript.jsx nnoremap <buffer> K :ALEGoToDefinition<CR>
 autocmd FileType typescript nnoremap <buffer> K :ALEGoToDefinition<CR>
 autocmd FileType typescript.tsx nnoremap <buffer> K :ALEGoToDefinition<CR>
 autocmd FileType sh nnoremap <buffer> K :ALEGoToDefinition<CR>
+
+" Moving/selection
+nnoremap H ^
+vnoremap H ^
+nnoremap J *
+nnoremap L $
+vnoremap L $
 
 " Moving lines
 " Normal mode
