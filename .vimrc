@@ -490,13 +490,13 @@ nnoremap <Leader>j :bp<CR>
 nnoremap <Leader>k :bn<CR>
 
 " scratch/preview window browsing
-nnoremap <Leader>w :pc<CR>
+nnoremap <Leader>c :pc<CR>
 
 " fzf
 nnoremap <silent> <c-p> :FZF<CR>
 nnoremap <silent> <c-s> :Rg!<CR>
 nnoremap <silent> <c-b> :Buffers<CR>
-nnoremap <silent> <Leader>c :Commit<CR>
+nnoremap <silent> <c-c> :Commit<CR>
 
 " fugitive
 noremap <silent> <Leader>b :Gblame<CR>
