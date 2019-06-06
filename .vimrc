@@ -142,6 +142,12 @@ set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
 
+" paste and keep register
+xnoremap <expr> p 'pgv"'.v:register.'y'
+" Or could try
+" xnoremap p "_dP
+
+
 " local vimrc support
 set secure
 set exrc
