@@ -448,7 +448,7 @@ let g:jsx_ext_required = 0
 "   \ ]
 
 " vim-multiple-cursors
-let g:multi_cursor_select_all_key = '<c-a>'
+" let g:multi_cursor_select_all_key = '<c-a>'
 
 " vim-prettier
 let g:prettier#autoformat = 0
