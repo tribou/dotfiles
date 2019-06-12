@@ -218,6 +218,12 @@ let g:ale_linters = {
   \   'sh': [
   \       'language_server',
   \   ],
+  \   'go': [
+  \       'gofmt',
+  \       'golint',
+  \       'govet',
+  \       'golangserver',
+  \   ],
   \   'vue': [
   \       'vls',
   \   ],
