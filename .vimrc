@@ -11,6 +11,13 @@ function! BuildComposer(info)
   endif
 endfunction
 
+" Python
+" Follow python virtualenvs provider instructions to setup:
+" https://github.com/zchee/deoplete-jedi/wiki/Setting-up-Python-for-Neovim
+" https://neovim.io/doc/user/provider.html
+let g:python_host_prog = expand('~/.pyenv/versions/py2nvim/bin/python')
+let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
+
 
 call plug#begin('~/.local/share/nvim/plugged')
 

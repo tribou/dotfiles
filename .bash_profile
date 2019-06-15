@@ -166,12 +166,10 @@ then
 fi
 
 # pyenv
-if [ -f "$HOME/.pyenv/bin/pyenv" ]
+if [ $(which pyenv) ]
 then
-  export PATH="/Users/aarontribou/.pyenv/bin:$PATH"
   eval "$(pyenv init -)"
   eval "$(pyenv virtualenv-init -)"
-  pyenv virtualenvwrapper
 fi
 
 
