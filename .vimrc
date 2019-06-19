@@ -54,7 +54,7 @@ Plug 'ap/vim-css-color'
 Plug 'mbbill/undotree'
 
 " Debugging
-Plug 'vim-vdebug/vdebug'
+Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
 
 " Auto-formatting
 Plug 'editorconfig/editorconfig-vim'
@@ -541,6 +541,9 @@ nmap <Leader><Leader>p :Prettier<CR>
 
 " vim-jsdoc
 nnoremap <c-1> <Plug>(jsdoc)
+
+" vim-vdebug
+nmap <F5> :VdebugStart<CR>
 
 " Filetype-dependent key remapping
 autocmd FileType css nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
