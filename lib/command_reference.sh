@@ -22,6 +22,7 @@ ssh: ssh-keygen -R 159.200.81.180
 ssh: ssh-keygen -t rsa -b 4096 -C "tribou@users.noreply.github.com"
 system: sudo lsof -inP | grep TCP
 system: sudo lsof -i :8081
+typescript: npx dts-gen -m module-name
 EOF
 
   if [ $# -eq 0 ]
