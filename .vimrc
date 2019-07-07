@@ -204,6 +204,7 @@ let g:ale_php_cs_fixer_executable = $HOME . '/.composer/vendor/bin/php-cs-fixer'
 let g:ale_php_cs_fixer_use_global = 1
 " let g:ale_php_cs_fixer_options = '--cache-file ' . $HOME . '/.vim/php-cs-fixer-cache' . getcwd() . '/.php_cs.cache'
 let g:ale_php_cs_fixer_options = '--using-cache=no'
+let g:ale_go_bingo_executable = 'gopls'
 let g:ale_linters = {
   \   'javascript': [
   \       'eslint',
@@ -522,10 +523,10 @@ noremap <silent> <Leader>b :Gblame<CR>
 noremap <silent> <Leader>o :Gbrowse<CR>
 
 " NERDTree
-map <Leader>t :NERDTreeToggle<CR>
+map <silent> <Leader>t :NERDTreeToggle<CR>
 
 " undotree
-nnoremap <Leader>u :UndotreeToggle<CR>
+nnoremap <silent> <Leader>u :UndotreeToggle<CR>
 
 " ALE
 nmap <Leader>ad :ALEDetail<CR>
@@ -546,17 +547,17 @@ nnoremap <c-1> <Plug>(jsdoc)
 nmap <F5> :VdebugStart<CR>
 
 " Filetype-dependent key remapping
-autocmd FileType css nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType scss nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType less nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType html nnoremap <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType php nnoremap <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType go nnoremap <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType javascript nnoremap <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType javascript.jsx nnoremap <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType typescript nnoremap <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType typescript.tsx nnoremap <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType sh nnoremap <buffer> K :ALEGoToDefinition<CR>
+autocmd FileType css nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType scss nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType less nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType html nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
+autocmd FileType php nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
+autocmd FileType go nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
+autocmd FileType javascript nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
+autocmd FileType javascript.jsx nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
+autocmd FileType typescript nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
+autocmd FileType typescript.tsx nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
+autocmd FileType sh nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
 
 " Moving/selection
 nnoremap H ^
