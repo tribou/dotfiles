@@ -524,6 +524,7 @@ noremap <silent> <Leader>o :Gbrowse<CR>
 
 " NERDTree
 map <silent> <Leader>t :NERDTreeToggle<CR>
+map <silent> <Leader>f :NERDTreeFind<CR>
 
 " undotree
 nnoremap <silent> <Leader>u :UndotreeToggle<CR>
