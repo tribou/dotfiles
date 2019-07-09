@@ -47,6 +47,7 @@ Plug 'tpope/vim-dispatch'
 Plug 't9md/vim-surround_custom_mapping'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-git'
+Plug 'tpope/vim-dotenv'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
 Plug 'ap/vim-css-color'
@@ -421,6 +422,10 @@ let g:buftabline_indicators=1
 let g:buftabline_numbers=0
 let g:buftabline_path=1
 
+" vim-dotenv
+function! s:env(var) abort
+  return exists('*DotenvGet') ? DotenvGet(a:var) : eval('$'.a:var)
+endfunction
 
 " vim-flow
 let g:flow#autoclose = 1
