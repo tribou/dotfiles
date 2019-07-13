@@ -83,22 +83,28 @@ Plug 'honza/vim-snippets'
 " Misc syntax
 Plug 'tpope/vim-liquid'
 Plug 'autozimu/LanguageClient-neovim', {
-    \ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
+  \ 'branch': 'next',
+  \ 'do': 'bash install.sh',
+  \ }
 
 " Other JS/CSS/HTML
-Plug 'mattn/emmet-vim'
+Plug 'mattn/emmet-vim', { 'for': ['css', 'html'] }
 Plug 'JulesWang/css.vim'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'wavded/vim-stylus'
 Plug 'mustache/vim-mustache-handlebars'
 
 " Markdown
-Plug 'euclio/vim-markdown-composer', { 'do': function('BuildComposer') }
+Plug 'euclio/vim-markdown-composer', {
+  \ 'do': function('BuildComposer'),
+  \ 'for': ['markdown'],
+  \ }
 
 "" Golang
-Plug 'fatih/vim-go', { 'tag': '*', 'do': ':GoInstallBinaries' }
+Plug 'fatih/vim-go', {
+  \ 'tag': '*', 'do': ':GoInstallBinaries',
+  \ 'for': ['go'],
+  \ }
 
 "" HashiCorp
 "Plug 'hashivim/vim-consul'
@@ -150,6 +156,7 @@ set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
 
+
 " paste and keep register
 xnoremap <expr> p 'pgv"'.v:register.'y'
 " Or could try
@@ -159,6 +166,7 @@ xnoremap <expr> p 'pgv"'.v:register.'y'
 " local vimrc support
 set secure
 set exrc
+
 
 " custom filetype settings
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
@@ -189,103 +197,11 @@ let @n = '/@wwwv/,hykPa I.jj'
 let @r = 'A'
 map , @r
 
+
 " ack.vim
 if executable('ag')
   let g:ackprg = 'ag --vimgrep'
 endif
-
-" ale
-let g:ale_completion_enabled = 0 " using deoplete instead
-let g:ale_fix_on_save = 0 " enable on project-by-project basis with local .exrc
-let g:ale_javascript_eslint_executable = 'eslint_d'
-let g:ale_javascript_eslint_use_global = 1
-let g:ale_php_langserver_executable = $HOME . '/.composer/vendor/bin/php-language-server.php'
-let g:ale_php_langserver_use_global = 1
-let g:ale_php_cs_fixer_executable = $HOME . '/.composer/vendor/bin/php-cs-fixer'
-let g:ale_php_cs_fixer_use_global = 1
-" let g:ale_php_cs_fixer_options = '--cache-file ' . $HOME . '/.vim/php-cs-fixer-cache' . getcwd() . '/.php_cs.cache'
-let g:ale_php_cs_fixer_options = '--using-cache=no'
-let g:ale_go_bingo_executable = 'gopls'
-let g:ale_linters = {
-  \   'javascript': [
-  \       'eslint',
-  \   ],
-  \   'javascript.jsx': [
-  \       'eslint',
-  \   ],
-  \   'typescript': [
-  \       'tslint',
-  \       'tsserver',
-  \   ],
-  \   'elixir': [
-  \       'mix',
-  \   ],
-  \   'php': [
-  \       'php',
-  \       'langserver',
-  \   ],
-  \   'sh': [
-  \       'language_server',
-  \   ],
-  \   'go': [
-  \       'gofmt',
-  \       'golint',
-  \       'govet',
-  \       'golangserver',
-  \   ],
-  \   'vue': [
-  \       'vls',
-  \   ],
-  \}
-let g:ale_fixers = {
-  \   'javascript': [
-  \       'eslint',
-  \       'prettier',
-  \   ],
-  \   'javascript.jsx': [
-  \       'eslint',
-  \       'prettier',
-  \   ],
-  \   'typescript': [
-  \       'prettier',
-  \       'tslint',
-  \   ],
-  \   'typescript.tsx': [
-  \       'prettier',
-  \       'tslint',
-  \   ],
-  \   'json': [
-  \       'prettier',
-  \   ],
-  \   'vue': [
-  \       'prettier',
-  \   ],
-  \   'scss': [
-  \       'prettier',
-  \   ],
-  \   'css': [
-  \       'prettier',
-  \   ],
-  \   'less': [
-  \       'prettier',
-  \   ],
-  \   'markdown': [
-  \       'prettier',
-  \   ],
-  \   'yaml': [
-  \       'prettier',
-  \   ],
-  \   'php': [
-  \       'php_cs_fixer',
-  \   ],
-  \   'go': [
-  \       'goimports',
-  \       'gofmt',
-  \   ],
-  \}
-  " \   'html': [
-  " \       'tidy',
-  " \   ],
 
 
 " deoplete
@@ -361,71 +277,18 @@ let g:UltiSnipsJumpBackwardTrigger="<c-p>"
 "let g:UltiSnipsEditSplit="vertical"
 
 
-" lightline.vim
-set laststatus=2
-set noshowmode
-let g:lightline = {
-      \ 'colorscheme': 'solarized',
-      \ 'active': {
-      \   'left': [
-      \             [ 'linter_errors', 'linter_warnings' ],
-      \             [ 'mode', 'paste' ],
-      \             [ 'readonly', 'filename' ]
-      \           ],
-      \ },
-      \ 'component_function': {
-      \   'filename': 'LightlineFilename',
-      \ },
-      \ }
-
-function! SplitPath()
-  let s = split(expand('%'), '/')
-  if len(s) > 1
-    let i = 0
-    let path = ''
-    " Get first character of each directory except last one
-    while i < len(s) - 2
-      let path .= strpart(s[i], 0, 1)
-      let path .= '/'
-      let i += 1
-    endwhile
-    let path .= s[-2] . '/' . s[-1]
-    return path
-  endif
-  return expand('%')
-endfunction
-
-function! LightlineFilename()
-  " let splitpath = split(expand('%'), '/')
-  " let path = len(splitpath) < 2 ? expand('%') : join([splitpath[-2], splitpath[-1]], '/')
-  let path = SplitPath()
-  let modified = &modified ? ' +' : ''
-  return path . modified
-endfunction
-
-
-" lightline-ale
-let g:lightline.component_expand = {
-      \  'linter_warnings': 'lightline#ale#warnings',
-      \  'linter_errors': 'lightline#ale#errors',
-      \ }
-
-let g:lightline.component_type = {
-      \     'linter_warnings': 'warning',
-      \     'linter_errors': 'error',
-      \ }
-
-
 " buftabline
 let g:buftabline_show=2
 let g:buftabline_indicators=1
 let g:buftabline_numbers=0
 let g:buftabline_path=1
 
+
 " vim-dotenv
 function! s:env(var) abort
   return exists('*DotenvGet') ? DotenvGet(a:var) : eval('$'.a:var)
 endfunction
+
 
 " vim-flow
 let g:flow#autoclose = 1
@@ -466,8 +329,10 @@ let g:jsx_ext_required = 0
 "   \ 'https://cdn.jsdelivr.net/gh/sindresorhus/github-markdown-css@2/github-markdown.css',
 "   \ ]
 
+
 " vim-multiple-cursors
 " let g:multi_cursor_select_all_key = '<c-a>'
+
 
 " vim-prettier
 let g:prettier#autoformat = 0
@@ -497,91 +362,8 @@ let g:nvim_typescript#diagnostics_enable = 0 " Use ALE for linting
 "
 "set statusline+=%{SyntaxItem()}
 
-"
-" Key Mappings
-"
-" misc
-nnoremap <esc><esc> :noh<CR>
-nnoremap <Leader>r :source ~/.vimrc<CR>
-nnoremap <Leader>w <c-w><c-w>
 
-" popup menu browsing
-inoremap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"
-inoremap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"
-
-" buffer browsing
-nnoremap <Leader>d :bd<CR>
-nnoremap <Leader>j :bp<CR>
-nnoremap <Leader>k :bn<CR>
-
-" scratch/preview window browsing
-nnoremap <Leader>c :pc<CR>
-
-" fzf
-nnoremap <silent> <c-p> :FZF<CR>
-nnoremap <silent> <c-s> :Rg!<CR>
-nnoremap <silent> <c-b> :Buffers<CR>
-nnoremap <silent> <c-c> :Commit<CR>
-
-" fugitive
-noremap <silent> <Leader>b :Gblame<CR>
-noremap <silent> <Leader>o :Gbrowse<CR>
-
-" NERDTree
-map <silent> <Leader>t :NERDTreeToggle<CR>
-map <silent> <Leader>f :NERDTreeFind<CR>
-
-" undotree
-nnoremap <silent> <Leader>u :UndotreeToggle<CR>
-
-" ALE
-nmap <Leader>ad :ALEDetail<CR>
-nmap <Leader>af :ALEFix<CR>
-nmap <Leader><Leader>f :ALEFix<CR>
-nmap <Leader>ah :ALEHover<CR>
-nmap <Leader>ai :ALEInfo<CR>
-nmap <Leader>an :ALENext<CR>
-nmap <Leader>at :ALEToggle<CR>
-
-" Prettier
-nmap <Leader><Leader>p :Prettier<CR>
-
-" vim-jsdoc
-nnoremap <c-1> <Plug>(jsdoc)
-
-" vim-vdebug
-nmap <F5> :VdebugStart<CR>
-
-" Filetype-dependent key remapping
-autocmd FileType css nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType scss nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType less nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType html nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType php nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType go nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType javascript nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType javascript.jsx nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType typescript nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType typescript.tsx nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType sh nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-
-" Moving/selection
-nnoremap H ^
-vnoremap H ^
-nnoremap J *
-nnoremap L $
-vnoremap L $
-
-" Moving lines
-" Normal mode
-" nnoremap <c-j> :m .+1<cr>==
-" nnoremap <c-k> :m .-2<cr>==
-
-" Insert mode
-" inoremap <C-j> <ESC>:m .+1<CR>==gi
-" inoremap <C-k> <ESC>:m .-2<CR>==gi
-
-" Visual mode
-" vnoremap <C-j> :m '>+1<CR>gv=gv
-" vnoremap <C-k> :m '<-2<CR>gv=gv
-"
+source $DOTFILES/vim/lightline.vim
+source $DOTFILES/vim/ale.vim
+source $DOTFILES/vim/keymaps.vim
+source $DOTFILES/vim/visual-at.vim
