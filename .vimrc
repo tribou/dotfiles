@@ -58,7 +58,7 @@ Plug 'mbbill/undotree'
 Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
 
 " Auto-formatting
-Plug 'editorconfig/editorconfig-vim'
+Plug 'editorconfig/editorconfig-vim', { 'commit': '68f8136d2b018bfa9b23403e87d3d65bc942cbc3' }
 " Using this only for the manual :Prettier command
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
