@@ -234,38 +234,6 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 "let g:EditorConfig_verbose=1
 
 
-" fzf
-let g:fzf_action = {
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-x': 'split',
-  \ 'ctrl-v': 'vsplit' }
-" Customize fzf colors to match your color scheme
-let g:fzf_colors =
-\ { 'fg':      ['fg', 'Normal'],
-  \ 'bg':      ['bg', 'Normal'],
-  \ 'hl':      ['fg', 'Comment'],
-  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-  \ 'hl+':     ['fg', 'Statement'],
-  \ 'info':    ['fg', 'PreProc'],
-  \ 'border':  ['fg', 'Ignore'],
-  \ 'prompt':  ['fg', 'Conditional'],
-  \ 'pointer': ['fg', 'Exception'],
-  \ 'marker':  ['fg', 'Keyword'],
-  \ 'spinner': ['fg', 'Label'],
-  \ 'header':  ['fg', 'Comment'] }
-let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .git'
-let $FZF_DEFAULT_OPTS = ''
-      \ . ' --ansi'  " support fd colors
-" command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, {'options': '--delimiter : --nth 4..'}, <bang>0)
-command! -bang -nargs=* Rg
-  \ call fzf#vim#grep(
-  \   'rg --column --line-number --no-heading --pretty --smart-case --max-columns=160 '.shellescape(<q-args>), 1,
-  \   <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
-  \           : fzf#vim#with_preview('up:60%', '?'),
-  \   <bang>0)
-
-
 " UltiSnips
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<tab>"
@@ -349,6 +317,9 @@ let g:surround_custom_mapping._ = {
   \ 'h':  "{{!-- \r --}}",
   \ 'x':  "{/* \r */}",
   \ }
+let g:surround_custom_mapping.html = {
+  \ 'm':  "{{#\1view helper: \1}}\r{{/\1\1}}",
+  \ }
 
 
 " nvim-typescript
@@ -365,5 +336,6 @@ let g:nvim_typescript#diagnostics_enable = 0 " Use ALE for linting
 
 source $DOTFILES/vim/lightline.vim
 source $DOTFILES/vim/ale.vim
+source $DOTFILES/vim/fzf.vim
 source $DOTFILES/vim/keymaps.vim
 source $DOTFILES/vim/visual-at.vim
