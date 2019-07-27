@@ -42,3 +42,7 @@
 [url "ssh://git@github.com/"]
   insteadOf = https://github.com/
 [filter "omitsigningkey"]
+[commit]
+	gpgsign = true
+[gpg]
+	program = /usr/local/bin/gpg
