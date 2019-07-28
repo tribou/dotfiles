@@ -5,6 +5,7 @@
 nnoremap <silent> <esc><esc> :noh<CR>
 nnoremap <Leader>r :source ~/.vimrc<CR>
 nnoremap <Leader>w <c-w><c-w>
+nnoremap <Leader>q :q<CR>
 
 " popup menu browsing
 inoremap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"

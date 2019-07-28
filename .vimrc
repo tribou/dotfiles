@@ -21,9 +21,13 @@ let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
 
 call plug#begin('~/.local/share/nvim/plugged')
 
+" Themes
+" Plug 'altercation/vim-colors-solarized'
+Plug 'lifepillar/vim-solarized8'
+Plug 'lifepillar/vim-colortemplate'
+
 " Misc
 Plug 'airblade/vim-gitgutter'
-Plug 'altercation/vim-colors-solarized'
 Plug 'itchyny/lightline.vim'
 Plug 'maximbaz/lightline-ale'
 " Plug 'ap/vim-buftabline'
@@ -145,8 +149,6 @@ silent !mkdir -p $HOME/.vim/swapfiles
 syntax enable
 set clipboard+=unnamed
 set conceallevel=0
-colorscheme solarized
-set background=dark
 set directory=$HOME/.vim/swapfiles//
 set number
 filetype plugin indent on
@@ -155,7 +157,9 @@ set shiftwidth=2
 set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
-
+set termguicolors
+set background=dark
+colorscheme solarized8_flat
 
 " paste and keep register
 xnoremap <expr> p 'pgv"'.v:register.'y'

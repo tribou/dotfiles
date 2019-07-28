@@ -159,6 +159,9 @@ fi
 # AWS CLI
 complete -C aws_completer aws
 
+# bat
+export BAT_THEME=TwoDark
+
 # fasd
 if [ $(which fasd) ]
 then
