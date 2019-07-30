@@ -301,8 +301,10 @@ colors:
   bright:
     black:   '0x011627' # #002b36 #011627
     red:     '0xC32534' # #cb4b16 #ef5350
-    green:   '0x03648a' # #586e75 #03648a
-    yellow:  '0x5f7e97' # #657b83 #5f7e97
+    green:   '0x23d18b' # #586e75 #23d18b
+    # green:   '0x03648a' # #586e75 #03648a
+    yellow:  '0xf5f543' # #657b83 #f5f543
+    # yellow:  '0x5f7e97' # #657b83 #5f7e97
     blue:    '0xa7dbf7' # #839496 #a7dbf7
     magenta: '0x7e57c2' # #6c71c4 #7e57c2
     cyan:    '0xcecece' # #93a1a1 #cecece
