@@ -11,8 +11,20 @@ fi
 # Set terminal language and UTF-8
 export LANG=en_US.UTF-8
 
+function get_git_location()
+{
+  if [[ -d "./.git" ]]
+  then
+    local BRANCH=$(git branch --show-current)
+    [[ ! -z "$BRANCH" ]] && echo "$BRANCH" || git rev-parse --short HEAD
+  else
+    echo "$HOSTNAME_SHORT"
+  fi
+}
+
 # Change bash prompt
-export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
+# export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
+export PS1="\[\033[0;34m\]\W \$(nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
 
 # Set iTerm2 badge
 function set_badge()
