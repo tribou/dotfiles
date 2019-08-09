@@ -25,6 +25,7 @@ call plug#begin('~/.local/share/nvim/plugged')
 " Plug 'altercation/vim-colors-solarized'
 Plug 'lifepillar/vim-solarized8'
 Plug 'lifepillar/vim-colortemplate'
+Plug 'Rigellute/rigel'
 
 " Misc
 Plug 'airblade/vim-gitgutter'
