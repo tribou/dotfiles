@@ -160,7 +160,11 @@ set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
 set termguicolors
 set background=dark
-colorscheme solarized8_flat
+colorscheme solarized8_flat " rigel
+set diffopt=filler,internal,algorithm:histogram,indent-heuristic
+
+" source some aliases for shell
+set shell=/bin/bash\ --rcfile\ ~/.ssh/api_keys
 
 " paste and keep register
 xnoremap <expr> p 'pgv"'.v:register.'y'
