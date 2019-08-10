@@ -295,7 +295,7 @@ colors:
     magenta: '0xD280FF' # #d33682 #D280FF
     # magenta: '0x4373c2' # #d33682 #4373c2
     cyan:    '0x5ABEB0' # #2aa198 #5ABEB0
-    white:   '0xeee8d5' # #eee8d5 #eeefff
+    white:   '0xeeefff' # #eee8d5 #eeefff
 
   # Bright colors
   bright:

@@ -55,17 +55,9 @@ nnoremap <c-1> <Plug>(jsdoc)
 nmap <F5> :VdebugStart<CR>
 
 " Filetype-dependent key remapping
-autocmd FileType css nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType scss nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType less nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType html nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
-autocmd FileType php nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType go nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType javascript nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType javascript.jsx nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType typescript nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType typescript.tsx nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
-autocmd FileType sh nnoremap <silent> <buffer> K :ALEGoToDefinition<CR>
+" autocmd FileType css nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
+" Global key remapping to ALE by default
+nnoremap <silent> K :ALEGoToDefinition<CR>
 
 " Moving/selection
 nnoremap H ^
