@@ -328,6 +328,7 @@ alias bd='docker-machine'
 alias be='bundle exec'
 alias bfg='java -jar /usr/local/bin/bfg.jar'
 alias cherry='git cherry-pick -S -x'
+alias com='co master'
 alias commit='git commit -ev' # non-signed commit
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
 alias convert-tabs-spaces="replace '	' '  '"
