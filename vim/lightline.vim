@@ -7,11 +7,12 @@ let g:lightline = {
       \   'left': [
       \             [ 'linter_errors', 'linter_warnings' ],
       \             [ 'mode', 'paste' ],
-      \             [ 'readonly', 'filename' ]
+      \             [ 'gitbranch', 'readonly', 'filename' ]
       \           ],
       \ },
       \ 'component_function': {
       \   'filename': 'LightlineFilename',
+      \   'gitbranch': 'fugitive#head',
       \ },
       \ }
 
@@ -33,8 +34,6 @@ function! SplitPath()
 endfunction
 
 function! LightlineFilename()
-  " let splitpath = split(expand('%'), '/')
-  " let path = len(splitpath) < 2 ? expand('%') : join([splitpath[-2], splitpath[-1]], '/')
   let path = SplitPath()
   let modified = &modified ? ' +' : ''
   return path . modified
