@@ -20,7 +20,7 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 
-let g:fzf_commits_log_options = '--graph --abbrev-commit --date=local --date=short --color=always '
+let g:fzf_commits_log_options = '--all --graph --abbrev-commit --date=local --date=short --color=always '
   \ . '--pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>"'
 let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .git'
 let $FZF_DEFAULT_OPTS = ' --ansi --hscroll-off=80'

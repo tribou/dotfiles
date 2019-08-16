@@ -23,7 +23,7 @@ nnoremap <silent> <Leader>c :pc<CR>
 nnoremap <silent> <c-p> :Fzf<CR>
 nnoremap <silent> <c-s> :Rg!<CR>
 nnoremap <silent> <c-b> :Buffers<CR>
-nnoremap <silent> <c-c> :Commit<CR>
+nnoremap <silent> <c-c> :BCommits<CR>
 
 " fugitive
 noremap <silent> <Leader>b :Gblame<CR>
