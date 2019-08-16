@@ -41,6 +41,7 @@ nmap <Leader>ad :ALEDetail<CR>
 nmap <Leader>af :ALEFix<CR>
 nmap <Leader><Leader>f :ALEFix<CR>
 nmap <Leader>ah :ALEHover<CR>
+nmap <Leader>h :ALEHover<CR>
 nmap <Leader>ai :ALEInfo<CR>
 nmap <Leader>an :ALENext<CR>
 nmap <Leader>at :ALEToggle<CR>
