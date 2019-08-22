@@ -17,8 +17,8 @@ function backupFile ()
 
 function linkFileToHome ()
 {
-  echo "Creating a symlink for ${1}"
-  ln -sf ${THIS_DIR}/${1} ~/${1}
+  echo "Creating a symlink for ${2}"
+  ln -sf ${THIS_DIR}/${1} ~/${2}
 }
 
 # Backup existing files and replace with symlinks
@@ -36,32 +36,34 @@ function linkFileToHome ()
 
 # .bash_profile
 backupFile ".bash_profile"
-linkFileToHome ".bash_profile"
+linkFileToHome bash_profile .bash_profile
 
 # .vimrc
 backupFile ".vimrc"
-linkFileToHome ".vimrc"
+linkFileToHome init.vim .vimrc
 
 # .gitconfig
 backupFile ".gitconfig"
-linkFileToHome ".gitconfig"
+linkFileToHome gitconfig .gitconfig
 
 # .zshrc
 backupFile ".zshrc"
-linkFileToHome ".zshrc"
+linkFileToHome "zshrc" ".zshrc"
+
+# .tmux.conf
+backupFile ".tmux.conf"
+linkFileToHome "tmux-conf" ".tmux.conf"
 
 # .config/nvim/init.vim
 # Exceptional Case: need to link to the same .vimrc for nvim
 mkdir -p ~/.config/nvim
 backupFile ".config/nvim/init.vim"
-echo "Creating a symlink for .config/nvim/init.vim"
-ln -sf ${THIS_DIR}/.vimrc ~/.config/nvim/init.vim
+linkFileToHome "init.vim" ".config/nvim/init.vim"
 
 # .config/alacritty/alacritty.yml
 mkdir -p ~/.config/alacritty
 backupFile ".config/alacritty/alacritty.yml"
-echo "Creating a symlink for .config/alacritty/alacritty.yml"
-ln -sf ${THIS_DIR}/.alacritty.yml ~/.config/alacritty/alacritty.yml
+linkFileToHome "alacritty.yml" ".config/alacritty/alacritty.yml"
 
 # setup API keys file
 if [ ! -f "$HOME/.ssh/api_keys" ]

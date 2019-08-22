@@ -205,7 +205,7 @@ then
 fi
 
 # ripgrep
-export RIPGREP_CONFIG_PATH="$DOTFILES/.ripgreprc"
+export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
 
 # set git signing key if GIT_SIGNING_KEY is set and config doesn't exist
 if [ -n "$GIT_SIGNING_KEY" ] && git config --global --get user.signingkey > /dev/null;
