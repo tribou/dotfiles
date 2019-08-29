@@ -177,6 +177,11 @@ function install-swap ()
     --extra-vars "target=${1}"
 }
 
+function merge ()
+{
+  git merge -S "$@" && _dotfiles_git_status
+}
+
 function new-docker ()
 {
   local usage='Usage: new-docker [NAME] [ACCESS_TOKEN]'
@@ -369,7 +374,6 @@ alias less='less -r'
 alias ll='ls -lah'
 alias ls='ls -G'
 alias lt='ls -lath'
-alias merge='git merge -S'
 alias ni='npm install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
