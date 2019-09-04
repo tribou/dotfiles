@@ -113,6 +113,11 @@ function ga ()
   git add --all "$@" && _dotfiles_git_status
 }
 
+function gpsu ()
+{
+  git push -u origin "$(git branch --show-current)" "$@" && _dotfiles_git_status
+}
+
 function gr ()
 {
 
