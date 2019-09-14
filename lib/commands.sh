@@ -9,25 +9,6 @@ function _dotfiles_grep_ticket_number () {
   grep -E '^[A-Z0-9]{2,4}-\d{1,7}$'
 }
 
-# Use like: useLocalIfAvailable flow-typed -v
-function useLocalIfAvailable ()
-{
-  # Use local node module if available
-  if [ -f "$(which ./node_modules/.bin/${1})" ]
-  then
-    "./node_modules/.bin/$@"
-
-  # Then check for existing global install
-  elif [ -f "$(which ${1})" ]
-  then
-    "$@"
-
-  # Otherwise, use npx
-  else
-    npx "$@"
-  fi
-}
-
 # If no args are passed, open the commit editor. Otherwise commit with all
 # arguments concatenated as a string
 function c ()
@@ -308,6 +289,75 @@ function search ()
     ':!flow-typed/**' \
     ':!vendor/**' \
     ':!yarn.lock'
+}
+
+# Create the main dev layout for large monitors
+function tmux-large ()
+{
+  if [ -z "$PRIMARY_REPO" ]
+  then
+    local _PRIMARY="dev"
+  else
+    local _PRIMARY="$PRIMARY_REPO"
+  fi
+  if [ -z "$SECONDARY_REPO" ]
+  then
+    local _SECONDARY="dev"
+  else
+    local _SECONDARY="$SECONDARY_REPO"
+  fi
+
+  tmux new-session -d
+  tmux split-window -h -p 75
+  tmux select-pane -t 1
+  tmux split-window -v -p 50
+  tmux select-pane -t 3
+  tmux split-window -h -p 25
+  tmux send-keys -t 1 z Space $_PRIMARY Enter
+  tmux send-keys -t 2 z Space $_PRIMARY Enter
+  tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
+  tmux send-keys -t 4 z Space $_SECONDARY Enter
+}
+
+# Create the main dev layout for small monitors
+function tmux-small ()
+{
+  if [ -n "$1" ]
+  then
+    local _PRIMARY="$1"
+  elif [ -n "$PRIMARY_REPO" ]
+  then
+    local _PRIMARY="$PRIMARY_REPO"
+  else
+    local _PRIMARY="dev"
+  fi
+
+  tmux new-session -d
+  tmux split-window -h -p 50
+  tmux select-pane -t 1
+  tmux split-window -v -p 50
+  tmux send-keys -t 1 z Space $_PRIMARY Enter
+  tmux send-keys -t 2 z Space $_PRIMARY Enter
+  tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
+}
+
+# Use like: useLocalIfAvailable flow-typed -v
+function useLocalIfAvailable ()
+{
+  # Use local node module if available
+  if [ -f "$(which ./node_modules/.bin/${1})" ]
+  then
+    "./node_modules/.bin/$@"
+
+  # Then check for existing global install
+  elif [ -f "$(which ${1})" ]
+  then
+    "$@"
+
+  # Otherwise, use npx
+  else
+    npx "$@"
+  fi
 }
 
 # function to execute built-in cd
