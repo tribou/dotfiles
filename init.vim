@@ -164,6 +164,8 @@ set termguicolors
 set background=dark
 colorscheme solarized8_flat " rigel
 set diffopt=filler,internal,algorithm:histogram,indent-heuristic
+set ignorecase
+set smartcase
 
 " source some aliases for shell
 set shell=/bin/bash\ --rcfile\ ~/.ssh/api_keys
