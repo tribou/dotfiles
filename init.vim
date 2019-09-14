@@ -22,10 +22,13 @@ let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
 call plug#begin('~/.local/share/nvim/plugged')
 
 " Themes
-" Plug 'altercation/vim-colors-solarized'
+Plug 'altercation/vim-colors-solarized'
 Plug 'lifepillar/vim-solarized8'
 Plug 'lifepillar/vim-colortemplate'
 Plug 'Rigellute/rigel'
+Plug 'nanotech/jellybeans.vim'
+Plug 'vim-scripts/JellyX'
+Plug 'robeirne/twodark.vim'
 
 " Misc
 Plug 'airblade/vim-gitgutter'
@@ -88,6 +91,7 @@ Plug 'honza/vim-snippets'
 " Plug '~/dev/vim-snippets'
 
 " Misc syntax
+" Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-liquid'
 Plug 'autozimu/LanguageClient-neovim', {
   \ 'branch': 'next',
@@ -160,12 +164,31 @@ set shiftwidth=2
 set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
-set termguicolors
 set background=dark
-colorscheme solarized8_flat " rigel
 set diffopt=filler,internal,algorithm:histogram,indent-heuristic
 set ignorecase
 set smartcase
+
+" jellybeans.vim
+let g:jellybeans_overrides = {
+\    'background': { 'guibg': '011627' },
+\}
+let g:jellybeans_background_color_256='NONE'
+
+" tmux only has 256 color support (no termguicolors)
+if exists('$TMUX')
+  let g:twodark_color_overrides = {
+  \ "black": {"gui": "NONE", "cterm": "NONE", "cterm16": "NONE" },
+  \}
+  colorscheme twodark
+else
+  if (has("termguicolors"))
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+    set termguicolors
+  endif
+  colorscheme solarized8_flat " rigel
+endif
 
 " source some aliases for shell
 set shell=/bin/bash\ --rcfile\ ~/.ssh/api_keys
@@ -291,7 +314,6 @@ let g:javascript_plugin_jsdoc = 1
 " let g:javascript_opfirst = 1
 " let g:javascript_opfirst = '\%([<>,?^%|*&]\|\/[^/*]\|\([-:+]\)\1\@!\|=>\@!\|in\%(stanceof\)\=\>\)'
 " let g:javascript_continuation = '\%([<=,?/*^%|&:]\|+\@<!+\|-\@<!-\|=\@<!>\|\<in\%(stanceof\)\=\)'
-
 
 " vim-jsdoc
 let g:jsdoc_allow_input_prompt = 1
