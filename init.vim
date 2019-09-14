@@ -177,10 +177,9 @@ let g:jellybeans_background_color_256='NONE'
 
 " tmux only has 256 color support (no termguicolors)
 if exists('$TMUX')
-  let g:twodark_color_overrides = {
-  \ "black": {"gui": "NONE", "cterm": "NONE", "cterm16": "NONE" },
-  \}
   colorscheme twodark
+  " Use terminal background
+  hi Normal guibg=NONE ctermbg=NONE
 else
   if (has("termguicolors"))
     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
