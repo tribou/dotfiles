@@ -310,9 +310,9 @@ function tmux-large ()
   tmux new-session -d
   tmux split-window -h -p 75
   tmux select-pane -t 1
-  tmux split-window -v -p 50
+  tmux split-window -v -p 35
   tmux select-pane -t 3
-  tmux split-window -h -p 25
+  tmux split-window -h -p 40
   tmux send-keys -t 1 z Space $_PRIMARY Enter
   tmux send-keys -t 2 z Space $_PRIMARY Enter
   tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
@@ -445,6 +445,8 @@ alias setdotglob='shopt -s dotglob'
 alias sprofile='. ~/.bash_profile; cd "$OLDPWD"'
 alias survey='sudo nmap -sP 10.0.1.1/24'
 alias t='echo; echo; git tree'
+alias tm-large='tmux-large'
+alias tm-small='tmux-small'
 alias tma='tmux attach'
 alias ts='echo; echo; git tree-short'
 alias to='echo; echo; git tree-one'

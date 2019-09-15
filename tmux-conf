@@ -131,17 +131,17 @@ set -g status-left-style "none"
 set -g status-right-length "100"
 set -g status-right-style "none"
 set -g status-style "none,bg=colour236"
-set -g status-left "#{prefix_highlight}#[fg=colour22,bg=colour148,bold] #S #[fg=colour148,bg=colour236,nobold,nounderscore,noitalics]"
+set -g status-left "#{prefix_highlight}#[fg=colour22,bg=colour39,bold] #S #[fg=colour39,bg=colour236,nobold,nounderscore,noitalics]"
 set -g status-right "#[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour240] %Y-%m-%d %H:%M #[fg=colour252,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour241,bg=colour252] #h "
 
-set -g pane-active-border-style "fg=colour148"
+set -g pane-active-border-style "fg=colour39"
 set -g pane-border-style "fg=colour240"
 
 set -g message-command-style "fg=colour231,bg=colour240"
 set -g message-style "fg=colour231,bg=colour240"
 
 setw -g window-status-style "none,fg=colour245,bg=colour236"
-setw -g window-status-activity-style "none,fg=colour148,bg=colour236"
+setw -g window-status-activity-style "none,fg=colour39,bg=colour236"
 setw -g window-status-separator ""
 setw -g window-status-format "#[fg=colour245,bg=colour236] #I #[fg=colour245,bg=colour236]#W "
 setw -g window-status-current-format "#[fg=colour236,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour231,bg=colour240] #I #[fg=colour231,bg=colour240]#{?window_zoomed_flag,#[fg=green][],}#W #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]"
@@ -149,6 +149,11 @@ setw -g window-status-current-format "#[fg=colour236,bg=colour240,nobold,nounder
 ##
 # Customizations
 ##
+
+# Automatically rename the window pane title
+set-option -g status-interval 1
+set-option -g automatic-rename on
+set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
 
 # if run as "tmux attach", create a session if one does not already exist
 new-session -n $HOST
