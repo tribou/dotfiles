@@ -307,7 +307,7 @@ function tmux-large ()
     local _SECONDARY="$SECONDARY_REPO"
   fi
 
-  tmux new-session -d
+  tmux new -A -s main -d
   tmux split-window -h -p 75
   tmux select-pane -t 1
   tmux split-window -v -p 35
@@ -332,7 +332,7 @@ function tmux-small ()
     local _PRIMARY="dev"
   fi
 
-  tmux new-session -d
+  tmux new -A -s main -d
   tmux split-window -h -p 50
   tmux select-pane -t 1
   tmux split-window -v -p 50
