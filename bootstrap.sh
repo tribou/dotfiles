@@ -52,7 +52,9 @@ linkFileToHome "zshrc" ".zshrc"
 
 # .tmux.conf
 backupFile ".tmux.conf"
-linkFileToHome "tmux-conf" ".tmux.conf"
+linkFileToHome "tmux/tmux-conf" ".tmux.conf"
+tic -x tmux/xterm-256color-italic.terminfo
+tic -x tmux/tmux-256color.terminfo
 
 # .config/nvim/init.vim
 # Exceptional Case: need to link to the same .vimrc for nvim

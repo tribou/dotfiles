@@ -28,7 +28,9 @@ Plug 'lifepillar/vim-colortemplate'
 Plug 'Rigellute/rigel'
 Plug 'nanotech/jellybeans.vim'
 Plug 'vim-scripts/JellyX'
-Plug 'robeirne/twodark.vim'
+Plug 'tribou/twodark.vim'
+
+" Plug 'file://'.expand('~/dev/twodark.vim'), { 'branch': 'dev' }
 
 " Misc
 Plug 'airblade/vim-gitgutter'
@@ -91,12 +93,13 @@ Plug 'honza/vim-snippets'
 " Plug '~/dev/vim-snippets'
 
 " Misc syntax
+" TODO: test vim-polyglot and remove most other syntax plugins
 " Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-liquid'
-Plug 'autozimu/LanguageClient-neovim', {
-  \ 'branch': 'next',
-  \ 'do': 'bash install.sh',
-  \ }
+" Plug 'autozimu/LanguageClient-neovim', {
+"   \ 'branch': 'next',
+"   \ 'do': 'bash install.sh',
+"   \ }
 
 " Other JS/CSS/HTML
 Plug 'mattn/emmet-vim', { 'for': ['css', 'html'] }
@@ -140,7 +143,7 @@ Plug 'cespare/vim-toml'
 Plug 'kchmck/vim-coffee-script'
 Plug 'heavenshell/vim-jsdoc'
 "Plug 'aaronj1335/underscore-templates.vim'
-Plug '~/dev/vim-syntax-js'
+" Plug '~/dev/vim-syntax-js'
 Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
 Plug 'mxw/vim-jsx'
 Plug 'jparise/vim-graphql', { 'tag': '1.*' }
@@ -151,7 +154,7 @@ Plug 'mhartington/nvim-typescript', {'do': './install.sh'} " Typescript deoplete
 call plug#end()
 
 
-" various settings
+"" various settings
 silent !mkdir -p $HOME/.vim/swapfiles
 syntax enable
 set clipboard+=unnamed
@@ -169,25 +172,23 @@ set diffopt=filler,internal,algorithm:histogram,indent-heuristic
 set ignorecase
 set smartcase
 
+" enable true color support
+let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+set termguicolors
+
+"" colorscheme settings
 " jellybeans.vim
 let g:jellybeans_overrides = {
 \    'background': { 'guibg': '011627' },
 \}
 let g:jellybeans_background_color_256='NONE'
 
-" tmux only has 256 color support (no termguicolors)
-if exists('$TMUX')
-  colorscheme twodark
-  " Use terminal background
-  hi Normal guibg=NONE ctermbg=NONE
-else
-  if (has("termguicolors"))
-    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-    set termguicolors
-  endif
-  colorscheme solarized8_flat " rigel
-endif
+" twodark.vim
+let g:twodark_terminal_italics = 1
+
+" colorscheme twodark
+colorscheme solarized8_flat " rigel
 
 " source some aliases for shell
 set shell=/bin/bash\ --rcfile\ ~/.ssh/api_keys
@@ -203,7 +204,7 @@ set secure
 set exrc
 
 
-" custom filetype settings
+"" custom filetype settings
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
 autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
 autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
