@@ -160,15 +160,17 @@ setw -g window-status-current-format "#[fg=colour236,bg=colour240,nobold,nounder
 ##
 
 # Color and line support
-# set -ga terminal-overrides ',xterm-256color:Tc'
 set -as terminal-overrides ',xterm*:Tc:sitm=\E[3m'
 set -as terminal-overrides ",*:U8=0"
-
 
 # Automatically rename the window pane title
 set-option -g status-interval 1
 set-option -g automatic-rename on
 set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
+
+# Misc keymappings
+bind-key e display-panes
+bind-key q confirm-before -p "kill-window #W? (y/n)" kill-window
 
 # The followings are not any kind of setting for Tmux, but crucial to my
 # own productivity. Setting them up is really pain, and I probably going to

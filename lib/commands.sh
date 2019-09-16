@@ -294,17 +294,23 @@ function search ()
 # Create the main dev layout for large monitors
 function tmux-large ()
 {
-  if [ -z "$PRIMARY_REPO" ]
+  if [ -n "$1" ]
   then
-    local _PRIMARY="dev"
-  else
+    local _PRIMARY="$1"
+  elif [ -n "$PRIMARY_REPO" ]
+  then
     local _PRIMARY="$PRIMARY_REPO"
-  fi
-  if [ -z "$SECONDARY_REPO" ]
-  then
-    local _SECONDARY="dev"
   else
+    local _PRIMARY="dev"
+  fi
+  if [ -n "$1" ]
+  then
+    local _SECONDARY="$1"
+  elif [ -n "$SECONDARY_REPO" ]
+  then
     local _SECONDARY="$SECONDARY_REPO"
+  else
+    local _SECONDARY="dev"
   fi
 
   tmux new -A -s main -d
@@ -313,6 +319,7 @@ function tmux-large ()
   tmux split-window -v -p 35
   tmux select-pane -t 3
   tmux split-window -h -p 40
+  tmux select-pane -t 3
   tmux send-keys -t 1 z Space $_PRIMARY Enter
   tmux send-keys -t 2 z Space $_PRIMARY Enter
   tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
@@ -336,6 +343,7 @@ function tmux-small ()
   tmux split-window -h -p 50
   tmux select-pane -t 1
   tmux split-window -v -p 50
+  tmux select-pane -t 3
   tmux send-keys -t 1 z Space $_PRIMARY Enter
   tmux send-keys -t 2 z Space $_PRIMARY Enter
   tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
