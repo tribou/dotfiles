@@ -33,7 +33,6 @@ set -g display-panes-time 2000
 set -g display-time 4000
 
 # {n}vim compability
-# set -g default-terminal "screen-256color"
 set -g default-terminal "tmux-256color"
 
 # Split horiziontal and vertical splits, instead of % and "
@@ -80,14 +79,6 @@ set -g focus-events on
 
 # Sync panes (Send input to all panes in the window). When enabled, pane
 # borders become red as an indication.
-bind C-s if -F '#{pane_synchronized}' \
-                     'setw synchronize-panes off; \
-                      setw pane-active-border-style fg=colour39,bg=default; \
-                      setw pane-border-format       " #P "' \
-                   'setw synchronize-panes on; \
-                    setw pane-active-border-style fg=red; \
-                    setw pane-border-format       " #P - Pane Synchronization ON "'
-
 bind C-b if -F '#{pane_synchronized}' \
                      'setw synchronize-panes off; \
                       setw pane-active-border-style fg=colour39,bg=default; \
@@ -162,6 +153,8 @@ setw -g window-status-current-format "#[fg=colour236,bg=colour240,nobold,nounder
 # Color and line support
 set -as terminal-overrides ',xterm*:Tc:sitm=\E[3m'
 set -as terminal-overrides ",*:U8=0"
+# Cursor shape support
+set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
 
 # Automatically rename the window pane title
 set-option -g status-interval 1
@@ -171,6 +164,7 @@ set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
 # Misc keymappings
 bind-key e display-panes
 bind-key q confirm-before -p "kill-window #W? (y/n)" kill-window
+bind-key -n MouseDown2Pane paste-buffer # Paste with Option-right-click
 
 # The followings are not any kind of setting for Tmux, but crucial to my
 # own productivity. Setting them up is really pain, and I probably going to
@@ -268,9 +262,11 @@ bind-key q confirm-before -p "kill-window #W? (y/n)" kill-window
 # List of plugins
 # see this https://github.com/tmux-plugins/tpm to installation
 set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-copycat'
 set -g @plugin 'tmux-plugins/tmux-open'
 set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
-run '~/.tmux/plugins/tpm/tpm'
+run -b '~/.tmux/plugins/tpm/tpm'
