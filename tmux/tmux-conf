@@ -128,11 +128,11 @@ set -g status-justify "left"
 set -g status-position "top"
 set -g status-left-length "100"
 set -g status-left-style "none"
-set -g status-right-length "100"
+set -g status-right-length "200"
 set -g status-right-style "none"
 set -g status-style "none,bg=colour236"
 set -g status-left "#{prefix_highlight}#[fg=colour22,bg=colour39,bold] #S #[fg=colour39,bg=colour236,nobold,nounderscore,noitalics]"
-set -g status-right "#[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour240] %Y-%m-%d %H:%M #[fg=colour252,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour241,bg=colour153] #h "
+set -g status-right "#[fg=colour39,bg=colour236]#($TMUX_PLUGIN_MANAGER_PATH/tmux-mem-cpu-load/tmux-mem-cpu-load --colors --interval 2) #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour240] %Y-%m-%d %H:%M #[fg=colour252,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour241,bg=colour153] #h "
 
 set -g pane-active-border-style "fg=colour39"
 set -g pane-border-style "fg=colour240"
@@ -157,7 +157,7 @@ set -as terminal-overrides ",*:U8=0"
 set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
 
 # Automatically rename the window pane title
-set-option -g status-interval 1
+set-option -g status-interval 2
 set-option -g automatic-rename on
 set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
 
@@ -165,6 +165,7 @@ set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
 bind-key e display-panes
 bind-key q confirm-before -p "kill-window #W? (y/n)" kill-window
 bind-key -n MouseDown2Pane paste-buffer # Paste with Option-right-click
+bind-key -r Space select-pane -t :.+
 
 # The followings are not any kind of setting for Tmux, but crucial to my
 # own productivity. Setting them up is really pain, and I probably going to
@@ -267,6 +268,7 @@ set -g @plugin 'tmux-plugins/tmux-open'
 set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'thewtex/tmux-mem-cpu-load'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
 run -b '~/.tmux/plugins/tpm/tpm'
