@@ -13,6 +13,7 @@ let g:lightline = {
       \ 'component_function': {
       \   'filename': 'LightlineFilename',
       \   'gitbranch': 'fugitive#head',
+      \   'cocstatus': 'coc#status',
       \ },
       \ }
 

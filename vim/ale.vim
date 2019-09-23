@@ -17,6 +17,8 @@ let g:ale_linters = {
   \   'javascript.jsx': [
   \       'eslint',
   \   ],
+  \   'json': [
+  \   ],
   \   'typescript': [
   \       'tslint',
   \       'tsserver',

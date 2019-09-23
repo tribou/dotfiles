@@ -2,63 +2,82 @@
 " Key Mappings
 "
 " misc
-nnoremap <silent> <esc><esc> :noh<CR>
-nnoremap <Leader>r :source ~/.vimrc<CR>
+nnoremap <silent> <esc><esc> :<c-u>noh<CR>
+nnoremap <Leader>r :<c-u>source ~/.vimrc<CR>
 nnoremap <Leader>w <c-w><c-w>
-nnoremap <Leader>q :q<CR>
+nnoremap <Leader>q :<c-u>q<CR>
 
 " popup menu browsing
 inoremap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"
 inoremap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"
 
 " buffer browsing
-nnoremap <silent> <Leader>d :bd<CR><c-g>
-nnoremap <silent> <Leader>j :bp<CR><c-g>
-nnoremap <silent> <Leader>k :bn<CR><c-g>
+nnoremap <silent> <Leader>d :<c-u>bd<CR><c-g>
+nnoremap <silent> <Leader>j :<c-u>bp<CR><c-g>
+nnoremap <silent> <Leader>k :<c-u>bn<CR><c-g>
 
 " scratch/preview window browsing
-nnoremap <silent> <Leader>c :pc<CR>
+nnoremap <silent> <Leader>c :<c-u>pc<CR>
 
 " fzf
-nnoremap <silent> <c-p> :Fzf<CR>
-nnoremap <silent> <c-s> :Rg!<CR>
-nnoremap <silent> <c-b> :Buffers<CR>
-nnoremap <silent> <c-c> :Commits<CR>
+nnoremap <silent> <c-p> :<c-u>Fzf<CR>
+nnoremap <silent> <c-s> :<c-u>Rg!<CR>
+nnoremap <silent> <c-b> :<c-u>Buffers<CR>
+nnoremap <silent> <c-c> :<c-u>Commits<CR>
 
 " fugitive
-noremap <silent> <Leader>b :Gblame<CR>
-noremap <silent> <Leader>o :Gbrowse<CR>
+noremap <silent> <Leader>b :<c-u>Gblame<CR>
+noremap <silent> <Leader>o :<c-u>Gbrowse<CR>
 
 " NERDTree
-map <silent> <Leader>t :NERDTreeToggle<CR>
-map <silent> <Leader>f :NERDTreeFind<CR>
+map <silent> <Leader>t :<c-u>NERDTreeToggle<CR>
+map <silent> <Leader>f :<c-u>NERDTreeFind<CR>
 
 " undotree
-nnoremap <silent> <Leader>u :UndotreeToggle<CR>
+nnoremap <silent> <Leader>u :<c-u>UndotreeToggle<CR>
 
 " ALE
-nmap <Leader>ad :ALEDetail<CR>
-nmap <Leader>af :ALEFix<CR>
-nmap <Leader><Leader>f :ALEFix<CR>
-nmap <Leader>ah :ALEHover<CR>
-nmap <Leader>h :ALEHover<CR>
-nmap <Leader>ai :ALEInfo<CR>
-nmap <Leader>an :ALENext<CR>
-nmap <Leader>at :ALEToggle<CR>
+nmap <Leader>ad :<c-u>ALEDetail<CR>
+nmap <Leader>af :<c-u>ALEFix<CR>
+nmap <Leader><Leader>f :<c-u>ALEFix<CR>
+nmap <Leader>ah :<c-u>ALEHover<CR>
+nmap <Leader>h :<c-u>ALEHover<CR>
+nmap <Leader>ai :<c-u>ALEInfo<CR>
+nmap <Leader>an :<c-u>ALENext<CR>
+nmap <Leader>at :<c-u>ALEToggle<CR>
+
+" coc.nvim
+" Show commands
+nmap <space>c :<c-u>CocList commands<CR>
+nmap <space>r <Plug>(coc-rename)
+nmap <silent> <space>d <Plug>(coc-definition)
+nmap <silent> <space>f :<c-u>call CocActionAsync('doHover')<CR>
+" Manage extensions
+nnoremap <space>e  :<c-u>CocList extensions<CR>
+" Find symbol of current document
+nnoremap <space>o  :<c-u>CocList outline<CR>
+" Search workspace symbols
+nnoremap <space>s  :<c-u>CocList -I symbols<CR>
+" Do default action for next item.
+nnoremap <space>j  :<c-u>CocNext<CR>
+" Do default action for previous item.
+nnoremap <space>k  :<c-u>CocPrev<CR>
+" Resume latest coc list
+nnoremap <space>p  :<c-u>CocListResume<CR>
 
 " Prettier
-nmap <Leader><Leader>p :Prettier<CR>
+nmap <Leader><Leader>p :<c-u>Prettier<CR>
 
 " vim-jsdoc
 nnoremap <c-1> <Plug>(jsdoc)
 
 " vim-vdebug
-nmap <F5> :VdebugStart<CR>
+nmap <F5> :<c-u>VdebugStart<CR>
 
 " Filetype-dependent key remapping
 " autocmd FileType css nnoremap <silent> <buffer> K :call LanguageClient#textDocument_definition()<CR>
 " Global key remapping to ALE by default
-nnoremap <silent> K :ALEGoToDefinition<CR>
+nnoremap <silent> K :<c-u>ALEGoToDefinition<CR>
 
 " Moving/selection
 nnoremap H ^

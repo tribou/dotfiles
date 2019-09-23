@@ -2,6 +2,14 @@
 
 # Install all the dotfiles
 
+# Rudimentary flags parsing
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]
+then
+  usage='Usage: ./bootstrap.sh [-i|--install-deps]'
+  echo "$usage"
+  exit 1
+fi
+
 # Get bootstrap script directory
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
 
@@ -71,4 +79,21 @@ linkFileToHome "alacritty.yml" ".config/alacritty/alacritty.yml"
 if [ ! -f "$HOME/.ssh/api_keys" ]
 then
   touch "$HOME/.ssh/api_keys"
+fi
+
+# More rudimentary flags parsing
+if [ "$1" = "-i" ] || [ "$1" = "--install-deps" ]
+then
+  echo "--install-deps detected. Installing dependencies..."
+  echo
+
+  _BOOTSTRAP_GEM_INSTALL="gem install neovim solargraph --no-document"
+  echo "Running $_BOOTSTRAP_GEM_INSTALL"
+  eval "$_BOOTSTRAP_GEM_INSTALL"
+
+  echo
+
+  _BOOTSTRAP_NPM_INSTALL="npm install -g neovim eslint_d"
+  echo "Running $_BOOTSTRAP_NPM_INSTALL"
+  eval "$_BOOTSTRAP_NPM_INSTALL"
 fi

@@ -33,10 +33,8 @@ Plug 'tribou/twodark.vim'
 " Plug 'file://'.expand('~/dev/twodark.vim'), { 'branch': 'dev' }
 
 " Misc
-Plug 'airblade/vim-gitgutter'
 Plug 'itchyny/lightline.vim'
 Plug 'maximbaz/lightline-ale'
-" Plug 'ap/vim-buftabline'
 Plug 'tribou/vim-buftabline'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -44,7 +42,6 @@ Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
 Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
-Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rhubarb'
@@ -58,11 +55,9 @@ Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-dispatch'
 Plug 't9md/vim-surround_custom_mapping'
 Plug 'tpope/vim-speeddating'
-Plug 'tpope/vim-git'
 Plug 'tpope/vim-dotenv'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
-Plug 'ap/vim-css-color'
 " Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'mbbill/undotree'
 
@@ -77,9 +72,30 @@ Plug 'prettier/vim-prettier', {
   \ 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescript.tsx', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 
 " Auto-complete
-Plug 'w0rp/ale', { 'tag': 'v2.*' }
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-" Todo - test ncm2 for autocompletion
+Plug 'dense-analysis/ale', { 'tag': 'v2.*' }
+" coc.nvim and vscode-compatible extensions
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-tslint-plugin', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-css', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-highlight', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-json', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-git', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-snippets', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-eslint', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-sources', {'rtp': 'packages/emoji', 'do': 'yarn install --frozen-lockfile'}
+" Plug 'neoclide/coc-emmet', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-solargraph', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-yaml', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-html', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-lists', {'do': 'yarn install --frozen-lockfile'}
+Plug 'marlonfan/coc-phpls', {'do': 'yarn install --frozen-lockfile'}
+Plug 'iamcco/coc-svg', {'do': 'yarn install --frozen-lockfile'}
+Plug 'amiralies/coc-elixir', {'do': 'yarn install --frozen-lockfile'}
+Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
+" Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
+
+" TODO: test ncm2 for autocompletion
 " Plug 'ncm2/ncm2'
 " ncm2: you need to install completion sources to get completions. Check
 " our wiki page for a list of sources: https://github.com/ncm2/ncm2/wiki
@@ -87,22 +103,13 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 " Plug 'ncm2/ncm2-tmux'
 " Plug 'ncm2/ncm2-path'
 
-" Snippets
-Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
-" Plug '~/dev/vim-snippets'
-
 " Misc syntax
 " TODO: test vim-polyglot and remove most other syntax plugins
 " Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-liquid'
-" Plug 'autozimu/LanguageClient-neovim', {
-"   \ 'branch': 'next',
-"   \ 'do': 'bash install.sh',
-"   \ }
 
 " Other JS/CSS/HTML
-Plug 'mattn/emmet-vim', { 'for': ['css', 'html'] }
+" Plug 'mattn/emmet-vim', { 'for': ['css', 'html'] }
 Plug 'JulesWang/css.vim'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'wavded/vim-stylus'
@@ -149,7 +156,7 @@ Plug 'mxw/vim-jsx'
 Plug 'jparise/vim-graphql', { 'tag': '1.*' }
 Plug 'HerringtonDarkholme/yats.vim'  " Typescript syntax
 " Plug 'ianks/vim-tsx' " Possible indentation issues with TSX
-Plug 'mhartington/nvim-typescript', {'do': './install.sh'} " Typescript deoplete integration
+" Plug 'mhartington/nvim-typescript', {'do': './install.sh'} " Typescript deoplete integration
 
 call plug#end()
 
@@ -171,6 +178,10 @@ set background=dark
 set diffopt=filler,internal,algorithm:histogram,indent-heuristic
 set ignorecase
 set smartcase
+set mouse=a
+
+" set status bar to two lines
+set cmdheight=2
 
 " enable true color support
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
@@ -190,8 +201,10 @@ let g:twodark_terminal_italics = 1
 " colorscheme twodark
 colorscheme solarized8_flat " rigel
 
+
 " source some aliases for shell
 set shell=/bin/bash\ --rcfile\ ~/.ssh/api_keys
+
 
 " paste and keep register
 xnoremap <expr> p 'pgv"'.v:register.'y'
@@ -214,6 +227,7 @@ autocmd BufNewFile,BufRead *.css set filetype=scss
 autocmd BufNewFile,BufRead .env* set filetype=sh
 autocmd BufNewFile,BufRead .env*.php set filetype=php
 autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
+autocmd FileType json syntax match Comment +\/\/.\+$+
 
 
 " crontab editing
@@ -240,28 +254,26 @@ if executable('ag')
 endif
 
 
+" coc.nvim
+set updatetime=300
+" don't give |ins-completion-menu| messages.
+set shortmess+=c
+" always show signcolumns
+set signcolumn=yes
+" Use <c-space> to trigger completion.
+inoremap <silent><expr> <c-space> coc#refresh()
+" Highlight symbol under cursor on CursorHold
+autocmd CursorHold * silent call CocActionAsync('highlight')
+" autocmd CursorHold * silent call CocActionAsync('doHover')
+" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
+" Coc only does snippet and additional edit on confirm.
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+" Or use `complete_info` if your vim support it, like:
+" inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+
+
 " deoplete
 let g:deoplete#enable_at_startup = 1
-
-
-" LanguageClient-neovim
-let g:LanguageClient_serverCommands = {
-    \ 'css': ['css-languageserver', '--stdio'],
-    \ 'html': ['html-languageserver', '--stdio'],
-    \ 'less': ['css-languageserver', '--stdio'],
-    \ 'sass': ['css-languageserver', '--stdio'],
-    \ 'scss': ['css-languageserver', '--stdio'],
-    \ }
-    " \ 'php': ['php-language-server'],
-    " \ 'golang': ['go-langserver'],
-    " \ 'typescript': ['javascript-typescript-stdio'],
-    " \ 'typescript.tsx': ['javascript-typescript-stdio'],
-    " \ 'javascript': ['flow lsp'],
-    " \ 'javascript.jsx': ['flow lsp'],
-    " \ 'yaml': ['yaml-language-server'],
-" Disable linting + highlighting errors... let ALE do that through other means
-let g:LanguageClient_diagnosticsEnable = 0
-" let g:LanguageClient_rootMarkers = ['.flowconfig']
 
 
 " editorconfig-vim
@@ -272,9 +284,9 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 " UltiSnips
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-n>"
-let g:UltiSnipsJumpBackwardTrigger="<c-p>"
+" let g:UltiSnipsExpandTrigger="<tab>"
+" let g:UltiSnipsJumpForwardTrigger="<c-n>"
+" let g:UltiSnipsJumpBackwardTrigger="<c-p>"
 
 
 " If you want :UltiSnipsEdit to split your window.
@@ -286,6 +298,10 @@ let g:buftabline_show=2
 let g:buftabline_indicators=1
 let g:buftabline_numbers=0
 let g:buftabline_path=1
+
+
+" vim-commentary
+autocmd FileType json setlocal commentstring=//\ %s
 
 
 " vim-dotenv
@@ -331,10 +347,6 @@ let g:jsx_ext_required = 0
 " let g:markdown_composer_custom_css = [
 "   \ 'https://cdn.jsdelivr.net/gh/sindresorhus/github-markdown-css@2/github-markdown.css',
 "   \ ]
-
-
-" vim-multiple-cursors
-" let g:multi_cursor_select_all_key = '<c-a>'
 
 
 " vim-prettier
