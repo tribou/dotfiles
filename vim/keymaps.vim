@@ -26,8 +26,8 @@ nnoremap <silent> <c-b> :<c-u>Buffers<CR>
 nnoremap <silent> <c-c> :<c-u>Commits<CR>
 
 " fugitive
-noremap <silent> <Leader>b :<c-u>Gblame<CR>
-noremap <silent> <Leader>o :<c-u>Gbrowse<CR>
+noremap <silent> <Leader>b :Gblame<CR>
+noremap <silent> <Leader>o :Gbrowse<CR>
 
 " NERDTree
 map <silent> <Leader>t :<c-u>NERDTreeToggle<CR>
