@@ -270,6 +270,26 @@ function npm-install-global ()
     vscode-html-languageserver-bin
 }
 
+function nr ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="npm run --silent $@"
+    echo $SCRIPT
+    echo
+    eval $SCRIPT
+  else
+    local RESULT=$(jq '.scripts' package.json | jq 'keys[]' | fzf +s --tac --preview-window wrap)
+    if [ -n "$RESULT" ]
+    then
+      local SCRIPT="npm run --silent $RESULT"
+      echo $SCRIPT
+      echo
+      eval $SCRIPT
+    fi
+  fi
+}
+
 function search ()
 {
 
@@ -440,7 +460,6 @@ alias lt='ls -lath'
 alias ni='npm install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
-alias nr='npm run --silent'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
 alias prettyjson='python -m json.tool'
