@@ -6,6 +6,8 @@ unbind C-b
 set -g prefix C-f
 bind C-f send-prefix
 
+set-environment -g PATH "/usr/local/bin:/bin:/usr/bin"
+
 set-option -g default-shell /bin/bash
 
 # toogle last window by hitting again C-f
@@ -121,6 +123,17 @@ bind-key l select-pane -R
 # Disable confirm before killing
 bind-key x kill-pane
 
+# Color and line support
+set -as terminal-overrides ',xterm*:Tc:sitm=\E[3m'
+set -as terminal-overrides ",*:U8=0"
+# Cursor shape support
+set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
+
+# Automatically rename the window pane title
+set-option -g status-interval 2
+set-option -g automatic-rename on
+set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
+
 # This tmux statusbar config was created by tmuxline.vim
 # on Wed, 25 Nov 2015
 set -g status "on"
@@ -132,7 +145,7 @@ set -g status-right-length "200"
 set -g status-right-style "none"
 set -g status-style "none,bg=colour236"
 set -g status-left "#{prefix_highlight}#[fg=colour22,bg=colour39,bold] #S #[fg=colour39,bg=colour236,nobold,nounderscore,noitalics]"
-set -g status-right "#[fg=colour39,bg=colour236]#($TMUX_PLUGIN_MANAGER_PATH/tmux-mem-cpu-load/tmux-mem-cpu-load --colors --interval 2) #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour240] %Y-%m-%d %H:%M #[fg=colour252,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour241,bg=colour153] #h "
+set -g status-right "#[fg=colour39,bg=colour236]#(tmux-mem-cpu-load --colors --interval 2) #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour240] %Y-%m-%d %H:%M #[fg=colour252,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour241,bg=colour153] #h "
 
 set -g pane-active-border-style "fg=colour39"
 set -g pane-border-style "fg=colour240"
@@ -145,21 +158,6 @@ setw -g window-status-activity-style "none,fg=colour39,bg=colour236"
 setw -g window-status-separator ""
 setw -g window-status-format "#[fg=colour245,bg=colour236] #I #[fg=colour245,bg=colour236]#W "
 setw -g window-status-current-format "#[fg=colour236,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour153,bg=colour240] #I #[fg=colour153,bg=colour240]#{?window_zoomed_flag,#[fg=green][],}#W #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]"
-
-##
-# Customizations
-##
-
-# Color and line support
-set -as terminal-overrides ',xterm*:Tc:sitm=\E[3m'
-set -as terminal-overrides ",*:U8=0"
-# Cursor shape support
-set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
-
-# Automatically rename the window pane title
-set-option -g status-interval 2
-set-option -g automatic-rename on
-set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
 
 # Misc keymappings
 bind-key e display-panes
@@ -263,12 +261,12 @@ bind-key -r Space select-pane -t :.+
 # List of plugins
 # see this https://github.com/tmux-plugins/tpm to installation
 set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'thewtex/tmux-mem-cpu-load'
 set -g @plugin 'tmux-plugins/tmux-copycat'
 set -g @plugin 'tmux-plugins/tmux-open'
 set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
-set -g @plugin 'tmux-plugins/tmux-resurrect'
-set -g @plugin 'thewtex/tmux-mem-cpu-load'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
 run -b '~/.tmux/plugins/tpm/tpm'
