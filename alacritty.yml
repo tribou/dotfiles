@@ -281,18 +281,18 @@ colors:
   # Default colors
   primary:
     background: "0x011627" # #011627
-    foreground: "0xa7dbf7" # #a7dbf7
+    foreground: "0x91ddff" # #a7dbf7 #91ddff
 
   # Normal colors
   normal:
     black: "0x002b36" # #002b36 #073642
     red: "0xef5350" # #ef5350 #dc322f
-    green: "0xA0F3AE" #  #A0F3AE
+    green: "0x95ffa4" #  #A0F3AE #95ffa4
     yellow: "0xf7ecb5" # #f7ecb5
     blue: "0x00A6E9" # #268bd2 #00A6E9
     magenta: "0xD280FF" # #d33682 #D280FF
     # magenta: '0x4373c2' # #d33682 #4373c2
-    cyan: "0x5ABEB0" # #2aa198 #5ABEB0
+    cyan: "0x5ABEB0" # #2aa198 #5ABEB0 #95ffa4
     white: "0xeeefff" # #eee8d5 #eeefff
 
   # Bright colors
