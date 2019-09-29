@@ -7,6 +7,11 @@ nnoremap <Leader>r :<c-u>source ~/.vimrc<CR>
 nnoremap <Leader>w <c-w><c-w>
 nnoremap <Leader>q :<c-u>q<CR>
 
+" Reveal syntax
+map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+\ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+\ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
 " popup menu browsing
 inoremap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"
 inoremap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"

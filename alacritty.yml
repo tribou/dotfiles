@@ -285,10 +285,10 @@ colors:
 
   # Normal colors
   normal:
-    black: "0x002b36" # #073642 #073642
-    red: "0xef5350" # #dc322f #C32534
-    green: "0xA0F3AE" # #859900 #A0F3AE
-    yellow: "0xf7ecb5" # #b58900 #f7ecb5
+    black: "0x002b36" # #002b36 #073642
+    red: "0xef5350" # #ef5350 #dc322f
+    green: "0xA0F3AE" #  #A0F3AE
+    yellow: "0xf7ecb5" # #f7ecb5
     blue: "0x00A6E9" # #268bd2 #00A6E9
     magenta: "0xD280FF" # #d33682 #D280FF
     # magenta: '0x4373c2' # #d33682 #4373c2
@@ -297,8 +297,8 @@ colors:
 
   # Bright colors
   bright:
-    black: "0x073642" # #002b36 #011627
-    red: "0xC32534" # #cb4b16 #ef5350
+    black: "0x073642" # #002b36 #073642
+    red: "0xC32534" # #cb4b16 #C32534
     green: "0x23d18b" # #586e75 #23d18b
     # green:   '0x03648a' # #586e75 #03648a
     yellow: "0xf5f543" # #657b83 #f5f543

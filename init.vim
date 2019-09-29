@@ -27,10 +27,11 @@ Plug 'lifepillar/vim-solarized8'
 Plug 'lifepillar/vim-colortemplate'
 Plug 'Rigellute/rigel'
 Plug 'nanotech/jellybeans.vim'
-Plug 'vim-scripts/JellyX'
-Plug 'tribou/twodark.vim'
+Plug 'joshdick/onedark.vim'
+Plug 'challenger-deep-theme/vim'
 
 " Plug 'file://'.expand('~/dev/twodark.vim'), { 'branch': 'dev' }
+" Plug 'file://'.expand('~/dev/rigel'), { 'branch': 'dev' }
 
 " Misc
 Plug 'itchyny/lightline.vim'
@@ -198,8 +199,9 @@ let g:jellybeans_background_color_256='NONE'
 " twodark.vim
 let g:twodark_terminal_italics = 1
 
-" colorscheme twodark
-colorscheme solarized8_flat " rigel
+" colorscheme solarized8_flat
+colorscheme challenger_deep
+
 
 
 " source some aliases for shell
