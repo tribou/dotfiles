@@ -28,7 +28,7 @@ Plug 'lifepillar/vim-colortemplate'
 Plug 'Rigellute/rigel'
 Plug 'nanotech/jellybeans.vim'
 Plug 'joshdick/onedark.vim'
-Plug 'challenger-deep-theme/vim'
+Plug 'challenger-deep-theme/vim', { 'as': 'challenger-deep' }
 
 " Plug 'file://'.expand('~/dev/twodark.vim'), { 'branch': 'dev' }
 " Plug 'file://'.expand('~/dev/rigel'), { 'branch': 'dev' }
