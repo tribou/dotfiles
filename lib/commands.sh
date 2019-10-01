@@ -39,7 +39,21 @@ function clean ()
 
 function co ()
 {
-  git checkout "$@" && _dotfiles_git_status
+  if [ -n "$1" ]
+  then
+    local SCRIPT="git checkout $@ && _dotfiles_git_status"
+    eval $SCRIPT
+  else
+    local RESULT=$(git branch -a --sort=-committerdate | fzf +s --preview-window wrap)
+    local CLEANED_RESULT="$(echo $RESULT | sed -e 's/^remotes.*\///')"
+    if [ -n "$CLEANED_RESULT" ]
+    then
+      local SCRIPT="git checkout $CLEANED_RESULT"
+      echo $SCRIPT
+      echo
+      eval "$SCRIPT && _dotfiles_git_status"
+    fi
+  fi
 }
 
 function digitalocean ()
