@@ -92,6 +92,7 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 nvm use --delete-prefix default --silent
 
 # Activate a version of Node that is read from a text file via NVM
@@ -207,8 +208,12 @@ fi
 # ripgrep
 export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
 
+# THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/Users/aaron.tribou/.sdkman"
+[[ -s "/Users/aaron.tribou/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/aaron.tribou/.sdkman/bin/sdkman-init.sh"
+
 # set git signing key if GIT_SIGNING_KEY is set and config doesn't exist
-if [ -n "$GIT_SIGNING_KEY" ] && git config --global --get user.signingkey > /dev/null;
+if [ -n "$GIT_SIGNING_KEY" ] && [[ ! $(git config --global --get user.signingkey) ]]
 then
   git config --global user.signingkey ${GIT_SIGNING_KEY}
 fi
