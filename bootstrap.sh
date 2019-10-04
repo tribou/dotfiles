@@ -56,6 +56,18 @@ linkFileToHome "tmux/tmux-conf" ".tmux.conf"
 tic -x tmux/xterm-256color-italic.terminfo
 tic -x tmux/tmux-256color.terminfo
 
+# .gnupg/gpg-agent.conf
+mkdir -p ~/.gnupg
+backupFile ".gnupg/gpg-agent.conf"
+linkFileToHome "gpg-agent-conf" ".gnupg/gpg-agent.conf"
+# Restart gpg-agent
+if [ $(which gpgconf) ] && [ $(which gpg-agent) ]
+then
+  echo "Restarting gpg-agent"
+  gpgconf --kill gpg-agent
+  eval $(gpg-agent --daemon 2>/dev/null)
+fi
+
 # .config/nvim/init.vim
 # Exceptional Case: need to link to the same .vimrc for nvim
 mkdir -p ~/.config/nvim
