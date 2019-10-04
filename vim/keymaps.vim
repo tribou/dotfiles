@@ -57,6 +57,7 @@ nmap <space>c :<c-u>CocList commands<CR>
 nmap <space>r <Plug>(coc-rename)
 nmap <silent> <space>d <Plug>(coc-definition)
 nmap <silent> <space>f :<c-u>call CocActionAsync('doHover')<CR>
+nmap <silent> <space>h :<c-u>call CocActionAsync('doHover')<CR>
 " Manage extensions
 nnoremap <space>e  :<c-u>CocList extensions<CR>
 " Find symbol of current document
