@@ -132,7 +132,7 @@ set -g status-right-length "200"
 set -g status-right-style "none"
 set -g status-style "none,bg=colour236"
 set -g status-left "#{prefix_highlight}#[fg=colour22,bg=colour39,bold] #S #[fg=colour39,bg=colour236,nobold,nounderscore,noitalics]"
-set -g status-right "#[fg=colour39,bg=colour236]#($TMUX_PLUGIN_MANAGER_PATH/tmux-mem-cpu-load/tmux-mem-cpu-load --colors --interval 2) #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour240] %Y-%m-%d %H:%M #[fg=colour252,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour241,bg=colour153] #h "
+set -g status-right "#[fg=colour39,bg=colour236]#(tmux-mem-cpu-load --colors --interval 2) #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour236] %Y-%m-%d %H:%M #[fg=colour22,bg=colour39,bold] #h "
 
 set -g pane-active-border-style "fg=colour39"
 set -g pane-border-style "fg=colour240"
