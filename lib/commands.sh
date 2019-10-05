@@ -183,7 +183,7 @@ function install-swap ()
 
 function merge ()
 {
-  git merge -S "$@" && _dotfiles_git_status
+  git merge -S "$@" && _dotfiles_git_log_commit && _dotfiles_git_status
 }
 
 function new-docker ()
