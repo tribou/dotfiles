@@ -9,13 +9,17 @@ function _dotfiles_grep_ticket_number () {
   grep -E '^[A-Z0-9]{2,4}-\d{1,7}$'
 }
 
+function _dotfiles_git_log_commit () {
+  git log --pretty=fuller --show-signature -1
+}
+
 # If no args are passed, open the commit editor. Otherwise commit with all
 # arguments concatenated as a string
 function c ()
 {
   if [ $# -eq 0 ]
   then
-    git commit -S -ev && _dotfiles_git_status
+    git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
   else
     local current_ticket=$(git branch --show-current | _dotfiles_grep_ticket_number)
     if [ -z "$current_ticket" ]
@@ -24,7 +28,7 @@ function c ()
     else
       local message="$current_ticket: $*"
     fi
-    git commit -S -m "$message" && _dotfiles_git_status
+    git commit -S -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
   fi
 }
 
