@@ -297,7 +297,7 @@ function nr ()
     echo
     eval $SCRIPT
   else
-    local RESULT=$(jq '.scripts' package.json | jq 'keys[]' | fzf +s --tac --preview-window wrap)
+    local RESULT=$(jq '.scripts' package.json | fzf +s --tac | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
       local SCRIPT="npm run --silent $RESULT"
