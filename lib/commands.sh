@@ -183,7 +183,13 @@ function install-swap ()
 
 function merge ()
 {
-  git merge -S "$@" && _dotfiles_git_log_commit && _dotfiles_git_status
+  local MERGE_RESULT=$(git merge -S "$@")
+  if [ "$MERGE_RESULT" != "Already up to date." ]
+  then
+    _dotfiles_git_log_commit && _dotfiles_git_status
+  else
+    _dotfiles_git_status
+  fi
 }
 
 function new-docker ()
