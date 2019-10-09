@@ -17,11 +17,17 @@ function _dotfiles_git_log_commit () {
 # arguments concatenated as a string
 function c ()
 {
+  local current_ticket=$(git branch --show-current | _dotfiles_grep_ticket_number)
   if [ $# -eq 0 ]
   then
-    git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
+    if [ -z "$current_ticket" ]
+    then
+      local message=""
+    else
+      local message="$current_ticket:"
+    fi
+    git commit -S -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
   else
-    local current_ticket=$(git branch --show-current | _dotfiles_grep_ticket_number)
     if [ -z "$current_ticket" ]
     then
       local message="$*"
