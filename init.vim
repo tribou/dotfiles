@@ -65,6 +65,7 @@ Plug 'justinmk/vim-sneak'
 Plug 'ap/vim-css-color'
 " Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'mbbill/undotree'
+Plug 'janko/vim-test'
 
 " Debugging
 Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
@@ -359,6 +360,10 @@ let g:surround_custom_mapping._ = {
 let g:surround_custom_mapping.html = {
   \ 'm':  "{{#\1view helper: \1}}\r{{/\1\1}}",
   \ }
+
+
+" vim-test
+let test#strategy = "dispatch"
 
 
 " nvim-typescript
