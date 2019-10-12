@@ -3,14 +3,14 @@
 "
 " misc
 function! NextBuffer()
-  if !exists('b:NERDTree')
+  if !exists('b:NERDTree') && !exists('b:fugitive_type')
     bnext
     file
   endif
 endfunction
 
 function! PreviousBuffer()
-  if !exists('b:NERDTree')
+  if !exists('b:NERDTree') && !exists('b:fugitive_type')
     bprevious
     file
   endif
