@@ -270,6 +270,10 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 "let g:EditorConfig_verbose=1
 
 
+" NERDTree
+let g:NERDTreeWinPos = 'right'
+
+
 " UltiSnips
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<tab>"
