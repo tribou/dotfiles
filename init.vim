@@ -387,6 +387,7 @@ let g:nvim_typescript#diagnostics_enable = 0 " Use ALE for linting
 "set statusline+=%{SyntaxItem()}
 
 
+source $DOTFILES/vim/functions.vim
 source $DOTFILES/vim/lightline.vim
 source $DOTFILES/vim/ale.vim
 source $DOTFILES/vim/fzf.vim

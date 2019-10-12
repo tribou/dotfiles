@@ -18,8 +18,8 @@ inoremap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"
 
 " buffer browsing
 nnoremap <silent> <Leader>d :<c-u>bd<CR><c-g>
-nnoremap <silent> <Leader>j :<c-u>bp<CR><c-g>
-nnoremap <silent> <Leader>k :<c-u>bn<CR><c-g>
+nmap <silent> <Leader>k <Plug>(dotfiles-bnext)
+nmap <silent> <Leader>j <Plug>(dotfiles-bprevious)
 
 " scratch/preview window browsing
 nnoremap <silent> <Leader>c :<c-u>pc<CR>

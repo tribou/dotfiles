@@ -22,11 +22,11 @@ function c ()
   then
     if [ -z "$current_ticket" ]
     then
-      local message=""
+      git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
     else
       local message="$current_ticket:"
+      git commit -S -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
     fi
-    git commit -S -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
   else
     if [ -z "$current_ticket" ]
     then
