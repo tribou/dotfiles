@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Set dev paths
 export DEVPATH=$HOME/dev
 export DOTFILES=$DEVPATH/dotfiles
@@ -221,7 +223,12 @@ then
   git config --global user.signingkey ${GIT_SIGNING_KEY}
 fi
 
-cd "$DEVPATH"
+if [ -d "$STARTPATH" ]
+then
+  cd "$STARTPATH"
+else
+  cd "$DEVPATH"
+fi
 
 # Welcome message
 remind 'Welcome. 👋'
