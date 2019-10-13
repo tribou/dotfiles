@@ -54,6 +54,7 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-dispatch'
+Plug 'radenling/vim-dispatch-neovim'
 Plug 't9md/vim-surround_custom_mapping'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-dotenv'
@@ -62,6 +63,7 @@ Plug 'justinmk/vim-sneak'
 " Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'mbbill/undotree'
 Plug 'janko/vim-test'
+Plug 'benmills/vimux'
 
 " Debugging
 Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
