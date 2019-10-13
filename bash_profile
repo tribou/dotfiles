@@ -5,28 +5,26 @@ export DEVPATH=$HOME/dev
 export DOTFILES=$DEVPATH/dotfiles
 
 # import api keys and local workstation-related scripts
-if [ -f "$HOME/.ssh/api_keys" ]
-then
-  . "$HOME/.ssh/api_keys"
-fi
+[ -s "$HOME/.ssh/api_keys" ] && . "$HOME/.ssh/api_keys"
 
 # Set terminal language and UTF-8
 export LANG=en_US.UTF-8
 
 function get_git_location()
 {
-  if [[ -d "./.git" ]]
+  if [ -d "./.git" ]
   then
-    local BRANCH=$(git branch --show-current)
-    [[ ! -z "$BRANCH" ]] && echo "$BRANCH" || git rev-parse --short HEAD
+    local BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ -n "$BRANCH" ] && [ "$BRANCH" != "HEAD" ]
+    then
+      echo "$BRANCH"
+    else
+      git rev-parse --short HEAD
+    fi
   else
     echo "$HOSTNAME_SHORT"
   fi
 }
-
-# Change bash prompt
-# export PS1="\[\033[0;34m\]\h:\$(nvm current):\W> \[$(tput sgr0)\]"
-export PS1="\[\033[0;34m\]\W \$(nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
 
 # Set iTerm2 badge
 function set_badge()
@@ -80,7 +78,7 @@ export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 . "$DOTFILES/lib/index.sh"
 
 
-BREW_PREFIX=$(brew --prefix)
+[ -s "$(which brew)" ] && BREW_PREFIX=$(brew --prefix)
 
 
 export GOPATH=$DEVPATH/go
@@ -95,18 +93,23 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-nvm use --delete-prefix default --silent
+export HAS_NVM=$([ -n "$(type nvm 2> /dev/null)" ] && echo true)
+[ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
+
+# Change bash prompt
+export PS1="\[\033[0;34m\]\W \$([ -n "$HAS_NVM" ] && nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
+
 
 # Activate a version of Node that is read from a text file via NVM
 function use_node_version()
 {
   local TEXT_FILE_NAME="$1"
-  local CURRENT_VERSION=$(nvm current)
-  local PROJECT_VERSION=$(nvm version $(cat "$TEXT_FILE_NAME"))
+  local CURRENT_VERSION=$([ -n "$HAS_NVM" ] && nvm current)
+  local PROJECT_VERSION=$([ -n "$HAS_NVM" ] && nvm version $(cat "$TEXT_FILE_NAME"))
   # If the project file version is different than the current version
   if [ "$CURRENT_VERSION" != "$PROJECT_VERSION" ]
   then
-    nvm use "$PROJECT_VERSION"
+    [ -n "$HAS_NVM" ] && nvm use "$PROJECT_VERSION"
   fi
 }
 
@@ -138,21 +141,21 @@ function read_node_version()
 export PATH=/usr/local/git/bin:$PATH
 
 # ansible scripts
-if [ -f "$HOME/sys/ansible/hacking/env-setup" ]
+if [ -s "$HOME/sys/ansible/hacking/env-setup" ]
 then
   . "$HOME/sys/ansible/hacking/env-setup"
 fi
-if [ -f "$DEVPATH/sys/ansible/ansible-hosts" ]
+if [ -s "$DEVPATH/sys/ansible/ansible-hosts" ]
 then
   export ANSIBLE_HOSTS="$DEVPATH/sys/ansible/ansible-hosts"
 fi
-if [ -f "$DEVPATH/sys/ansible/ansible.cfg" ]
+if [ -s "$DEVPATH/sys/ansible/ansible.cfg" ]
 then
   export ANSIBLE_CONFIG="$DEVPATH/sys/ansible/ansible.cfg"
 fi
 
 # brew install bash-completion
-if [ -f "$BREW_PREFIX/etc/bash_completion" ]
+if [ -s "$BREW_PREFIX/etc/bash_completion" ]
 then
   . "$BREW_PREFIX/etc/bash_completion"
 fi
@@ -195,7 +198,7 @@ fi
 
 
 # Lua/Torch
-if [ -f "$DEVPATH/torch/install/bin/torch-activate" ]
+if [ -s "$DEVPATH/torch/install/bin/torch-activate" ]
 then
   . "$DEVPATH/torch/install/bin/torch-activate"
 fi
@@ -205,7 +208,7 @@ fi
 
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
-if [ -f "$HOME/.cargo/env" ]
+if [ -s "$HOME/.cargo/env" ]
 then
   . "$HOME/.cargo/env"
 fi
