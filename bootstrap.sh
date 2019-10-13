@@ -150,7 +150,7 @@ then
 
     if   [ -s "$(which make)"  ]
     then
-      _BOOTSTRAP_INSTALL="git clone https://github.com/clvv/fasd.git /tmp/fasd && cd /tmp/fasd && make install && cd $THIS_DIR"
+      _BOOTSTRAP_INSTALL="rm -rf /tmp/fasd && git clone https://github.com/clvv/fasd.git /tmp/fasd && cd /tmp/fasd && make install && cd $THIS_DIR && rm -rf /tmp/fasd"
       echo "Installing fasd:"
       echo "$_BOOTSTRAP_INSTALL"
       echo
