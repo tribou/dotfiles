@@ -184,10 +184,7 @@ complete -C aws_completer aws
 export BAT_THEME=TwoDark
 
 # fasd
-if [ $(which fasd) ]
-then
-  eval "$(fasd --init bash-hook)"
-fi
+[ $(which fasd) ] && eval "$(fasd --init bash-hook)"
 
 # pyenv
 if [ $(which pyenv) ]

@@ -147,9 +147,21 @@ then
     eval "$_BOOTSTRAP_INSTALL"
 
     echo
+
+    if   [ -s "$(which make)"  ]
+    then
+      _BOOTSTRAP_INSTALL="git clone https://github.com/clvv/fasd.git /tmp/fasd && cd /tmp/fasd && make install && cd $THIS_DIR"
+      echo "Installing fasd:"
+      echo "$_BOOTSTRAP_INSTALL"
+      echo
+      eval "$_BOOTSTRAP_INSTALL"
+      [ $(which fasd) ] && eval "$(fasd --init bash-hook)"
+
+      echo
+    fi
   else
-    echo "ERROR: curl not available!"
-    exit 1
+    echo "ERROR: make not available! Skipping fasd install..."
+    echo
   fi
 
 
