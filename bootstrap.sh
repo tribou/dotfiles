@@ -101,8 +101,27 @@ then
 
   if   [ -s "$(which curl)"  ]
   then
+    _BOOTSTRAP_INSTALL="curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+    echo "Installing vim-plug:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+
+    echo
+
+    if   [ -s "$(which nvim)"  ]
+    then
+      _BOOTSTRAP_INSTALL="curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+      echo "Installing vim-plug for neovim:"
+      echo "$_BOOTSTRAP_INSTALL"
+      echo
+      eval "$_BOOTSTRAP_INSTALL"
+
+      echo
+    fi
+
     _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh | bash"
-    echo "Running:"
+    echo "Installing nvm:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
@@ -112,7 +131,7 @@ then
     echo
 
     _BOOTSTRAP_INSTALL="nvm install 12"
-    echo "Running:"
+    echo "Installing node v12:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
@@ -124,10 +143,23 @@ then
   fi
 
 
+  if   [ -s "$(which npm)"  ]
+  then
+    _BOOTSTRAP_INSTALL="npm install -g neovim eslint_d"
+    echo "Installing global node modules:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+  else
+    echo "ERROR: npm not available!"
+    exit 1
+  fi
+
+
   if   [ -s "$(which gem)"  ]
   then
     _BOOTSTRAP_INSTALL="gem install neovim solargraph --no-document"
-    echo "Running:"
+    echo "Installing gems:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
@@ -136,17 +168,5 @@ then
   else
     echo "ERROR: gem not available! Skipping..."
     echo
-  fi
-
-  if   [ -s "$(which npm)"  ]
-  then
-    _BOOTSTRAP_INSTALL="npm install -g neovim eslint_d"
-    echo "Running:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-  else
-    echo "ERROR: npm not available!"
-    exit 1
   fi
 fi
