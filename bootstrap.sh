@@ -120,6 +120,16 @@ then
       echo
     fi
 
+    _BOOTSTRAP_INSTALL="curl https://sh.rustup.rs -sSf | sh"
+    echo "Installing rust:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+    export PATH="$HOME/.cargo/bin:$PATH"
+    [ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
+    echo
+
     _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh | bash"
     echo "Installing nvm:"
     echo "$_BOOTSTRAP_INSTALL"

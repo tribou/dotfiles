@@ -208,10 +208,7 @@ fi
 
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
-if [ -s "$HOME/.cargo/env" ]
-then
-  . "$HOME/.cargo/env"
-fi
+[ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 # ripgrep
 export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
