@@ -171,7 +171,9 @@ set expandtab ts=2 sw=2 ai
 set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 set hidden
 set background=dark
-set diffopt=filler,internal,algorithm:histogram,indent-heuristic
+if has('nvim')
+  set diffopt=filler,internal,algorithm:histogram,indent-heuristic
+endif
 set ignorecase
 set smartcase
 
@@ -191,7 +193,14 @@ let g:jellybeans_background_color_256='NONE'
 let g:twodark_terminal_italics = 1
 
 " colorscheme twodark
-colorscheme solarized8_flat " rigel
+try
+  colorscheme solarized8_flat " rigel
+  catch
+  try
+    colorscheme twodark " rigel
+  catch
+  endtry
+endtry
 
 " source some aliases for shell
 set shell=/bin/bash\ --rcfile\ ~/.ssh/api_keys
