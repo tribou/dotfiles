@@ -299,6 +299,7 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 " NERDTree
 let g:NERDTreeWinPos = 'right'
+let g:NERDTreeWinSize=50
 
 
 " UltiSnips
