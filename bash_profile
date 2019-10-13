@@ -14,12 +14,12 @@ function get_git_location()
 {
   if [ -d "./.git" ]
   then
-    local BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    local BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if [ -n "$BRANCH" ] && [ "$BRANCH" != "HEAD" ]
     then
       echo "$BRANCH"
     else
-      git rev-parse --short HEAD
+      git rev-parse --short HEAD 2> /dev/null || echo "$HOSTNAME_SHORT"
     fi
   else
     echo "$HOSTNAME_SHORT"
