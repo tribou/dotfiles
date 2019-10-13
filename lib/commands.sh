@@ -17,7 +17,7 @@ function _dotfiles_git_log_commit () {
 # arguments concatenated as a string
 function c ()
 {
-  local current_ticket=$(git branch --show-current | _dotfiles_grep_ticket_number)
+  local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
   if [ $# -eq 0 ]
   then
     if [ -z "$current_ticket" ]
