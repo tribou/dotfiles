@@ -99,13 +99,54 @@ then
   echo "--install-deps detected. Installing dependencies..."
   echo
 
-  _BOOTSTRAP_GEM_INSTALL="gem install neovim solargraph --no-document"
-  echo "Running $_BOOTSTRAP_GEM_INSTALL"
-  eval "$_BOOTSTRAP_GEM_INSTALL"
+  if   [ -s "$(which curl)"  ]
+  then
+    _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh | bash"
+    echo "Running:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
 
-  echo
+    echo
 
-  _BOOTSTRAP_NPM_INSTALL="npm install -g neovim eslint_d"
-  echo "Running $_BOOTSTRAP_NPM_INSTALL"
-  eval "$_BOOTSTRAP_NPM_INSTALL"
+    _BOOTSTRAP_INSTALL="nvm install 12"
+    echo "Running:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+
+    echo
+  else
+    echo "ERROR: curl not available!"
+    exit 1
+  fi
+
+
+  if   [ -s "$(which gem)"  ]
+  then
+    _BOOTSTRAP_INSTALL="gem install neovim solargraph --no-document"
+    echo "Running:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+
+    echo
+  else
+    echo "ERROR: gem not available! Skipping..."
+    echo
+  fi
+
+  if   [ -s "$(which npm)"  ]
+  then
+    _BOOTSTRAP_INSTALL="npm install -g neovim eslint_d"
+    echo "Running:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+  else
+    echo "ERROR: npm not available!"
+    exit 1
+  fi
 fi

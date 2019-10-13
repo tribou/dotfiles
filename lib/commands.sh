@@ -439,7 +439,7 @@ function zz ()
 # Command aliases
 alias ack='ag'
 alias ag='rg'
-alias amend='git commit -S --amend'
+alias amend='git commit -S --amend && _dotfiles_git_log_commit && _dotfiles_git_status'
 alias b='git branch -a --sort=-committerdate'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
@@ -464,7 +464,7 @@ alias edld='ember deploy:list --environment development'
 alias edlp='ember deploy:list --environment production'
 alias edls='ember deploy:list --environment staging'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
-alias fix='git commit --amend -a --no-edit -S'
+alias fix='git commit --amend -a --no-edit -S && _dotfiles_git_log_commit && _dotfiles_git_status'
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gc='gcloud compute'
 alias gci='gcloud compute instances'
