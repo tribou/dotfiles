@@ -155,6 +155,9 @@ then
   . "$BREW_PREFIX/etc/bash_completion"
 fi
 
+# composer
+export PATH="$HOME/.composer/vendor/bin:$PATH"
+
 # gcloud sourcing
 OLD_GCLOUD_PATH=/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
 NEW_GCLOUD_PATH=/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
