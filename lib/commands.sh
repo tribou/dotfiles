@@ -143,6 +143,11 @@ function gr ()
   fi
 }
 
+function gro ()
+{
+  git reset --hard "origin/$(git branch --show-current)" "$@" && _dotfiles_git_status
+}
+
 function histgrep ()
 {
   # Remove histfile directory prefix during fzf search
