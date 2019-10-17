@@ -55,6 +55,7 @@ nmap <Leader>at :<c-u>ALEToggle<CR>
 " coc.nvim
 " Show commands
 nmap <space>c :<c-u>CocList commands<CR>
+nmap <space>i :<c-u>CocInfo<CR>
 nmap <space>r <Plug>(coc-rename)
 nmap <silent> <space>d <Plug>(coc-definition)
 nmap <silent> <space>f :<c-u>call CocActionAsync('doHover')<CR>
