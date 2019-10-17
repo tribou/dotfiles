@@ -17,24 +17,30 @@ function _dotfiles_git_log_commit () {
 # arguments concatenated as a string
 function c ()
 {
-  local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
-  if [ $# -eq 0 ]
+  # If committing a git merge
+  if [ -f "./git/MERGE_HEAD" ]
   then
-    if [ -z "$current_ticket" ]
-    then
-      git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
-    else
-      local message="$current_ticket:"
-      git commit -S -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
-    fi
+    git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
   else
-    if [ -z "$current_ticket" ]
+    local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
+    if [ $# -eq 0 ]
     then
-      local message="$*"
+      if [ -z "$current_ticket" ]
+      then
+        git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
+      else
+        local message="$current_ticket:"
+        git commit -S -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
+      fi
     else
-      local message="$current_ticket: $*"
+      if [ -z "$current_ticket" ]
+      then
+        local message="$*"
+      else
+        local message="$current_ticket: $*"
+      fi
+      git commit -S -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
     fi
-    git commit -S -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
   fi
 }
 
