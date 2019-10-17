@@ -164,7 +164,7 @@ bind-key e display-panes
 bind-key q confirm-before -p "kill-window #W? (y/n)" kill-window
 bind-key -n MouseDown2Pane paste-buffer # Paste with Option-right-click
 bind-key -r Space select-pane -t :.+
-bind-key -n C-k send-keys -R \; clear-history
+bind-key C-k send-keys -R \; clear-history
 
 # The followings are not any kind of setting for Tmux, but crucial to my
 # own productivity. Setting them up is really pain, and I probably going to
