@@ -17,12 +17,15 @@ function! PreviousBuffer()
 endfunction
 
 function! ToggleGblame()
-  if !exists('b:fugitive_type')
-    " exe 'echom "doesnt exist"'
-    Gblame
-  else
+  if exists('b:fugitive_type') && b:fugitive_type == 'temp'
     " exe 'echom "exists"'
     exe 'normal gq'
+  elseif exists('b:fugitive_type') && b:fugitive_type == 'commit'
+    " exe 'echom "in a commit"'
+    " do nothing...
+  else
+    " exe 'echom "doesnt exist"'
+    Gblame
   endif
 endfunction
 
