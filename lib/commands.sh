@@ -401,7 +401,7 @@ function tmux-small ()
   fi
 
   tmux new -A -s main -d
-  tmux split-window -h -p 50
+  tmux split-window -h -p 55
   tmux select-pane -t 1
   tmux split-window -v -p 50
   tmux select-pane -t 3
@@ -490,6 +490,8 @@ alias gpst='git push --follow-tags'
 alias gpl='git pull'
 alias gr2='git rebase -S -i HEAD~2'
 alias gs='git show'
+alias gsp='git stash pop'
+alias gss='git stash save'
 alias hg='histgrep'
 alias k='kubectl'
 alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
