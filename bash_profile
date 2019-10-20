@@ -7,6 +7,9 @@ export DOTFILES=$DEVPATH/dotfiles
 # import api keys and local workstation-related scripts
 [ -s "$HOME/.ssh/api_keys" ] && . "$HOME/.ssh/api_keys"
 
+# source ssh-agent socket info
+[ -n "$SSH_AUTH_SOCK" ] || eval `ssh-agent -s`
+
 # Set terminal language and UTF-8
 export LANG=en_US.UTF-8
 
