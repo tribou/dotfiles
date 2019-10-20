@@ -84,3 +84,15 @@ if [ ! -f "$HOME/.ssh/api_keys" ]
 then
   touch "$HOME/.ssh/api_keys"
 fi
+
+# Setup ssh key
+if [ ! -f "$HOME/.ssh/id_rsa" ]
+then
+  ssh-keygen -t rsa -b 4096 -C "tribou@users.noreply.github.com" -N "" -f "$HOME/.ssh/id_rsa"
+fi
+
+# Setup ssh-agent
+## If agent socket isn't available, source it
+[ -n "$SSH_AUTH_SOCK" ] || eval `ssh-agent -s`
+## If key hasn't been added to keychain, add it
+ssh-add -L > /dev/null || ssh-add -K "$HOME/.ssh/id_rsa"
