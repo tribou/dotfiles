@@ -18,7 +18,7 @@ function _dotfiles_git_log_commit () {
 function c ()
 {
   # If committing a git merge
-  if [ -f "./git/MERGE_HEAD" ]
+  if [ -f "./.git/MERGE_HEAD" ]
   then
     git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
   else
