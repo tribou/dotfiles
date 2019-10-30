@@ -173,8 +173,14 @@ function histgrep ()
     | awk -F "$AWK_HISTFILE_DELIM" '{print $NF}' \
     | awk -F "$AWK_HISTORY_DELIM" '{print $NF}')
 
-  echo "$RESULT"
-  printf "$RESULT" | pbcopy
+  # If in tmux, we can use send-keys
+  if [ -n "$TMUX" ]
+  then
+    tmux send-keys -t "$TMUX_PANE" "$RESULT"
+  else
+    echo "$RESULT"
+    printf "$RESULT" | pbcopy
+  fi
 }
 
 function install-swap ()
