@@ -362,7 +362,7 @@ function tmux-large ()
   then
     local _PRIMARY="$PRIMARY_REPO"
   else
-    local _PRIMARY="dev"
+    local _PRIMARY="$PWD"
   fi
   if [ -n "$1" ]
   then
@@ -371,7 +371,7 @@ function tmux-large ()
   then
     local _SECONDARY="$SECONDARY_REPO"
   else
-    local _SECONDARY="dev"
+    local _SECONDARY="$PWD"
   fi
 
   tmux new -A -s main -d
@@ -397,7 +397,7 @@ function tmux-xl ()
   then
     local _PRIMARY="$PRIMARY_REPO"
   else
-    local _PRIMARY="dev"
+    local _PRIMARY="$PWD"
   fi
   if [ -n "$1" ]
   then
@@ -406,7 +406,7 @@ function tmux-xl ()
   then
     local _SECONDARY="$SECONDARY_REPO"
   else
-    local _SECONDARY="dev"
+    local _SECONDARY="$PWD"
   fi
 
   tmux new -A -s main -d
@@ -435,7 +435,7 @@ function tmux-small ()
   then
     local _PRIMARY="$PRIMARY_REPO"
   else
-    local _PRIMARY="dev"
+    local _PRIMARY="$PWD"
   fi
 
   tmux new -A -s main -d
@@ -555,6 +555,7 @@ alias survey='sudo nmap -sP 10.0.1.1/24'
 alias t='echo; echo; git tree'
 alias tm-large='tmux-large'
 alias tm-small='tmux-small'
+alias tm-xl='tmux-xl'
 alias tma='tmux new -A -s main'
 alias ts='echo; echo; git tree-short'
 alias to='echo; echo; git tree-one'
