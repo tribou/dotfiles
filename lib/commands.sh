@@ -304,7 +304,6 @@ function npm-install-global ()
     jsonlint \
     neovim \
     prettier \
-    react-native-cli \
     react-devtools \
     nodemon \
     tern \
