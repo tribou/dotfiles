@@ -38,7 +38,7 @@ set -g default-terminal "tmux-256color"
 # Split horiziontal and vertical splits, instead of % and "
 # Also open them in the same directory
 bind-key C-v split-window -h -c '#{pane_current_path}'
-bind-key C-h split-window -v -c '#{pane_current_path}'
+bind-key C-h split-window -v -p 20 -c '#{pane_current_path}'
 
 # Pressing Ctrl+Shift+Left (will move the current window to the left. Similarly
 # right. No need to use the modifier (C-b).
