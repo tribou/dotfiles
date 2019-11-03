@@ -138,7 +138,8 @@ function read_node_version()
 }
 [[ $PROMPT_COMMAND != *"read_node_version"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND read_node_version ;"
 
-export PATH=/usr/local/git/bin:$PATH
+# AWS CLI
+complete -C aws_completer aws
 
 # ansible scripts
 if [ -s "$HOME/sys/ansible/hacking/env-setup" ]
@@ -153,6 +154,9 @@ if [ -s "$DEVPATH/sys/ansible/ansible.cfg" ]
 then
   export ANSIBLE_CONFIG="$DEVPATH/sys/ansible/ansible.cfg"
 fi
+
+# bat
+export BAT_THEME=TwoDark
 
 # brew install bash-completion
 if [ -s "$BREW_PREFIX/etc/bash_completion" ]
@@ -177,24 +181,14 @@ then
   . "$NEW_GCLOUD_PATH/completion.bash.inc"
 fi
 
-# AWS CLI
-complete -C aws_completer aws
-
-# bat
-export BAT_THEME=TwoDark
-
 # fasd
 if [ $(which fasd) ]
 then
   eval "$(fasd --init bash-hook)"
 fi
 
-# pyenv
-if [ $(which pyenv) ]
-then
-  eval "$(pyenv init -)"
-  eval "$(pyenv virtualenv-init -)"
-fi
+# git
+export PATH=/usr/local/git/bin:$PATH
 
 
 # Lua/Torch
@@ -206,6 +200,13 @@ fi
 # Marker
 [[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
 
+# pyenv
+if [ $(which pyenv) ]
+then
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
+fi
+
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
 if [ -s "$HOME/.cargo/env" ]
@@ -215,6 +216,9 @@ fi
 
 # ripgrep
 export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
+
+# yarn
+[ -d "$HOME/.yarn/bin" ] && export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 # THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/Users/aaron.tribou/.sdkman"
