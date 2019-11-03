@@ -111,6 +111,7 @@ Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
 " TODO: test vim-polyglot and remove most other syntax plugins
 " Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-liquid'
+Plug 'neoclide/jsonc.vim'
 
 " Other JS/CSS/HTML
 " Plug 'mattn/emmet-vim', { 'for': ['css', 'html'] }
@@ -236,8 +237,9 @@ set exrc
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
 autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
 autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
+autocmd BufNewFile,BufRead tsconfig.json set filetype=jsonc
 autocmd BufNewFile,BufRead .ripgreprc set filetype=conf
-autocmd BufNewFile,BufRead *.conf set filetype=conf
+autocmd BufNewFile,BufRead *.conf,.*ignore,.git* set filetype=conf
 autocmd BufNewFile,BufRead *.css set filetype=scss
 autocmd BufNewFile,BufRead .env* set filetype=sh
 autocmd BufNewFile,BufRead .env*.php set filetype=php
