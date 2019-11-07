@@ -27,7 +27,15 @@
     "elixirLS": {
       "command": "~/dev/elixir-ls/rel/language_server.sh",
       "filetypes": ["elixir", "eelixir"]
-     }
+     },
+    "groovy": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "~/dev/groovy-language-server/build/libs/groovy-language-server-all.jar"
+      ],
+      "filetypes": ["groovy"]
+    }
   }
 }
 
