@@ -12,7 +12,7 @@ inoremap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"
 inoremap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"
 
 " buffer browsing
-nnoremap <silent> <Leader>d :<c-u>bp<CR>:bd #<CR><c-g>
+nmap <silent> <Leader>d <Plug>(dotfiles-bdelete)
 nmap <silent> <Leader>k <Plug>(dotfiles-bnext)
 nmap <silent> <Leader>j <Plug>(dotfiles-bprevious)
 
