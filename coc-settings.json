@@ -1,0 +1,33 @@
+{
+  "suggest.noselect": true,
+  "suggest.enablePreview": true,
+  "coc.preferences.hoverTarget": "float",
+  "typescript.updateImportsOnFileMove.enable": false,
+  "languageserver": {
+    "flow": {
+      "command": "node_modules/.bin/flow",
+      "args": ["lsp"],
+      "filetypes": ["javascript", "javascriptreact"],
+      "initializationOptions": {},
+      "requireRootPattern": true,
+      "settings": {},
+      "rootPatterns": [".flowconfig"]
+    },
+    "bash": {
+      "command": "bash-language-server",
+      "args": ["start"],
+      "filetypes": ["sh"],
+      "ignoredRootPaths": ["~"]
+    },
+    "golang": {
+      "command": "gopls",
+      "rootPatterns": ["go.mod"],
+      "filetypes": ["go"]
+    },
+    "elixirLS": {
+      "command": "~/dev/elixir-ls/rel/language_server.sh",
+      "filetypes": ["elixir", "eelixir"]
+     }
+  }
+}
+

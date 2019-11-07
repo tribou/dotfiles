@@ -87,6 +87,10 @@ mkdir -p ~/.config/alacritty
 backupFile ".config/alacritty/alacritty.yml"
 linkFileToHome "alacritty.yml" ".config/alacritty/alacritty.yml"
 
+# .config/nvim/coc-settings.json
+backupFile ".config/nvim/coc-settings.json"
+linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
+
 # setup API keys file
 if [ ! -f "$HOME/.ssh/api_keys" ]
 then
