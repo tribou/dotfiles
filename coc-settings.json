@@ -2,6 +2,7 @@
   "suggest.noselect": true,
   "suggest.enablePreview": true,
   "coc.preferences.hoverTarget": "float",
+  "javascript.updateImportsOnFileMove.enable": false,
   "typescript.updateImportsOnFileMove.enable": false,
   "languageserver": {
     "flow": {
