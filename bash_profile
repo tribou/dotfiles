@@ -227,7 +227,8 @@ fi
 if [ -d "$STARTPATH" ]
 then
   cd "$STARTPATH"
-else
+elif [ "$PWD" == "$HOME" ]
+then
   cd "$DEVPATH"
 fi
 
