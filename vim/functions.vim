@@ -3,7 +3,10 @@
 "
 " misc
 function! DeleteBuffer()
-  if !exists('b:NERDTree') && !exists('b:fugitive_type')
+  if exists('b:NERDTree') || exists('b:fugitive_type')
+    bdelete
+    file
+  else
     bprevious
     bdelete #
     file
@@ -28,3 +31,5 @@ endfunction
 nnoremap <Plug>(dotfiles-bdelete) :<c-u>call DeleteBuffer()<CR>
 nnoremap <Plug>(dotfiles-bnext) :<c-u>call NextBuffer()<CR>
 nnoremap <Plug>(dotfiles-bprevious) :<c-u>call PreviousBuffer()<CR>
+
+command! Compare Gedit master:%
