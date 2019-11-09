@@ -15,8 +15,8 @@
 [color "diff"]
   meta = yellow
   frag = blue
-  old = red bold
-  new = green
+  old = red reverse
+  new = green reverse
 [color "decorate"]
   head = reverse red
 [color "status"]
