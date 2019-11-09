@@ -46,4 +46,5 @@ nnoremap <Plug>(dotfiles-bnext) :<c-u>call NextBuffer()<CR>
 nnoremap <Plug>(dotfiles-bprevious) :<c-u>call PreviousBuffer()<CR>
 nnoremap <Plug>(dotfiles-gblame) :<c-u>call ToggleGblame()<CR>
 
+command! ToggleGblame call ToggleGblame()
 command! Compare Gedit master:%
