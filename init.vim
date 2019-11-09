@@ -287,6 +287,10 @@ let g:NERDTreeWinPos = 'right'
 let g:NERDTreeWinSize=50
 
 
+" NERDTree syntax highlight
+let g:NERDTreeFileExtensionHighlightFullName = 1
+
+
 " UltiSnips
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<tab>"
