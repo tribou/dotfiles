@@ -164,6 +164,8 @@ Plug 'HerringtonDarkholme/yats.vim'  " Typescript syntax
 " Plug 'ianks/vim-tsx' " Possible indentation issues with TSX
 " Plug 'mhartington/nvim-typescript', {'do': './install.sh'} " Typescript deoplete integration
 
+Plug 'ryanoasis/vim-devicons'
+
 call plug#end()
 
 
@@ -187,6 +189,9 @@ endif
 set ignorecase
 set smartcase
 set mouse=a
+set encoding=UTF-8
+" set guifont=FuraCode\ Nerd\ Font:h11
+set guifont=Hack\ Nerd\ Font:h12
 
 " set status bar to two lines
 set cmdheight=2

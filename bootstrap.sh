@@ -207,4 +207,18 @@ then
     echo "ERROR: gem not available! Skipping..."
     echo
   fi
+
+  if   [ -s "$(which brew)"  ]
+  then
+    _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew cask install font-firacode-nerd-font font-hack-nerd-font font-fontawesome"
+    echo "Installing fonts:"
+    echo "$_BOOTSTRAP_INSTALL"
+    echo
+    eval "$_BOOTSTRAP_INSTALL"
+
+    echo
+  else
+    echo "ERROR: brew not available! Skipping..."
+    echo
+  fi
 fi
