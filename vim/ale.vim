@@ -3,6 +3,8 @@ let g:ale_completion_enabled = 0 " using deoplete instead
 let g:ale_fix_on_save = 0 " enable on project-by-project basis with local .exrc
 let g:ale_javascript_eslint_executable = 'eslint_d'
 let g:ale_javascript_eslint_use_global = 1
+let g:ale_typescript_eslint_executable = 'eslint_d'
+let g:ale_typescript_eslint_use_global = 1
 let g:ale_php_langserver_executable = $HOME . '/.composer/vendor/bin/php-language-server.php'
 let g:ale_php_langserver_use_global = 1
 let g:ale_php_cs_fixer_executable = $HOME . '/.composer/vendor/bin/php-cs-fixer'
@@ -20,7 +22,7 @@ let g:ale_linters = {
   \   'json': [
   \   ],
   \   'typescript': [
-  \       'tslint',
+  \       'eslint',
   \       'tsserver',
   \   ],
   \   'elixir': [
@@ -53,12 +55,12 @@ let g:ale_fixers = {
   \       'prettier',
   \   ],
   \   'typescript': [
+  \       'eslint',
   \       'prettier',
-  \       'tslint',
   \   ],
   \   'typescript.tsx': [
+  \       'eslint',
   \       'prettier',
-  \       'tslint',
   \   ],
   \   'json': [
   \       'prettier',
