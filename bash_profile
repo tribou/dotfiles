@@ -12,13 +12,15 @@ export LANG=en_US.UTF-8
 
 function get_git_location()
 {
-  if [ -d "./.git" ]
+  # git worktrees use .git files instead of directories
+  if [ -d "./.git" ] || [ -f "./.git" ]
   then
     local BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if [ -n "$BRANCH" ] && [ "$BRANCH" != "HEAD" ]
     then
       echo "$BRANCH"
     else
+      # If no current branch name, use the current short commit sha
       git rev-parse --short HEAD 2> /dev/null || echo "$HOSTNAME_SHORT"
     fi
   else
