@@ -87,22 +87,37 @@ Examples:
 # wrg something --replace else          # actually write the changes
 function wrg()
 {
-  seenReplace=''
+  local usage='Usage: wrg OLDPATTERN --replace NEWPATTERN
+
+Examples:
+  rg something --replace else           # verify substitutions
+  rg something --replace else --stats   # verify total count
+  wrg something --replace else          # actually write the changes
+'
+
+  # Return usage if not 2 args are passed
+  if [ $# -eq 0 ]
+  then
+    echo -e "$usage"
+    return 1
+  fi
+
+  local seenReplace=''
 
   for arg in "$@"; do
     if test "$arg" == '--replace' -o "$arg" == '-r'; then
-      seenReplace='true'
+      local seenReplace='true'
       break
     fi
   done
 
   if test -z "$seenReplace"; then
     echo 'You must specify the --replace or -r argument!'
-    exit 1
+    return 1
   fi
 
-  currentFile=''
-  didChange=''
+  local currentFile=''
+  local didChange=''
 
   (
     rg \
@@ -118,14 +133,14 @@ function wrg()
       if test -n "$currentFile"; then
         echo "$currentFile"
         (sed '$d' | sed '$d') <<< "$part" > "$currentFile"
-        didChange='true'
+        local didChange='true'
       fi
-      currentFile="$(tail -n 1 <<< "$part")"
+      local currentFile="$(tail -n 1 <<< "$part")"
     done
 
     if test -z "$didChange"; then
       echo "No files were changed."
-      exit 1
+      return 1
     fi
   }
 }
