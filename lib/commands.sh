@@ -1,6 +1,10 @@
 #!/bin/bash -l
 
 # Helper functions
+function _dotfiles_full_path () {
+  fasd -e 'printf %s' "$1"
+}
+
 function _dotfiles_git_status () {
   git status -sb
 }
@@ -362,72 +366,43 @@ function tmux-large ()
 {
   if [ -n "$1" ]
   then
-    local _PRIMARY="$1"
+    local _PRIMARY=$(_dotfiles_full_path "$1")
   elif [ -n "$PRIMARY_REPO" ]
   then
-    local _PRIMARY="$PRIMARY_REPO"
+    local _PRIMARY=$(_dotfiles_full_path "$PRIMARY_REPO")
   else
     local _PRIMARY="$PWD"
   fi
   if [ -n "$1" ]
   then
-    local _SECONDARY="$1"
+    local _SECONDARY=$(_dotfiles_full_path "$1")
   elif [ -n "$SECONDARY_REPO" ]
   then
-    local _SECONDARY="$SECONDARY_REPO"
+    local _SECONDARY=$(_dotfiles_full_path "$SECONDARY_REPO")
   else
     local _SECONDARY="$PWD"
   fi
 
   tmux new -A -s main -d
-  tmux split-window -h -p 75
+  tmux split-window -h -p 75 -c "$_PRIMARY"
   tmux select-pane -t 1
-  tmux split-window -v -p 35
+  tmux split-window -v -p 35 -c "$_PRIMARY"
   tmux select-pane -t 3
-  tmux split-window -h -p 40
+  tmux split-window -h -p 40 -c "$_SECONDARY"
   tmux select-pane -t 3
   tmux send-keys -t 1 z Space $_PRIMARY Enter
-  tmux send-keys -t 2 z Space $_PRIMARY Enter
-  tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
-  tmux send-keys -t 4 z Space $_SECONDARY Enter
+  tmux send-keys -t 2 f Enter
+  tmux send-keys -t 3 v Enter
+  [ "$_PRIMARY" != "$_SECONDARY" ] && tmux send-keys -t 4 f Enter
 }
 
 # Create the main dev layout for extra large monitors
 function tmux-xl ()
 {
-  if [ -n "$1" ]
-  then
-    local _PRIMARY="$1"
-  elif [ -n "$PRIMARY_REPO" ]
-  then
-    local _PRIMARY="$PRIMARY_REPO"
-  else
-    local _PRIMARY="$PWD"
-  fi
-  if [ -n "$1" ]
-  then
-    local _SECONDARY="$1"
-  elif [ -n "$SECONDARY_REPO" ]
-  then
-    local _SECONDARY="$SECONDARY_REPO"
-  else
-    local _SECONDARY="$PWD"
-  fi
-
-  tmux new -A -s main -d
-  tmux split-window -h -p 75
-  tmux select-pane -t 1
-  tmux split-window -v -p 35
+  tmux-large "$@"
   tmux select-pane -t 3
-  tmux split-window -h -p 40
+  tmux split-window -v -p 20 -c '#{pane_current_path}'
   tmux select-pane -t 3
-  tmux split-window -v -p 20
-  tmux select-pane -t 3
-  tmux send-keys -t 1 z Space $_PRIMARY Enter
-  tmux send-keys -t 2 z Space $_PRIMARY Enter
-  tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
-  tmux send-keys -t 4 z Space $_PRIMARY Enter
-  tmux send-keys -t 5 z Space $_SECONDARY Enter
 }
 
 # Create the main dev layout for small monitors
@@ -435,22 +410,22 @@ function tmux-small ()
 {
   if [ -n "$1" ]
   then
-    local _PRIMARY="$1"
+    local _PRIMARY=$(_dotfiles_full_path "$1")
   elif [ -n "$PRIMARY_REPO" ]
   then
-    local _PRIMARY="$PRIMARY_REPO"
+    local _PRIMARY=$(_dotfiles_full_path "$PRIMARY_REPO")
   else
     local _PRIMARY="$PWD"
   fi
 
   tmux new -A -s main -d
-  tmux split-window -h -p 55
+  tmux split-window -h -p 55 -c "$_PRIMARY"
   tmux select-pane -t 1
-  tmux split-window -v -p 50
+  tmux split-window -v -p 50 -c "$_PRIMARY"
   tmux select-pane -t 3
-  tmux send-keys -t 1 z Space $_PRIMARY Enter
-  tmux send-keys -t 2 z Space $_PRIMARY Enter
-  tmux send-keys -t 3 z Space $_PRIMARY Enter v Enter
+  tmux send-keys -t 1 z Space "$_PRIMARY" Enter
+  tmux send-keys -t 2 f Enter
+  tmux send-keys -t 3 v Enter
 }
 
 # Use like: useLocalIfAvailable flow-typed -v
