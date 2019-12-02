@@ -304,6 +304,7 @@ function npm-install-global ()
   npm install -g npm@"$NPM_VERSION" \
     && npm install -g \
     eslint_d \
+    intelephense \
     js-yaml \
     jsonlint \
     neovim \

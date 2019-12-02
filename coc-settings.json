@@ -20,15 +20,15 @@
       "filetypes": ["sh"],
       "ignoredRootPaths": ["~"]
     },
+    "elixirLS": {
+      "command": "~/dev/elixir-ls/rel/language_server.sh",
+      "filetypes": ["elixir", "eelixir"]
+    },
     "golang": {
       "command": "gopls",
       "rootPatterns": ["go.mod"],
       "filetypes": ["go"]
     },
-    "elixirLS": {
-      "command": "~/dev/elixir-ls/rel/language_server.sh",
-      "filetypes": ["elixir", "eelixir"]
-     },
     "groovy": {
       "command": "java",
       "args": [
@@ -36,7 +36,14 @@
         "~/dev/groovy-language-server/build/libs/groovy-language-server-all.jar"
       ],
       "filetypes": ["groovy"]
+    },
+    "intelephense": {
+      "command": "intelephense",
+      "args": ["--stdio"],
+      "filetypes": ["php"],
+      "initializationOptions": {
+        "storagePath": "/tmp/intelephense"
+      }
     }
   }
 }
-
