@@ -17,6 +17,34 @@ function _dotfiles_git_log_commit () {
   git log --pretty=fuller --show-signature -1
 }
 
+function _dotfiles_primary_full_path () {
+  if [ -n "$1" ]
+  then
+    local _PRIMARY=$(_dotfiles_full_path "$1")
+  elif [ -n "$PRIMARY_REPO" ]
+  then
+    local _PRIMARY=$(_dotfiles_full_path "$PRIMARY_REPO")
+  else
+    local _PRIMARY="$PWD"
+  fi
+
+  echo "$_PRIMARY"
+}
+
+function _dotfiles_secondary_full_path () {
+  if [ -n "$1" ]
+  then
+    local _SECONDARY=$(_dotfiles_full_path "$1")
+  elif [ -n "$SECONDARY_REPO" ]
+  then
+    local _SECONDARY=$(_dotfiles_full_path "$SECONDARY_REPO")
+  else
+    local _SECONDARY="$PWD"
+  fi
+
+  echo "$_SECONDARY"
+}
+
 # If no args are passed, open the commit editor. Otherwise commit with all
 # arguments concatenated as a string
 function c ()
@@ -365,24 +393,8 @@ function search ()
 # Create the main dev layout for large monitors
 function tmux-large ()
 {
-  if [ -n "$1" ]
-  then
-    local _PRIMARY=$(_dotfiles_full_path "$1")
-  elif [ -n "$PRIMARY_REPO" ]
-  then
-    local _PRIMARY=$(_dotfiles_full_path "$PRIMARY_REPO")
-  else
-    local _PRIMARY="$PWD"
-  fi
-  if [ -n "$1" ]
-  then
-    local _SECONDARY=$(_dotfiles_full_path "$1")
-  elif [ -n "$SECONDARY_REPO" ]
-  then
-    local _SECONDARY=$(_dotfiles_full_path "$SECONDARY_REPO")
-  else
-    local _SECONDARY="$PWD"
-  fi
+  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
+  local _SECONDARY=$(_dotfiles_secondary_full_path "$1")
 
   tmux new -A -s main -d
   tmux split-window -h -p 75 -c "$_PRIMARY"
@@ -409,15 +421,21 @@ function tmux-xl ()
 # Create the main dev layout for small monitors
 function tmux-small ()
 {
-  if [ -n "$1" ]
-  then
-    local _PRIMARY=$(_dotfiles_full_path "$1")
-  elif [ -n "$PRIMARY_REPO" ]
-  then
-    local _PRIMARY=$(_dotfiles_full_path "$PRIMARY_REPO")
-  else
-    local _PRIMARY="$PWD"
-  fi
+  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
+
+  tmux new -A -s main -d
+  tmux split-window -h -p 55 -c "$_PRIMARY"
+  tmux select-pane -t 1
+  tmux split-window -v -p 25 -c "$_PRIMARY"
+  tmux select-pane -t 3
+  tmux send-keys -t 1 z Space "$_PRIMARY" Enter
+  tmux send-keys -t 2 f Enter
+  tmux send-keys -t 3 v Enter
+}
+
+function tmux-small-half ()
+{
+  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
 
   tmux new -A -s main -d
   tmux split-window -h -p 55 -c "$_PRIMARY"
@@ -538,6 +556,7 @@ alias survey='sudo nmap -sP 10.0.1.1/24'
 alias t='echo; echo; git tree'
 alias tm-large='tmux-large'
 alias tm-small='tmux-small'
+alias tm-small-half='tmux-small-half'
 alias tm-xl='tmux-xl'
 alias tma='tmux -u new -A -s main'
 alias ts='echo; echo; git tree-short'
