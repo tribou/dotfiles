@@ -58,6 +58,10 @@ let g:ale_fixers = {
   \       'prettier',
   \       'tslint',
   \   ],
+  \   'typescriptreact': [
+  \       'eslint',
+  \       'prettier',
+  \   ],
   \   'json': [
   \       'prettier',
   \   ],
