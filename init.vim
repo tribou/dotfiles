@@ -248,7 +248,7 @@ autocmd BufNewFile,BufRead *.conf,.*ignore,.git* set filetype=conf
 autocmd BufNewFile,BufRead *.css set filetype=scss
 autocmd BufNewFile,BufRead .env* set filetype=sh
 autocmd BufNewFile,BufRead .env*.php set filetype=php
-autocmd BufNewFile,BufRead Podfile set filetype=ruby
+autocmd BufNewFile,BufRead Podfile,Fastfile,Matchfile,Appfile set filetype=ruby
 autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
 autocmd FileType json syntax match Comment +\/\/.\+$+
 
