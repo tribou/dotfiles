@@ -125,7 +125,7 @@ bind-key x kill-pane
 # on Wed, 25 Nov 2015
 set -g status "on"
 set -g status-justify "left"
-set -g status-position "top"
+set -g status-position "bottom"
 set -g status-left-length "100"
 set -g status-left-style "none"
 set -g status-right-length "200"
