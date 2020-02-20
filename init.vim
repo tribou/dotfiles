@@ -412,6 +412,15 @@ let test#strategy = "dispatch"
 let g:nvim_typescript#diagnostics_enable = 0 " Use ALE for linting
 
 
+" vim-vdebug
+" let g:vdebug_options = {
+"   \ 'ide_key': 'xdebug',
+"   \ 'break_on_open': 0,
+"   \ 'port': '9000',
+"   \ 'path_maps' : {'/var/www/html': '/Volumes/user/dev/repo/public'},
+"   \ }
+
+
 " Other
 "function! SyntaxItem()
 "  return synIDattr(synID(line("."),col("."),1),"name")
