@@ -445,6 +445,24 @@ function tmux-small-2 ()
   tmux send-keys -t 4 f Enter
 }
 
+# Create another crossover for small and large monitors
+function tmux-small-3 ()
+{
+  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
+  local _SECONDARY=$(_dotfiles_secondary_full_path "$1")
+
+  tmux new -A -s main -d
+  tmux split-window -h -p 55 -c "$_SECONDARY"
+  tmux select-pane -t 1
+  tmux split-window -v -p 75 -c "$_PRIMARY"
+  tmux select-pane -t 3
+  tmux split-window -v -p 75 -c "$_PRIMARY"
+  tmux send-keys -t 1 z Space "$_PRIMARY" Enter
+  tmux send-keys -t 2 f Enter # PRIMARY
+  tmux send-keys -t 3 f Enter # SECONDARY
+  tmux send-keys -t 4 v Enter # PRIMARY
+}
+
 function tmux-small-half ()
 {
   local _PRIMARY=$(_dotfiles_primary_full_path "$1")
@@ -568,7 +586,7 @@ alias survey='sudo nmap -sP 10.0.1.1/24'
 alias t='echo; echo; git tree'
 alias tag='git tag -s -m ""'
 alias tm-large='tmux-large'
-alias tm-main='tmux-small-2'
+alias tm-main='tmux-small-3'
 alias tm-small-half='tmux-small-half'
 alias tm-small='tmux-small'
 alias tm-xl='tmux-xl'
