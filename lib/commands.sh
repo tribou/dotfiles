@@ -456,6 +456,7 @@ function tmux-small-3 ()
   tmux split-window -v -p 75 -c "$_PRIMARY"
   tmux select-pane -t 3
   tmux split-window -v -p 75 -c "$_PRIMARY"
+  tmux select-pane -t 1
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter
   tmux send-keys -t 2 f Enter # PRIMARY
   tmux send-keys -t 3 f Enter # SECONDARY
