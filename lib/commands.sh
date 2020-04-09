@@ -362,9 +362,14 @@ function nr ()
     if [ -n "$RESULT" ]
     then
       local SCRIPT="npm run --silent $RESULT"
-      echo $SCRIPT
-      echo
-      eval $SCRIPT
+      # If in tmux, run the command from the prompt to put it in the command history
+      if [ -n "$TMUX" ]; then
+        tmux send-keys -t "$TMUX_PANE" "$SCRIPT" Enter;
+      else
+        echo $SCRIPT
+        echo
+        eval $SCRIPT
+      fi
     fi
   fi
 }
