@@ -196,6 +196,12 @@ set guifont=Hack\ Nerd\ Font:h12
 " set status bar to two lines
 set cmdheight=2
 
+if has("persistent_undo")
+  silent !mkdir -p $HOME/.vim/undos
+  set undodir=$HOME/.vim/undos
+  set undofile
+endif
+
 " enable true color support
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
