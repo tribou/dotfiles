@@ -45,6 +45,20 @@ function _dotfiles_secondary_full_path () {
   echo "$_SECONDARY"
 }
 
+# If in tmux, run the command from the prompt to put it in the command history.
+# Otherwise, just eval
+function _eval_script() {
+  local SCRIPT="$1"
+
+  if [ -n "$TMUX" ]; then
+    tmux send-keys -t "$TMUX_PANE" "$SCRIPT" Enter;
+  else
+    echo $SCRIPT
+    echo
+    eval $SCRIPT
+  fi
+}
+
 # If no args are passed, open the commit editor. Otherwise commit with all
 # arguments concatenated as a string
 function c ()
@@ -97,9 +111,7 @@ function co ()
     if [ -n "$CLEANED_RESULT" ]
     then
       local SCRIPT="git checkout $CLEANED_RESULT"
-      echo $SCRIPT
-      echo
-      eval "$SCRIPT && _dotfiles_git_status"
+      _eval_script "$SCRIPT && _dotfiles_git_status"
     fi
   fi
 }
@@ -361,14 +373,7 @@ function nr ()
     if [ -n "$RESULT" ]
     then
       local SCRIPT="npm run --silent $RESULT"
-      # If in tmux, run the command from the prompt to put it in the command history
-      if [ -n "$TMUX" ]; then
-        tmux send-keys -t "$TMUX_PANE" "$SCRIPT" Enter;
-      else
-        echo $SCRIPT
-        echo
-        eval $SCRIPT
-      fi
+      _eval_script "$SCRIPT"
     fi
   fi
 }
