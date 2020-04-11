@@ -56,12 +56,6 @@ function get_git_location()
   fi
 }
 
-# Set iTerm2 badge
-function set_badge()
-{
-  printf "\e]1337;SetBadgeFormat=%s\a"   $(printf '%q\n' "${PWD##*/}:$(get_git_location)" | base64)
-}
-[ "$TERM_PROGRAM" == "iTerm.app" ] && [[ $PROMPT_COMMAND != *"set_badge"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 
 # Set default editor
 export EDITOR='nvim'
@@ -134,52 +128,14 @@ _dotfiles_debug_timing "$LINENO"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 _dotfiles_debug_timing "$LINENO"
 export HAS_NVM=$([ -n "$(type nvm 2> /dev/null)" ] && echo true)
-_dotfiles_debug_timing "$LINENO"
-[ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
+# _dotfiles_debug_timing "$LINENO"
+# [ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
 
 _dotfiles_debug_timing "$LINENO"
 
 # Change bash prompt
 export PS1="\[\033[0;34m\]\W \$([ -n "$HAS_NVM" ] && nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
 
-
-# Activate a version of Node that is read from a text file via NVM
-function use_node_version()
-{
-  local TEXT_FILE_NAME="$1"
-  local CURRENT_VERSION=$([ -n "$HAS_NVM" ] && nvm current)
-  local PROJECT_VERSION=$([ -n "$HAS_NVM" ] && nvm version $(cat "$TEXT_FILE_NAME"))
-  # If the project file version is different than the current version
-  if [ "$CURRENT_VERSION" != "$PROJECT_VERSION" ]
-  then
-    [ -n "$HAS_NVM" ] && nvm use "$PROJECT_VERSION"
-  fi
-}
-
-# Read the .nvmrc and switch nvm versions if exists upon dir changes
-function read_node_version()
-{
-  # Only run if we actually changed directories
-  if [ "$PWD" != "$READ_NODE_VERSION_PREV_PWD" ]
-	then
-    export READ_NODE_VERSION_PREV_PWD="$PWD";
-
-    # If there's an .nvmrc here
-    if [ -e ".nvmrc" ]
-		then
-      use_node_version ".nvmrc"
-      return
-    fi
-
-    # If there's a .node-version here
-    if [ -e ".node-version" ]
-		then
-      use_node_version ".node-version"
-      return
-    fi
-  fi
-}
-[[ $PROMPT_COMMAND != *"read_node_version"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND read_node_version ;"
 
 # AWS CLI
 complete -C aws_completer aws
@@ -294,6 +250,54 @@ then
 fi
 
 _dotfiles_debug_timing "$LINENO"
+
+
+## Setup PROMPT_COMMAND
+# Activate a version of Node that is read from a text file via NVM
+function use_node_version()
+{
+  local TEXT_FILE_NAME="$1"
+  local CURRENT_VERSION=$([ -n "$HAS_NVM" ] && nvm current)
+  local PROJECT_VERSION=$([ -n "$HAS_NVM" ] && nvm version $(cat "$TEXT_FILE_NAME"))
+  # If the project file version is different than the current version
+  if [ "$CURRENT_VERSION" != "$PROJECT_VERSION" ]
+  then
+    [ -n "$HAS_NVM" ] && nvm use "$PROJECT_VERSION"
+  fi
+}
+
+# Read the .nvmrc and switch nvm versions if exists upon dir changes
+function read_node_version()
+{
+  # Only run if we actually changed directories
+  if [ "$PWD" != "$READ_NODE_VERSION_PREV_PWD" ]
+	then
+    export READ_NODE_VERSION_PREV_PWD="$PWD";
+
+    # If there's an .nvmrc here
+    if [ -e ".nvmrc" ]
+		then
+      use_node_version ".nvmrc"
+      return
+    fi
+
+    # If there's a .node-version here
+    if [ -e ".node-version" ]
+		then
+      use_node_version ".node-version"
+      return
+    fi
+  fi
+}
+[[ $PROMPT_COMMAND != *"read_node_version"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND read_node_version ;"
+
+# Set iTerm2 badge
+function set_badge()
+{
+  printf "\e]1337;SetBadgeFormat=%s\a"   $(printf '%q\n' "${PWD##*/}:$(get_git_location)" | base64)
+}
+[ "$TERM_PROGRAM" == "iTerm.app" ] && [[ $PROMPT_COMMAND != *"set_badge"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
+
 
 # Cleanup debug timing
 unset DOTFILES_DEBUG_LAST_TIME
