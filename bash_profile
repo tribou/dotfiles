@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Uncomment to debug timing
 # DEBUG_BASH_PROFILE=1
 
 function _dotfiles_debug_timing ()
@@ -29,7 +30,6 @@ export DEVPATH=$HOME/dev
 export DOTFILES=$DEVPATH/dotfiles
 
 # Reset debug timing
-unset DOTFILES_DEBUG_LAST_TIME
 _dotfiles_debug_timing "$LINENO"
 
 # import api keys and local workstation-related scripts
@@ -294,6 +294,10 @@ then
 fi
 
 _dotfiles_debug_timing "$LINENO"
+
+# Cleanup debug timing
+unset DOTFILES_DEBUG_LAST_TIME
+unset DEBUG_BASH_PROFILE
 
 if [ -d "$STARTPATH" ]
 then
