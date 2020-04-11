@@ -1,8 +1,36 @@
 #!/bin/bash
 
+# Uncomment to debug timing
+# DEBUG_BASH_PROFILE=1
+
+function _dotfiles_debug_timing ()
+{
+  if [ -n "$DEBUG_BASH_PROFILE" ]
+  then
+    local LAST_TIME="$DOTFILES_DEBUG_LAST_TIME"
+    local LAST_TIME_NANO=$(gdate -u -d "$LAST_TIME" +"%s%N")
+    local NOW=$(gdate -u +"%Y-%m-%dT%H:%M:%S.%NZ")
+    local NOW_NANO=$(gdate -u -d "$NOW" +"%s%N")
+    local DIFF="0"
+    local MSG="$NOW $1 +$DIFF"
+
+    if [ -n "$LAST_TIME" ]
+    then
+      DIFF=$(( $(($NOW_NANO - $LAST_TIME_NANO)) / $((60*60*1000)) ))
+      MSG="$NOW $1 +$DIFF"
+    fi
+
+    DOTFILES_DEBUG_LAST_TIME="$NOW"
+    echo "$MSG"
+  fi
+}
+
 # Set dev paths
 export DEVPATH=$HOME/dev
 export DOTFILES=$DEVPATH/dotfiles
+
+# Reset debug timing
+_dotfiles_debug_timing "$LINENO"
 
 # import api keys and local workstation-related scripts
 [ -s "$HOME/.ssh/api_keys" ] && . "$HOME/.ssh/api_keys"
@@ -41,6 +69,8 @@ export EDITOR='nvim'
 # Set React Native editor
 export REACT_EDITOR='vscode'
 
+_dotfiles_debug_timing "$LINENO"
+
 # Set GPG TTY and start agent
 export GPG_TTY=$(tty)
 if [ -S "${GPG_AGENT_INFO%%:*}" ]
@@ -75,9 +105,13 @@ export HISTDIR="${HOME}/.history/$(date -u +%Y/%m)"
 mkdir -p $HISTDIR
 export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 
+_dotfiles_debug_timing "$LINENO"
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
+
+
+_dotfiles_debug_timing "$LINENO"
 
 
 [ -s "$(which brew)" ] && BREW_PREFIX=$(brew --prefix)
@@ -91,12 +125,19 @@ export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools
 # ruby rbenv
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
+_dotfiles_debug_timing "$LINENO"
+
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
+_dotfiles_debug_timing "$LINENO"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+_dotfiles_debug_timing "$LINENO"
 export HAS_NVM=$([ -n "$(type nvm 2> /dev/null)" ] && echo true)
+_dotfiles_debug_timing "$LINENO"
 [ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
+
+_dotfiles_debug_timing "$LINENO"
 
 # Change bash prompt
 export PS1="\[\033[0;34m\]\W \$([ -n "$HAS_NVM" ] && nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
@@ -143,6 +184,8 @@ function read_node_version()
 # AWS CLI
 complete -C aws_completer aws
 
+_dotfiles_debug_timing "$LINENO"
+
 # ansible scripts
 if [ -s "$HOME/sys/ansible/hacking/env-setup" ]
 then
@@ -160,11 +203,15 @@ fi
 # bat
 export BAT_THEME=TwoDark
 
+_dotfiles_debug_timing "$LINENO"
+
 # brew install bash-completion
 if [ -s "$BREW_PREFIX/etc/bash_completion" ]
 then
   . "$BREW_PREFIX/etc/bash_completion"
 fi
+
+_dotfiles_debug_timing "$LINENO"
 
 # composer
 export PATH="$HOME/.composer/vendor/bin:$PATH"
@@ -183,11 +230,15 @@ then
   . "$NEW_GCLOUD_PATH/completion.bash.inc"
 fi
 
+_dotfiles_debug_timing "$LINENO"
+
 # fasd
 [ $(which fasd) ] && eval "$(fasd --init bash-hook)"
 
 # git
 export PATH=/usr/local/git/bin:$PATH
+
+_dotfiles_debug_timing "$LINENO"
 
 
 # Lua/Torch
@@ -196,8 +247,12 @@ then
   . "$DEVPATH/torch/install/bin/torch-activate"
 fi
 
+_dotfiles_debug_timing "$LINENO"
+
 # Marker
 [[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
+
+_dotfiles_debug_timing "$LINENO"
 
 # pyenv
 if [ $(which pyenv) ]
@@ -205,6 +260,8 @@ then
   eval "$(pyenv init -)"
   eval "$(pyenv virtualenv-init -)"
 fi
+
+_dotfiles_debug_timing "$LINENO"
 
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
@@ -216,15 +273,25 @@ export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
 # yarn
 [ -d "$HOME/.yarn/bin" ] && export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
+_dotfiles_debug_timing "$LINENO"
+
 # THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/Users/aaron.tribou/.sdkman"
 [[ -s "/Users/aaron.tribou/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/aaron.tribou/.sdkman/bin/sdkman-init.sh"
+
+_dotfiles_debug_timing "$LINENO"
 
 # set git signing key if GIT_SIGNING_KEY is set and config doesn't exist
 if [ -n "$GIT_SIGNING_KEY" ] && [[ ! $(git config --global --get user.signingkey) ]]
 then
   git config --global user.signingkey ${GIT_SIGNING_KEY}
 fi
+
+_dotfiles_debug_timing "$LINENO"
+
+# Cleanup debug timing
+unset DOTFILES_DEBUG_LAST_TIME
+unset DEBUG_BASH_PROFILE
 
 if [ -d "$STARTPATH" ]
 then
