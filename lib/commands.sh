@@ -107,7 +107,7 @@ function co ()
     eval $SCRIPT
   else
     local RESULT=$(git branch -a --sort=-committerdate | fzf +s --preview-window wrap)
-    local CLEANED_RESULT="$(echo $RESULT | sed -e 's/^remotes.*\///')"
+    local CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
     if [ -n "$CLEANED_RESULT" ]
     then
       local SCRIPT="git checkout $CLEANED_RESULT"
