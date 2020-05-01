@@ -56,7 +56,8 @@ nmap <Leader>at :<c-u>ALEToggle<CR>
 " Show commands
 nmap <space>c :<c-u>CocList commands<CR>
 nmap <space>i :<c-u>CocInfo<CR>
-nmap <space>r <Plug>(coc-rename)
+" nmap <space>r <Plug>(coc-rename)
+nmap <space>r :<c-u>CocRestart<CR>
 nmap <silent> <space>d <Plug>(coc-definition)
 nmap <silent> <space>f :<c-u>call CocActionAsync('doHover')<CR>
 nmap <silent> <space>h :<c-u>call CocActionAsync('doHover')<CR>
