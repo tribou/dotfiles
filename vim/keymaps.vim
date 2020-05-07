@@ -24,6 +24,7 @@ nnoremap <silent> <c-p> :Fzf<CR>
 nnoremap <silent> <c-s> :Rg!<CR>
 nnoremap <silent> <c-b> :Buffers<CR>
 nnoremap <silent> <c-c> :Commits<CR>
+nnoremap <silent> <c-h> :<c-u>History<CR>
 
 " fugitive
 noremap <silent> <Leader>b :Gblame<CR>
