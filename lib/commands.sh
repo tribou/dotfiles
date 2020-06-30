@@ -437,9 +437,9 @@ function tmux-small ()
   tmux split-window -h -p 55 -c "$_PRIMARY"
   tmux select-pane -t 1
   tmux split-window -v -p 25 -c "$_PRIMARY"
-  tmux select-pane -t 3
-  tmux send-keys -t 1 z Space "$_PRIMARY" Enter
-  tmux send-keys -t 2 f Enter
+  tmux select-pane -t 2
+  tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
+  tmux send-keys -t 2
   tmux send-keys -t 3 v Enter
 }
 
@@ -467,9 +467,9 @@ function tmux-small-3 ()
   tmux split-window -v -p 75 -c "$_PRIMARY"
   tmux select-pane -t 3
   tmux split-window -v -p 75 -c "$_PRIMARY"
-  tmux select-pane -t 1
-  tmux send-keys -t 1 z Space "$_PRIMARY" Enter
-  tmux send-keys -t 2 f Enter # PRIMARY
+  tmux select-pane -t 2
+  tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
+  tmux send-keys -t 2 # PRIMARY
   tmux send-keys -t 3 f Enter # SECONDARY
   tmux send-keys -t 4 v Enter # PRIMARY
 }
@@ -482,9 +482,9 @@ function tmux-small-half ()
   tmux split-window -h -p 55 -c "$_PRIMARY"
   tmux select-pane -t 1
   tmux split-window -v -p 50 -c "$_PRIMARY"
-  tmux select-pane -t 3
-  tmux send-keys -t 1 z Space "$_PRIMARY" Enter
-  tmux send-keys -t 2 f Enter
+  tmux select-pane -t 2
+  tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
+  tmux send-keys -t 2
   tmux send-keys -t 3 v Enter
 }
 
@@ -591,6 +591,7 @@ alias prettyjson='python -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
+alias restart-docker="osascript -e 'quit app \"Docker\"' && open -a Docker"
 alias revert='git revert -S HEAD'
 alias s='_dotfiles_git_status'
 alias setdotglob='shopt -s dotglob'
