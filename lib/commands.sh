@@ -378,6 +378,31 @@ function nr ()
   fi
 }
 
+function restart-docker ()
+{
+  printf "Restarting Docker service..."
+  # Restart Docker app
+  osascript -e 'quit app "Docker"' && open -a Docker
+  echo "done"
+
+  printf "Waiting for Docker to restart..."
+  local max_retry=20
+  local counter=1
+  until docker ps >/dev/null 2>&1
+  do
+    # Sleep for 5 seconds the first time
+    [[ counter -eq 1 ]] && sleep 3
+
+    sleep 2
+
+    [[ counter -eq $max_retry ]] && echo "" && echo "Docker still hasn't started. Exiting..." && return 1
+
+    printf "."
+    ((counter++))
+  done
+  echo "done"
+}
+
 function search ()
 {
 
@@ -591,7 +616,6 @@ alias prettyjson='python -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
-alias restart-docker="osascript -e 'quit app \"Docker\"' && open -a Docker"
 alias revert='git revert -S HEAD'
 alias s='_dotfiles_git_status'
 alias setdotglob='shopt -s dotglob'
