@@ -190,6 +190,8 @@ set ignorecase
 set smartcase
 set mouse=a
 set encoding=UTF-8
+set spelllang=en_us
+set spellfile=$DOTFILES/vim/spell/utf-8.add
 " set guifont=FuraCode\ Nerd\ Font:h11
 set guifont=Hack\ Nerd\ Font:h12
 
@@ -258,6 +260,7 @@ autocmd BufNewFile,BufRead .env*.php set filetype=php
 autocmd BufNewFile,BufRead Podfile,Fastfile,Matchfile,Appfile set filetype=ruby
 autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
 autocmd FileType json syntax match Comment +\/\/.\+$+
+autocmd FileType markdown setlocal spell
 
 
 " crontab editing
