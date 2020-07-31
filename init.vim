@@ -174,6 +174,15 @@ if has('nvim')
 endif
 set ignorecase
 set smartcase
+set mouse=a
+set encoding=UTF-8
+set spelllang=en_us
+set spellfile=$DOTFILES/vim/spell/utf-8.add
+" set guifont=FuraCode\ Nerd\ Font:h11
+set guifont=Hack\ Nerd\ Font:h12
+
+" set status bar to two lines
+set cmdheight=2
 
 if has("persistent_undo")
   silent !mkdir -p $HOME/.vim/undos
@@ -232,6 +241,7 @@ autocmd BufNewFile,BufRead .env* set filetype=sh
 autocmd BufNewFile,BufRead .env*.php set filetype=php
 autocmd BufNewFile,BufRead Podfile,Fastfile,Matchfile,Appfile set filetype=ruby
 autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
+autocmd FileType markdown setlocal spell
 
 
 " crontab editing
