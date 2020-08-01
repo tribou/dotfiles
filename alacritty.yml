@@ -37,6 +37,9 @@ window:
     x: 0
     y: 0
 
+  # Allow terminal applications to change Alacritty's window title.
+  dynamic_title: true
+
   # Spread additional padding evenly around the terminal content.
   dynamic_padding: true
 
@@ -337,7 +340,7 @@ colors:
 #   - Linear
 #
 # Specifying a `duration` of `0` will disable the visual bell.
-visual_bell:
+bell:
   animation: EaseOutExpo
   duration: 0
   color: "0xffffff"
@@ -407,9 +410,6 @@ selection:
   # When set to `true`, selected text will be copied to the primary clipboard.
   save_to_clipboard: true
 
-# Allow terminal applications to change Alacritty's window title.
-dynamic_title: true
-
 cursor:
   # Cursor style
   #
@@ -419,9 +419,21 @@ cursor:
   #   - | Beam
   style: Block
 
+  # Vi mode cursor style
+  #
+  # If the vi mode cursor style is `None` or not specified, it will fall back to
+  # the style of the active value of the normal cursor.
+  #
+  # See `cursor.style` for available options.
+  vi_mode_style: Beam
+
   # If this is `true`, the cursor will be rendered as a hollow box when the
   # window is not focused.
   unfocused_hollow: true
+
+  # Thickness of the cursor relative to the cell width as floating point number
+  # from `0.0` to `1.0`.
+  #thickness: 0.15
 
 # Live config reload (changes require restart)
 live_config_reload: true
