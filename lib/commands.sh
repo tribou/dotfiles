@@ -543,6 +543,24 @@ function z_cd ()
   fi
 }
 
+function yr ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="yarn $@"
+    echo $SCRIPT
+    echo
+    eval $SCRIPT
+  else
+    local RESULT=$(jq '.scripts' package.json | fzf +s --tac | awk -F'"' '{print $2}')
+    if [ -n "$RESULT" ]
+    then
+      local SCRIPT="yarn $RESULT"
+      _eval_script "$SCRIPT"
+    fi
+  fi
+}
+
 function zz ()
 {
   local dir
@@ -646,7 +664,6 @@ alias webpack='useLocalIfAvailable webpack'
 alias y='yarn'
 alias yi='yarn install'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
-alias yr='npm run --silent yarn-bin --'
 alias z='z_cd -d'
 
 # NPM GLOBAL ALIASES
