@@ -3,10 +3,6 @@
 # Print helpful commands that can be grepped
 function command_reference()
 {
-  # Text coloring helpers
-  local RESET=`tput sgr0`
-  local DARK_GRAY=`tput setaf 0`
-
   read -r -d '' REFERENCE_MESSAGE << EOF
 android: adb reverse tcp:8081 tcp:8081
 android: adb shell input keyevent 82
@@ -26,19 +22,61 @@ system: sudo lsof -i :8081
 typescript: npx dts-gen -m module-name
 EOF
 
-  if [ $# -eq 0 ]
+  _dotfiles_display_reference "$REFERENCE_MESSAGE" "$1"
+}
+
+function _dotfiles_display_reference()
+{
+  local REFERENCE_MESSAGE="$1"
+
+  if [ $# -ne 2 ]
   then
     local GREP_STRING="."
   else
-    local GREP_STRING="$1"
+    local GREP_STRING="$2"
   fi
+
+  # Text coloring helpers
+  local RESET=`tput sgr0`
+  local DARK_GRAY=`tput setaf 0`
+
   # Format it nicely
   echo "$REFERENCE_MESSAGE" \
     | grep "$GREP_STRING" \
-    | awk '{ printf DARK_GRAY; printf("%15s",$1); printf RESET; $1 = ""; print $0 }' \
+    | awk -F ': ' '{ printf DARK_GRAY; printf("%30s:",$1); printf RESET; $1 = ""; print $0 }' \
     "RESET=${RESET}" \
-    "DARK_GRAY=${DARK_GRAY}"
+    "DARK_GRAY=${DARK_GRAY}" \
+    | fzf +s --tac --ansi -m | cat
 }
 
 alias cmdref="command_reference"
 alias ref="command_reference"
+
+function vim_reference() {
+  read -r -d '' REFERENCE_MESSAGE << EOF
+  location list: lopen
+  location list: lclose
+  location list: lnext
+  location list: prev
+  location list: ll
+  location list: lf <file>
+  quickfix: copen
+  quickfix: cclose
+  quickfix: cnext
+  quickfix: cprev
+  quickfix: cc
+  quickfix: cf <file>
+  window navigation: <c-w> hjkl
+  window new split: <c-w> n
+  window new split: new
+  window new vertical split: vne[w]
+  window split: <c-w> s
+  window split: sp[lit]
+  window vertical split: <c-w> v
+  window vertical split: vsp[lit]
+EOF
+
+  _dotfiles_display_reference "$REFERENCE_MESSAGE" "$1"
+}
+
+alias vimref="vim_reference"
