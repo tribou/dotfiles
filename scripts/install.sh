@@ -3,6 +3,12 @@
 if [ -s "$(which yum)" ]
 then
 
+  if   [ ! $(which gpg)  ]
+  then
+    echo "Installing GPG"
+    sudo yum install -y gnupg
+  fi
+
   if   [ ! $(which yarn)  ]
   then
     sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
