@@ -110,7 +110,7 @@ _dotfiles_debug_timing "$LINENO"
 _dotfiles_debug_timing "$LINENO"
 
 
-[ -s "$(which brew)" ] && BREW_PREFIX=$(brew --prefix)
+[ -s "$(which brew > /dev/null)" ] && BREW_PREFIX=$(brew --prefix)
 
 
 export GOPATH=$DEVPATH/go
@@ -165,10 +165,7 @@ export BAT_THEME=TwoDark
 _dotfiles_debug_timing "$LINENO"
 
 # brew install bash-completion
-if [ -s "$BREW_PREFIX/etc/bash_completion" ]
-then
-  . "$BREW_PREFIX/etc/bash_completion"
-fi
+[ -s "$BREW_PREFIX/etc/bash_completion" ] && . "$BREW_PREFIX/etc/bash_completion"
 
 _dotfiles_debug_timing "$LINENO"
 
