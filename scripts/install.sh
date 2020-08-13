@@ -56,4 +56,6 @@ then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
   fi
+
+  echo "Done."
 fi
