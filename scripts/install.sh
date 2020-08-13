@@ -26,9 +26,9 @@ then
       echo "Continuing Neovim Install..."
     fi
 
-    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-    chmod u+x nvim.appimage
-    sudo mv ./nvim.appimage /usr/bin/nvim
+    curl -fLo /tmp/nvim.appimage https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+    chmod u+x /tmp/nvim.appimage
+    sudo mv /tmp/nvim.appimage /usr/bin/nvim
 
     echo "Installing vim-plug for Neovim"
     sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
@@ -38,11 +38,11 @@ then
   if   [ ! $(which fasd)  ]
   then
     echo "Installing fasd"
-    curl -fLo fasd.zip https://github.com/clvv/fasd/archive/1.0.1.zip
-    unzip fasd.zip -d fasd
-    sudo cp ./fasd/fasd-1.0.1/fasd /usr/bin/fasd
-    rm fasd.zip
-    rm -r fasd
+    curl -fLo /tmp/fasd.zip https://github.com/clvv/fasd/archive/1.0.1.zip
+    unzip /tmp/fasd.zip -d /tmp/fasd
+    sudo cp /tmp/fasd/fasd-1.0.1/fasd /usr/bin/fasd
+    rm /tmp/fasd.zip
+    rm -r /tmp/fasd
   fi
 
   if   [ ! -d "$HOME/.rbenv/bin" ] && [ ! $(which rbenv)  ]
@@ -60,9 +60,9 @@ then
   if   [ ! $(which tmux)  ]
   then
     echo "Installing tmux"
-    curl -fLo tmux https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b-x86_64.AppImage
-    chmod u+x tmux
-    sudo mv ./tmux /usr/bin/tmux
+    curl -fLo /tmp/tmux https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b-x86_64.AppImage
+    chmod u+x /tmp/tmux
+    sudo mv /tmp/tmux /usr/bin/tmux
   fi
 
   echo "Done."
