@@ -70,6 +70,9 @@ then
   then
     echo "Installing rbenv"
     curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+    eval "$(rbenv init -)"
+    rbenv install 2.7.1
+    rbenv global 2.7.1
   fi
 
   if   [ ! -d "$HOME/.pyenv/bin" ] && [ ! $(which pyenv)  ]
