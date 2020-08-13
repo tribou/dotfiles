@@ -3,6 +3,8 @@
 # Uncomment to debug timing
 # DEBUG_BASH_PROFILE=1
 
+OS=$(uname)
+
 function _dotfiles_debug_timing ()
 {
   if [ -n "$DEBUG_BASH_PROFILE" ]
@@ -84,7 +86,7 @@ bind "set show-all-if-ambiguous on"
 shopt -s dotglob
 
 # Increase open files limit
-ulimit -n 10000
+[ "$OS" == "Darwin" ] && ulimit -n 10000
 
 # Set hostname vars
 export HOSTNAME="$(hostname)"
