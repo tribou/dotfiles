@@ -44,4 +44,10 @@ then
     rm fasd.zip
     rm -r fasd
   fi
+
+  if   [ ! $(which rbenv)  ]
+  then
+    echo "Installing rbenv"
+    curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+  fi
 fi
