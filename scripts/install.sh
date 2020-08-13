@@ -51,6 +51,14 @@ then
     rm -r /tmp/fasd
   fi
 
+  if   [ ! $(which tmux)  ]
+  then
+    echo "Installing tmux"
+    curl -fLo /tmp/tmux https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b-x86_64.AppImage
+    chmod u+x /tmp/tmux
+    sudo mv /tmp/tmux /usr/bin/tmux
+  fi
+
   if   [ ! -d "$HOME/.rbenv/bin" ] && [ ! $(which rbenv)  ]
   then
     echo "Installing rbenv"
@@ -63,12 +71,22 @@ then
     curl https://pyenv.run | bash
   fi
 
-  if   [ ! $(which tmux)  ]
+  if   [ ! -d "$HOME/.pyenv/versions/py2nvim" ]
   then
-    echo "Installing tmux"
-    curl -fLo /tmp/tmux https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b-x86_64.AppImage
-    chmod u+x /tmp/tmux
-    sudo mv /tmp/tmux /usr/bin/tmux
+    echo "Installing py2nvim virtualenv"
+    pyenv install 2.7.18
+    pyenv virtualenv 2.7.18 py2nvim
+    pyenv activate py2nvim
+    pip install neovim
+  fi
+
+  if   [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
+  then
+    echo "Installing py3nvim virtualenv"
+    pyenv install 3.8.2
+    pyenv virtualenv 3.8.2 py3nvim
+    pyenv activate py3nvim
+    pip install neovim
   fi
 
   echo "Done."
