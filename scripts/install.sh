@@ -41,6 +41,7 @@ then
     curl -fLo fasd.zip https://github.com/clvv/fasd/archive/1.0.1.zip
     unzip fasd.zip -d fasd
     sudo cp ./fasd/fasd-1.0.1/fasd /usr/bin/fasd
+    rm fasd.zip
     rm -r fasd
   fi
 fi
