@@ -14,7 +14,18 @@ then
 
   if   [ ! $(which nvim)  ]
   then
+
+    echo
     echo "Installing Neovim"
+    echo
+
+    if   [ ! $(which fuse2fs)  ]
+    then
+      echo "Installing FUSE"
+      sudo yum --enablerepo=epel -y install fuse-sshfs
+      echo "Continuing Neovim Install..."
+    fi
+
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
     chmod u+x nvim.appimage
     ./nvim.appimage
