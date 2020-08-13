@@ -57,5 +57,13 @@ then
     curl https://pyenv.run | bash
   fi
 
+  if   [ ! $(which tmux)  ]
+  then
+    echo "Installing tmux"
+    curl -fLo tmux https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b-x86_64.AppImage
+    chmod u+x tmux
+    sudo mv ./tmux /usr/bin/tmux
+  fi
+
   echo "Done."
 fi
