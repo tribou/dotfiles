@@ -119,6 +119,7 @@ export ANDROID_HOME=$HOME/Library/Android/sdk
 export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 
 # ruby rbenv
+export PATH=$PATH:$HOME/.rbenv/bin
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 _dotfiles_debug_timing "$LINENO"
