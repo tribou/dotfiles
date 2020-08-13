@@ -87,7 +87,7 @@ then
     eval "$(pyenv virtualenv-init -)"
     pyenv activate py2nvim
     pip install --upgrade pip
-    pip install neovim
+    pip install --user --upgrade pynvim
   fi
 
   if   [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
@@ -98,7 +98,7 @@ then
     eval "$(pyenv virtualenv-init -)"
     pyenv activate py3nvim
     pip install --upgrade pip
-    pip install neovim
+    pip install --user --upgrade pynvim
   fi
 
   echo "Done."

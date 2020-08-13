@@ -118,6 +118,9 @@ export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/
 export ANDROID_HOME=$HOME/Library/Android/sdk
 export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 
+# fzf
+[ -d "$HOME/.fzf/bin" ] && export PATH=$PATH:$HOME/.fzf/bin
+
 # ruby rbenv
 [ -f "$HOME/.rbenv/bin/rbenv" ] && export PATH=$PATH:$HOME/.rbenv/bin
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
