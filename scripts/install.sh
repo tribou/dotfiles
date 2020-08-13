@@ -50,4 +50,10 @@ then
     echo "Installing rbenv"
     curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
   fi
+
+  if   [ ! $(which pyenv)  ]
+  then
+    echo "Installing pyenv"
+    curl https://pyenv.run | bash
+  fi
 fi
