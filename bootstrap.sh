@@ -115,6 +115,8 @@ then
   echo "--install-deps detected. Installing dependencies..."
   echo
 
+  . "./scripts/install.sh"
+
   if   [ -s "$(which curl)"  ]
   then
     _BOOTSTRAP_INSTALL="curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
