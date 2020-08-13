@@ -109,6 +109,9 @@ fi
 ## If key hasn't been added to keychain, add it
 ssh-add -L > /dev/null || ssh-add -K "$HOME/.ssh/id_rsa" || ssh-add "$HOME/.ssh/id_rsa"
 
+# Install tmux plugins
+[ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+
 # More rudimentary flags parsing
 if [ "$1" = "-i" ] || [ "$1" = "--install-deps" ]
 then
