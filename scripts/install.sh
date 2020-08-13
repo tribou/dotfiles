@@ -34,4 +34,13 @@ then
     sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   fi
+
+  if   [ ! $(which fasd)  ]
+  then
+    echo "Installing fasd"
+    curl -fLo fasd.zip https://github.com/clvv/fasd/archive/1.0.1.zip
+    unzip fasd.zip -d fasd
+    sudo cp ./fasd/fasd-1.0.1/fasd /usr/bin/fasd
+    rm -r fasd
+  fi
 fi
