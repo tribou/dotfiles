@@ -110,7 +110,7 @@ _dotfiles_debug_timing "$LINENO"
 _dotfiles_debug_timing "$LINENO"
 
 
-[ -s "$(which brew > /dev/null)" ] && BREW_PREFIX=$(brew --prefix)
+[ -s "$(which brew >/dev/null 2>&1)" ] && BREW_PREFIX=$(brew --prefix)
 
 
 export GOPATH=$DEVPATH/go
