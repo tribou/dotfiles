@@ -69,6 +69,7 @@ then
   then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
+    pip install --upgrade pip
   fi
 
   if   [ ! -d "$HOME/.pyenv/versions/py2nvim" ]
@@ -76,7 +77,9 @@ then
     echo "Installing py2nvim virtualenv"
     pyenv install 2.7.18
     pyenv virtualenv 2.7.18 py2nvim
+    eval "$(pyenv virtualenv-init -)"
     pyenv activate py2nvim
+    pip install --upgrade pip
     pip install neovim
   fi
 
@@ -85,7 +88,9 @@ then
     echo "Installing py3nvim virtualenv"
     pyenv install 3.8.2
     pyenv virtualenv 3.8.2 py3nvim
+    eval "$(pyenv virtualenv-init -)"
     pyenv activate py3nvim
+    pip install --upgrade pip
     pip install neovim
   fi
 
