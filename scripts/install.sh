@@ -45,13 +45,13 @@ then
     rm -r fasd
   fi
 
-  if   [ ! $(which rbenv)  ]
+  if   [ ! -d "$HOME/.rbenv/bin" ] && [ ! $(which rbenv)  ]
   then
     echo "Installing rbenv"
     curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
   fi
 
-  if   [ ! $(which pyenv)  ]
+  if   [ ! -d "$HOME/.pyenv/bin" ] && [ ! $(which pyenv)  ]
   then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
