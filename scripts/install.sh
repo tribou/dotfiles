@@ -104,5 +104,11 @@ then
     pip install --upgrade pynvim
   fi
 
+  if   [ ! -f "/etc/profile.d/bash_completion.sh" ]
+  then
+    echo "Installing bash-completion"
+    sudo yum install -y bash-completion bash-completion-extras
+  fi
+
   echo "Done."
 fi

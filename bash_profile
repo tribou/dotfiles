@@ -172,6 +172,7 @@ _dotfiles_debug_timing "$LINENO"
 
 # brew install bash-completion
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+[[ -r "/etc/profile.d/bash_completion.sh" ]] && . "/etc/profile.d/bash_completion.sh"
 
 _dotfiles_debug_timing "$LINENO"
 
