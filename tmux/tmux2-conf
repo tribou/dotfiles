@@ -270,4 +270,5 @@ set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+set-environment -g PATH "/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin"
 run -b '~/.tmux/plugins/tpm/tpm'
