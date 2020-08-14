@@ -171,7 +171,7 @@ export BAT_THEME=TwoDark
 _dotfiles_debug_timing "$LINENO"
 
 # brew install bash-completion
-[ -s "$BREW_PREFIX/etc/bash_completion" ] && . "$BREW_PREFIX/etc/bash_completion"
+[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 
 _dotfiles_debug_timing "$LINENO"
 
