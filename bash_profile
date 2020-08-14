@@ -121,6 +121,9 @@ export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools
 # fzf
 [ -d "$HOME/.fzf/bin" ] && export PATH=$PATH:$HOME/.fzf/bin
 
+# c9
+[ -d "/opt/c9/local/bin" ] && export PATH=$PATH:/opt/c9/local/bin
+
 # ruby rbenv
 [ -f "$HOME/.rbenv/bin/rbenv" ] && export PATH=$PATH:$HOME/.rbenv/bin
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
