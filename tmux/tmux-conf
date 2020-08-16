@@ -35,6 +35,10 @@ set -g display-time 4000
 # {n}vim compability
 set -g default-terminal "tmux-256color"
 
+# Mouse mode on
+set -g terminal-overrides 'xterm*:smcup@:rmcup@'
+set -g mouse on
+
 # Split horiziontal and vertical splits, instead of % and "
 # Also open them in the same directory
 bind-key C-v split-window -h -c '#{pane_current_path}'
@@ -55,6 +59,7 @@ setw -g mode-keys vi
 # Update default binding of `Enter` and `Space to also use copy-pipe
 unbind -T copy-mode-vi Enter
 unbind -T copy-mode-vi Space
+bind-key -T copy-mode-vi Enter send -X cancel
 
 bind-key -T edit-mode-vi Up send-keys -X history-up
 bind-key -T edit-mode-vi Down send-keys -X history-down
@@ -68,6 +73,41 @@ bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
 
 # copy text with mouse selection without pressing any key
 bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "xclip -select clipboard -i"
+
+# Double-click Select & Copy (Word)
+bind-key -T copy-mode-vi DoubleClick1Pane \
+    select-pane \; \
+    send-keys -X select-word \; \
+    send-keys -X copy-pipe "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X no-clear
+bind-key -n DoubleClick1Pane \
+    select-pane \; \
+    copy-mode -M \; \
+    send-keys -X select-word \; \
+    send-keys -X copy-pipe "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X no-clear
+
+# Triple-click Select & Copy (Line)
+bind-key -T copy-mode-vi TripleClick1Pane \
+    select-pane \; \
+    send-keys -X select-line \; \
+    send-keys -X copy-pipe-and-cancel "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X no-clear
+bind-key -n TripleClick1Pane \
+    select-pane \; \
+    copy-mode -M \; \
+    send-keys -X select-line \; \
+    send-keys -X copy-pipe-and-cancel "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X no-clear
+
+# Paste with right click
+unbind-key -n MouseDown3Pane # unbind default right click
+bind-key -n MouseDown3Pane run " \
+    X=$(xclip -o -sel clipboard); \
+    tmux set-buffer \"$X\"; \
+    tmux paste-buffer -p; \
+    tmux display-message 'pasted!' \
+"
 
 # emacs key bindings in tmux command prompt (prefix + :) are better than
 # vi keys, even for vim users
@@ -91,10 +131,6 @@ set -s escape-time 0
 
 # Have a very large history
 set -g history-limit 1000000
-
-# Mouse mode on
-set -g terminal-overrides 'xterm*:smcup@:rmcup@'
-set -g mouse on
 
 # Set title
 set -g set-titles on
@@ -165,15 +201,6 @@ bind-key e display-panes
 bind-key q confirm-before -p "kill-window #W? (y/n)" kill-window
 bind-key -r Space select-pane -t :.+
 bind-key C-k send-keys -R \; clear-history
-
-# Paste with right click
-unbind-key -n MouseDown3Pane # unbind default right click
-bind-key -n MouseDown3Pane run " \
-  X=$(xclip -o -sel clipboard); \
-  tmux set-buffer \"$X\"; \
-  tmux paste-buffer -p; \
-  tmux display-message 'pasted!' \
-"
 
 # The followings are not any kind of setting for Tmux, but crucial to my
 # own productivity. Setting them up is really pain, and I probably going to
