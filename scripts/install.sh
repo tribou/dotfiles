@@ -110,5 +110,12 @@ then
     sudo yum install -y bash-completion bash-completion-extras
   fi
 
+  if   [ ! $(which rg)  ]
+  then
+    echo "Installing Ripgrep"
+    sudo yum-config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/carlwgeorge/ripgrep/repo/epel-7/carlwgeorge-ripgrep-epel-7.repo
+    sudo yum install -y ripgrep
+  fi
+
   echo "Done."
 fi
