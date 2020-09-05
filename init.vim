@@ -233,7 +233,7 @@ set exrc
 autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
 autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
 autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
-autocmd BufNewFile,BufRead tsconfig.json set filetype=jsonc
+autocmd BufNewFile,BufRead tsconfig.json,tsconfig.*.json set filetype=jsonc
 autocmd BufNewFile,BufRead .ripgreprc set filetype=conf
 autocmd BufNewFile,BufRead *.conf,.*ignore,.git* set filetype=conf
 autocmd BufNewFile,BufRead *.css set filetype=scss
