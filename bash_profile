@@ -3,6 +3,8 @@
 # Uncomment to debug timing
 # DEBUG_BASH_PROFILE=1
 
+OS=$(uname)
+
 function _dotfiles_debug_timing ()
 {
   if [ -n "$DEBUG_BASH_PROFILE" ]
@@ -84,7 +86,7 @@ bind "set show-all-if-ambiguous on"
 shopt -s dotglob
 
 # Increase open files limit
-ulimit -n 10000
+[ "$OS" == "Darwin" ] && ulimit -n 10000
 
 # Set hostname vars
 export HOSTNAME="$(hostname)"
@@ -108,7 +110,7 @@ _dotfiles_debug_timing "$LINENO"
 _dotfiles_debug_timing "$LINENO"
 
 
-[ -s "$(which brew)" ] && BREW_PREFIX=$(brew --prefix)
+[ -s "$(which brew >/dev/null 2>&1)" ] && BREW_PREFIX=$(brew --prefix)
 
 
 export GOPATH=$DEVPATH/go
@@ -116,7 +118,14 @@ export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/
 export ANDROID_HOME=$HOME/Library/Android/sdk
 export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 
+# fzf
+[ -d "$HOME/.fzf/bin" ] && export PATH=$PATH:$HOME/.fzf/bin
+
+# c9
+[ -d "/opt/c9/local/bin" ] && export PATH=$PATH:/opt/c9/local/bin
+
 # ruby rbenv
+[ -f "$HOME/.rbenv/bin/rbenv" ] && export PATH=$PATH:$HOME/.rbenv/bin
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 _dotfiles_debug_timing "$LINENO"
@@ -162,10 +171,8 @@ export BAT_THEME=TwoDark
 _dotfiles_debug_timing "$LINENO"
 
 # brew install bash-completion
-if [ -s "$BREW_PREFIX/etc/bash_completion" ]
-then
-  . "$BREW_PREFIX/etc/bash_completion"
-fi
+[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+[[ -r "/etc/profile.d/bash_completion.sh" ]] && . "/etc/profile.d/bash_completion.sh"
 
 _dotfiles_debug_timing "$LINENO"
 
@@ -211,6 +218,7 @@ _dotfiles_debug_timing "$LINENO"
 _dotfiles_debug_timing "$LINENO"
 
 # pyenv
+[ -f "$HOME/.pyenv/bin/pyenv" ] && export PATH=$PATH:$HOME/.pyenv/bin
 if [ $(which pyenv) ]
 then
   eval "$(pyenv init -)"
