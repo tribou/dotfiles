@@ -1,6 +1,11 @@
 # INSTALL
 # cp tmuxconf ~/.tmux.conf
 #
+
+# Set TMUX_VERSION env var
+run-shell 'tmux setenv -g TMUX_VERSION \
+  $(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")'
+
 # Set prefix key to c-f instead of default c-b
 unbind C-b
 set -g prefix C-f
@@ -37,9 +42,23 @@ set -g display-time 4000
 # {n}vim compability
 set -g default-terminal "tmux-256color"
 
-# Mouse mode on
-set -g terminal-overrides 'xterm*:smcup@:rmcup@'
-set -g mouse on
+## Mouse mode on
+##
+if-shell -b '[ "$(echo "$TMUX_VERSION < 2.1" | bc)" = 1 ]' " \
+    set -g mouse-select-pane on; set -g mode-mouse on; \
+    set -g mouse-resize-pane on; set -g mouse-select-window on"
+
+# In version 2.1 "mouse" replaced the previous 4 mouse options
+if-shell -b '[ "$(echo "$TMUX_VERSION >= 2.1" | bc)" = 1 ]' " \
+  set -g terminal-overrides 'xterm*:smcup@:rmcup@'; \
+  set -g mouse on"
+##
+##
+
+# UTF8 is autodetected in 2.2 onwards, but errors if explicitly set
+if-shell -b '[ "$(echo "$TMUX_VERSION < 2.2" | bc)" = 1 ]' \
+  "set -g utf8 on; set -g status-utf8 on; set -g mouse-utf8 on"
+
 
 # Split horiziontal and vertical splits, instead of % and "
 # Also open them in the same directory
@@ -74,38 +93,38 @@ bind-key -T copy-mode-vi 'v' send-keys -X begin-selection
 bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
 
 # copy text with mouse selection without pressing any key
-bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "xclip -select clipboard -i"
+bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "copy_to_clipboard"
 
 # Double-click Select & Copy (Word)
 bind-key -T copy-mode-vi DoubleClick1Pane \
     select-pane \; \
     send-keys -X select-word \; \
-    send-keys -X copy-pipe "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X copy-pipe "copy_to_clipboard" \; \
     send-keys -X no-clear
 bind-key -n DoubleClick1Pane \
     select-pane \; \
     copy-mode -M \; \
     send-keys -X select-word \; \
-    send-keys -X copy-pipe "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X copy-pipe "copy_to_clipboard" \; \
     send-keys -X no-clear
 
 # Triple-click Select & Copy (Line)
 bind-key -T copy-mode-vi TripleClick1Pane \
     select-pane \; \
     send-keys -X select-line \; \
-    send-keys -X copy-pipe-and-cancel "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X copy-pipe-and-cancel "copy_to_clipboard" \; \
     send-keys -X no-clear
 bind-key -n TripleClick1Pane \
     select-pane \; \
     copy-mode -M \; \
     send-keys -X select-line \; \
-    send-keys -X copy-pipe-and-cancel "xclip -in -f | xclip -in -sel c" \; \
+    send-keys -X copy-pipe-and-cancel "copy_to_clipboard" \; \
     send-keys -X no-clear
 
 # Paste with right click
 unbind-key -n MouseDown3Pane # unbind default right click
 bind-key -n MouseDown3Pane run " \
-    X=$(xclip -o -sel clipboard); \
+    X=$(paste_from_clipboard); \
     tmux set-buffer \"$X\"; \
     tmux paste-buffer -p; \
     tmux display-message 'pasted!' \
@@ -304,4 +323,5 @@ set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+set-environment -g PATH "/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin"
 run -b '~/.tmux/plugins/tpm/tpm'

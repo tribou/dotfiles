@@ -116,6 +116,17 @@ function co ()
   fi
 }
 
+function copy_to_clipboard ()
+{
+  if [ -n "$(command -v pbcopy)" ]
+  then
+    pbcopy
+  elif [ -n "$(command -v xclip)" ]
+  then
+    xclip
+  fi
+}
+
 function digitalocean ()
 {
   curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool
@@ -376,6 +387,17 @@ function nr ()
       local SCRIPT="npm run --silent $RESULT"
       _eval_script "$SCRIPT"
     fi
+  fi
+}
+
+function paste_from_clipboard ()
+{
+  if [ -n "$(command -v pbpaste)" ]
+  then
+    pbpaste
+  elif [ -n "$(command -v xclip)" ]
+  then
+    xclip -o -sel clipboard
   fi
 }
 
