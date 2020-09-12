@@ -123,12 +123,18 @@ bind-key -n TripleClick1Pane \
 
 # Paste with right click
 unbind-key -n MouseDown3Pane # unbind default right click
-bind-key -n MouseDown3Pane run " \
+bind-key -T copy-mode-vi MouseDown3Pane run " \
     X=$(paste_from_clipboard); \
     tmux set-buffer \"$X\"; \
     tmux paste-buffer -p; \
     tmux display-message 'pasted!'; \
     tmux send -X cancel \
+"
+bind-key -n MouseDown3Pane run " \
+    X=$(paste_from_clipboard); \
+    tmux set-buffer \"$X\"; \
+    tmux paste-buffer -p; \
+    tmux display-message 'pasted!' \
 "
 
 # emacs key bindings in tmux command prompt (prefix + :) are better than
