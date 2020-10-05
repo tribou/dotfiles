@@ -13,6 +13,14 @@ function _dotfiles_grep_ticket_number () {
   grep -E '^[A-Z0-9]{2,4}-\d{1,7}$'
 }
 
+function _dotfiles_git_log_branch_diff () {
+  local PARENT_BRANCH=${1:-$INTEGRATION_BRANCH}
+  local CHILD_BRANCH=${2:-$(git branch --show-current)}
+  echo
+  echo
+  _eval_script "git tree-one $(git merge-base $PARENT_BRANCH HEAD)..$CHILD_BRANCH"
+}
+
 function _dotfiles_git_log_commit () {
   git log --pretty=fuller --show-signature -1
 }
@@ -678,6 +686,7 @@ alias tm-xl='tmux-xl'
 alias tma='tmux -u new -A -s main'
 alias tmm='tm-main'
 alias tms='tmux-small'
+alias tint='_dotfiles_git_log_branch_diff'
 alias to='echo; echo; git tree-one'
 alias tone='echo; echo; git tree-one'
 alias top='top -o cpu'
