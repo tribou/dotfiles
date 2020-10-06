@@ -136,7 +136,7 @@ export NVM_DIR="$HOME/.nvm"
 _dotfiles_debug_timing "$LINENO"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 _dotfiles_debug_timing "$LINENO"
-export HAS_NVM=$([ -n "$(type nvm 2> /dev/null)" ] && echo true)
+export HAS_NVM=$([ $(command -v nvm) ] && echo true)
 # _dotfiles_debug_timing "$LINENO"
 # [ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
 
@@ -222,7 +222,7 @@ _dotfiles_debug_timing "$LINENO"
 if [ $(which pyenv) ]
 then
   eval "$(pyenv init -)"
-  eval "$(pyenv virtualenv-init -)"
+  # eval "$(pyenv virtualenv-init -)"
 fi
 
 _dotfiles_debug_timing "$LINENO"
