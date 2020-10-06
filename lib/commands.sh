@@ -700,6 +700,7 @@ alias webpack='useLocalIfAvailable webpack'
 alias y='yarn'
 alias yi='yarn install'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
+alias ytsc='yarn tsc --noemit --watch --pretty'
 alias z='z_cd -d'
 
 # NPM GLOBAL ALIASES
