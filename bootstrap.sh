@@ -42,6 +42,8 @@ function linkFileToHome ()
 # 	ln -sf ${THIS_DIR}/${file} ~/${file}
 # done
 
+mkdir ~/$HOME/dev/bin
+
 # .bash_profile
 backupFile ".bash_profile"
 linkFileToHome bash_profile .bash_profile
@@ -120,24 +122,26 @@ then
 
   . "./scripts/install.sh"
 
-  if   [ -s "$(which curl)"  ]
+  if   [ $(command -v curl)  ]
   then
-    _BOOTSTRAP_INSTALL="curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-    echo "Installing vim-plug:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
 
-    echo
+    if   [ ! -f "$HOME/.vim/autoload/plug.vim" ]
+    then
+      _BOOTSTRAP_INSTALL="curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+      echo "Installing vim-plug:"
+      echo "$_BOOTSTRAP_INSTALL"
+      echo
+      eval "$_BOOTSTRAP_INSTALL"
+      echo
+    fi
 
-    if   [ -s "$(which nvim)"  ]
+    if   [ $(command -v nvim)  ] && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
     then
       _BOOTSTRAP_INSTALL="curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
       echo "Installing vim-plug for neovim:"
       echo "$_BOOTSTRAP_INSTALL"
       echo
       eval "$_BOOTSTRAP_INSTALL"
-
       echo
     fi
 
@@ -148,17 +152,15 @@ then
     eval "$_BOOTSTRAP_INSTALL"
     export PATH="$HOME/.cargo/bin:$PATH"
     [ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-
     echo
 
-    _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh | bash"
+    _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.36.0/install.sh | bash"
     echo "Installing nvm:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
-
     echo
 
     _BOOTSTRAP_INSTALL="nvm install 12"
@@ -166,22 +168,17 @@ then
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
-
     echo
 
-    if   [ -s "$(which make)"  ]
+    if [ -f "$HOME/dev/z/z.sh" ]
     then
-      _BOOTSTRAP_INSTALL="rm -rf /tmp/fasd && git clone https://github.com/clvv/fasd.git /tmp/fasd && cd /tmp/fasd && make install && cd $THIS_DIR && rm -rf /tmp/fasd"
-      echo "Installing fasd:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-      [ $(which fasd) ] && eval "$(fasd --init bash-hook)"
-
-      echo
+      echo "Installing z"
+      git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
+      . "$HOME/dev/z/z.sh"
     fi
+
   else
-    echo "ERROR: make not available! Skipping fasd install..."
+    echo "ERROR: curl not available! Skipping all installs"
     echo
   fi
 
@@ -206,21 +203,19 @@ then
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
-
     echo
   else
     echo "ERROR: gem not available! Skipping..."
     echo
   fi
 
-  if   [ -s "$(which brew)"  ]
+  if   [ $(command -v brew)  ]
   then
     _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew cask install font-firacode-nerd-font font-hack-nerd-font font-fontawesome"
     echo "Installing fonts:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
-
     echo
   else
     echo "ERROR: brew not available! Skipping..."

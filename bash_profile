@@ -195,8 +195,9 @@ fi
 
 _dotfiles_debug_timing "$LINENO"
 
-# fasd
-[ $(which fasd) ] && eval "$(fasd --init bash-hook)"
+# z
+export _Z_NO_RESOLVE_SYMLINKS=1
+[ -f "$DEVPATH/z/z.sh" ] && . "$DEVPATH/z/z.sh"
 
 # git
 export PATH=/usr/local/git/bin:$PATH

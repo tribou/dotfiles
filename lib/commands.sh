@@ -2,7 +2,7 @@
 
 # Helper functions
 function _dotfiles_full_path () {
-  fasd -e 'printf %s' "$1"
+  _z -e "$1"
 }
 
 function _dotfiles_git_status () {
@@ -563,16 +563,16 @@ function useLocalIfAvailable ()
 }
 
 # function to execute built-in cd
-function z_cd ()
-{
-  if [ $# -le 1 ]; then
-    fasd "$@"
-  else
-    local _fasd_ret="$(fasd -e 'printf %s' "$@")"
-    [ -z "$_fasd_ret" ] && return
-    [ -d "$_fasd_ret" ] && cd "$_fasd_ret" || printf %s\n "$_fasd_ret"
-  fi
-}
+# function z_cd ()
+# {
+#   if [ $# -le 1 ]; then
+#     fasd "$@"
+#   else
+#     local _fasd_ret="$(fasd -e 'printf %s' "$@")"
+#     [ -z "$_fasd_ret" ] && return
+#     [ -d "$_fasd_ret" ] && cd "$_fasd_ret" || printf %s\n "$_fasd_ret"
+#   fi
+# }
 
 function yr ()
 {
@@ -592,11 +592,11 @@ function yr ()
   fi
 }
 
-function zz ()
-{
-  local dir
-  dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
-}
+# function zz ()
+# {
+#   local dir
+#   dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}" || return 1
+# }
 
 # Command aliases
 alias ack='ag'
@@ -701,7 +701,7 @@ alias y='yarn'
 alias yi='yarn install'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
 alias ytsc='yarn tsc --noemit --watch --pretty'
-alias z='z_cd -d'
+# alias z='z_cd -d'
 
 # NPM GLOBAL ALIASES
 # Instead of installing ALL CLI packages globally, we can use NPX to call the
