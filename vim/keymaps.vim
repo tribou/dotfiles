@@ -93,8 +93,8 @@ nnoremap <silent> K :<c-u>ALEGoToDefinition<CR>
 nnoremap H ^
 vnoremap H ^
 nnoremap J *
-nnoremap L $
-vnoremap L $
+nnoremap L g_
+vnoremap L g_
 
 " Moving lines
 " Normal mode
