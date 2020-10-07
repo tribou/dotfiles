@@ -20,6 +20,7 @@ let g:ale_linters = {
   \       'eslint',
   \   ],
   \   'json': [
+  \       'jsonlint',
   \   ],
   \   'typescript': [
   \       'eslint',
