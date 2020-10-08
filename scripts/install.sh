@@ -89,6 +89,12 @@ then
     pip install --upgrade pip
   fi
 
+  if   [ ! $(command -v pyls) ]
+  then
+    echo "Installing python-language-server (pyls)"
+    pip install --upgrade pyls
+  fi
+
   if   [ ! -d "$HOME/.pyenv/versions/py2nvim" ]
   then
     echo "Installing py2nvim virtualenv"
