@@ -75,10 +75,10 @@ Plug 'editorconfig/editorconfig-vim', { 'commit': '68f8136d2b018bfa9b23403e87d3d
 " Using this only for the manual :Prettier command
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
-  \ 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescript.tsx', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
+  \ 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescriptreact', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 
 " Auto-complete
-Plug 'dense-analysis/ale', { 'tag': 'v2.*' }
+Plug 'dense-analysis/ale', { 'tag': 'v3.*' }
 " coc.nvim and vscode-compatible extensions
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
@@ -111,15 +111,15 @@ Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
 
 " Misc syntax
 " TODO: test vim-polyglot and remove most other syntax plugins
-" Plug 'sheerun/vim-polyglot'
+Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-liquid'
 Plug 'neoclide/jsonc.vim'
 
 " Other JS/CSS/HTML
 " Plug 'mattn/emmet-vim', { 'for': ['css', 'html'] }
 Plug 'JulesWang/css.vim'
-Plug 'cakebaker/scss-syntax.vim'
-Plug 'wavded/vim-stylus'
+" Plug 'cakebaker/scss-syntax.vim' - vim-polyglot
+" Plug 'wavded/vim-stylus' - vim-polyglot
 Plug 'mustache/vim-mustache-handlebars'
 
 " Markdown
@@ -145,23 +145,23 @@ Plug 'fatih/vim-go', {
 
 "" Other Languages
 "Plug 'docker/docker', { 'branch': '1.12.x', 'rtp': 'contrib/syntax/vim' }
-Plug 'elixir-lang/vim-elixir'
-Plug 'vim-scripts/nginx.vim'
+" Plug 'elixir-lang/vim-elixir' - vim-polyglot
+" Plug 'vim-scripts/nginx.vim' - vim-polyglot
 "Plug 'apple/swift', { 'branch': 'swift-2.3-branch', 'rtp': 'utils/vim' }
-Plug 'cespare/vim-toml'
+" Plug 'cespare/vim-toml' - vim-polyglot
 "Plug 'chrisbra/unicode.vim'
 
 " JavaScript
 "Plug 'jelera/vim-javascript-syntax', { 'tag': '*' }
 "Plug 'bigfish/vim-js-context-coloring'
-Plug 'kchmck/vim-coffee-script'
+" Plug 'kchmck/vim-coffee-script' - vim-polyglot
 Plug 'heavenshell/vim-jsdoc'
 "Plug 'aaronj1335/underscore-templates.vim'
 " Plug '~/dev/vim-syntax-js'
-Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' }
-Plug 'mxw/vim-jsx'
-Plug 'jparise/vim-graphql', { 'tag': '1.*' }
-Plug 'HerringtonDarkholme/yats.vim'  " Typescript syntax
+" Plug 'pangloss/vim-javascript', { 'tag': '1.2.*' } - vim-polyglot
+" Plug 'mxw/vim-jsx' - using vim-polyglot
+" Plug 'jparise/vim-graphql', { 'tag': '1.*' } - using vim-polyglot
+" Plug 'HerringtonDarkholme/yats.vim'  " Typescript syntax - using vim-polyglot
 " Plug 'ianks/vim-tsx' " Possible indentation issues with TSX
 " Plug 'mhartington/nvim-typescript', {'do': './install.sh'} " Typescript deoplete integration
 
@@ -262,6 +262,7 @@ autocmd BufNewFile,BufRead Podfile,Fastfile,Matchfile,Appfile set filetype=ruby
 autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
 autocmd FileType json syntax match Comment +\/\/.\+$+
 autocmd FileType markdown setlocal spell
+autocmd BufNewFile,BufRead *.tsx set filetype=typescriptreact
 
 
 " crontab editing

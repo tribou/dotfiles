@@ -7,6 +7,14 @@ nnoremap <Leader>r :<c-u>source ~/.vimrc<CR>
 nnoremap <Leader>w <c-w><c-w>
 nnoremap <Leader>q :<c-u>q<CR>
 
+" Center next search result
+nnoremap n nzz
+nnoremap N Nzz
+nnoremap * *zz
+nnoremap # #zz
+nnoremap g* g*zz
+nnoremap g# g#zz
+
 " Reveal syntax
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
 \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
