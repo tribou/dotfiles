@@ -1,4 +1,4 @@
-name: dotfiles-tests
+name: ubuntu-dotfiles-tests
 
 # Run this workflow every time a new commit pushed to your repository
 on: push
