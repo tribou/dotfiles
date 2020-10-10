@@ -10,14 +10,12 @@ jobs:
     # Name the Job
     name: Run bash function tests
     # Set the type of machine to run on
-    runs-on: macos-10.15
+    runs-on: ubuntu-latest
 
     steps:
-      # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Runs the Super-Linter action
       - name: Run tests
         run: ./tests/test_grep_ticket_number.sh
         shell: bash
