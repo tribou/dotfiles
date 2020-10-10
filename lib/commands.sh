@@ -10,7 +10,16 @@ function _dotfiles_git_status () {
 }
 
 function _dotfiles_grep_ticket_number () {
-  grep -E '^[A-Z0-9]{2,4}-\d{1,7}$'
+  # Remove origin/ or feature/ prefix
+  sed -E 's/^[A-Z0-9a-z]+\///' |
+    # For ab123-this-thing pattern, remove the description tail
+    sed -E 's/^([a-zA-Z]{2}[0-9]{1,7})\-.*$/\1/' |
+    # For abc-123-this-thing pattern, remove the description tail
+    sed -E 's/^([a-zA-Z]{2,4}-[0-9]{1,7})\-.*$/\1/' |
+    # Filter out anything other than ab123 or abc-123
+    grep -E '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,4}-)\d{1,7}$' |
+    # Convert all letters to UPPERCASE
+    tr [a-z] [A-Z]
 }
 
 function _dotfiles_git_log_branch_diff () {
