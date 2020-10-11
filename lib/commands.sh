@@ -26,7 +26,7 @@ function _dotfiles_git_log_branch_diff () {
   local PARENT_BRANCH=${1:-$INTEGRATION_BRANCH}
   local CHILD_BRANCH=${2:-$(git branch --show-current)}
   echo
-  echo
+  echo "Parent branch: ${PARENT_BRANCH}"
   _eval_script "git tree-one $(git merge-base $PARENT_BRANCH HEAD)..$CHILD_BRANCH"
 }
 
