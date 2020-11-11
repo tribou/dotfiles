@@ -425,7 +425,7 @@ function restart-docker ()
   echo "done"
 
   printf "Waiting for Docker to restart..."
-  local max_retry=20
+  local max_retry=25
   local counter=1
   until docker ps >/dev/null 2>&1
   do
