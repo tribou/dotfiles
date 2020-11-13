@@ -145,7 +145,7 @@ then
       echo
     fi
 
-    _BOOTSTRAP_INSTALL="curl https://sh.rustup.rs -sSf | sh"
+    _BOOTSTRAP_INSTALL="curl https://sh.rustup.rs -sSf | sh -s -- -y"
     echo "Installing rust:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
