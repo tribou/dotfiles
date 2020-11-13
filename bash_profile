@@ -132,7 +132,7 @@ _dotfiles_debug_timing "$LINENO"
 
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
+[ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" # This loads nvm
 _dotfiles_debug_timing "$LINENO"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 _dotfiles_debug_timing "$LINENO"

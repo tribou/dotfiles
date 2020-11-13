@@ -120,7 +120,7 @@ then
   echo "--install-deps detected. Installing dependencies..."
   echo
 
-  . "./scripts/install.sh"
+  source "./scripts/install.sh"
 
   if   [ $(which curl)  ]
   then
