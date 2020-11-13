@@ -109,7 +109,7 @@ fi
 ## If agent socket isn't available, source it
 [ -n "$SSH_AUTH_SOCK" ] || eval `ssh-agent -s`
 ## If key hasn't been added to keychain, add it
-ssh-add -L > /dev/null || ssh-add -K "$HOME/.ssh/id_rsa" || ssh-add "$HOME/.ssh/id_rsa"
+ssh-add -L > /dev/null || ssh-add -K "$HOME/.ssh/id_rsa" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_rsa"
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
