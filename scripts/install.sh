@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -s "$(which yum)" ]
+if [ ! $(which yum) ]
 then
 
   if   [ ! $(which gpg)  ]
@@ -89,7 +89,7 @@ then
     pip install --upgrade pip
   fi
 
-  if   [ ! $(command -v pyls) ]
+  if   [ ! $(which pyls) ]
   then
     echo "Installing python-language-server (pyls)"
     pip install --upgrade pyls

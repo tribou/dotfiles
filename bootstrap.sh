@@ -122,7 +122,7 @@ then
 
   . "./scripts/install.sh"
 
-  if   [ $(command -v curl)  ]
+  if   [ $(which curl)  ]
   then
 
     if   [ ! -f "$HOME/.vim/autoload/plug.vim" ]
@@ -135,7 +135,7 @@ then
       echo
     fi
 
-    if   [ $(command -v nvim)  ] && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
+    if   [ $(which nvim)  ] && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
     then
       _BOOTSTRAP_INSTALL="curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
       echo "Installing vim-plug for neovim:"
@@ -183,7 +183,7 @@ then
   fi
 
 
-  if   [ -s "$(which npm)"  ]
+  if   [ ! $(which npm)  ]
   then
     _BOOTSTRAP_INSTALL="npm install -g neovim eslint_d"
     echo "Installing global node modules:"
@@ -196,7 +196,7 @@ then
   fi
 
 
-  if   [ -s "$(which gem)"  ]
+  if   [ ! $(which gem)  ]
   then
     _BOOTSTRAP_INSTALL="gem install neovim solargraph --no-document"
     echo "Installing gems:"
@@ -209,7 +209,7 @@ then
     echo
   fi
 
-  if   [ $(command -v brew)  ]
+  if   [ $(which brew)  ]
   then
     _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew cask install font-firacode-nerd-font font-hack-nerd-font font-fontawesome"
     echo "Installing fonts:"
