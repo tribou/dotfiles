@@ -1,15 +1,15 @@
 #!/bin/bash
 
-if [ ! $(which yum) ]
+if [ -s "$(which yum)" ]
 then
 
-  if   [ ! $(which gpg)  ]
+  if   [ ! -s "$(which gpg)"  ]
   then
     echo "Installing GPG"
     sudo yum install -y gnupg
   fi
 
-  if   [ ! $(which yarn)  ]
+  if   [ ! -s "$(which yarn)"  ]
   then
     sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     echo "Adding Yarn rpm"
@@ -18,14 +18,14 @@ then
     sudo yum install -y yarn
   fi
 
-  if   [ ! $(which nvim)  ]
+  if   [ ! -s "$(which nvim)"  ]
   then
 
     echo
     echo "Installing Neovim"
     echo
 
-    if   [ ! $(which fuse2fs)  ]
+    if   [ ! -s "$(which fuse2fs)"  ]
     then
       echo "Installing FUSE"
       sudo yum --enablerepo=epel -y install fuse-sshfs
@@ -41,7 +41,7 @@ then
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   fi
 
-  # if   [ ! $(which fasd)  ]
+  # if   [ ! -s "$(which fasd)"  ]
   # then
   #   echo "Installing fasd"
   #   curl -fLo /tmp/fasd.zip https://github.com/clvv/fasd/archive/1.0.1.zip
@@ -58,14 +58,14 @@ then
     . "$HOME/dev/z/z.sh"
   fi
 
-  if   [ ! $(which fzf)  ]
+  if   [ ! -s "$(which fzf)"  ]
   then
     echo "Installing fzf"
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install
   fi
 
-  if   [ ! $(which tmux)  ]
+  if   [ ! -s "$(which tmux)"  ]
   then
     echo "Installing tmux"
     curl -fLo /tmp/tmux https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b-x86_64.AppImage
@@ -73,7 +73,7 @@ then
     sudo mv /tmp/tmux /usr/bin/tmux
   fi
 
-  if   [ ! -d "$HOME/.rbenv/bin" ] && [ ! $(which rbenv)  ]
+  if   [ ! -d "$HOME/.rbenv/bin" ] && [ -s "$(which rbenv)"  ]
   then
     echo "Installing rbenv"
     curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
@@ -82,14 +82,14 @@ then
     rbenv global 2.7.1
   fi
 
-  if   [ ! -d "$HOME/.pyenv/bin" ] && [ ! $(which pyenv)  ]
+  if   [ ! -d "$HOME/.pyenv/bin" ] && [ -s "$(which pyenv)"  ]
   then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
     pip install --upgrade pip
   fi
 
-  if   [ ! $(which pyls) ]
+  if   [ ! -s "$(which pyls)" ]
   then
     echo "Installing python-language-server (pyls)"
     pip install --upgrade pyls
@@ -123,7 +123,7 @@ then
     sudo yum install -y bash-completion bash-completion-extras
   fi
 
-  if   [ ! $(which rg)  ]
+  if   [ ! -s "$(which rg)"  ]
   then
     echo "Installing Ripgrep"
     sudo yum-config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/carlwgeorge/ripgrep/repo/epel-7/carlwgeorge-ripgrep-epel-7.repo
@@ -131,4 +131,6 @@ then
   fi
 
   echo "Done."
+else
+  echo "Yum not found."
 fi
