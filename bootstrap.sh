@@ -160,7 +160,8 @@ then
     echo
     eval "$_BOOTSTRAP_INSTALL"
     export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh" # This loads nvm
+    [ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
     echo
 
     _BOOTSTRAP_INSTALL="nvm install 12"
@@ -170,7 +171,7 @@ then
     eval "$_BOOTSTRAP_INSTALL"
     echo
 
-    if [ -f "$HOME/dev/z/z.sh" ]
+    if [ -s "$HOME/dev/z/z.sh" ]
     then
       echo "Installing z"
       git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
