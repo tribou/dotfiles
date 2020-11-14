@@ -86,6 +86,9 @@ then
   then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
     pip install --upgrade pip
   fi
 
