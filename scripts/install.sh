@@ -51,21 +51,21 @@ then
   #   rm -r /tmp/fasd
   # fi
 
-  if [ -f "$HOME/dev/z/z.sh" ]
+  if [ ! -f "$HOME/dev/z/z.sh" ]
   then
     echo "Installing z"
     git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
     . "$HOME/dev/z/z.sh"
   fi
 
-  if   [ ! -s "$(which fzf)"  ]
+  if [ ! -s "$(which fzf)"  ]
   then
     echo "Installing fzf"
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install
   fi
 
-  if   [ ! -s "$(which tmux)"  ]
+  if [ ! -s "$(which tmux)"  ]
   then
     echo "Installing tmux"
     curl -fLo /tmp/tmux https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b-x86_64.AppImage
@@ -73,7 +73,7 @@ then
     sudo mv /tmp/tmux /usr/bin/tmux
   fi
 
-  if   [ ! -d "$HOME/.rbenv/bin" ] && [ -s "$(which rbenv)"  ]
+  if [ ! -d "$HOME/.rbenv/bin" ] && [ -s "$(which rbenv)"  ]
   then
     echo "Installing rbenv"
     curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
@@ -82,7 +82,7 @@ then
     rbenv global 2.7.1
   fi
 
-  if   [ ! -d "$HOME/.pyenv/bin" ] && [ -s "$(which pyenv)"  ]
+  if [ ! -d "$HOME/.pyenv/bin" ] && [ -s "$(which pyenv)"  ]
   then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
@@ -92,13 +92,13 @@ then
     pip install --upgrade pip
   fi
 
-  if   [ ! -s "$(which pyls)" ]
+  if [ ! -s "$(which pyls)" ]
   then
     echo "Installing python-language-server (pyls)"
     pip install --upgrade pyls
   fi
 
-  if   [ ! -d "$HOME/.pyenv/versions/py2nvim" ]
+  if [ ! -d "$HOME/.pyenv/versions/py2nvim" ]
   then
     echo "Installing py2nvim virtualenv"
     pyenv install 2.7.18
@@ -109,7 +109,7 @@ then
     pip install --upgrade pynvim
   fi
 
-  if   [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
+  if [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
   then
     echo "Installing py3nvim virtualenv"
     pyenv install 3.8.2
@@ -120,13 +120,13 @@ then
     pip install --upgrade pynvim
   fi
 
-  if   [ ! -f "/etc/profile.d/bash_completion.sh" ]
+  if [ ! -f "/etc/profile.d/bash_completion.sh" ]
   then
     echo "Installing bash-completion"
     sudo yum install -y bash-completion bash-completion-extras
   fi
 
-  if   [ ! -s "$(which rg)"  ]
+  if [ ! -s "$(which rg)"  ]
   then
     echo "Installing Ripgrep"
     sudo yum-config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/carlwgeorge/ripgrep/repo/epel-7/carlwgeorge-ripgrep-epel-7.repo
