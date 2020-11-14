@@ -73,7 +73,7 @@ then
     sudo mv /tmp/tmux /usr/bin/tmux
   fi
 
-  if [ ! -d "$HOME/.rbenv/bin" ] && [ -s "$(which rbenv)"  ]
+  if [ ! -d "$HOME/.rbenv/bin" ] && [ ! -s "$(which rbenv)"  ]
   then
     echo "Installing rbenv"
     curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
@@ -82,7 +82,7 @@ then
     rbenv global 2.7.1
   fi
 
-  if [ ! -d "$HOME/.pyenv/bin" ] && [ -s "$(which pyenv)"  ]
+  if [ ! -d "$HOME/.pyenv/bin" ] && [ ! -s "$(which pyenv)"  ]
   then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
