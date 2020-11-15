@@ -60,13 +60,14 @@ nmap <Leader>h :<c-u>ALEHover<CR>
 nmap <Leader>ai :<c-u>ALEInfo<CR>
 nmap <Leader>an :<c-u>ALENext<CR>
 nmap <Leader>at :<c-u>ALEToggle<CR>
+nmap <Leader>ar :<c-u>ALEReset<CR>
 
 " coc.nvim
 " Show commands
 nmap <space>c :<c-u>CocList commands<CR>
 nmap <space>i :<c-u>CocInfo<CR>
 " nmap <space>r <Plug>(coc-rename)
-nmap <space>r :<c-u>CocRestart<CR>:<c-u>ALEReset<CR>
+nmap <space>r :<c-u>CocRestart<CR>
 nmap <silent> <space>d <Plug>(coc-definition)
 nmap <silent> <space>f :<c-u>call CocActionAsync('doHover')<CR>
 nmap <silent> <space>h :<c-u>call CocActionAsync('doHover')<CR>
