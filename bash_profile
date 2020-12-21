@@ -229,7 +229,6 @@ fi
 _dotfiles_debug_timing "$LINENO"
 
 # Rust
-export PATH="$HOME/.cargo/bin:$PATH"
 [ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 # ripgrep

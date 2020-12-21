@@ -127,7 +127,7 @@ then
 
     if   [ ! -f "$HOME/.vim/autoload/plug.vim" ]
     then
-      _BOOTSTRAP_INSTALL="curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+      _BOOTSTRAP_INSTALL="sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
       echo "Installing vim-plug:"
       echo "$_BOOTSTRAP_INSTALL"
       echo
@@ -212,7 +212,7 @@ then
 
   if   [ -s "$(which brew)"  ]
   then
-    _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew cask install font-firacode-nerd-font font-hack-nerd-font font-fontawesome"
+    _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
     echo "Installing fonts:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
