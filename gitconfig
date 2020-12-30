@@ -29,7 +29,7 @@
   history = log --follow -p --
   tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
   tree-short = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
-  changes = log --format=%B --since=\"midnight\" --date=local
+	changes = log --format=%B --since=\"24 hours ago\" --date=local
   tree-one = log --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
 [push]
   default = simple
