@@ -10,4 +10,4 @@ help:
 
 test:
 	./tests/test_grep_ticket_number.sh
-	$(DOCKER) ubuntu:latest /bin/bash ./tests/test_grep_ticket_number.sh
+	$(DOCKER) ubuntu:latest /bin/sh -c ./tests/test_grep_ticket_number.sh

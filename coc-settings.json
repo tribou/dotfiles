@@ -6,15 +6,6 @@
   "typescript.updateImportsOnFileMove.enable": false,
   "suggest.timeout": 10000,
   "languageserver": {
-    "flow": {
-      "command": "node_modules/.bin/flow",
-      "args": ["lsp"],
-      "filetypes": ["javascript", "javascriptreact"],
-      "initializationOptions": {},
-      "requireRootPattern": true,
-      "settings": {},
-      "rootPatterns": [".flowconfig"]
-    },
     "bash": {
       "command": "bash-language-server",
       "args": ["start"],
