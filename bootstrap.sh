@@ -104,12 +104,33 @@ if [ ! -f "$HOME/.ssh/id_rsa" ]
 then
   ssh-keygen -t rsa -b 4096 -C "tribou@users.noreply.github.com" -N "" -f "$HOME/.ssh/id_rsa"
 fi
+if [ ! -f "$HOME/.ssh/id_ed25519" ]
+then
+  ssh-keygen -t ed25519 -C "tribou@users.noreply.github.com"
+fi
+## If macOS
+if [[ "$OSTYPE" == "darwin"* ]] && ! grep -q "AddKeysToAgent" ~/.ssh/config
+then
+
+  if [ ! -f "$HOME/.ssh/config" ]
+  then
+    touch "$HOME/.ssh/config"
+  else
+    echo "" >> "$HOME/.ssh/config"
+  fi
+
+  echo "Host *" >> "$HOME/.ssh/config"
+  echo "  AddKeysToAgent yes" >> "$HOME/.ssh/config"
+  echo "  UseKeychain yes" >> "$HOME/.ssh/config"
+  echo "  IdentityFile ~/.ssh/id_ed25519" >> "$HOME/.ssh/config"
+fi
 
 # Setup ssh-agent
 ## If agent socket isn't available, source it
 [ -s "$SSH_AUTH_SOCK" ] || eval `ssh-agent -s`
-## If key hasn't been added to keychain, add it
-ssh-add -L > /dev/null || ssh-add -K "$HOME/.ssh/id_rsa" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_rsa"
+## Add keys to keychain
+[ -f "$HOME/.ssh/id_rsa" ] && (ssh-add -K "$HOME/.ssh/id_rsa" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_rsa")
+[ -f "$HOME/.ssh/id_ed25519" ] && (ssh-add -K "$HOME/.ssh/id_ed25519" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_ed25519")
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
