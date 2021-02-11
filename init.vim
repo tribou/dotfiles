@@ -195,6 +195,8 @@ set spelllang=en_us
 set spellfile=$DOTFILES/vim/spell/utf-8.add
 " set guifont=FuraCode\ Nerd\ Font:h11
 set guifont=Hack\ Nerd\ Font:h12
+" auto-wrap at textwidth while typing
+set formatoptions+=t
 
 " set status bar to two lines
 set cmdheight=2
