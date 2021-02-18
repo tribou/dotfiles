@@ -28,7 +28,7 @@ let g:fzf_layout = { 'window': 'enew' }
 
 command! -bang -nargs=* Fzf
   \ call fzf#run({
-  \ 'source': 'fd --type file --color=always --hidden --exclude .git',
+  \ 'source': 'fd --type file --color=always --hidden --exclude .git --exclude .yarn/cache',
   \ 'sink': 'e',
   \ 'options': ' --preview="bat --color=always {}" --preview-window=up:60%'
   \ })
