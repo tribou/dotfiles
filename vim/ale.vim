@@ -70,6 +70,9 @@ let g:ale_fixers = {
   \   'json': [
   \       'prettier',
   \   ],
+  \   'jsonc': [
+  \       'prettier',
+  \   ],
   \   'vue': [
   \       'prettier',
   \   ],
