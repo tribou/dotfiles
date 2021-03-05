@@ -26,6 +26,10 @@ let g:ale_linters = {
   \       'eslint',
   \       'tsserver',
   \   ],
+  \   'typescriptreact': [
+  \       'eslint',
+  \       'tsserver',
+  \   ],
   \   'elixir': [
   \       'mix',
   \   ],
