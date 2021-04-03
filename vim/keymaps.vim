@@ -44,6 +44,9 @@ nnoremap <silent> <c-h> :<c-u>History<CR>
 nmap <silent> <Leader>b <Plug>(dotfiles-gblame)
 noremap <silent> <Leader>o :Gbrowse<CR>
 
+" HowMuch
+vmap <space>? <Plug>AutoCalcReplace
+
 " NERDTree
 map <silent> <Leader>t :<c-u>NERDTreeToggle<CR>
 map <silent> <Leader>f :<c-u>NERDTreeFind<CR>

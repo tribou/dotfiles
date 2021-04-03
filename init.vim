@@ -66,6 +66,7 @@ Plug 'justinmk/vim-sneak'
 Plug 'mbbill/undotree'
 Plug 'janko/vim-test'
 Plug 'benmills/vimux'
+Plug 'sk1418/HowMuch'
 
 " Debugging
 Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
@@ -316,6 +317,12 @@ let g:deoplete#enable_at_startup = 1
 let g:EditorConfig_core_mode = 'external_command'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 "let g:EditorConfig_verbose=1
+
+
+" HowMuch
+let g:HowMuch_no_mappings = 1
+let g:HowMuch_scale = 4
+let g:HowMuch_auto_engines = ['py', 'bc', 'vim']
 
 
 " NERDTree

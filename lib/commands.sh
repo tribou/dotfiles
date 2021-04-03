@@ -500,7 +500,7 @@ function tmux-small ()
   tmux split-window -h -p 55 -c "$_PRIMARY"
   tmux select-pane -t 1
   tmux split-window -v -p 25 -c "$_PRIMARY"
-  tmux select-pane -t 2
+  tmux select-pane -t 3
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
   tmux send-keys -t 2
   tmux send-keys -t 3 v Enter
