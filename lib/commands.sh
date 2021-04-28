@@ -196,6 +196,33 @@ function ga ()
   git add --all "$@" && _dotfiles_git_status
 }
 
+function _dotfiles_prompt_git_branch_delete ()
+{
+  echo
+  read -p "Run 'git branch -D $1'? (y/n): " confirm \
+    && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
+    || return 1
+
+  git branch -D "$1"
+}
+
+function gbd ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="git branch -d $@"
+    eval $SCRIPT
+  else
+    local RESULT=$(git branch -a --sort=-committerdate | fzf +s --preview-window wrap --color)
+    local CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
+    if [ -n "$CLEANED_RESULT" ]
+    then
+      local SCRIPT="git branch -d $CLEANED_RESULT || _dotfiles_prompt_git_branch_delete $CLEANED_RESULT"
+      _eval_script "$SCRIPT"
+    fi
+  fi
+}
+
 function gpsu ()
 {
   git push -u origin "$(git branch --show-current)" "$@" && _dotfiles_git_status
@@ -618,7 +645,7 @@ alias bfg='java -jar /usr/local/bin/bfg.jar'
 alias cherry='git cherry-pick -S -x'
 alias cod='co develop'
 alias cop='co prod'
-alias com='co master'
+alias com='co main'
 alias cos='co staging'
 alias commit='git commit -ev' # non-signed commit
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
@@ -638,14 +665,13 @@ alias edld='ember deploy:list --environment development'
 alias edlp='ember deploy:list --environment production'
 alias edls='ember deploy:list --environment staging'
 alias fed='f origin develop:develop'
-alias fem='f origin master:master'
+alias fem='f origin main:main'
 alias fep='f origin prod:prod'
 alias fes='f origin staging:staging'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
 alias fix='git commit --amend -a --no-edit -S && _dotfiles_git_log_commit && _dotfiles_git_status'
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gall2='echo; echo; git log --oneline --all --graph --decorate --date=local --date=short --pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>" $(git reflog | awk '"'"'{print $1}'"'"')'
-alias gbd='git branch -d'
 alias gbdr='git branch -d -r'
 alias gc='gcloud compute'
 alias gci='gcloud compute instances'
@@ -672,7 +698,7 @@ alias ll='ls -lah'
 alias ls='ls -G'
 alias lt='ls -lath'
 alias md='merge develop'
-alias mm='merge master'
+alias mm='merge main'
 alias mp='merge prod'
 alias ms='merge staging'
 alias ni='npm install'
