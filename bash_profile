@@ -223,11 +223,12 @@ _dotfiles_debug_timing "$LINENO"
 _dotfiles_debug_timing "$LINENO"
 
 # pyenv
-[ -f "$HOME/.pyenv/bin/pyenv" ] && export PATH=$PATH:$HOME/.pyenv/bin
 if [ $(which pyenv) ]
 then
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init --path)"
   eval "$(pyenv init -)"
-  # eval "$(pyenv virtualenv-init -)"
 fi
 
 _dotfiles_debug_timing "$LINENO"
