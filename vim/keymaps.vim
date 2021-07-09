@@ -40,7 +40,6 @@ nnoremap <silent> <c-c> :<c-u>Commits<CR>
 nnoremap <silent> <c-h> :<c-u>History<CR>
 
 " fugitive
-" noremap <silent> <Leader>b :Gblame<CR>
 nmap <silent> <Leader>b <Plug>(dotfiles-gblame)
 noremap <silent> <Leader>o :Gbrowse<CR>
 

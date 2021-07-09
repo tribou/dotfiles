@@ -36,7 +36,7 @@ function! ToggleGblame()
     " do nothing...
   else
     " exe 'echom "doesnt exist"'
-    Gblame
+    Git blame
   endif
 endfunction
 
