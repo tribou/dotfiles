@@ -83,17 +83,17 @@ function c ()
   # If committing a git merge
   if [ -f "./.git/MERGE_HEAD" ]
   then
-    git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
+    git commit -ev && _dotfiles_git_log_commit && _dotfiles_git_status
   else
     local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
     if [ $# -eq 0 ]
     then
       if [ -z "$current_ticket" ]
       then
-        git commit -S -ev && _dotfiles_git_log_commit && _dotfiles_git_status
+        git commit -ev && _dotfiles_git_log_commit && _dotfiles_git_status
       else
         local message="$current_ticket:"
-        git commit -S -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
+        git commit -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
       fi
     else
       if [ -z "$current_ticket" ]
@@ -102,7 +102,7 @@ function c ()
       else
         local message="$current_ticket: $*"
       fi
-      git commit -S -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
+      git commit -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
     fi
   fi
 }
@@ -242,9 +242,9 @@ function gr ()
 
   if [ $# -gt 1 ]
   then
-    git rebase -S "$@"
+    git rebase "$@"
   else
-    git rebase -S -i HEAD~$1
+    git rebase -i HEAD~$1
   fi
 }
 
@@ -304,7 +304,7 @@ function install-swap ()
 
 function merge ()
 {
-  local MERGE_RESULT=$(git merge -S "$@")
+  local MERGE_RESULT=$(git merge "$@")
   if [ "$MERGE_RESULT" != "Already up to date." ]
   then
     _dotfiles_git_log_commit && _dotfiles_git_status
@@ -636,13 +636,13 @@ function yr ()
 # Command aliases
 alias ack='ag'
 alias ag='rg'
-alias amend='git commit -S --amend && _dotfiles_git_log_commit && _dotfiles_git_status'
+alias amend='git commit --amend && _dotfiles_git_log_commit && _dotfiles_git_status'
 alias b='git branch -a --sort=-committerdate'
 alias back='cd "$OLDPWD"'
 alias bd='docker-machine'
 alias be='bundle exec'
 alias bfg='java -jar /usr/local/bin/bfg.jar'
-alias cherry='git cherry-pick -S -x'
+alias cherry='git cherry-pick -x'
 alias cod='co develop'
 alias cop='co prod'
 alias com='co main'
@@ -669,7 +669,7 @@ alias fem='f origin main:main'
 alias fep='f origin prod:prod'
 alias fes='f origin staging:staging'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
-alias fix='git commit --amend -a --no-edit -S && _dotfiles_git_log_commit && _dotfiles_git_status'
+alias fix='git commit --amend -a --no-edit && _dotfiles_git_log_commit && _dotfiles_git_status'
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gall2='echo; echo; git log --oneline --all --graph --decorate --date=local --date=short --pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>" $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gbdr='git branch -d -r'
@@ -680,11 +680,11 @@ alias gds='git diff --staged --color-words'
 alias gdw='git diff --color-words'
 alias gdww='git diff-word'
 alias gf='git flow'
-alias gfix='git commit --amend -a --no-edit -S'
+alias gfix='git commit --amend -a --no-edit'
 alias gpl='git pull'
 alias gps='git push'
 alias gpst='git push --follow-tags'
-alias gr2='git rebase -S -i HEAD~2'
+alias gr2='git rebase -i HEAD~2'
 alias gs='git show'
 alias gsp='git stash pop'
 alias gss='git stash save'
@@ -712,7 +712,7 @@ alias prettyjson='python -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
-alias revert='git revert -S HEAD'
+alias revert='git revert HEAD'
 alias s='_dotfiles_git_status'
 alias setdotglob='shopt -s dotglob'
 alias sprofile='. ~/.bash_profile'
