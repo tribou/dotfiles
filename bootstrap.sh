@@ -166,14 +166,17 @@ then
       echo
     fi
 
-    _BOOTSTRAP_INSTALL="curl https://sh.rustup.rs -sSf | sh -s -- -y"
-    echo "Installing rust:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-    export PATH="$HOME/.cargo/bin:$PATH"
-    [ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-    echo
+    if   [ -s "$(which cargo)"  ]
+    then
+      _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+      echo "Installing rust:"
+      echo "$_BOOTSTRAP_INSTALL"
+      echo
+      eval "$_BOOTSTRAP_INSTALL"
+      export PATH="$HOME/.cargo/bin:$PATH"
+      [ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+      echo
+    fi
 
     _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.36.0/install.sh | bash"
     echo "Installing nvm:"
@@ -185,11 +188,12 @@ then
     [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
     echo
 
-    _BOOTSTRAP_INSTALL="nvm install 12"
-    echo "Installing node v12:"
+    _BOOTSTRAP_INSTALL="nvm install 14"
+    echo "Installing node v14:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
+    nvm alias default 14
     echo
 
     if [ -n "$HOME/dev/z/z.sh" ]
