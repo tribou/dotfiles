@@ -433,6 +433,24 @@ function nr ()
   fi
 }
 
+function ninfo ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="npm info $@"
+    echo $SCRIPT
+    echo
+    eval $SCRIPT
+  else
+    local RESULT=$(ls node_modules | fzf)
+    if [ -n "$RESULT" ]
+    then
+      local SCRIPT="npm info $RESULT"
+      _eval_script "$SCRIPT"
+    fi
+  fi
+}
+
 function paste_from_clipboard ()
 {
   if [ -n "$(command -v pbpaste)" ]
