@@ -123,7 +123,7 @@ function co ()
     local SCRIPT="git checkout $@ && _dotfiles_git_status"
     eval $SCRIPT
   else
-    local RESULT=$(git branch -a --sort=-committerdate | fzf +s --preview-window wrap)
+    local RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap)
     local CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
     if [ -n "$CLEANED_RESULT" ]
     then
@@ -213,7 +213,7 @@ function gbd ()
     local SCRIPT="git branch -d $@"
     eval $SCRIPT
   else
-    local RESULT=$(git branch -a --sort=-committerdate | fzf +s --preview-window wrap --color)
+    local RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap --color)
     local CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
     if [ -n "$CLEANED_RESULT" ]
     then
@@ -424,7 +424,7 @@ function nr ()
     echo
     eval $SCRIPT
   else
-    local RESULT=$(jq '.scripts' package.json | fzf +s --tac | awk -F'"' '{print $2}')
+    local RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
       local SCRIPT="npm run --silent $RESULT"
@@ -618,7 +618,7 @@ function yr ()
     echo
     eval $SCRIPT
   else
-    local RESULT=$(jq '.scripts' package.json | fzf +s --tac | awk -F'"' '{print $2}')
+    local RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
       local SCRIPT="yarn $RESULT"
