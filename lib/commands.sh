@@ -265,9 +265,11 @@ function histgrep ()
   # Pipe results from two history sources into cat
   local RESULT=$(cat \
     <(history | grep "$1") \
-    <(ls -d $HOME/.history/20*/*/ | sort -r -n | xargs grep -r "$1" \
-    | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
-    | fzf --no-sort --preview-window wrap \
+    <(ls -d $HOME/.history/20*/* \
+      | sort -r -n \
+      | xargs grep -r "$1" \
+      | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
+    | fzf \
     | awk -F "$AWK_HISTFILE_DELIM" '{print $NF}' \
     | awk -F "$AWK_HISTORY_DELIM" '{print $NF}')
 
