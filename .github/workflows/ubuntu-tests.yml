@@ -16,6 +16,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run tests
+      - name: Run ticket number tests
         run: ./tests/test_grep_ticket_number.sh
+        shell: bash
+
+      - name: Run commit msg tests
+        run: ./tests/test_commit_message.sh
         shell: bash
