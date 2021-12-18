@@ -13,11 +13,15 @@ function assert_equals() {
   local EXPECTED=${1}
   local ACTUAL=${2}
   local LINE_NO="${3}:"
-	local DEFAULT_ERROR_MESSAGE="ACTUAL ${ACTUAL} not equal to EXPECTED ${EXPECTED}"
-  local ERROR_MESSAGE="${LINE_NO} ${4:-$DEFAULT_ERROR_MESSAGE}"
+	local DEFAULT_ERROR_MESSAGE="ACTUAL '${ACTUAL}' not equal to EXPECTED '${EXPECTED}'"
+  local ERROR_MESSAGE="❌ ${LINE_NO} ${4:-$DEFAULT_ERROR_MESSAGE}"
 	set -e
 	# Assert both equal
-	[ "$EXPECTED" == "$ACTUAL" ] || (echo "$ERROR_MESSAGE" && exit 1)
+	[ "$EXPECTED" == "$ACTUAL" ] \
+		|| (echo "$ERROR_MESSAGE" && echo && \
+			git diff $(echo "$EXPECTED" | git hash-object -w --stdin) $(echo "$ACTUAL" | git hash-object -w --stdin) \
+			--color-words="[^[:space:]]|([[:alnum:]]|UTF_8_GUARD)+" \
+			| tail -n +6 && echo && exit 1)
 	set +e
 }
 
@@ -69,6 +73,18 @@ function test_all() {
 	EXPECTED="AB123"
 	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
 
+	ACTUAL=$(echo "bug/123_AT_TestDesc" | _dotfiles_grep_ticket_number)
+	EXPECTED="DCX123"
+	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
+
+	ACTUAL=$(echo "feature/123_AT_TestDesc" | _dotfiles_grep_ticket_number)
+	EXPECTED="DCX123"
+	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
+
+	ACTUAL=$(echo "patch/123_AT_TestDesc" | _dotfiles_grep_ticket_number)
+	EXPECTED="DCX123"
+	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
+
 	## Falsy cases
 	ACTUAL=$(echo "develop" | _dotfiles_grep_ticket_number)
 	EXPECTED=""
@@ -97,7 +113,9 @@ function test_all() {
 
 test_all
 
-echo "All tests passed!"
+echo
+echo "✅ All tests passed!"
+echo
 
 unset THIS_DIR
 unset -f assert_equals

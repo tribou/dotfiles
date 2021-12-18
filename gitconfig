@@ -3,6 +3,7 @@
   email = tribou@users.noreply.github.com
 [core]
   editor = nvim
+  excludesfile = ~/.gitignore_global
 [credential]
 [color]
   ui = true

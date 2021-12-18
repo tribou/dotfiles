@@ -16,10 +16,34 @@ function _dotfiles_grep_ticket_number () {
     sed -E 's/^([a-zA-Z]{2}[0-9]{1,7})\-.*$/\1/' |
     # For abc-123-this-thing pattern, remove the description tail
     sed -E 's/^([a-zA-Z]{2,4}-[0-9]{1,7})\-.*$/\1/' |
-    # Filter out anything other than ab123 or abc-123
-    grep -E '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,4}-)\d{1,7}$' |
+    # DCX - For 123_AT_ThisThing pattern, remove the initials and description tail
+    sed -E 's/^([0-9]{1,7})\_.*$/DCX\1/' |
+    # Filter out anything other than ab123 or abc-123 or DCX123
+    grep -E '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,4}-)\d{1,7}|DCX[0-9]{1,7}$' |
     # Convert all letters to UPPERCASE
     tr [a-z] [A-Z]
+}
+
+function _dotfiles_commit_message () {
+  local current_ticket=${1}
+  local other_args=${2}
+  local commit_msg_separator="${DOTFILES_COMMIT_SEPARATOR:-:}"
+  local message=""
+  if [ -z "$other_args" ]
+  then
+    if [ -n "$current_ticket" ]
+    then
+      local message="$current_ticket${commit_msg_separator} "
+    fi
+  else
+    if [ -z "$current_ticket" ]
+    then
+      local message="$other_args"
+    else
+      local message="$current_ticket${commit_msg_separator} $other_args"
+    fi
+  fi
+  echo "$message"
 }
 
 function _dotfiles_git_log_branch_diff () {
@@ -80,28 +104,20 @@ function _eval_script() {
 # arguments concatenated as a string
 function c ()
 {
-  # If committing a git merge
   if [ -f "./.git/MERGE_HEAD" ]
   then
+    # If committing a git merge, accept the default message
     git commit -ev && _dotfiles_git_log_commit && _dotfiles_git_status
   else
     local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
+    local other_args="$*"
+    local message=$(_dotfiles_commit_message $current_ticket $other_args)
+
     if [ $# -eq 0 ]
     then
-      if [ -z "$current_ticket" ]
-      then
-        git commit -ev && _dotfiles_git_log_commit && _dotfiles_git_status
-      else
-        local message="$current_ticket:"
-        git commit -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
-      fi
+      # If no args were provided, open the commit msg editor
+      git commit -ev -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
     else
-      if [ -z "$current_ticket" ]
-      then
-        local message="$*"
-      else
-        local message="$current_ticket: $*"
-      fi
       git commit -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
     fi
   fi
