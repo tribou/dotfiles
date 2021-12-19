@@ -26,10 +26,9 @@ function _dotfiles_grep_ticket_number () {
 
 function _dotfiles_commit_message () {
   local current_ticket=${1}
-  local other_args=${2}
   local commit_msg_separator="${DOTFILES_COMMIT_SEPARATOR:-:}"
-  local message=""
-  if [ -z "$other_args" ]
+  local message="${@:2}"
+  if [ $# -lt 2 ]
   then
     if [ -n "$current_ticket" ]
     then
@@ -38,9 +37,9 @@ function _dotfiles_commit_message () {
   else
     if [ -z "$current_ticket" ]
     then
-      local message="$other_args"
+      local message="${@:2}"
     else
-      local message="$current_ticket${commit_msg_separator} $other_args"
+      local message="$current_ticket${commit_msg_separator} ${@:2}"
     fi
   fi
   echo "$message"
@@ -110,8 +109,7 @@ function c ()
     git commit -ev && _dotfiles_git_log_commit && _dotfiles_git_status
   else
     local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
-    local other_args="$*"
-    local message=$(_dotfiles_commit_message $current_ticket $other_args)
+    local message=$(_dotfiles_commit_message "$current_ticket" "$*")
 
     if [ $# -eq 0 ]
     then
