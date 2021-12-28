@@ -10,8 +10,10 @@ function _dotfiles_git_status () {
 }
 
 function _dotfiles_grep_ticket_number () {
-  # Remove origin/ or feature/ prefix
-  sed -E 's/^[A-Z0-9a-z]+\///' |
+  # Remove origin/, feature/, etc prefix
+  sed -E 's/^(bug|feature|fix|hotfix|origin|patch)\///' |
+    # For AB-123/description pattern, remove the description tail
+    sed -E 's/^(.*)\/.*$/\1/' |
     # For ab123-this-thing pattern, remove the description tail
     sed -E 's/^([a-zA-Z]{2}[0-9]{1,7})\-.*$/\1/' |
     # For abc-123-this-thing pattern, remove the description tail

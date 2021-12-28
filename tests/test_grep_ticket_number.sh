@@ -57,6 +57,10 @@ function test_all() {
 	EXPECTED="ABC-123"
 	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
 
+	ACTUAL=$(echo "ABC-123/ticket-description" | _dotfiles_grep_ticket_number)
+	EXPECTED="ABC-123"
+	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
+
 	ACTUAL=$(echo "feature/ABC-123-b" | _dotfiles_grep_ticket_number)
 	EXPECTED="ABC-123"
 	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
