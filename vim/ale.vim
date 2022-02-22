@@ -103,7 +103,7 @@ let g:ale_fixers = {
   \       'goimports',
   \       'gofmt',
   \   ],
+  \   'terraform': [
+  \       'terraform',
+  \   ],
   \}
-  " \   'html': [
-  " \       'tidy',
-  " \   ],
