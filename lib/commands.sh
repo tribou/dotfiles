@@ -123,6 +123,27 @@ function c ()
   fi
 }
 
+# c with --no-verify
+function cn ()
+{
+  if [ -f "./.git/MERGE_HEAD" ]
+  then
+    # If committing a git merge, accept the default message
+    git commit -ev --no-verify && _dotfiles_git_log_commit && _dotfiles_git_status
+  else
+    local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
+    local message=$(_dotfiles_commit_message "$current_ticket" "$*")
+
+    if [ $# -eq 0 ]
+    then
+      # If no args were provided, open the commit msg editor
+      git commit -ev -m "$message" --no-verify && _dotfiles_git_log_commit && _dotfiles_git_status
+    else
+      git commit -m "$message" --no-verify && _dotfiles_git_log_commit && _dotfiles_git_status
+    fi
+  fi
+}
+
 function clean ()
 {
   git clean -f -- build/ public/ vendor/
