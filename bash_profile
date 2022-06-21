@@ -155,6 +155,11 @@ complete -C aws_completer aws
 
 _dotfiles_debug_timing "$LINENO"
 
+# Added by Amplify CLI binary installer
+[ -d "$HOME/.amplify/bin" ] && export PATH="$HOME/.amplify/bin:$PATH"
+
+_dotfiles_debug_timing "$LINENO"
+
 # ansible scripts
 if [ -s "$HOME/sys/ansible/hacking/env-setup" ]
 then
