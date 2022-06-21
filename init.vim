@@ -100,6 +100,7 @@ Plug 'iamcco/coc-svg', {'do': 'yarn install --frozen-lockfile'}
 Plug 'amiralies/coc-elixir', {'do': 'yarn install --frozen-lockfile'}
 Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
 " Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
+Plug 'github/copilot.vim', {'branch': 'release'}
 
 " TODO: test ncm2 for autocompletion
 " Plug 'ncm2/ncm2'
