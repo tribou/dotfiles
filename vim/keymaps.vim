@@ -41,7 +41,7 @@ nnoremap <silent> <c-h> :<c-u>History<CR>
 
 " fugitive
 nmap <silent> <Leader>b <Plug>(dotfiles-gblame)
-noremap <silent> <Leader>o :Gbrowse<CR>
+noremap <silent> <Leader>o :GBrowse<CR>
 
 " HowMuch
 vmap <space>? <Plug>AutoCalcReplace
