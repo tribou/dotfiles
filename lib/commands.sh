@@ -17,7 +17,7 @@ function _dotfiles_grep_ticket_number () {
     # For ab123-this-thing pattern, remove the description tail
     sed -E 's/^([a-zA-Z]{2}[0-9]{1,7})\-.*$/\1/' |
     # For abc-123-this-thing pattern, remove the description tail
-    sed -E 's/^([a-zA-Z]{2,4}-[0-9]{1,7})\-.*$/\1/' |
+    sed -E 's/^([a-zA-Z0-9]{2,4}-[0-9]{1,7})\-.*$/\1/' |
     # DCX - For 123_AT_ThisThing pattern, remove the initials and description tail
     sed -E 's/^([0-9]{1,7})\_.*$/DCX\1/' |
     # Filter out anything other than ab123 or abc-123 or DCX123

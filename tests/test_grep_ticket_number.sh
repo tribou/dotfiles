@@ -113,6 +113,10 @@ function test_all() {
 	ACTUAL=$(echo "abc123" | _dotfiles_grep_ticket_number)
 	EXPECTED=""
 	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
+
+	ACTUAL=$(echo "bug/a2-123-some-description" | _dotfiles_grep_ticket_number)
+	EXPECTED="A2-123"
+	assert_equals "$EXPECTED" "$ACTUAL" $LINENO
 }
 
 test_all
