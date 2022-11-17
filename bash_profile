@@ -136,13 +136,13 @@ _dotfiles_debug_timing "$LINENO"
 
 # Node.js and NVM
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" # This loads nvm
+[ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" --no-use # This loads nvm
 _dotfiles_debug_timing "$LINENO"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 _dotfiles_debug_timing "$LINENO"
 export HAS_NVM=$([ $(command -v nvm) ] && echo true)
 # _dotfiles_debug_timing "$LINENO"
-# [ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
+[ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
 
 _dotfiles_debug_timing "$LINENO"
 

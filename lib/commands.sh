@@ -426,16 +426,8 @@ function new-docker-generic ()
 
 function npm-install-global ()
 {
-  if [ ! -z "$1" ]
-  then
-    local NPM_VERSION="$1"
-  else
-    local NPM_VERSION='lts'
-  fi
-
-  echo "Installing npm@$NPM_VERSION and global modules"
-  npm install -g npm@"$NPM_VERSION" \
-    && npm install -g \
+  echo "Installing global modules"
+  npm install -g \
     eslint_d \
     intelephense \
     js-yaml \
