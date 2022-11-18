@@ -189,7 +189,7 @@ if has('nvim')
 endif
 set ignorecase
 set smartcase
-set mouse=a
+set mouse=
 set encoding=UTF-8
 set spelllang=en_us
 set spellfile=$DOTFILES/vim/spell/utf-8.add
