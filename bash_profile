@@ -109,7 +109,8 @@ _dotfiles_debug_timing "$LINENO"
 
 _dotfiles_debug_timing "$LINENO"
 
-
+# Set path for HOMEBREW
+[ ! -s "$(which brew)"  ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 [ -s "$(which brew >/dev/null 2>&1)" ] && BREW_PREFIX=$(brew --prefix)
 
 
