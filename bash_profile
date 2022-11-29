@@ -4,6 +4,7 @@
 # DEBUG_BASH_PROFILE=1
 
 OS=$(uname)
+SHELL=/bin/bash
 
 function _dotfiles_debug_timing ()
 {
@@ -244,6 +245,9 @@ _dotfiles_debug_timing "$LINENO"
 
 # ripgrep
 export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
+
+# tmux
+export TMUX_VERSION=$(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")
 
 # yarn
 [ -d "$HOME/.yarn/bin" ] && export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"

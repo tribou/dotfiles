@@ -427,7 +427,7 @@ function new-docker-generic ()
 function npm-install-global ()
 {
   echo "Installing global modules"
-  npm install -g \
+  npm install --location=global \
     eslint_d \
     intelephense \
     js-yaml \

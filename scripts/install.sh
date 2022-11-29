@@ -78,8 +78,13 @@ then
     echo "Installing rbenv"
     curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
     eval "$(rbenv init -)"
-    rbenv install 2.7.1
-    rbenv global 2.7.1
+  fi
+
+  if [ -z "$(ls -A $HOME/.rbenv/versions/)" ]
+  then
+    echo "Installing latest ruby version"
+    rbenv install $(rbenv install -l | grep -v - | tail -1)
+    rbenv global $(rbenv install -l | grep -v - | tail -1)
   fi
 
   if [ ! -d "$HOME/.pyenv/bin" ] && [ ! -s "$(which pyenv)"  ]
@@ -89,35 +94,25 @@ then
     export PATH="$HOME/.pyenv/bin:$PATH"
     eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
-    pip install --upgrade pip
-  fi
-
-  if [ ! -s "$(which pyls)" ]
-  then
-    echo "Installing python-language-server (pyls)"
-    pip install --upgrade pyls
-  fi
-
-  if [ ! -d "$HOME/.pyenv/versions/py2nvim" ]
-  then
-    echo "Installing py2nvim virtualenv"
-    pyenv install 2.7.18
-    pyenv virtualenv 2.7.18 py2nvim
-    eval "$(pyenv virtualenv-init -)"
-    pyenv activate py2nvim
-    pip install --upgrade pip
-    pip install --upgrade pynvim
+    pyenv install 3.11.0
+    pyenv global 3.11.0
   fi
 
   if [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
   then
     echo "Installing py3nvim virtualenv"
-    pyenv install 3.8.2
-    pyenv virtualenv 3.8.2 py3nvim
+    pyenv virtualenv 3.11.0 py3nvim
     eval "$(pyenv virtualenv-init -)"
     pyenv activate py3nvim
-    pip install --upgrade pip
-    pip install --upgrade pynvim
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade pynvim
+    pyenv deactivate
+  fi
+
+  if [ ! -s "$(which pyls)" ]
+  then
+    echo "Installing python-language-server (pyls)"
+    python3 -m pip install --upgrade pyls
   fi
 
   if [ ! -f "/etc/profile.d/bash_completion.sh" ]

@@ -70,6 +70,9 @@ tic -x tmux/tmux-256color.terminfo
 mkdir -p ~/.gnupg
 backupFile ".gnupg/gpg-agent.conf"
 linkFileToHome "gpg-agent-conf" ".gnupg/gpg-agent.conf"
+chown -R $(whoami) ~/.gnupg/
+chmod 600 ~/.gnupg/*
+chmod 700 ~/.gnupg
 # Restart gpg-agent
 if [ $(which gpgconf) ] && [ $(which gpg-agent) ]
 then
@@ -135,6 +138,9 @@ fi
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
+# Source all lib scripts
+. "$DOTFILES/lib/index.sh"
+
 # More rudimentary flags parsing
 if [ "$1" = "-i" ] || [ "$1" = "--install-deps" ]
 then
@@ -178,25 +184,31 @@ then
       echo
     fi
 
-    _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.36.0/install.sh | bash"
+    _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash"
     echo "Installing nvm:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" # This loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
+    if [ ! -n "$(command -v nvm)" ]
+    then
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" # This loads nvm
+      [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
+    fi
     echo
 
-    _BOOTSTRAP_INSTALL="nvm install 14"
-    echo "Installing node v14:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-    nvm alias default 14
-    echo
+    if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 16 | grep 16)" ] 
+    then
+      _BOOTSTRAP_INSTALL="nvm install 16"
+      echo "Installing node v16:"
+      echo "$_BOOTSTRAP_INSTALL"
+      echo
+      eval "$_BOOTSTRAP_INSTALL"
+      nvm alias default 16
+      echo
+    fi
 
-    if [ -n "$HOME/dev/z/z.sh" ]
+    if [ ! -f "$HOME/dev/z/z.sh" ]
     then
       echo "Installing z"
       git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
@@ -209,20 +221,25 @@ then
   fi
 
 
-  if   [ -s "$(which npm)"  ]
+  if  [ -s "$(which npm)"  ] && [ ! -n "$(which eslint_d)" ]
   then
-    _BOOTSTRAP_INSTALL="npm install -g neovim eslint_d"
+    _BOOTSTRAP_INSTALL="npm install --location=global neovim eslint_d"
     echo "Installing global node modules:"
     echo "$_BOOTSTRAP_INSTALL"
     echo
     eval "$_BOOTSTRAP_INSTALL"
   else
-    echo "ERROR: npm not available!"
-    exit 1
+    echo "npm not available or eslint_d already installed. Skipping..."
   fi
 
+  if [ -z "$(ls -A $HOME/.rbenv/versions/)" ]
+  then
+    echo "Installing latest ruby version"
+    rbenv install $(rbenv install -l | grep -v - | tail -1)
+    rbenv global $(rbenv install -l | grep -v - | tail -1)
+  fi
 
-  if   [ -s "$(which gem)"  ]
+  if  [ -s "$(which gem)"  ] && [ ! -n "$(gem list -i "^neovim$")" ]
   then
     _BOOTSTRAP_INSTALL="gem install neovim solargraph --no-document"
     echo "Installing gems:"
@@ -231,33 +248,41 @@ then
     eval "$_BOOTSTRAP_INSTALL"
     echo
   else
-    echo "ERROR: gem not available! Skipping..."
+    echo "gem not available or neovim already installed. Skipping..."
     echo
   fi
 
-  if [ ! -d "$HOME/.pyenv/versions/py2nvim" ]
+  if [ ! -d "$HOME/.pyenv/bin" ] && [ ! -s "$(which pyenv)"  ]
   then
-    echo "Installing py2nvim virtualenv"
-    pyenv install 2.7.18
-    pyenv virtualenv 2.7.18 py2nvim
+    echo "Installing pyenv"
+    curl https://pyenv.run | bash
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
-    pyenv activate py2nvim
-    pip install --upgrade pip
-    pip install --upgrade pynvim
+  fi
+
+  if [ ! -d "$HOME/.pyenv/versions/3.11.0" ]
+  then
+    echo "Installing python3"
+    pyenv install 3.11.0
+    pyenv global 3.11.0
+    echo "python version: $(python --version)"
+    python3 -m pip install --upgrade pip
   fi
 
   if [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
   then
     echo "Installing py3nvim virtualenv"
-    pyenv install 3.8.2
-    pyenv virtualenv 3.8.2 py3nvim
+    eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
+    pyenv virtualenv 3.11.0 py3nvim
     pyenv activate py3nvim
-    pip install --upgrade pip
-    pip install --upgrade pynvim
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade pynvim
+    pyenv deactivate
   fi
 
-  if   [ -s "$(which brew)"  ]
+  if [ -s "$(which brew)"  ] && [ ! -n "$(brew list --cask font-fira-code-nerd-font)" ]
   then
     _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
     echo "Installing fonts:"
@@ -266,7 +291,7 @@ then
     eval "$_BOOTSTRAP_INSTALL"
     echo
   else
-    echo "ERROR: brew not available! Skipping..."
+    echo "Brew not available or fonts already installed Skipping..."
     echo
   fi
 fi

@@ -46,7 +46,7 @@
 [filter "omitsigningkey"]
   clean = sed -E '/signingkey = [A-Z0-9]+$/d'
 [gpg]
-  program = /usr/local/bin/gpg
+  program = /opt/homebrew/bin/gpg
 [pull]
 	ff = only
 [commit]

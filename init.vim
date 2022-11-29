@@ -15,7 +15,6 @@ endfunction
 " Follow python virtualenvs provider instructions to setup:
 " https://github.com/zchee/deoplete-jedi/wiki/Setting-up-Python-for-Neovim
 " https://neovim.io/doc/user/provider.html
-let g:python_host_prog = expand('~/.pyenv/versions/py2nvim/bin/python')
 let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
 
 
@@ -189,7 +188,7 @@ if has('nvim')
 endif
 set ignorecase
 set smartcase
-set mouse=
+set mouse=a
 set encoding=UTF-8
 set spelllang=en_us
 set spellfile=$DOTFILES/vim/spell/utf-8.add

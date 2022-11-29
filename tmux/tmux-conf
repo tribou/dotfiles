@@ -2,18 +2,14 @@
 # cp tmuxconf ~/.tmux.conf
 #
 
-# Set TMUX_VERSION env var
-run-shell 'tmux setenv -g TMUX_VERSION \
-  $(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")'
-
 # Set prefix key to c-f instead of default c-b
 unbind C-b
 set -g prefix C-f
 bind C-f send-prefix
 
-set-environment -g PATH "/usr/local/bin:/bin:/usr/bin"
+set-environment -g PATH "/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin:/opt/homebrew/bin"
 
-set-option -g default-shell /bin/bash
+set-option -g default-shell $SHELL
 
 # toogle last window by hitting again C-f
 bind-key C-f last-window
@@ -35,9 +31,6 @@ setw -ag word-separators "'"
 
 # Show times longer than supposed
 set -g display-panes-time 2000
-
-# tmux messages are displayed for 4 seconds
-set -g display-time 4000
 
 # {n}vim compability
 set -g default-terminal "tmux-256color"
@@ -144,13 +137,6 @@ bind-key -n MouseDown3Pane run " \
     tmux display-message 'pasted!' \
 "
 
-# emacs key bindings in tmux command prompt (prefix + :) are better than
-# vi keys, even for vim users
-set -g status-keys emacs
-
-# focus events enabled for terminals that support them
-set -g focus-events on
-
 # Sync panes (Send input to all panes in the window). When enabled, pane
 # borders become red as an indication.
 bind C-b if -F '#{pane_synchronized}' \
@@ -160,12 +146,6 @@ bind C-b if -F '#{pane_synchronized}' \
                    'setw synchronize-panes on; \
                     setw pane-active-border-style fg=red; \
                     setw pane-border-format       " #P - Pane Synchronization ON "'
-
-# Faster command sequence
-set -s escape-time 0
-
-# Have a very large history
-set -g history-limit 1000000
 
 # Set title
 set -g set-titles on
@@ -329,13 +309,14 @@ bind-key C-k send-keys -R \; clear-history
 # List of plugins
 # see this https://github.com/tmux-plugins/tpm to installation
 set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
 set -g @plugin 'thewtex/tmux-mem-cpu-load'
 set -g @plugin 'tmux-plugins/tmux-copycat'
 set -g @plugin 'tmux-plugins/tmux-open'
 set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
+set -g @tpm-clean 'u'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
-set-environment -g PATH "/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin"
-run -b '~/.tmux/plugins/tpm/tpm'
+run -b '~/.tmux/plugins/tpm/tpm' 
