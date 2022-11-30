@@ -280,6 +280,17 @@ then
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade pynvim
     pyenv deactivate
+    echo
+  fi
+
+  if  [ -s "$(which python3)" ]
+  then
+    echo "Installing idb"
+    python3 -m pip install --upgrade fb-idb --prefer-binary
+    echo
+  else
+    echo "python3 not available or idb already installed. Skipping..."
+    echo
   fi
 
   if [ -s "$(which brew)"  ] && [ ! -n "$(brew list --cask font-fira-code-nerd-font)" ]
