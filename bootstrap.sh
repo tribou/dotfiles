@@ -197,7 +197,7 @@ then
     fi
     echo
 
-    if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 16 | grep 16)" ] 
+    if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 16 | grep 16)" ]
     then
       _BOOTSTRAP_INSTALL="nvm install 16"
       echo "Installing node v16:"
@@ -223,7 +223,7 @@ then
 
   if  [ -s "$(which npm)"  ] && [ ! -n "$(which eslint_d)" ]
   then
-    _BOOTSTRAP_INSTALL="npm install --location=global neovim eslint_d"
+    _BOOTSTRAP_INSTALL="npm install --location=global neovim eslint_d editorconfig"
     echo "Installing global node modules:"
     echo "$_BOOTSTRAP_INSTALL"
     echo

@@ -429,6 +429,7 @@ function npm-install-global ()
   echo "Installing global modules"
   npm install --location=global \
     eslint_d \
+    editorconfig \
     intelephense \
     js-yaml \
     jsonlint \
