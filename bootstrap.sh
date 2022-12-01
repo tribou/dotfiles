@@ -283,7 +283,7 @@ then
     echo
   fi
 
-  if  [ -s "$(which python3)" ]
+  if [ -s "$(which python3)" ]
   then
     echo "Installing idb"
     python3 -m pip install --upgrade fb-idb --prefer-binary
@@ -293,7 +293,28 @@ then
     echo
   fi
 
-  if [ -s "$(which brew)"  ] && [ ! -n "$(brew list --cask font-fira-code-nerd-font)" ]
+  if [ ! -s "$(which brew)" ]
+  then
+    echo "Brew not installed. Skipping the rest of the installs"
+    exit 0
+  fi
+
+  if [ ! -s "$(which tfenv)" ]
+  then
+    echo "Installing tfenv"
+    if [ -s "$(brew list terraform)"  ]
+    then
+      echo "Existing terraform install. Unlinking..."
+      brew unlink terraform
+      echo
+    fi
+    brew install tfenv
+    tfenv install
+    tfenv use
+    echo
+  fi
+
+  if [ ! -n "$(brew list --cask font-fira-code-nerd-font)" ]
   then
     _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
     echo "Installing fonts:"
