@@ -718,6 +718,7 @@ alias fed='f origin develop:develop'
 alias fem='f origin main:main'
 alias fep='f origin prod:prod'
 alias fes='f origin staging:staging'
+alias fet='f origin test:test'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
 alias fix='git commit --amend -a --no-edit && _dotfiles_git_log_commit && _dotfiles_git_status'
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
