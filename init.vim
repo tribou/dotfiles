@@ -17,6 +17,9 @@ endfunction
 " https://neovim.io/doc/user/provider.html
 let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
 
+" Disable Perl support
+let g:loaded_perl_provider = 0
+
 
 call plug#begin('~/.local/share/nvim/plugged')
 
