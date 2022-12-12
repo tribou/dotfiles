@@ -172,7 +172,7 @@ then
       echo
     fi
 
-    if   [ -s "$(which cargo)"  ]
+    if   [ ! -s "$(which cargo)"  ]
     then
       _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
       echo "Installing rust:"
@@ -261,11 +261,11 @@ then
     eval "$(pyenv virtualenv-init -)"
   fi
 
-  if [ ! -d "$HOME/.pyenv/versions/3.11.0" ]
+  if [ ! -d "$HOME/.pyenv/versions/3.10.4" ]
   then
     echo "Installing python3"
-    pyenv install 3.11.0
-    pyenv global 3.11.0
+    pyenv install 3.10.4
+    pyenv global 3.10.4
     echo "python version: $(python --version)"
     python3 -m pip install --upgrade pip
   fi
@@ -275,7 +275,7 @@ then
     echo "Installing py3nvim virtualenv"
     eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
-    pyenv virtualenv 3.11.0 py3nvim
+    pyenv virtualenv 3.10.4 py3nvim
     pyenv activate py3nvim
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade pynvim
