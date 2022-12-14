@@ -193,7 +193,7 @@ set -g status-right-length "200"
 set -g status-right-style "none"
 set -g status-style "none,bg=colour236"
 set -g status-left "#{prefix_highlight}#[fg=colour22,bg=colour39,bold] #S #[fg=colour39,bg=colour236,nobold,nounderscore,noitalics]"
-set -g status-right "#[fg=colour39,bg=colour236] 🌐-#(~/dev/dotfiles/scripts/internet.sh) 🔋#(~/dev/dotfiles/scripts/battery.sh) #($TMUX_PLUGIN_MANAGER_PATH/tmux-mem-cpu-load/tmux-mem-cpu-load --colors --interval 2) #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour236] %Y-%m-%d %H:%M:%S #[fg=colour22,bg=colour39,bold] #h "
+set -g status-right "#[fg=colour39,bg=colour236] 🌐-#(~/dev/dotfiles/scripts/internet.sh) 🔋#(~/dev/dotfiles/scripts/battery.sh) #(tmux-mem-cpu-load --colors --interval 2) #[fg=colour240,bg=colour236,nobold,nounderscore,noitalics]#[fg=colour250,bg=colour236] %Y-%m-%d %H:%M:%S #[fg=colour22,bg=colour39,bold] #h "
 
 set -g pane-active-border-style "fg=colour39"
 set -g pane-border-style "fg=colour240"
@@ -319,4 +319,4 @@ set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 set -g @tpm-clean 'u'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
-run -b '~/.tmux/plugins/tpm/tpm'
+run -b '~/.tmux/plugins/tpm/tpm' 
