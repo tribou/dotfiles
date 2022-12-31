@@ -41,16 +41,6 @@ then
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   fi
 
-  # if   [ ! -s "$(which fasd)"  ]
-  # then
-  #   echo "Installing fasd"
-  #   curl -fLo /tmp/fasd.zip https://github.com/clvv/fasd/archive/1.0.1.zip
-  #   unzip /tmp/fasd.zip -d /tmp/fasd
-  #   sudo cp /tmp/fasd/fasd-1.0.1/fasd /usr/bin/fasd
-  #   rm /tmp/fasd.zip
-  #   rm -r /tmp/fasd
-  # fi
-
   if [ ! -f "$HOME/dev/z/z.sh" ]
   then
     echo "Installing z"

@@ -102,11 +102,6 @@ export HISTDIR="${HOME}/.history/$(date -u +%Y/%m)"
 mkdir -p $HISTDIR
 export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 
-_dotfiles_debug_timing "$LINENO"
-
-# Source all lib scripts
-. "$DOTFILES/lib/index.sh"
-
 
 _dotfiles_debug_timing "$LINENO"
 
@@ -306,6 +301,11 @@ function set_badge()
   printf "\e]1337;SetBadgeFormat=%s\a"   $(printf '%q\n' "${PWD##*/}:$(get_git_location)" | base64)
 }
 [ "$TERM_PROGRAM" == "iTerm.app" ] && [[ $PROMPT_COMMAND != *"set_badge"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
+
+_dotfiles_debug_timing "$LINENO"
+
+# Source all lib scripts
+. "$DOTFILES/lib/index.sh"
 
 
 # Cleanup debug timing
