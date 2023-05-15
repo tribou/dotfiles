@@ -21,8 +21,8 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " popup menu browsing
-inoremap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"
-inoremap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"
+imap <expr> <c-j> pumvisible() ? "\<c-n>" : "\<c-j>"
+imap <expr> <c-k> pumvisible() ? "\<c-p>" : "\<c-k>"
 
 " buffer browsing
 nmap <silent> <Leader>d <Plug>(dotfiles-bdelete)

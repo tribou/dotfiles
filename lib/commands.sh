@@ -519,6 +519,12 @@ function restart-docker ()
   echo "done"
 }
 
+function restart-gpg ()
+{
+  gpgconf --kill gpg-agent
+  eval $(gpg-agent --daemon 2>/dev/null)
+}
+
 function search ()
 {
 

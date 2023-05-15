@@ -186,18 +186,18 @@ _dotfiles_debug_timing "$LINENO"
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 # gcloud sourcing
-OLD_GCLOUD_PATH=/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
-NEW_GCLOUD_PATH=/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
-if [ -d "$OLD_GCLOUD_PATH" ]
-then
-  . "$OLD_GCLOUD_PATH/path.bash.inc"
-  . "$OLD_GCLOUD_PATH/completion.bash.inc"
-fi
-if [ -d "$NEW_GCLOUD_PATH" ]
-then
-  . "$NEW_GCLOUD_PATH/path.bash.inc"
-  . "$NEW_GCLOUD_PATH/completion.bash.inc"
-fi
+# OLD_GCLOUD_PATH=/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
+# NEW_GCLOUD_PATH=/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
+# if [ -d "$OLD_GCLOUD_PATH" ]
+# then
+#   . "$OLD_GCLOUD_PATH/path.bash.inc"
+#   . "$OLD_GCLOUD_PATH/completion.bash.inc"
+# fi
+# if [ -d "$NEW_GCLOUD_PATH" ]
+# then
+#   . "$NEW_GCLOUD_PATH/path.bash.inc"
+#   . "$NEW_GCLOUD_PATH/completion.bash.inc"
+# fi
 
 _dotfiles_debug_timing "$LINENO"
 
