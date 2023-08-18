@@ -1,6 +1,8 @@
 {
   "suggest.noselect": true,
   "suggest.enablePreview": true,
+  "typescript.suggest.autoImports": true,
+  "javascript.suggest.autoImports": true,
   "coc.preferences.hoverTarget": "float",
   "javascript.updateImportsOnFileMove.enable": false,
   "typescript.updateImportsOnFileMove.enable": false,

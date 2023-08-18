@@ -182,6 +182,9 @@ set-option -g status-interval 2
 set-option -g automatic-rename on
 set-option -g automatic-rename-format '#{b:pane_current_path} (#{window_panes})'
 
+# Set history limit
+set-option -g history-limit 5000
+
 # This tmux statusbar config was created by tmuxline.vim
 # on Wed, 25 Nov 2015
 set -g status "on"
@@ -319,4 +322,4 @@ set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 set -g @tpm-clean 'u'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
-run -b '~/.tmux/plugins/tpm/tpm' 
+run -b '~/.tmux/plugins/tpm/tpm'

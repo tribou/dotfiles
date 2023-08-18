@@ -39,7 +39,6 @@ Plug 'challenger-deep-theme/vim', { 'as': 'challenger-deep' }
 Plug 'itchyny/lightline.vim'
 Plug 'maximbaz/lightline-ale'
 Plug 'tribou/vim-buftabline'
-Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
@@ -47,7 +46,6 @@ Plug 'junegunn/vim-peekaboo'
 Plug 'preservim/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
 Plug 'Xuyuanp/nerdtree-git-plugin', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
-Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rhubarb'
 "Plug 'tpope/vim-sensible'
@@ -84,6 +82,7 @@ Plug 'dense-analysis/ale', { 'tag': 'v3.*' }
 " coc.nvim and vscode-compatible extensions
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc-pairs', {'do': 'yarn install --frozen-lockfile'}
 Plug 'neoclide/coc-tslint-plugin', {'do': 'yarn install --frozen-lockfile'}
 Plug 'neoclide/coc-css', {'do': 'yarn install --frozen-lockfile'}
 Plug 'neoclide/coc-highlight', {'do': 'yarn install --frozen-lockfile'}
