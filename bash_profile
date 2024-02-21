@@ -118,12 +118,18 @@ export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools
 # fzf
 [ -d "$HOME/.fzf/bin" ] && export PATH=$PATH:$HOME/.fzf/bin
 
+# bun
+[ -d "$HOME/.bun/bin" ] && export PATH=$PATH:$HOME/.bun/bin
+
 # c9
 [ -d "/opt/c9/local/bin" ] && export PATH=$PATH:/opt/c9/local/bin
 
 # deno
 [ -d "$HOME/.deno" ] && export DENO_INSTALL="$HOME/.deno"
 [ -d "$DENO_INSTALL/bin" ] && export PATH="$DENO_INSTALL/bin:$PATH"
+
+# maestro
+[ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
 # ruby rbenv
 [ -f "$HOME/.rbenv/bin/rbenv" ] && export PATH=$PATH:$HOME/.rbenv/bin
