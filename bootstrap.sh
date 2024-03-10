@@ -42,7 +42,7 @@ function linkFileToHome ()
 # 	ln -sf ${THIS_DIR}/${file} ~/${file}
 # done
 
-mkdir ~/$HOME/dev/bin
+mkdir -p $HOME/dev/bin
 
 # .bash_profile
 backupFile ".bash_profile"
@@ -232,6 +232,34 @@ then
     echo "npm not available or eslint_d already installed. Skipping..."
   fi
 
+  if [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
+  then
+    echo "Installing vim-plug for Neovim"
+    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  fi
+
+  if [ ! -f "$HOME/dev/z/z.sh" ]
+  then
+    echo "Installing z"
+    git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
+    . "$HOME/dev/z/z.sh"
+  fi
+
+  if [ ! -s "$(which fzf)"  ]
+  then
+    echo "Installing fzf"
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    ~/.fzf/install
+  fi
+
+  if [ ! -d "$HOME/.rbenv/bin" ] && [ ! -s "$(which rbenv)"  ]
+  then
+    echo "Installing rbenv"
+    curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+    eval "$(rbenv init -)"
+  fi
+
   if [ -z "$(ls -A $HOME/.rbenv/versions/)" ]
   then
     echo "Installing latest ruby version"
@@ -252,20 +280,24 @@ then
     echo
   fi
 
-  if [ ! -d "$HOME/.pyenv/bin" ] && [ ! -s "$(which pyenv)"  ]
+  if [ ! -d "$HOME/.pyenv/bin" ]
   then
     echo "Installing pyenv"
     curl https://pyenv.run | bash
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
   fi
 
-  if [ ! -d "$HOME/.pyenv/versions/3.10.4" ]
+  if [ ! -s "$(which pyenv)"  ]
+  then
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init --path)"
+    eval "$(pyenv init -)"
+  fi
+
+  if [ ! -d "$HOME/.pyenv/versions/3.12.2" ]
   then
     echo "Installing python3"
-    pyenv install 3.10.4
-    pyenv global 3.10.4
+    pyenv install 3.12.2
+    pyenv global 3.12.2
     echo "python version: $(python --version)"
     python3 -m pip install --upgrade pip
   fi
@@ -274,8 +306,7 @@ then
   then
     echo "Installing py3nvim virtualenv"
     eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
-    pyenv virtualenv 3.10.4 py3nvim
+    pyenv virtualenv 3.12.2 py3nvim
     pyenv activate py3nvim
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade pynvim
@@ -291,6 +322,12 @@ then
   else
     echo "python3 not available or idb already installed. Skipping..."
     echo
+  fi
+
+  if [ ! -s "$(which pyls)" ]
+  then
+    echo "Installing python-language-server (pyls)"
+    python3 -m pip install --upgrade pyls
   fi
 
   if [ ! -s "$(which brew)" ]
@@ -323,7 +360,41 @@ then
     eval "$_BOOTSTRAP_INSTALL"
     echo
   else
-    echo "Brew not available or fonts already installed Skipping..."
+    echo "Fonts already installed Skipping..."
     echo
   fi
+
+  if [ ! -s "$(which tmux)"  ]
+  then
+    echo "Installing tmux"
+    brew install tmux
+  fi
+
+  brew install git \
+    neovim \
+    bash-completion \
+    zlib \
+    homebrew/core/nmap \
+    homebrew/core/go \
+    elixir \
+    ansible \
+    htop \
+    tor \
+    gpg \
+    editorconfig \
+    watchman \
+    tree \
+    awscli \
+    ssh-copy-id \
+    git-extras \
+    vimpager \
+    jq \
+    dos2unix \
+    tidy-html5 \
+    fd \
+    ripgrep \
+    bat \
+    rename \
+    node@20 \
+    renameutils
 fi

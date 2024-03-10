@@ -39,5 +39,6 @@
         "storagePath": "/tmp/intelephense"
       }
     }
-  }
+  },
+  "snippets.ultisnips.pythonPrompt": false
 }

@@ -445,6 +445,7 @@ function npm-install-global ()
     vue-language-server \
     vscode-css-languageserver-bin \
     vscode-html-languageserver-bin
+  corepack enable
 }
 
 function nr ()
@@ -549,15 +550,16 @@ function search ()
 # Create the main dev layout for large monitors
 function tmux-large ()
 {
+  [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
   local _PRIMARY=$(_dotfiles_primary_full_path "$1")
   local _SECONDARY=$(_dotfiles_secondary_full_path "$1")
 
   tmux new -A -s main -d
-  tmux split-window -h -p 75 -c "$_PRIMARY"
+  tmux split-window -h -l 75% -c "$_PRIMARY"
   tmux select-pane -t 1
-  tmux split-window -v -p 35 -c "$_PRIMARY"
+  tmux split-window -v -l 35% -c "$_PRIMARY"
   tmux select-pane -t 3
-  tmux split-window -h -p 40 -c "$_SECONDARY"
+  tmux split-window -h -l 40% -c "$_SECONDARY"
   tmux select-pane -t 3
   tmux send-keys -t 1 z Space $_PRIMARY Enter
   tmux send-keys -t 2 f Enter
@@ -570,19 +572,20 @@ function tmux-xl ()
 {
   tmux-large "$@"
   tmux select-pane -t 3
-  tmux split-window -v -p 20 -c '#{pane_current_path}'
+  tmux split-window -v -l 20% -c '#{pane_current_path}'
   tmux select-pane -t 3
 }
 
 # Create the main dev layout for small monitors
 function tmux-small ()
 {
+  [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
   local _PRIMARY=$(_dotfiles_primary_full_path "$1")
 
   tmux new -A -s main -d
-  tmux split-window -h -p 55 -c "$_PRIMARY"
+  tmux split-window -h -l 55% -c "$_PRIMARY"
   tmux select-pane -t 1
-  tmux split-window -v -p 25 -c "$_PRIMARY"
+  tmux split-window -v -l 25% -c "$_PRIMARY"
   tmux select-pane -t 3
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
   tmux send-keys -t 2
@@ -596,7 +599,7 @@ function tmux-small-2 ()
 
   tmux-small "$@"
   tmux select-pane -t 3
-  tmux split-window -v -p 25 -c "$_SECONDARY"
+  tmux split-window -v -l 25% -c "$_SECONDARY"
   tmux select-pane -t 1
   tmux send-keys -t 4 f Enter
 }
@@ -604,15 +607,16 @@ function tmux-small-2 ()
 # Create another crossover for small and large monitors
 function tmux-small-3 ()
 {
+  [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
   local _PRIMARY=$(_dotfiles_primary_full_path "$1")
   local _SECONDARY=$(_dotfiles_secondary_full_path "$1")
 
   tmux new -A -s main -d
-  tmux split-window -h -p 55 -c "$_SECONDARY"
+  tmux split-window -h -l 55% -c "$_SECONDARY"
   tmux select-pane -t 1
-  tmux split-window -v -p 75 -c "$_PRIMARY"
+  tmux split-window -v -l 75% -c "$_PRIMARY"
   tmux select-pane -t 3
-  tmux split-window -v -p 75 -c "$_PRIMARY"
+  tmux split-window -v -l 75% -c "$_PRIMARY"
   tmux select-pane -t 2
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
   tmux send-keys -t 2 # PRIMARY
@@ -622,12 +626,12 @@ function tmux-small-3 ()
 
 function tmux-small-half ()
 {
+  [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
   local _PRIMARY=$(_dotfiles_primary_full_path "$1")
 
-  tmux new -A -s main -d
-  tmux split-window -h -p 55 -c "$_PRIMARY"
+  tmux split-window -h -l 55% -c "$_PRIMARY"
   tmux select-pane -t 1
-  tmux split-window -v -p 50 -c "$_PRIMARY"
+  tmux split-window -v -l 50% -c "$_PRIMARY"
   tmux select-pane -t 2
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
   tmux send-keys -t 2
