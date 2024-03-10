@@ -396,5 +396,6 @@ then
     bat \
     rename \
     node@20 \
-    renameutils
+    renameutils \
+    tmux-mem-cpu-load
 fi
