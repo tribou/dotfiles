@@ -87,10 +87,10 @@ mkdir -p ~/.config/nvim
 backupFile ".config/nvim/init.vim"
 linkFileToHome "init.vim" ".config/nvim/init.vim"
 
-# .config/alacritty/alacritty.yml
+# .config/alacritty/alacritty.toml
 mkdir -p ~/.config/alacritty
-backupFile ".config/alacritty/alacritty.yml"
-linkFileToHome "alacritty.yml" ".config/alacritty/alacritty.yml"
+backupFile ".config/alacritty/alacritty.toml"
+linkFileToHome "alacritty.toml" ".config/alacritty/alacritty.toml"
 
 # .config/nvim/coc-settings.json
 backupFile ".config/nvim/coc-settings.json"
