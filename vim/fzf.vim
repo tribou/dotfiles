@@ -33,10 +33,10 @@ command! -bang -nargs=* Fzf
   \ 'options': ' --preview="bat --color=always {}" --preview-window=up:60%'
   \ })
 
-command! -bang -nargs=* Rg
-  \ call fzf#vim#grep(
-  \   'rg --column --line-number --hidden -g "!.git/" -g "!.yarn/" --no-heading --pretty --smart-case --max-columns=160 '.shellescape(<q-args>), 1,
-  \   <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
-  \           : fzf#vim#with_preview('up:60%', '?'),
-  \   <bang>0)
+" command! -bang -nargs=* Rg
+"   \ call fzf#vim#grep(
+"   \   'rg --column --line-number --hidden --vimgrep -g "!.git/" -g "!.yarn/" --no-heading --pretty --smart-case --max-columns=160 '.shellescape(<q-args>), 1,
+"   \   <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
+"   \           : fzf#vim#with_preview('up:60%', '?'),
+"   \   <bang>0)
 
