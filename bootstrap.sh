@@ -265,6 +265,9 @@ then
     echo "Installing latest ruby version"
     rbenv install $(rbenv install -l | grep -v - | tail -1)
     rbenv global $(rbenv install -l | grep -v - | tail -1)
+    echo "Installing React Native ruby version"
+    rbenv install 2.7.6
+    rbenv global 2.7.6
   fi
 
   if  [ -s "$(which gem)"  ] && [ ! -n "$(gem list -i "^neovim$")" ]
