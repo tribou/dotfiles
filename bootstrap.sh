@@ -42,7 +42,13 @@ function linkFileToHome ()
 # 	ln -sf ${THIS_DIR}/${file} ~/${file}
 # done
 
-mkdir -p $HOME/dev/bin
+# Setup dev and gopath
+mkdir -p $HOME/dev/bin || true
+mkdir ~/dev/go/pkg || true
+mkdir -p ~/dev/go/src/github.com/tribou || true
+mkdir -p ~/dev/go/src/bitbucket.org || true
+mkdir -p ~/dev/go/src/github.com/rocksauce || true
+export GOPATH=~/dev/go
 
 # .bash_profile
 backupFile ".bash_profile"
@@ -199,12 +205,18 @@ then
 
     if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 16 | grep 16)" ]
     then
-      _BOOTSTRAP_INSTALL="nvm install 16"
-      echo "Installing node v16:"
-      echo "$_BOOTSTRAP_INSTALL"
+      echo "Installing node 16, 18, 20:"
       echo
-      eval "$_BOOTSTRAP_INSTALL"
-      nvm alias default 16
+      nvm install 16
+      nvm use 16
+      npm-install-global
+      nvm install 18
+      nvm use 18
+      npm-install-global
+      nvm install 20
+      nvm alias default 20
+      nvm use 20
+      npm-install-global
       echo
     fi
 
@@ -339,6 +351,8 @@ then
     exit 0
   fi
 
+  brew tap homebrew/cask-versions
+
   if [ ! -s "$(which tfenv)" ]
   then
     echo "Installing tfenv"
@@ -401,4 +415,27 @@ then
     node@20 \
     renameutils \
     tmux-mem-cpu-load
+
+  brew install --cask \
+    homebrew/cask/cmake \
+    alacritty \
+    iterm2 \
+    warp \
+    appcleaner \
+    steam \
+    tunnelblick \
+    imageoptim \¢
+    vlc \
+    grandperspective \
+    install-disk-creator \
+    geekbench \
+    iconjar \
+    spectacle \
+    google-cloud-sdk \
+    graphql-playground \
+    sequel-ace \
+    firefox \
+    1password \
+    1password-cli \
+    homebrew/cask/docker
 fi
