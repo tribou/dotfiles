@@ -437,5 +437,6 @@ then
     firefox \
     1password \
     1password-cli \
-    homebrew/cask/docker
+    homebrew/cask/docker \
+    postman
 fi
