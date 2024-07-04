@@ -40,11 +40,20 @@ function! ToggleGblame()
   endif
 endfunction
 
+function! QuickChat()
+  let input = input("Quick Chat: ")
+  if input != ""
+    execute 'lua require("CopilotChat").ask("' . input . '", { selection = require("CopilotChat.select").buffer })'
+  endif
+endfunction
+
 " Export functions in <Plug> namespace
 nnoremap <Plug>(dotfiles-bdelete) :<c-u>call DeleteBuffer()<CR>
 nnoremap <Plug>(dotfiles-bnext) :<c-u>call NextBuffer()<CR>
 nnoremap <Plug>(dotfiles-bprevious) :<c-u>call PreviousBuffer()<CR>
 nnoremap <Plug>(dotfiles-gblame) :<c-u>call ToggleGblame()<CR>
+nnoremap <Plug>(dotfiles-quickchat) :<c-u>call QuickChat()<CR>
 
 command! ToggleGblame call ToggleGblame()
-command! Compare Gedit master:%
+command! QuickChat call QuickChat()
+command! Compare Gedit main:%

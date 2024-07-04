@@ -32,6 +32,9 @@ nmap <silent> <Leader>j <Plug>(dotfiles-bprevious)
 " scratch/preview window browsing
 nnoremap <silent> <Leader>c :<c-u>pc<CR>
 
+" copilot
+nnoremap <Leader><Leader>c <Plug>(dotfiles-quickchat)
+
 " fzf
 nnoremap <silent> <c-p> :<c-u>Fzf<CR>
 nnoremap <silent> <c-s> :<c-u>Rg!<CR>
