@@ -104,6 +104,11 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'canary' }
 Plug 'github/copilot.vim', {'branch': 'release'}
 
+" Telescope
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
+
 " TODO: test ncm2 for autocompletion
 " Plug 'ncm2/ncm2'
 " ncm2: you need to install completion sources to get completions. Check
