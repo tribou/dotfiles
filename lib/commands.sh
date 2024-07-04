@@ -792,7 +792,6 @@ alias yw='yarn workspaces'
 # ones we need in bash
 alias am='npx awsmobile-cli'
 alias app-icon='npx app-icon'
-alias awsmobile='npx awsmobile-cli'
 alias babel-eslint='npx babel-eslint'
 alias devtools='react-devtools'
 alias ember='npx ember-cli'

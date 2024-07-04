@@ -99,6 +99,9 @@ Plug 'iamcco/coc-svg', {'do': 'yarn install --frozen-lockfile'}
 Plug 'amiralies/coc-elixir', {'do': 'yarn install --frozen-lockfile'}
 Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
 " Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
+Plug 'zbirenbaum/copilot.lua'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'canary' }
 Plug 'github/copilot.vim', {'branch': 'release'}
 
 " TODO: test ncm2 for autocompletion
@@ -169,6 +172,12 @@ Plug 'ryanoasis/vim-devicons'
 
 call plug#end()
 
+lua << EOF
+require("CopilotChat").setup {
+  debug = false, -- Enable debugging
+  -- See Configuration section for rest
+}
+EOF
 
 "" various settings
 silent !mkdir -p $HOME/.vim/swapfiles
