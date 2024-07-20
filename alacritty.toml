@@ -10,7 +10,7 @@ duration = 0
 draw_bold_text_with_bright_colors = true
 
 [colors.bright]
-black = "0xa4a6f6"
+black = "0x6279b8"
 blue = "0xa7dbf7"
 cyan = "0xcecece"
 green = "0x23d18b"
