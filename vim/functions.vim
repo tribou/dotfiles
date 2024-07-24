@@ -47,6 +47,10 @@ function! QuickChat()
   endif
 endfunction
 
+function! OrganizeImports()
+  call CocActionAsync('runCommand', 'editor.action.organizeImport')
+endfunction
+
 " Export functions in <Plug> namespace
 nnoremap <Plug>(dotfiles-bdelete) :<c-u>call DeleteBuffer()<CR>
 nnoremap <Plug>(dotfiles-bnext) :<c-u>call NextBuffer()<CR>
@@ -54,6 +58,7 @@ nnoremap <Plug>(dotfiles-bprevious) :<c-u>call PreviousBuffer()<CR>
 nnoremap <Plug>(dotfiles-gblame) :<c-u>call ToggleGblame()<CR>
 nnoremap <Plug>(dotfiles-quickchat) :<c-u>call QuickChat()<CR>
 
+command! OrganizeImports call OrganizeImports()
 command! ToggleGblame call ToggleGblame()
 command! QuickChat call QuickChat()
 command! Compare Gedit main:%

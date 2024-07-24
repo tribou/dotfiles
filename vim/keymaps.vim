@@ -70,7 +70,7 @@ nmap <Leader>ar :<c-u>ALEReset<CR>
 " coc.nvim
 " Show commands
 nmap <space>c :<c-u>CocList commands<CR>
-nmap <space>i :<c-u>CocInfo<CR>
+nmap <space>i :<c-u>call CocActionAsync('runCommand', 'editor.action.organizeImport')<CR>
 " nmap <space>r <Plug>(coc-rename)
 nmap <space>r :<c-u>CocRestart<CR>
 nmap <silent> <space>d <Plug>(coc-definition)
