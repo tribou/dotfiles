@@ -413,9 +413,7 @@ let g:jsx_ext_required = 0
 
 " vim-markdown-composer
 let g:markdown_composer_autostart = 0
-" let g:markdown_composer_custom_css = [
-"   \ 'https://cdn.jsdelivr.net/gh/sindresorhus/github-markdown-css@2/github-markdown.css',
-"   \ ]
+let g:markdown_composer_syntax_theme = 'github-dark'
 
 
 " vim-prettier
