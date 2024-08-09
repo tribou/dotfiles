@@ -128,6 +128,10 @@ export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools
 [ -d "$HOME/.deno" ] && export DENO_INSTALL="$HOME/.deno"
 [ -d "$DENO_INSTALL/bin" ] && export PATH="$DENO_INSTALL/bin:$PATH"
 
+# jenv
+[ -d "$HOME/.jenv/bin" ] && export PATH=$PATH:$HOME/.jenv/bin
+if which jenv > /dev/null; then eval "$(jenv init -)"; fi
+
 # maestro
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
