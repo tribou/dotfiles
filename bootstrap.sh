@@ -368,6 +368,31 @@ then
     echo
   fi
 
+  JAVA_VERSION=17
+
+  if [ ! -s "$(which java)" ]
+  then
+    echo "Installing java"
+    brew install "zulu@$JAVA_VERSION"
+    echo
+  fi
+
+  if [ ! -s "$(which jenv)" ]
+  then
+    echo "Installing jenv"
+    if [ -s "$(brew list jenv)"  ]
+    then
+      echo "Existing jenv install. Unlinking..."
+      brew unlink jenv
+      echo
+    fi
+    brew install jenv
+    eval "$(jenv init -)"
+    jenv add "$(/usr/libexec/java_home)"
+    jenv global $JAVA_VERSION
+    echo
+  fi
+
   if [ ! -n "$(brew list --cask font-fira-code-nerd-font)" ]
   then
     _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
