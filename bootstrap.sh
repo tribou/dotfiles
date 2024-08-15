@@ -368,6 +368,13 @@ then
     echo
   fi
 
+  if [ ! -s "$(which shellcheck)" ]
+  then
+    echo "Installing shellcheck"
+    brew install shellcheck
+    echo
+  fi
+
   JAVA_VERSION=17
 
   if [ ! -s "$(which java)" ]

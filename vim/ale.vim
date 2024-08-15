@@ -40,6 +40,7 @@ let g:ale_linters = {
   \   ],
   \   'sh': [
   \       'language_server',
+  \       'shellcheck',
   \   ],
   \   'go': [
   \       'gofmt',
@@ -92,6 +93,9 @@ let g:ale_fixers = {
   \   ],
   \   'markdown': [
   \       'prettier',
+  \   ],
+  \   'sh': [
+  \       'trim_whitespace',
   \   ],
   \   'yaml': [
   \       'prettier',
