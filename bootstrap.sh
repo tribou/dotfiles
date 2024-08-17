@@ -351,8 +351,6 @@ then
     exit 0
   fi
 
-  brew tap homebrew/cask-versions
-
   if [ ! -s "$(which tfenv)" ]
   then
     echo "Installing tfenv"
