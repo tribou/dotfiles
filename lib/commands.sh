@@ -101,6 +101,11 @@ function _eval_script() {
   fi
 }
 
+function aws-set-current-account-id () {
+  AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+  export AWS_ACCOUNT_ID
+}
+
 # If no args are passed, open the commit editor. Otherwise commit with all
 # arguments concatenated as a string
 function c ()
@@ -790,7 +795,6 @@ alias yw='yarn workspaces'
 # NPM GLOBAL ALIASES
 # Instead of installing ALL CLI packages globally, we can use NPX to call the
 # ones we need in bash
-alias am='npx awsmobile-cli'
 alias app-icon='npx app-icon'
 alias babel-eslint='npx babel-eslint'
 alias devtools='react-devtools'
