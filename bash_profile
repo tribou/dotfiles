@@ -251,6 +251,9 @@ _dotfiles_debug_timing "$LINENO"
 # ripgrep
 export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
 
+# terraform
+[ -s "/opt/homebrew/bin/terraform" ] && complete -C /opt/homebrew/bin/terraform terraform
+
 # tmux
 export TMUX_VERSION=$(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")
 
