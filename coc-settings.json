@@ -38,6 +38,13 @@
       "initializationOptions": {
         "storagePath": "/tmp/intelephense"
       }
+    },
+    "terraform": {
+      "command": "terraform-ls",
+      "args": ["serve"],
+      "filetypes": ["terraform", "tf"],
+      "initializationOptions": {},
+      "settings": {}
     }
   },
   "snippets.ultisnips.pythonPrompt": false

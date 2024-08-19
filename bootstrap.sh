@@ -17,16 +17,16 @@ function backupFile ()
 {
   local file=$1
 
-	if [ -e ~/$file -a ! -L ~/$file ]; then
+	if [ -e ~/"$file" -a ! -L ~/"$file" ]; then
     echo "Backing up ${file}"
-		mv ~/$file ~/${file}.backup
+		mv ~/"$file" ~/"${file}".backup
   fi
 }
 
 function linkFileToHome ()
 {
   echo "Creating a symlink for ${2}"
-  ln -sf ${THIS_DIR}/${1} ~/${2}
+  ln -sf "${THIS_DIR}/${1}" ~/"${2}"
 }
 
 # Backup existing files and replace with symlinks
@@ -43,7 +43,7 @@ function linkFileToHome ()
 # done
 
 # Setup dev and gopath
-mkdir -p $HOME/dev/bin || true
+mkdir -p "$HOME/dev/bin" || true
 mkdir ~/dev/go/pkg || true
 mkdir -p ~/dev/go/src/github.com/tribou || true
 mkdir -p ~/dev/go/src/bitbucket.org || true
@@ -76,15 +76,15 @@ tic -x tmux/tmux-256color.terminfo
 mkdir -p ~/.gnupg
 backupFile ".gnupg/gpg-agent.conf"
 linkFileToHome "gpg-agent-conf" ".gnupg/gpg-agent.conf"
-chown -R $(whoami) ~/.gnupg/
+chown -R "$(whoami)" ~/.gnupg/
 chmod 600 ~/.gnupg/*
 chmod 700 ~/.gnupg
 # Restart gpg-agent
-if [ $(which gpgconf) ] && [ $(which gpg-agent) ]
+if [ "$(which gpgconf)" ] && [ "$(which gpg-agent)" ]
 then
   echo "Restarting gpg-agent"
   gpgconf --kill gpg-agent
-  eval $(gpg-agent --daemon 2>/dev/null)
+  eval "$(gpg-agent --daemon 2>/dev/null)"
 fi
 
 # .config/nvim/init.vim
@@ -160,7 +160,7 @@ then
 
     if   [ ! -f "$HOME/.vim/autoload/plug.vim" ]
     then
-      _BOOTSTRAP_INSTALL="sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
+      _BOOTSTRAP_INSTALL="sh -c 'curl -fLo \"${XDG_DATA_HOME:-$HOME/.local/share}\"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
       echo "Installing vim-plug:"
       echo "$_BOOTSTRAP_INSTALL"
       echo
@@ -275,14 +275,14 @@ then
   if [ -z "$(ls -A $HOME/.rbenv/versions/)" ]
   then
     echo "Installing latest ruby version"
-    rbenv install $(rbenv install -l | grep -v - | tail -1)
-    rbenv global $(rbenv install -l | grep -v - | tail -1)
+    rbenv install "$(rbenv install -l | grep -v - | tail -1)"
+    rbenv global "$(rbenv install -l | grep -v - | tail -1)"
     echo "Installing React Native ruby version"
     rbenv install 2.7.6
     rbenv global 2.7.6
   fi
 
-  if  [ -s "$(which gem)"  ] && [ ! -n "$(gem list -i "^neovim$")" ]
+  if  [ -s "$(which gem)"  ] && [ -z "$(gem list -i "^neovim$")" ]
   then
     _BOOTSTRAP_INSTALL="gem install neovim solargraph --no-document"
     echo "Installing gems:"
@@ -366,13 +366,6 @@ then
     echo
   fi
 
-  if [ ! -s "$(which shellcheck)" ]
-  then
-    echo "Installing shellcheck"
-    brew install shellcheck
-    echo
-  fi
-
   JAVA_VERSION=17
 
   if [ ! -s "$(which java)" ]
@@ -398,7 +391,7 @@ then
     echo
   fi
 
-  if [ ! -n "$(brew list --cask font-fira-code-nerd-font)" ]
+  if [ -z "$(brew list --cask font-fira-code-nerd-font)" ]
   then
     _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
     echo "Installing fonts:"
@@ -421,6 +414,7 @@ then
     neovim \
     bash-completion \
     zlib \
+    hashicorp/tap/terraform-ls \
     homebrew/core/nmap \
     homebrew/core/go \
     elixir \
@@ -444,6 +438,7 @@ then
     rename \
     node@20 \
     renameutils \
+    shellcheck \
     tmux-mem-cpu-load
 
   brew install --cask \
@@ -454,7 +449,7 @@ then
     appcleaner \
     steam \
     tunnelblick \
-    imageoptim \¢
+    imageoptim \
     vlc \
     grandperspective \
     install-disk-creator \
