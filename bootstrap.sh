@@ -411,6 +411,7 @@ then
   fi
 
   brew install git \
+    alacritty \
     neovim \
     bash-completion \
     zlib \
@@ -443,7 +444,6 @@ then
 
   brew install --cask \
     homebrew/cask/cmake \
-    alacritty \
     iterm2 \
     warp \
     appcleaner \
