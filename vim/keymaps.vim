@@ -36,8 +36,8 @@ nnoremap <silent> <Leader>c :<c-u>pc<CR>
 nnoremap <Leader><Leader>c <Plug>(dotfiles-quickchat)
 
 " fzf
-nnoremap <silent> <c-p> :<c-u>Fzf<CR>
-nnoremap <silent> <c-s> :<c-u>Rg!<CR>
+nnoremap <silent> <c-p> :<c-u>FZF<CR>
+nnoremap <silent> <c-s> :<c-u>Rg<CR>
 nnoremap <silent> <c-b> :<c-u>Buffers<CR>
 nnoremap <silent> <c-c> :<c-u>Commits<CR>
 nnoremap <silent> <c-h> :<c-u>History<CR>
