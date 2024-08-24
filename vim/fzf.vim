@@ -26,7 +26,7 @@ let g:fzf_commits_log_options = '--all --graph --abbrev-commit --date=local --da
 let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .git'
 let $FZF_DEFAULT_OPTS = '--preview="bat --color=always {}" --preview-window=up --ansi --multi'
 if exists('$TMUX')
-  let g:fzf_layout = { 'tmux': '70%,70%' }
+  let g:fzf_layout = { 'tmux': '70%,90%' }
 else
   let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
 endif
