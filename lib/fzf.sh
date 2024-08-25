@@ -8,7 +8,7 @@ function fcoc ()
   local commits commit
   commits=$(git tree --color=always) &&
   commit=$(echo "$commits" | fzf --reverse --no-sort +m -e --ansi) &&
-  git checkout $(echo "$commit" | sed 's/^[^][a-z0-9]*//' | sed 's/ .*//')
+  git checkout "$(echo "$commit" | sed 's/^[^][a-z0-9]*//' | sed 's/ .*//')"
 }
 
 # fshow - git commit browser
