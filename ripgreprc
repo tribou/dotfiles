@@ -1,13 +1,19 @@
-# Don't let ripgrep vomit really long lines to my terminal.
+# Assume really long lines are not meant to be searched
 --max-columns=200
 
 # Add my 'web' type.
 --type-add=web:*.{html,css,js,scss,ts,jsx,tsx}*
 
+# Search hidden files too
+--hidden
+
 # Using glob patterns to include/exclude files or folders
---glob=!git/*
---glob=!yarn.lock
+--glob=!.git/*
+--glob=!.yarn/cache/*
+--glob=!.yarn/plugins/*
+--glob=!.yarn/releases/*
 --glob=!package-lock.json
+--glob=!yarn.lock
 
 # Set the colors.
 # --colors=line:none
@@ -16,5 +22,5 @@
 # Always show colors, even to | less -r
 --pretty
 
-# Because who cares about case!?
+# Searches case insensitively if the pattern is all lowercase, otherwise case sensitive.
 --smart-case
