@@ -23,7 +23,7 @@ let g:fzf_colors =
 
 let g:fzf_commits_log_options = '--all --graph --abbrev-commit --date=local --date=short --color=always '
   \ . '--pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>"'
-let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .git'
+let $FZF_DEFAULT_COMMAND = 'fd --type file --color=always --hidden --exclude .git --exclude .yarn/cache'
 let $FZF_DEFAULT_OPTS = '--preview="bat --color=always {}" --preview-window=up --ansi --multi --border horizontal'
 if exists('$TMUX')
   let g:fzf_layout = { 'tmux': '70%,90%' }
