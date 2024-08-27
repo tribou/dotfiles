@@ -23,13 +23,13 @@ function _dotfiles_grep_ticket_number () {
     # Filter out anything other than ab123 or abc-123 or DCX123
     grep -E '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,5}-)\d{1,7}|DCX[0-9]{1,7}$' |
     # Convert all letters to UPPERCASE
-    tr [a-z] [A-Z]
+    tr '[:lower:]' '[:upper:]'
 }
 
 function _dotfiles_commit_message () {
   local current_ticket=${1}
   local commit_msg_separator="${DOTFILES_COMMIT_SEPARATOR:-:}"
-  local message="${@:2}"
+  local message="${*:2}"
   if [ $# -lt 2 ]
   then
     if [ -n "$current_ticket" ]
@@ -39,9 +39,9 @@ function _dotfiles_commit_message () {
   else
     if [ -z "$current_ticket" ]
     then
-      local message="${@:2}"
+      local message="${*:2}"
     else
-      local message="$current_ticket${commit_msg_separator} ${@:2}"
+      local message="$current_ticket${commit_msg_separator} ${*:2}"
     fi
   fi
   echo "$message"
