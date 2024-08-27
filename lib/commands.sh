@@ -10,20 +10,31 @@ function _dotfiles_git_status () {
 }
 
 function _dotfiles_grep_ticket_number () {
+  local a b c d e f
   # Remove origin/, feature/, etc prefix
-  sed -E 's/^(bug|feature|fix|hotfix|origin|patch)\///' |
+  a=$(sed -E 's/^(bug|feature|fix|hotfix|origin|patch)\///')
+  # echo "a: $a" >&2
     # For AB-123/description pattern, remove the description tail
-    sed -E 's/^(.*)\/.*$/\1/' |
+    b=$(echo "$a" | sed -E 's/^(.*)\/.*$/\1/')
+    # echo "b: $b" >&2
     # For ab123-this-thing pattern, remove the description tail
-    sed -E 's/^([a-zA-Z]{2}[0-9]{1,7})\-.*$/\1/' |
+    c=$(echo "$b" | sed -E 's/^([a-zA-Z]{2}[0-9]{1,7})\-.*$/\1/')
+    # echo "c: $c" >&2
     # For abc-123-this-thing pattern, remove the description tail
-    sed -E 's/^([a-zA-Z0-9]{2,5}-[0-9]{1,7})\-.*$/\1/' |
+    d=$(echo "$c" | sed -E 's/^([a-zA-Z0-9]{2,5}-[0-9]{1,7})\-.*$/\1/')
+    # echo "d: $d" >&2
     # DCX - For 123_AT_ThisThing pattern, remove the initials and description tail
-    sed -E 's/^([0-9]{1,7})\_.*$/DCX\1/' |
+    e=$(echo "$d" | sed -E 's/^([0-9]{1,7})\_.*$/DCX\1/')
+    # echo "e: $e" >&2
     # Filter out anything other than ab123 or abc-123 or DCX123
-    grep -E '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,5}-)\d{1,7}|DCX[0-9]{1,7}$' |
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      f=$(echo "$e" | grep -E '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,5}\-)\d{1,7}|DCX[0-9]{1,7}$')
+    else
+      f=$(echo "$e" | grep -P '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,5}\-)\d{1,7}|DCX[0-9]{1,7}$')
+    fi
+    # echo "f: $f" >&2
     # Convert all letters to UPPERCASE
-    tr '[:lower:]' '[:upper:]'
+    echo "$f" | tr '[:lower:]' '[:upper:]'
 }
 
 function _dotfiles_commit_message () {

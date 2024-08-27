@@ -19,7 +19,7 @@ function assert_equals() {
 	# Assert both equal
 	[ "$EXPECTED" == "$ACTUAL" ] \
 		|| (echo "$ERROR_MESSAGE" && echo && \
-			git diff $(echo "$EXPECTED" | git hash-object -w --stdin) $(echo "$ACTUAL" | git hash-object -w --stdin) \
+			git diff "$(echo "$EXPECTED" | git hash-object -w --stdin)" "$(echo "$ACTUAL" | git hash-object -w --stdin)" \
 			--color-words="[^[:space:]]|([[:alnum:]]|UTF_8_GUARD)+" \
 			| tail -n +6 && echo && exit 1)
 	set +e
