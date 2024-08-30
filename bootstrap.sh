@@ -438,6 +438,7 @@ then
     bat \
     rename \
     node@20 \
+    navi \
     renameutils \
     shellcheck \
     tmux-mem-cpu-load
