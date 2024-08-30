@@ -692,6 +692,9 @@ function yr ()
 }
 
 # Command aliases
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
 alias ack='ag'
 alias ag='rg'
 alias amend='git commit --amend && _dotfiles_git_log_commit && _dotfiles_git_status'
