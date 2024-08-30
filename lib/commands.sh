@@ -112,6 +112,21 @@ function _eval_script() {
   fi
 }
 
+function aws-profile() {
+  local profile
+  profile=$(aws configure list-profiles | fzf) && export AWS_PROFILE="$profile"
+  if [[ -n $profile ]]; then
+    echo "AWS_PROFILE set to $profile"
+  else
+    echo "No profile selected or no profiles available."
+    return 0
+  fi
+
+  if ! aws sts get-caller-identity | grep -q "SSO"; then
+    aws sso login
+  fi
+}
+
 function aws-set-current-account-id () {
   AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
   export AWS_ACCOUNT_ID
