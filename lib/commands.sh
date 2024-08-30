@@ -331,7 +331,8 @@ function histgrep ()
   local AWK_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} '
 
   # Pipe results from two history sources into cat
-  local RESULT=$(cat \
+  local RESULT
+  RESULT=$(cat \
     <(history | grep "$1") \
     <(ls -d $HOME/.history/20*/* \
       | sort -r -n \
@@ -347,7 +348,7 @@ function histgrep ()
     tmux send-keys -t "$TMUX_PANE" "$RESULT"
   else
     echo "$RESULT"
-    printf "$RESULT" | pbcopy
+    printf '%s' "$RESULT" | pbcopy
   fi
 }
 
@@ -483,12 +484,13 @@ function nr ()
 {
   if [ -n "$1" ]
   then
-    local SCRIPT="npm run --silent $@"
-    echo $SCRIPT
+    local SCRIPT="npm run --silent $*"
+    echo "$SCRIPT"
     echo
-    eval $SCRIPT
+    eval "$SCRIPT"
   else
-    local RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
+    local RESULT
+    RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
       local SCRIPT="npm run --silent $RESULT"
@@ -497,16 +499,30 @@ function nr ()
   fi
 }
 
+function tf ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="terraform $*"
+    echo "$SCRIPT"
+    echo
+    eval "$SCRIPT"
+  else
+    histgrep terraform
+  fi
+}
+
 function ninfo ()
 {
   if [ -n "$1" ]
   then
-    local SCRIPT="npm info $@"
-    echo $SCRIPT
+    local SCRIPT="npm info $*"
+    echo "$SCRIPT"
     echo
-    eval $SCRIPT
+    eval "$SCRIPT"
   else
-    local RESULT=$(ls node_modules | fzf)
+    local RESULT
+    RESULT=$(ls node_modules | fzf)
     if [ -n "$RESULT" ]
     then
       local SCRIPT="npm info $RESULT"
@@ -842,4 +858,3 @@ alias serverless='npx serverless'
 alias sst='npx sst'
 alias sso='aws sso login --sso-session tribou'
 alias storybook='npx @storybook/cli'
-alias tf='terraform'
