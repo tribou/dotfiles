@@ -338,7 +338,7 @@ function histgrep ()
       | sort -r -n \
       | xargs grep -r "$1" \
       | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
-    | fzf \
+    | fzf --tmux="70%,80%" \
     | awk -F "$AWK_HISTFILE_DELIM" '{print $NF}' \
     | awk -F "$AWK_HISTORY_DELIM" '{print $NF}')
 
