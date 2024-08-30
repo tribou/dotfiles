@@ -499,19 +499,6 @@ function nr ()
   fi
 }
 
-function tf ()
-{
-  if [ -n "$1" ]
-  then
-    local SCRIPT="terraform $*"
-    echo "$SCRIPT"
-    echo
-    eval "$SCRIPT"
-  else
-    histgrep terraform
-  fi
-}
-
 function ninfo ()
 {
   if [ -n "$1" ]
@@ -592,6 +579,19 @@ function search ()
     ':!flow-typed/**' \
     ':!vendor/**' \
     ':!yarn.lock'
+}
+
+function tf ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="terraform $*"
+    echo "$SCRIPT"
+    echo
+    eval "$SCRIPT"
+  else
+    histgrep terraform
+  fi
 }
 
 # Create the main dev layout for large monitors
