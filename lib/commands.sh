@@ -786,7 +786,7 @@ alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
 alias convert-tabs-spaces="replace '	' '  '"
 alias count='sed "/^\s*$/d" | wc -l | xargs'
 alias d='docker'
-alias dc='docker-compose'
+alias dc='docker compose'
 alias di='docker images'
 alias dm='docker-machine'
 #alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
