@@ -455,7 +455,6 @@ then
     vlc \
     grandperspective \
     install-disk-creator \
-    geekbench \
     iconjar \
     spectacle \
     google-cloud-sdk \
