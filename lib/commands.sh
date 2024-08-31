@@ -493,6 +493,27 @@ function npm-install-global ()
   corepack enable
 }
 
+# npm up any dependency or devDependency in package.json
+function nu ()
+{
+  [ ! -f "package.json" ] && echo "No package.json to upgrade" && return 1
+  if [ -n "$1" ]
+  then
+    local SCRIPT="npm update $*"
+    echo "$SCRIPT"
+    echo
+    eval "$SCRIPT"
+  else
+    local RESULT
+    RESULT=$(jq '.dependencies, .devDependencies' package.json | fzf | awk -F'"' '{print $2}')
+    if [ -n "$RESULT" ]
+    then
+      local SCRIPT="npm update $RESULT"
+      _eval_script "$SCRIPT"
+    fi
+  fi
+}
+
 function nr ()
 {
   if [ -n "$1" ]
