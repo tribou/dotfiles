@@ -73,10 +73,12 @@ function _dotfiles_git_log_commit () {
 function _dotfiles_primary_full_path () {
   if [ -n "$1" ]
   then
-    local _PRIMARY=$(_dotfiles_full_path "$1")
+    local _PRIMARY
+    _PRIMARY=$(_dotfiles_full_path "$1")
   elif [ -n "$PRIMARY_REPO" ]
   then
-    local _PRIMARY=$(_dotfiles_full_path "$PRIMARY_REPO")
+    local _PRIMARY
+    _PRIMARY=$(_dotfiles_full_path "$PRIMARY_REPO")
   else
     local _PRIMARY="$PWD"
   fi
@@ -87,10 +89,12 @@ function _dotfiles_primary_full_path () {
 function _dotfiles_secondary_full_path () {
   if [ -n "$1" ]
   then
-    local _SECONDARY=$(_dotfiles_full_path "$1")
+    local _SECONDARY
+    _SECONDARY=$(_dotfiles_full_path "$1")
   elif [ -n "$SECONDARY_REPO" ]
   then
-    local _SECONDARY=$(_dotfiles_full_path "$SECONDARY_REPO")
+    local _SECONDARY
+    _SECONDARY=$(_dotfiles_full_path "$SECONDARY_REPO")
   else
     local _SECONDARY="$PWD"
   fi
@@ -106,9 +110,9 @@ function _eval_script() {
   if [ -n "$TMUX" ]; then
     tmux send-keys -t "$TMUX_PANE" "$SCRIPT" Enter;
   else
-    echo $SCRIPT
+    echo "$SCRIPT"
     echo
-    eval $SCRIPT
+    eval "$SCRIPT"
   fi
 }
 
@@ -141,8 +145,10 @@ function c ()
     # If committing a git merge, accept the default message
     git commit -ev && _dotfiles_git_log_commit && _dotfiles_git_status
   else
-    local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
-    local message=$(_dotfiles_commit_message "$current_ticket" "$*")
+    local current_ticket
+    current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
+    local message
+    message=$(_dotfiles_commit_message "$current_ticket" "$*")
 
     if [ $# -eq 0 ]
     then
@@ -162,8 +168,10 @@ function cn ()
     # If committing a git merge, accept the default message
     git commit -ev --no-verify && _dotfiles_git_log_commit && _dotfiles_git_status
   else
-    local current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
-    local message=$(_dotfiles_commit_message "$current_ticket" "$*")
+    local current_ticket
+    current_ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
+    local message
+    message=$(_dotfiles_commit_message "$current_ticket" "$*")
 
     if [ $# -eq 0 ]
     then
@@ -177,8 +185,7 @@ function cn ()
 
 function clean ()
 {
-  git clean -f -- build/ public/ vendor/
-  if [[ $? -ne 0 ]]; then return 1; fi
+  if ! git clean -f -- build/ public/ vendor/; then return 1; fi
   if [ -d "build/" ]; then git checkout build/; fi
   if [ -d "public/" ]; then git checkout public/; fi
   if [ -d "vendor/" ]; then git checkout vendor/; fi
@@ -188,11 +195,13 @@ function co ()
 {
   if [ -n "$1" ]
   then
-    local SCRIPT="git checkout $@ && _dotfiles_git_status"
-    eval $SCRIPT
+    local SCRIPT="git checkout $* && _dotfiles_git_status"
+    eval "$SCRIPT"
   else
-    local RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap)
-    local CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
+    local RESULT
+    RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap)
+    local CLEANED_RESULT
+    CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
     if [ -n "$CLEANED_RESULT" ]
     then
       local SCRIPT="git checkout $CLEANED_RESULT"
@@ -220,7 +229,8 @@ function digitalocean ()
 function dminit ()
 {
   local usage='Usage: dminit [NAME]'
-  local dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
+  local dm_name
+  dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
 
   # Return usage if 0 or more than 2 args are passed
   if [ $# -gt 1 ]
