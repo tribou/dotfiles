@@ -278,11 +278,13 @@ function gbd ()
 {
   if [ -n "$1" ]
   then
-    local SCRIPT="git branch -d $@"
-    eval $SCRIPT
+    local SCRIPT="git branch -d $*"
+    eval "$SCRIPT"
   else
-    local RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap --color)
-    local CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
+    local RESULT
+    RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap --color)
+    local CLEANED_RESULT
+    CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
     if [ -n "$CLEANED_RESULT" ]
     then
       local SCRIPT="git branch -d $CLEANED_RESULT || _dotfiles_prompt_git_branch_delete $CLEANED_RESULT"
@@ -302,7 +304,7 @@ function gr ()
   local usage='Usage: gr [NUMBER]'
 
   # Return usage if 0 or more than 2 args are passed
-  if [ $# -eq 0 ] || [ $1 == "-h" ] || [ $1 == "--help" ]
+  if [ $# -eq 0 ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]
   then
     echo "$usage"
     return 1
@@ -312,7 +314,7 @@ function gr ()
   then
     git rebase "$@"
   else
-    git rebase -i HEAD~$1
+    git rebase -i HEAD~"$1"
   fi
 }
 
@@ -368,14 +370,15 @@ function install-swap ()
     return 1
   fi
 
-  ansible-playbook $DEVPATH/ansible-swap/site.yml \
+  ansible-playbook "$DEVPATH/ansible-swap/site.yml" \
     -i "${1}," \
     --extra-vars "target=${1}"
 }
 
 function merge ()
 {
-  local MERGE_RESULT=$(git merge "$@")
+  local MERGE_RESULT
+  MERGE_RESULT=$(git merge "$*")
   if [ "$MERGE_RESULT" != "Already up to date." ]
   then
     _dotfiles_git_log_commit && _dotfiles_git_status
@@ -417,7 +420,8 @@ function new-docker ()
     --digitalocean-size 2gb \
     --digitalocean-ssh-key-fingerprint "77:70:98:0d:d6:48:01:79:7b:41:f4:66:00:95:54:12" \
     "${MACHINE_NAME}"
-  local MACHINE_IP=$(docker-machine ip "$MACHINE_NAME") && \
+  local MACHINE_IP
+  MACHINE_IP=$(docker-machine ip "$MACHINE_NAME") && \
   install-swap "${MACHINE_IP}" && \
   dminit "${MACHINE_NAME}"
 }
@@ -450,7 +454,6 @@ function new-docker-generic ()
 
   docker-machine create --driver generic \
     --generic-ip-address "${MACHINE_IP}" \
-    # --generic-ssh-key "${PRIVATE_KEY}" \
     "${MACHINE_NAME}" && \
   install-swap "${MACHINE_IP}" && \
   dminit "${MACHINE_NAME}"
@@ -557,7 +560,7 @@ function restart-docker ()
 function restart-gpg ()
 {
   gpgconf --kill gpg-agent
-  eval $(gpg-agent --daemon 2>/dev/null)
+  eval "$(gpg-agent --daemon 2>/dev/null)"
 }
 
 function search ()
@@ -598,8 +601,10 @@ function tf ()
 function tmux-large ()
 {
   [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
-  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
-  local _SECONDARY=$(_dotfiles_secondary_full_path "$1")
+  local _PRIMARY
+  _PRIMARY=$(_dotfiles_primary_full_path "$1")
+  local _SECONDARY
+  _SECONDARY=$(_dotfiles_secondary_full_path "$1")
 
   tmux new -A -s main -d
   tmux split-window -h -l 75% -c "$_PRIMARY"
@@ -608,7 +613,7 @@ function tmux-large ()
   tmux select-pane -t 3
   tmux split-window -h -l 40% -c "$_SECONDARY"
   tmux select-pane -t 3
-  tmux send-keys -t 1 z Space $_PRIMARY Enter
+  tmux send-keys -t 1 z Space "$_PRIMARY" Enter
   tmux send-keys -t 2 f Enter
   tmux send-keys -t 3 v Enter
   [ "$_PRIMARY" != "$_SECONDARY" ] && tmux send-keys -t 4 f Enter
@@ -626,8 +631,9 @@ function tmux-xl ()
 # Create the main dev layout for small monitors
 function tmux-small ()
 {
-  [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
-  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
+  [ -z "$TMUX" ] && echo "Not in a tmux session" && return 1
+  local _PRIMARY
+  _PRIMARY=$(_dotfiles_primary_full_path "$1")
 
   tmux new -A -s main -d
   tmux split-window -h -l 55% -c "$_PRIMARY"
@@ -642,7 +648,8 @@ function tmux-small ()
 # Create a crossover for small and large monitors
 function tmux-small-2 ()
 {
-  local _SECONDARY=$(_dotfiles_secondary_full_path "$1")
+  local _SECONDARY
+  _SECONDARY=$(_dotfiles_secondary_full_path "$1")
 
   tmux-small "$@"
   tmux select-pane -t 3
@@ -655,8 +662,10 @@ function tmux-small-2 ()
 function tmux-small-3 ()
 {
   [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
-  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
-  local _SECONDARY=$(_dotfiles_secondary_full_path "$1")
+  local _PRIMARY
+  _PRIMARY=$(_dotfiles_primary_full_path "$1")
+  local _SECONDARY
+  _SECONDARY=$(_dotfiles_secondary_full_path "$1")
 
   tmux new -A -s main -d
   tmux split-window -h -l 55% -c "$_SECONDARY"
@@ -674,7 +683,8 @@ function tmux-small-3 ()
 function tmux-small-half ()
 {
   [ ! -n "$TMUX" ] && echo "Not in a tmux session" && return 1
-  local _PRIMARY=$(_dotfiles_primary_full_path "$1")
+  local _PRIMARY
+  _PRIMARY=$(_dotfiles_primary_full_path "$1")
 
   tmux split-window -h -l 55% -c "$_PRIMARY"
   tmux select-pane -t 1
@@ -691,7 +701,7 @@ function useLocalIfAvailable ()
   # Use local node module if available
   if [ -f "$(which ./node_modules/.bin/${1})" ]
   then
-    "./node_modules/.bin/$@"
+    "./node_modules/.bin/$*"
 
   # Then check for existing global install
   elif [ -f "$(which ${1})" ]
@@ -700,7 +710,7 @@ function useLocalIfAvailable ()
 
   # Otherwise, use npx
   else
-    npx "$@"
+    npx "$*"
   fi
 }
 
@@ -708,12 +718,13 @@ function yr ()
 {
   if [ -n "$1" ]
   then
-    local SCRIPT="yarn $@"
-    echo $SCRIPT
+    local SCRIPT="yarn $*"
+    echo "$SCRIPT"
     echo
-    eval $SCRIPT
+    eval "$SCRIPT"
   else
-    local RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
+    local RESULT
+    RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
       local SCRIPT="yarn $RESULT"
