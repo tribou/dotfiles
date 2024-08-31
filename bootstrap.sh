@@ -439,6 +439,7 @@ then
     rename \
     node@20 \
     navi \
+    ngrok/ngrok/ngrok \
     renameutils \
     shellcheck \
     tmux-mem-cpu-load
