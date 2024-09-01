@@ -493,13 +493,15 @@ function npm-install-global ()
   corepack enable
 }
 
-# npm up any dependency or devDependency in package.json
+# npm up or yarn upgrade any dependency or devDependency in package.json
 function nu ()
 {
   [ ! -f "package.json" ] && echo "No package.json to upgrade" && return 1
+  local UPGRADE_CMD="npm update"
+  [ -f "yarn.lock" ] && UPGRADE_CMD="yarn upgrade"
   if [ -n "$1" ]
   then
-    local SCRIPT="npm update $*"
+    local SCRIPT="$UPGRADE_CMD $*"
     echo "$SCRIPT"
     echo
     eval "$SCRIPT"
@@ -508,7 +510,7 @@ function nu ()
     RESULT=$(jq '.dependencies, .devDependencies' package.json | fzf | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
-      local SCRIPT="npm update $RESULT"
+      local SCRIPT="$UPGRADE_CMD $RESULT"
       _eval_script "$SCRIPT"
     fi
   fi
@@ -900,3 +902,4 @@ alias serverless='npx serverless'
 alias sst='npx sst'
 alias sso='aws sso login --sso-session tribou'
 alias storybook='npx @storybook/cli'
+alias yu='nu'
