@@ -1,6 +1,7 @@
 #!/bin/bash
 
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
+. "$THIS_DIR/../lib/_shared.sh"
 . "$THIS_DIR/../lib/commands.sh"
 
 ##
