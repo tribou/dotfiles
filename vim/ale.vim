@@ -45,8 +45,7 @@ let g:ale_linters = {
   \   'go': [
   \       'gofmt',
   \       'golint',
-  \       'govet',
-  \       'golangserver',
+  \       'gopls',
   \   ],
   \   'vue': [
   \       'vls',

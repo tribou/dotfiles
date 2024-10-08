@@ -465,4 +465,7 @@ then
     1password-cli \
     homebrew/cask/docker \
     postman
+
+  # Golang tools
+  go install golang.org/x/tools/gopls@latest
 fi

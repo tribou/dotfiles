@@ -136,12 +136,6 @@ Plug 'euclio/vim-markdown-composer', {
   \ 'for': ['markdown'],
   \ }
 
-"" Golang
-Plug 'fatih/vim-go', {
-  \ 'tag': '*', 'do': ':GoInstallBinaries',
-  \ 'for': ['go'],
-  \ }
-
 "" HashiCorp
 "Plug 'hashivim/vim-consul'
 "Plug 'hashivim/vim-nomadproject'
