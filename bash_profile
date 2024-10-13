@@ -229,6 +229,9 @@ fi
 
 _dotfiles_debug_timing "$LINENO"
 
+# Local bin
+[ -d "$HOME/.local/bin" ] && export PATH=$PATH:$HOME/.local/bin
+
 # Marker
 [[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
 
