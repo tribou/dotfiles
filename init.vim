@@ -66,6 +66,7 @@ Plug 'mbbill/undotree'
 Plug 'janko/vim-test'
 Plug 'benmills/vimux'
 Plug 'sk1418/HowMuch'
+Plug 'norcalli/nvim-colorizer.lua'
 
 " Debugging
 Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
@@ -316,6 +317,8 @@ inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 " Or use `complete_info` if your vim support it, like:
 " inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
 
+" colorizer
+lua require'colorizer'.setup()
 
 " deoplete
 let g:deoplete#enable_at_startup = 1
