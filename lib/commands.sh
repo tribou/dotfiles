@@ -402,9 +402,14 @@ function nu () {
 
 function nr ()
 {
+  local EXEC="npm run"
+  if [ -f "pnpm-lock.yaml" ]
+  then
+    EXEC="pnpm"
+  fi
   if [ -n "$1" ]
   then
-    local SCRIPT="npm run --silent $*"
+    local SCRIPT="$EXEC --silent $*"
     echo "$SCRIPT"
     echo
     eval "$SCRIPT"
@@ -413,7 +418,7 @@ function nr ()
     RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
-      local SCRIPT="npm run --silent $RESULT"
+      local SCRIPT="$EXEC --silent $RESULT"
       _eval_script "$SCRIPT"
     fi
   fi
