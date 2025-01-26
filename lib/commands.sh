@@ -522,7 +522,9 @@ function search ()
     ':!bin/**' \
     ':!flow-typed/**' \
     ':!vendor/**' \
-    ':!yarn.lock'
+    ':!*.lock' \
+    ':!package-lock.json' \
+    ':!pnpm-lock.yaml'
 }
 
 function tf ()

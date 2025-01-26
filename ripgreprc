@@ -13,7 +13,8 @@
 --glob=!.yarn/plugins/*
 --glob=!.yarn/releases/*
 --glob=!package-lock.json
---glob=!yarn.lock
+--glob=!*.lock
+--glob=!pnpm-lock.yaml
 
 # Set the colors.
 # --colors=line:none

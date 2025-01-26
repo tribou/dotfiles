@@ -77,7 +77,9 @@ Examples:
     ':!flow-typed/**' \
     ':!public/**' \
     ':!vendor/**' \
-    ':!yarn.lock' \
+    ':!*.lock' \
+    ':!pnpm-lock.yaml' \
+    ':!package-lock.json' \
     | xargs sed -i '' -e ''s/"$1"/"$2"/g''
 }
 
