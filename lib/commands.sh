@@ -400,6 +400,25 @@ function nu () {
   fi
 }
 
+function ni ()
+{
+  local EXEC="npm"
+  if [ -f "pnpm-lock.yaml" ]
+  then
+    EXEC="pnpm"
+  fi
+  if [ -n "$1" ]
+  then
+    local SCRIPT="$EXEC install $*"
+    echo "$SCRIPT"
+    echo
+    eval "$SCRIPT"
+  else
+    local SCRIPT="$EXEC install"
+    _eval_script "$SCRIPT"
+  fi
+}
+
 function nr ()
 {
   local EXEC="npm run"
@@ -728,7 +747,6 @@ alias md='merge develop'
 alias mm='merge main'
 alias mp='merge prod'
 alias ms='merge staging'
-alias ni='npm install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
 alias nrs='npm rm --save'
