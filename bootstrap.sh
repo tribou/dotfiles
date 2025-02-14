@@ -463,7 +463,7 @@ then
     firefox \
     1password \
     1password-cli \
-    homebrew/cask/docker \
+    docker \
     postman
 
   # Golang tools
