@@ -400,12 +400,15 @@ function nu () {
   fi
 }
 
-function ni ()
+function npm-install ()
 {
   local EXEC="npm"
   if [ -f "pnpm-lock.yaml" ]
   then
     EXEC="pnpm"
+  elif [ -f "yarn.lock" ]
+  then
+    EXEC="yarn"
   fi
   if [ -n "$1" ]
   then
@@ -416,6 +419,17 @@ function ni ()
   else
     local SCRIPT="$EXEC install"
     _eval_script "$SCRIPT"
+  fi
+}
+
+function y ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="yarn $*" && echo "$SCRIPT" && echo && eval "$SCRIPT"
+  else
+    local SCRIPT="npm-install"
+    eval "$SCRIPT"
   fi
 }
 
@@ -733,6 +747,7 @@ alias md='merge develop'
 alias mm='merge main'
 alias mp='merge prod'
 alias ms='merge staging'
+alias ni='npm-install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
 alias nr='npm-run'
@@ -769,8 +784,7 @@ alias v='nvim'
 alias vc='vimcat'
 alias webpack-bundle-analyzer='npx webpack-bundle-analyzer'
 alias webpack='useLocalIfAvailable webpack'
-alias y='yarn'
-alias yi='yarn install'
+alias yi='npm-install'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
 alias yr='npm-run'
 alias ytsc='yarn tsc --noemit --watch --pretty'
