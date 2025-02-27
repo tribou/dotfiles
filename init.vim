@@ -102,7 +102,7 @@ Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
 " Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
 Plug 'zbirenbaum/copilot.lua'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'canary' }
+Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'main' }
 Plug 'github/copilot.vim', {'branch': 'release'}
 
 " Telescope

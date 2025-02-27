@@ -419,12 +419,15 @@ function ni ()
   fi
 }
 
-function nr ()
+function npm-run ()
 {
   local EXEC="npm run"
   if [ -f "pnpm-lock.yaml" ]
   then
     EXEC="pnpm"
+  elif [ -f "yarn.lock" ]
+  then
+    EXEC="yarn"
   fi
   if [ -n "$1" ]
   then
@@ -657,25 +660,6 @@ function useLocalIfAvailable ()
   fi
 }
 
-function yr ()
-{
-  if [ -n "$1" ]
-  then
-    local SCRIPT="yarn $*"
-    echo "$SCRIPT"
-    echo
-    eval "$SCRIPT"
-  else
-    local RESULT
-    RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
-    if [ -n "$RESULT" ]
-    then
-      local SCRIPT="yarn $RESULT"
-      _eval_script "$SCRIPT"
-    fi
-  fi
-}
-
 # Command aliases
 alias ..="cd .."
 alias ...="cd ../.."
@@ -751,6 +735,7 @@ alias mp='merge prod'
 alias ms='merge staging'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
+alias nr='npm-run'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
 alias ntsc='npx tsc --noemit --watch --pretty'
@@ -787,6 +772,7 @@ alias webpack='useLocalIfAvailable webpack'
 alias y='yarn'
 alias yi='yarn install'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
+alias yr='npm-run'
 alias ytsc='yarn tsc --noemit --watch --pretty'
 alias yw='yarn workspaces'
 
