@@ -540,6 +540,7 @@ function search ()
     ':!flow-typed/**' \
     ':!vendor/**' \
     ':!*.lock' \
+    ':!*.pnp.*' \
     ':!package-lock.json' \
     ':!pnpm-lock.yaml'
 }

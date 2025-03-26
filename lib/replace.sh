@@ -78,6 +78,7 @@ Examples:
     ':!public/**' \
     ':!vendor/**' \
     ':!*.lock' \
+    ':!*.pnp.*' \
     ':!pnpm-lock.yaml' \
     ':!package-lock.json' \
     | xargs sed -i '' -e ''s/"$1"/"$2"/g''
