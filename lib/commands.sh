@@ -409,6 +409,9 @@ function npm-install ()
   elif [ -f "yarn.lock" ]
   then
     EXEC="yarn"
+  elif [ -f "bun.lock" ]
+  then
+    EXEC="bun"
   fi
   if [ -n "$1" ]
   then
@@ -442,6 +445,9 @@ function npm-run ()
   elif [ -f "yarn.lock" ]
   then
     EXEC="yarn"
+  elif [ -f "bun.lock" ]
+  then
+    EXEC="bun run"
   fi
   if [ -n "$1" ]
   then
