@@ -121,6 +121,7 @@ Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
 " Misc syntax
 " TODO: test vim-polyglot and remove most other syntax plugins
 Plug 'sheerun/vim-polyglot'
+Plug 'uiiaoo/java-syntax.vim'
 Plug 'tpope/vim-liquid'
 Plug 'neoclide/jsonc.vim'
 
