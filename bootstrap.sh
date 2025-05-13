@@ -442,7 +442,11 @@ then
     ngrok/ngrok/ngrok \
     renameutils \
     shellcheck \
-    tmux-mem-cpu-load
+    tmux-mem-cpu-load \
+    tldr \
+    lazydocker \
+    lazygit \
+    just
 
   brew install --cask \
     homebrew/cask/cmake \
