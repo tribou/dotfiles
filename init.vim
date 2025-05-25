@@ -368,6 +368,7 @@ let g:buftabline_path=1
 
 " vim-commentary
 autocmd FileType json setlocal commentstring=//\ %s
+autocmd FileType sql setlocal commentstring=--\ %s
 
 
 " vim-dotenv
