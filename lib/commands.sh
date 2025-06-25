@@ -439,7 +439,7 @@ function y ()
 
 function npm-run ()
 {
-  local EXEC="npm run"
+  local EXEC="npm run --silent"
   if [ -f "pnpm-lock.yaml" ]
   then
     EXEC="pnpm"
@@ -448,11 +448,11 @@ function npm-run ()
     EXEC="yarn"
   elif [ -f "bun.lock" ]
   then
-    EXEC="bun run"
+    EXEC="bun run --silent"
   fi
   if [ -n "$1" ]
   then
-    local SCRIPT="$EXEC --silent $*"
+    local SCRIPT="$EXEC $*"
     echo "$SCRIPT"
     echo
     eval "$SCRIPT"
@@ -461,7 +461,7 @@ function npm-run ()
     RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
-      local SCRIPT="$EXEC --silent $RESULT"
+      local SCRIPT="$EXEC $RESULT"
       _eval_script "$SCRIPT"
     fi
   fi
