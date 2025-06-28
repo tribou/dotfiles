@@ -79,7 +79,7 @@ Plug 'prettier/vim-prettier', {
   \ 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescriptreact', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 
 " Auto-complete
-Plug 'dense-analysis/ale', { 'tag': 'v3.*' }
+Plug 'dense-analysis/ale', { 'tag': 'v4.*' }
 " coc.nvim and vscode-compatible extensions
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
