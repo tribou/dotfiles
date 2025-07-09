@@ -106,8 +106,7 @@ export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 _dotfiles_debug_timing "$LINENO"
 
 # Set path for HOMEBREW
-[ ! -s "$(which brew)"  ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-[ -s "$(which brew >/dev/null 2>&1)" ] && BREW_PREFIX=$(brew --prefix)
+if which brew > /dev/null; then eval "$(/opt/homebrew/bin/brew shellenv)"; fi
 
 
 export GOPATH=$DEVPATH/go
@@ -214,9 +213,6 @@ _dotfiles_debug_timing "$LINENO"
 # z
 export _Z_NO_RESOLVE_SYMLINKS=1
 [ -f "$DEVPATH/z/z.sh" ] && . "$DEVPATH/z/z.sh"
-
-# git
-export PATH=/usr/local/git/bin:$PATH
 
 _dotfiles_debug_timing "$LINENO"
 
