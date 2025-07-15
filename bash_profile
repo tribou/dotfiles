@@ -106,7 +106,7 @@ export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 _dotfiles_debug_timing "$LINENO"
 
 # Set path for HOMEBREW
-if which brew > /dev/null; then eval "$(/opt/homebrew/bin/brew shellenv)"; fi
+[ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
 
 export GOPATH=$DEVPATH/go
