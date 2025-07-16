@@ -443,6 +443,7 @@ then
     renameutils \
     shellcheck \
     tmux-mem-cpu-load \
+    reattach-to-user-namespace \
     tldr \
     lazydocker \
     lazygit \
