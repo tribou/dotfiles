@@ -1,5 +1,7 @@
-live_config_reload = true
 working_directory = "None"
+
+[general]
+live_config_reload = true
 
 [bell]
 animation = "EaseOutExpo"
@@ -661,7 +663,7 @@ multiplier = 3
 save_to_clipboard = true
 semantic_escape_chars = ",│`|:\"' ()[]{}<>"
 
-[shell]
+[terminal.shell]
 args = ["--login"]
 program = "/bin/bash"
 
