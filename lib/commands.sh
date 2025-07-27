@@ -458,7 +458,7 @@ function npm-run ()
     eval "$SCRIPT"
   else
     local RESULT
-    RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
+    RESULT=$(jq '.scripts' package.json | grep -E '[a-zA-Z0-9]' | fzf --tiebreak=chunk | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
       local SCRIPT="$EXEC $RESULT"
