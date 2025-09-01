@@ -233,6 +233,9 @@ _dotfiles_debug_timing "$LINENO"
 
 _dotfiles_debug_timing "$LINENO"
 
+# Postgres
+[ -d "/opt/homebrew/opt/postgresql@17/bin" ] && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 if [ -d "$PYENV_ROOT" ]
