@@ -233,6 +233,9 @@ _dotfiles_debug_timing "$LINENO"
 
 _dotfiles_debug_timing "$LINENO"
 
+# OrbStack
+[ -f "$HOME/.orbstack/shell/init.bash" ] && source "$HOME/.orbstack/shell/init.bash"
+
 # Postgres
 [ -d "/opt/homebrew/opt/postgresql@17/bin" ] && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
 
@@ -318,6 +321,12 @@ function set_badge()
 [ "$TERM_PROGRAM" == "iTerm.app" ] && [[ $PROMPT_COMMAND != *"set_badge"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
 
 _dotfiles_debug_timing "$LINENO"
+
+# direnv
+if [ -n "$(command -v direnv)" ]
+then
+  eval "$(direnv hook bash)"
+fi
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
