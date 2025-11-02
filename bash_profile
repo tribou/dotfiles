@@ -322,11 +322,11 @@ function set_badge()
 
 _dotfiles_debug_timing "$LINENO"
 
-# direnv
-if [ -n "$(command -v direnv)" ]
-then
-  eval "$(direnv hook bash)"
-fi
+# # direnv
+# if [ -n "$(command -v direnv)" ]
+# then
+#   eval "$(direnv hook bash)"
+# fi
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
