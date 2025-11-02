@@ -552,6 +552,48 @@ function search ()
     ':!pnpm-lock.yaml'
 }
 
+function supabase-profile() {
+  local cfg="${SUPABASE_PROFILES:-$HOME/.config/supabase/profiles.tsv}"
+
+  # Create config if missing
+  if [[ ! -f "$cfg" ]]; then
+    mkdir -p "$(dirname "$cfg")"
+    umask 077
+    cat > "$cfg" <<'EOF'
+# name<TAB>token<TAB>project_ref(optional)<TAB>url(optional)
+work	<paste-work-token-here>	<project-ref>	https://<project>.supabase.co
+personal	<paste-personal-token-here>	<project-ref>	https://<project>.supabase.co
+EOF
+    chmod 600 "$cfg"
+    echo "Created $cfg — please fill in your tokens and rerun." >&2
+    return 1
+  fi
+
+  local sel name line token proj url
+  sel="$(
+    awk -F'\t' 'BEGIN{OFS="\t"} /^[^#]/ && NF>=2 {
+      name=$1; token=$2; proj=(NF>=3?$3:""); url=(NF>=4?$4:"");
+      mask=substr(token,1,6) "…" substr(token,length(token)-3,4);
+      print name, (proj?proj:"—"), (url?url:"—"), mask
+    }' "$cfg" \
+    | fzf --header=$'Select a Supabase profile\n(name\tproject\turl\t(token masked))' \
+          --with-nth=1,2,3 \
+          --preview-window=down,3,wrap \
+          --preview 'printf "Name: %s\nProject: %s\nURL: %s\nToken: %s\n" {1} {2} {3} {4}'
+  )" || return 1
+  [[ -n "$sel" ]] || return 1
+
+  name=$(awk -F'\t' '{print $1}' <<<"$sel")
+  line="$(awk -F'\t' -v n="$name" '/^[^#]/ && $1==n {print; exit}' "$cfg")" || return 1
+  IFS=$'\t' read -r _ token proj url <<<"$line"
+
+  export SUPABASE_ACCESS_TOKEN="$token"
+  [[ -n "$proj" ]] && export SUPABASE_PROJECT_REF="$proj" || unset SUPABASE_PROJECT_REF
+  [[ -n "$url"  ]] && export SUPABASE_URL="$url" || unset SUPABASE_URL
+
+  echo "Activated Supabase profile: $name  (project: ${proj:-n/a})"
+}
+
 function tf ()
 {
   if [ -n "$1" ]
