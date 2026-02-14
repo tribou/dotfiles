@@ -234,6 +234,9 @@ _dotfiles_debug_timing "$LINENO"
 # Marker
 [[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
 
+# mise
+[ -n "$(command -v mise)" ] && eval "$(mise activate bash)"
+
 _dotfiles_debug_timing "$LINENO"
 
 # OrbStack
