@@ -646,7 +646,7 @@ function tmux-small ()
   _PRIMARY=$(_dotfiles_primary_full_path "$1")
 
   tmux new -A -s main -d
-  tmux split-window -h -l 55% -c "$_PRIMARY"
+  tmux split-window -h -l 50% -c "$_PRIMARY"
   tmux select-pane -t 2
   tmux split-window -v -l 25% -c "$_PRIMARY"
   tmux select-pane -t 1
