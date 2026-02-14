@@ -467,6 +467,25 @@ function npm-run ()
   fi
 }
 
+function mise-run ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="mise run $*"
+    echo "$SCRIPT"
+    echo
+    eval "$SCRIPT"
+  else
+    local RESULT
+    RESULT=$(mise tasks ls --no-header | fzf --tiebreak=chunk | awk '{print $1}')
+    if [ -n "$RESULT" ]
+    then
+      local SCRIPT="mise run $RESULT"
+      _eval_script "$SCRIPT"
+    fi
+  fi
+}
+
 function ninfo ()
 {
   if [ -n "$1" ]
@@ -796,6 +815,7 @@ alias lt='ls -lath'
 alias md='merge develop'
 alias mm='merge main'
 alias mp='merge prod'
+alias mr='mise-run'
 alias ms='merge staging'
 alias ni='npm-install'
 alias nis='npm install --save'
