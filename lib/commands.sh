@@ -282,6 +282,33 @@ function merge ()
   fi
 }
 
+function mkrepo()
+{
+  if [ -z "$1" ]; then
+    echo "Usage: mkrepo <project-name>"
+    return 1
+  fi
+
+  # 1. Create directory and navigate into it
+  mkdir -p "$1"
+  cd "$1" || return
+
+  # 2. Initialize git and create a basic README
+  git init -b main
+  echo "# $1" > README.md
+
+  # 3. Initial commit
+  git add README.md
+  git commit -m "Initial commit"
+
+  # 4. Create the repo under the 'tribou' owner
+  # --source=. tells gh to use the current folder
+  # --push automatically pushes the initial commit
+  gh repo create "tribou/$1" --private --source=. --remote=origin --push
+
+  echo "✅ Created https://github.com/tribou/$1 and synced locally."
+}
+
 function new-docker ()
 {
   local usage='Usage: new-docker [NAME] [ACCESS_TOKEN]'

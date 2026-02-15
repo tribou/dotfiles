@@ -1,0 +1,33 @@
+# Version Control
+.git/
+
+# Node & Bun Dependencies
+node_modules/
+.bun/
+
+# Framework Build Outputs
+.next/
+.expo/
+dist/
+build/
+out/
+coverage/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+*.tfvars
+
+# Local Databases & Supabase
+.supabase/
+*.sqlite
+*.db
+
+# Secrets
+.env*
+.mise.local.toml
+*.pem
+*.key
+*.cert
