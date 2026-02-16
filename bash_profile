@@ -279,6 +279,12 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 _dotfiles_debug_timing "$LINENO"
 
+# Clean up any stale direnv hooks from PROMPT_COMMAND (since direnv is disabled)
+if [[ "$PROMPT_COMMAND" == *"_direnv_hook"* ]]; then
+  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook;/}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook /}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook/}"
+fi
 
 ## Setup PROMPT_COMMAND
 # Activate a version of Node that is read from a text file via NVM
