@@ -49,8 +49,8 @@
   program = /opt/homebrew/bin/gpg
 [pull]
 	ff = only
-[commit]
-	gpgsign = true
+; [commit]
+; 	gpgsign = true
 [init]
 	defaultBranch = main
 [merge]
