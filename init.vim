@@ -459,6 +459,8 @@ let g:nvim_typescript#diagnostics_enable = 0 " Use ALE for linting
 "
 "set statusline+=%{SyntaxItem()}
 
+" Add vim/ directory to runtime path for lua modules
+set runtimepath+=$DOTFILES/vim
 
 source $DOTFILES/vim/functions.vim
 source $DOTFILES/vim/lightline.vim

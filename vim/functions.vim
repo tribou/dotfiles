@@ -62,3 +62,4 @@ command! OrganizeImports call OrganizeImports()
 command! ToggleGblame call ToggleGblame()
 command! QuickChat call QuickChat()
 command! Compare Gedit main:%
+command! LspDocsInSplit lua require('dotfiles.lsp').open_docs_in_split()

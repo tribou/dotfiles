@@ -61,7 +61,7 @@ nmap <Leader>ad :<c-u>ALEDetail<CR>
 nmap <Leader>af :<c-u>ALEFix<CR>
 nmap <Leader><Leader>f :<c-u>ALEFix<CR>
 nmap <Leader>ah :<c-u>ALEHover<CR>
-nmap <Leader>h :<c-u>ALEHover<CR>
+nmap <Leader>h :<c-u>LspDocsInSplit<CR>
 nmap <Leader>ai :<c-u>ALEInfo<CR>
 nmap <Leader>an :<c-u>ALENext<CR>
 nmap <Leader>at :<c-u>ALEToggle<CR>
