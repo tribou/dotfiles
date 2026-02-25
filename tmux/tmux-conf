@@ -36,6 +36,10 @@ set -g display-panes-time 2000
 # {n}vim compability
 set -g default-terminal "tmux-256color"
 
+# clipboard
+set -g set-clipboard on
+set -g allow-passthrough on # CRITICAL: Allow escape sequences (like OSC 52) to pass through to Alacritty. (Required for tmux 3.3+)
+
 ## Mouse mode on
 ##
 if-shell -b '[ "$(echo "$TMUX_VERSION < 2.1" | bc)" = 1 ]' " \
