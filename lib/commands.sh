@@ -770,6 +770,49 @@ function useLocalIfAvailable ()
   fi
 }
 
+function bashcheck ()
+{
+  local files=("$@")
+
+  # Default: find all .sh files recursively, excluding common vendor dirs
+  if [[ ${#files[@]} -eq 0 ]]; then
+    mapfile -t files < <(find . -name "*.sh" \
+      -not -path "*/node_modules/*" \
+      -not -path "*/.git/*" \
+      -not -path "*/vendor/*" | sort)
+  fi
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    echo "No .sh files found"
+    return 1
+  fi
+
+  local errors=0
+  local has_shellcheck
+  command -v shellcheck &>/dev/null && has_shellcheck=1
+
+  for file in "${files[@]}"; do
+    echo "==> $file"
+    if [[ ! -f "$file" ]]; then
+      echo "bashcheck: $file: No such file"
+      errors=$((errors + 1))
+      continue
+    fi
+    bash -n "$file" || errors=$((errors + 1))
+    if [[ -n "$has_shellcheck" ]]; then
+      shellcheck "$file" || errors=$((errors + 1))
+    fi
+  done
+
+  echo
+  if [[ $errors -eq 0 ]]; then
+    echo "All files passed"
+  else
+    echo "$errors check(s) failed"
+    return 1
+  fi
+}
+
 # Command aliases
 alias ..="cd .."
 alias ...="cd ../.."
