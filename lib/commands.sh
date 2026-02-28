@@ -694,7 +694,7 @@ function tmux-small ()
   tmux new -A -s main -d
   tmux split-window -h -l 50% -c "$_PRIMARY"
   tmux select-pane -t 2
-  tmux split-window -v -l 25% -c "$_PRIMARY"
+  tmux split-window -v -b -l 75% -c "$_PRIMARY"
   tmux select-pane -t 1
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
   tmux send-keys -t 2 v Enter
@@ -767,6 +767,49 @@ function useLocalIfAvailable ()
   # Otherwise, use npx
   else
     npx "$*"
+  fi
+}
+
+function bashcheck ()
+{
+  local files=("$@")
+
+  # Default: find all .sh files recursively, excluding common vendor dirs
+  if [[ ${#files[@]} -eq 0 ]]; then
+    mapfile -t files < <(find . -name "*.sh" \
+      -not -path "*/node_modules/*" \
+      -not -path "*/.git/*" \
+      -not -path "*/vendor/*" | sort)
+  fi
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    echo "No .sh files found"
+    return 1
+  fi
+
+  local errors=0
+  local has_shellcheck
+  command -v shellcheck &>/dev/null && has_shellcheck=1
+
+  for file in "${files[@]}"; do
+    echo "==> $file"
+    if [[ ! -f "$file" ]]; then
+      echo "bashcheck: $file: No such file"
+      errors=$((errors + 1))
+      continue
+    fi
+    bash -n "$file" || errors=$((errors + 1))
+    if [[ -n "$has_shellcheck" ]]; then
+      shellcheck "$file" || errors=$((errors + 1))
+    fi
+  done
+
+  echo
+  if [[ $errors -eq 0 ]]; then
+    echo "All files passed"
+  else
+    echo "$errors check(s) failed"
+    return 1
   fi
 }
 
