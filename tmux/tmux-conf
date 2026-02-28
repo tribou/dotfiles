@@ -225,8 +225,9 @@ bind-key -r Space select-pane -t :.+
 bind-key C-k send-keys -R \; clear-history
 
 # Make Ctrl-P / Ctrl-N behave like Up/Down arrows (works even when control chars don't pass through)
-bind-key -n C-p send-keys Up
-bind-key -n C-n send-keys Down
+# Skip forwarding when vim/nvim is the active pane program so C-p works normally in vim
+bind-key -n C-p if-shell "[ '#{pane_current_command}' = 'vim' ] || [ '#{pane_current_command}' = 'nvim' ]" "send-keys C-p" "send-keys Up"
+bind-key -n C-n if-shell "[ '#{pane_current_command}' = 'vim' ] || [ '#{pane_current_command}' = 'nvim' ]" "send-keys C-n" "send-keys Down"
 
 # The followings are not any kind of setting for Tmux, but crucial to my
 # own productivity. Setting them up is really pain, and I probably going to
