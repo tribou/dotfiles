@@ -102,7 +102,7 @@ function copy_to_clipboard ()
     pbcopy
   elif [ -n "$(command -v xclip)" ]
   then
-    xclip
+    xclip -selection clipboard
   fi
 }
 
