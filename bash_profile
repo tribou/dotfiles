@@ -107,11 +107,16 @@ _dotfiles_debug_timing "$LINENO"
 
 # Set path for HOMEBREW
 [ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 
 export GOPATH=$DEVPATH/go
 export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin:$DEVPATH/bin
-export ANDROID_HOME=$HOME/Library/Android/sdk
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export ANDROID_HOME=$HOME/Library/Android/sdk
+else
+  export ANDROID_HOME=$HOME/Android/Sdk
+fi
 export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 
 # fzf
@@ -263,7 +268,7 @@ _dotfiles_debug_timing "$LINENO"
 export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
 
 # terraform
-[ -s "/opt/homebrew/bin/terraform" ] && complete -C /opt/homebrew/bin/terraform terraform
+[ -s "$(command -v terraform)" ] && complete -C "$(command -v terraform)" terraform
 
 # tmux
 export TMUX_VERSION=$(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")
