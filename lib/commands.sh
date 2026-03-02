@@ -245,7 +245,7 @@ function histgrep ()
     tmux send-keys -t "$TMUX_PANE" "$RESULT"
   else
     echo "$RESULT"
-    printf '%s' "$RESULT" | pbcopy
+    printf '%s' "$RESULT" | copy_to_clipboard
   fi
 }
 
@@ -545,6 +545,10 @@ function paste_from_clipboard ()
 
 function restart-docker ()
 {
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    echo "restart-docker is not supported on Linux. Use: sudo systemctl restart docker"
+    return 1
+  fi
   printf "Restarting Docker service..."
   # Restart Docker app
   osascript -e 'quit app "Docker"' && open -a Docker
