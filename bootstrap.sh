@@ -138,8 +138,13 @@ fi
 ## If agent socket isn't available, source it
 [ -s "$SSH_AUTH_SOCK" ] || eval `ssh-agent -s`
 ## Add keys to keychain
-[ -f "$HOME/.ssh/id_rsa" ] && (ssh-add -K "$HOME/.ssh/id_rsa" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_rsa")
-[ -f "$HOME/.ssh/id_ed25519" ] && (ssh-add -K "$HOME/.ssh/id_ed25519" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_ed25519")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  [ -f "$HOME/.ssh/id_rsa" ] && ssh-add -K "$HOME/.ssh/id_rsa" > /dev/null 2>&1
+  [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add -K "$HOME/.ssh/id_ed25519" > /dev/null 2>&1
+else
+  [ -f "$HOME/.ssh/id_rsa" ] && ssh-add "$HOME/.ssh/id_rsa"
+  [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519"
+fi
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
@@ -345,131 +350,220 @@ then
     python3 -m pip install --upgrade pyls
   fi
 
-  if [ ! -s "$(which brew)" ]
-  then
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    _PKG_MANAGER="brew"
+  elif command -v apt-get &>/dev/null; then
+    _PKG_MANAGER="apt"
+  elif command -v pacman &>/dev/null; then
+    _PKG_MANAGER="pacman"
+  else
+    echo "Unsupported package manager. Install packages manually."
+    exit 1
+  fi
+
+  if [ "$_PKG_MANAGER" = "brew" ] && [ ! -s "$(which brew)" ]; then
     echo "Brew not installed. Skipping the rest of the installs"
     exit 0
   fi
 
-  if [ ! -s "$(which tfenv)" ]
-  then
-    echo "Installing tfenv"
-    if [ -s "$(brew list terraform)"  ]
+  if [ "$_PKG_MANAGER" = "brew" ]; then
+    if [ ! -s "$(which tfenv)" ]
     then
-      echo "Existing terraform install. Unlinking..."
-      brew unlink terraform
+      echo "Installing tfenv"
+      if [ -s "$(brew list terraform)"  ]
+      then
+        echo "Existing terraform install. Unlinking..."
+        brew unlink terraform
+        echo
+      fi
+      brew install tfenv
+      tfenv install
+      tfenv use
       echo
     fi
-    brew install tfenv
-    tfenv install
-    tfenv use
-    echo
   fi
 
   JAVA_VERSION=17
 
-  if [ ! -s "$(which java)" ]
-  then
-    echo "Installing java"
-    brew install "zulu@$JAVA_VERSION"
-    echo
-  fi
-
-  if [ ! -s "$(which jenv)" ]
-  then
-    echo "Installing jenv"
-    if [ -s "$(brew list jenv)"  ]
+  if [ "$_PKG_MANAGER" = "brew" ]; then
+    if [ ! -s "$(which java)" ]
     then
-      echo "Existing jenv install. Unlinking..."
-      brew unlink jenv
+      echo "Installing java"
+      brew install "zulu@$JAVA_VERSION"
       echo
     fi
-    brew install jenv
-    eval "$(jenv init -)"
-    jenv add "$(/usr/libexec/java_home)"
-    jenv global $JAVA_VERSION
-    echo
   fi
 
-  if [ -z "$(brew list --cask font-fira-code-nerd-font)" ]
-  then
-    _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
-    echo "Installing fonts:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-    echo
-  else
-    echo "Fonts already installed Skipping..."
-    echo
+  if [ "$_PKG_MANAGER" = "brew" ]; then
+    if [ ! -s "$(which jenv)" ]
+    then
+      echo "Installing jenv"
+      if [ -s "$(brew list jenv)"  ]
+      then
+        echo "Existing jenv install. Unlinking..."
+        brew unlink jenv
+        echo
+      fi
+      brew install jenv
+      eval "$(jenv init -)"
+      jenv add "$(/usr/libexec/java_home)"
+      jenv global $JAVA_VERSION
+      echo
+    fi
   fi
 
-  if [ ! -s "$(which tmux)"  ]
-  then
-    echo "Installing tmux"
-    brew install tmux
+  if [ "$_PKG_MANAGER" = "brew" ]; then
+    if [ -z "$(brew list --cask font-fira-code-nerd-font)" ]
+    then
+      _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
+      echo "Installing fonts:"
+      echo "$_BOOTSTRAP_INSTALL"
+      echo
+      eval "$_BOOTSTRAP_INSTALL"
+      echo
+    else
+      echo "Fonts already installed Skipping..."
+      echo
+    fi
   fi
 
-  brew install git \
-    alacritty \
-    neovim \
-    bash-completion \
-    zlib \
-    hashicorp/tap/terraform-ls \
-    homebrew/core/nmap \
-    homebrew/core/go \
-    elixir \
-    ansible \
-    htop \
-    tor \
-    gpg \
-    editorconfig \
-    watchman \
-    tree \
-    awscli \
-    ssh-copy-id \
-    git-extras \
-    vimpager \
-    jq \
-    dos2unix \
-    tidy-html5 \
-    fd \
-    ripgrep \
-    bat \
-    rename \
-    node@20 \
-    navi \
-    ngrok/ngrok/ngrok \
-    renameutils \
-    shellcheck \
-    tmux-mem-cpu-load \
-    reattach-to-user-namespace \
-    tldr \
-    lazydocker \
-    lazygit \
-    just
+  if [ "$_PKG_MANAGER" = "brew" ]; then
+    if [ ! -s "$(which tmux)"  ]
+    then
+      echo "Installing tmux"
+      brew install tmux
+    fi
+  fi
 
-  brew install --cask \
-    homebrew/cask/cmake \
-    iterm2 \
-    warp \
-    appcleaner \
-    steam \
-    tunnelblick \
-    imageoptim \
-    vlc \
-    grandperspective \
-    install-disk-creator \
-    iconjar \
-    spectacle \
-    google-cloud-sdk \
-    graphql-playground \
-    sequel-ace \
-    firefox \
-    1password \
-    1password-cli \
-    docker \
-    postman
+  if [ "$_PKG_MANAGER" = "brew" ]; then
+    brew install git \
+      alacritty \
+      neovim \
+      bash-completion \
+      zlib \
+      hashicorp/tap/terraform-ls \
+      homebrew/core/nmap \
+      homebrew/core/go \
+      elixir \
+      ansible \
+      htop \
+      tor \
+      gpg \
+      editorconfig \
+      watchman \
+      tree \
+      awscli \
+      ssh-copy-id \
+      git-extras \
+      vimpager \
+      jq \
+      dos2unix \
+      tidy-html5 \
+      fd \
+      ripgrep \
+      bat \
+      rename \
+      node@20 \
+      navi \
+      ngrok/ngrok/ngrok \
+      renameutils \
+      shellcheck \
+      tmux-mem-cpu-load \
+      reattach-to-user-namespace \
+      tldr \
+      lazydocker \
+      lazygit \
+      just
+
+  elif [ "$_PKG_MANAGER" = "apt" ]; then
+    sudo apt-get update
+    sudo apt-get install -y \
+      git \
+      neovim \
+      bash-completion \
+      nmap \
+      golang \
+      htop \
+      gnupg \
+      tree \
+      awscli \
+      ssh-copy-id \
+      jq \
+      dos2unix \
+      tidy \
+      fd-find \
+      ripgrep \
+      bat \
+      rename \
+      shellcheck \
+      tldr \
+      just
+    # lazygit — not in apt, install via release script
+    if [ ! -s "$(which lazygit)" ]; then
+      LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+      curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+      tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+      sudo install /tmp/lazygit /usr/local/bin
+    fi
+
+  elif [ "$_PKG_MANAGER" = "pacman" ]; then
+    sudo pacman -Syu --noconfirm \
+      git \
+      neovim \
+      bash-completion \
+      nmap \
+      go \
+      htop \
+      gnupg \
+      tree \
+      aws-cli \
+      openssh \
+      jq \
+      dos2unix \
+      tidy \
+      fd \
+      ripgrep \
+      bat \
+      perl-rename \
+      shellcheck \
+      tldr \
+      just
+    # lazygit — available in AUR; install via yay if present, else release script
+    if [ ! -s "$(which lazygit)" ]; then
+      if command -v yay &>/dev/null; then
+        yay -S --noconfirm lazygit
+      else
+        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+        sudo install /tmp/lazygit /usr/local/bin
+      fi
+    fi
+  fi
+
+  if [ "$_PKG_MANAGER" = "brew" ]; then
+    brew install --cask \
+      homebrew/cask/cmake \
+      iterm2 \
+      warp \
+      appcleaner \
+      steam \
+      tunnelblick \
+      imageoptim \
+      vlc \
+      grandperspective \
+      install-disk-creator \
+      iconjar \
+      spectacle \
+      google-cloud-sdk \
+      graphql-playground \
+      sequel-ace \
+      firefox \
+      1password \
+      1password-cli \
+      docker \
+      postman
+  fi
 
   # Golang tools
   go install golang.org/x/tools/gopls@latest
