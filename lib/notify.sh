@@ -5,6 +5,8 @@ function notify ()
 
   local usage='Usage: notify [MESSAGE]'
 
+  [[ "$OSTYPE" != "darwin"* ]] && return 0
+
   if [ ! $(which osascript) ]
   then
     echo "osascript needs to be installed and available"

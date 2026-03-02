@@ -12,4 +12,4 @@ export SDKMAN_DIR="/Users/aaron.tribou/.sdkman"
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
 autoload -U +X bashcompinit && bashcompinit
-[ -s "/opt/homebrew/bin/terraform" ] && complete -o nospace -C /opt/homebrew/bin/terraform terraform
+[ -s "$(command -v terraform)" ] && complete -o nospace -C "$(command -v terraform)" terraform

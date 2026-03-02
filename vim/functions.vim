@@ -7,8 +7,9 @@ function! DeleteBuffer()
     bdelete
     file
   else
+    let l:bufnr = bufnr('%')
     bprevious
-    bdelete #
+    call setbufvar(l:bufnr, '&buflisted', 0)
     file
   endif
 endfunction
