@@ -30,7 +30,16 @@ function _dotfiles_debug_timing ()
 
 # Set dev paths
 export DEVPATH=$HOME/dev
-export DOTFILES=$DEVPATH/dotfiles
+
+# Detect DOTFILES from actual location of this script (resolves symlinks)
+_dotfiles_source="${BASH_SOURCE[0]}"
+while [ -h "$_dotfiles_source" ]; do
+  _dotfiles_dir="$(cd -P "$(dirname "$_dotfiles_source")" && pwd)"
+  _dotfiles_source="$(readlink "$_dotfiles_source")"
+  [[ "$_dotfiles_source" != /* ]] && _dotfiles_source="$_dotfiles_dir/$_dotfiles_source"
+done
+export DOTFILES="$(cd -P "$(dirname "$_dotfiles_source")" && pwd)"
+unset _dotfiles_source _dotfiles_dir
 
 # Reset debug timing
 _dotfiles_debug_timing "$LINENO"

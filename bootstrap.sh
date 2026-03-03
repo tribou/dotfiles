@@ -12,6 +12,7 @@ fi
 
 # Get bootstrap script directory
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
+export DOTFILES="$THIS_DIR"
 
 function backupFile ()
 {
