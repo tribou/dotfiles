@@ -30,7 +30,16 @@ function _dotfiles_debug_timing ()
 
 # Set dev paths
 export DEVPATH=$HOME/dev
-export DOTFILES=$DEVPATH/dotfiles
+
+# Detect DOTFILES from actual location of this script (resolves symlinks)
+_dotfiles_source="${BASH_SOURCE[0]}"
+while [ -h "$_dotfiles_source" ]; do
+  _dotfiles_dir="$(cd -P "$(dirname "$_dotfiles_source")" && pwd)"
+  _dotfiles_source="$(readlink "$_dotfiles_source")"
+  [[ "$_dotfiles_source" != /* ]] && _dotfiles_source="$_dotfiles_dir/$_dotfiles_source"
+done
+export DOTFILES="$(cd -P "$(dirname "$_dotfiles_source")" && pwd)"
+unset _dotfiles_source _dotfiles_dir
 
 # Reset debug timing
 _dotfiles_debug_timing "$LINENO"
@@ -151,14 +160,14 @@ export NVM_DIR="$HOME/.nvm"
 _dotfiles_debug_timing "$LINENO"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 _dotfiles_debug_timing "$LINENO"
-export HAS_NVM=$([ $(command -v nvm) ] && echo true)
+[ "$(type -t nvm 2>/dev/null)" = "function" ] && export HAS_NVM=true || unset HAS_NVM
 # _dotfiles_debug_timing "$LINENO"
 [ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
 
 _dotfiles_debug_timing "$LINENO"
 
 # Change bash prompt
-export PS1="\[\033[0;34m\]\W \$([ -n "$HAS_NVM" ] && nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
+export PS1="\[\033[0;34m\]\W \$(declare -f nvm > /dev/null 2>&1 && nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
 
 
 # AWS CLI
