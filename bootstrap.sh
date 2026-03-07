@@ -51,6 +51,12 @@ mkdir -p ~/dev/go/src/bitbucket.org || true
 mkdir -p ~/dev/go/src/github.com/rocksauce || true
 export GOPATH=~/dev/go
 
+# Install z (rupa/z) for directory jumping
+if [ ! -d "$HOME/dev/z" ]; then
+  echo "Installing z..."
+  git clone https://github.com/rupa/z.git "$HOME/dev/z"
+fi
+
 # .bash_profile
 backupFile ".bash_profile"
 linkFileToHome bash_profile .bash_profile
