@@ -149,6 +149,18 @@ function ds ()
   [ -n "$cid" ] && docker stop "$cid"
 }
 
+function dlogs ()
+{
+  # Select a docker container (running or stopped) and stream its logs
+  local cid
+  cid=$(docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}" \
+    | sed 1d \
+    | fzf -1 -q "$1" \
+    | awk '{print $1}')
+
+  [ -n "$cid" ] && docker logs -f --timestamps "$cid"
+}
+
 function f ()
 {
   git fetch --prune --progress "$@" && _dotfiles_git_status
