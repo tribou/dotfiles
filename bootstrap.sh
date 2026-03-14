@@ -5,7 +5,7 @@
 # Rudimentary flags parsing
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]
 then
-  usage='Usage: ./bootstrap.sh [-i|--install-deps]'
+  usage='Usage: ./bootstrap.sh'
   echo "$usage"
   exit 1
 fi
@@ -159,38 +159,13 @@ fi
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
-# More rudimentary flags parsing
-if [ "$1" = "-i" ] || [ "$1" = "--install-deps" ]
+# Install dependencies
+source "./scripts/install.sh"
+
+if   [ -s "$(which curl)"  ]
 then
-  echo "--install-deps detected. Installing dependencies..."
-  echo
 
-  source "./scripts/install.sh"
-
-  if   [ -s "$(which curl)"  ]
-  then
-
-    if   [ ! -f "$HOME/.vim/autoload/plug.vim" ]
-    then
-      _BOOTSTRAP_INSTALL="sh -c 'curl -fLo \"${XDG_DATA_HOME:-$HOME/.local/share}\"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
-      echo "Installing vim-plug:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-      echo
-    fi
-
-    if   [ ! -s "$(which nvim)"  ] && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
-    then
-      _BOOTSTRAP_INSTALL="curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-      echo "Installing vim-plug for neovim:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-      echo
-    fi
-
-    if   [ ! -s "$(which cargo)"  ]
+  if   [ ! -s "$(which cargo)"  ]
     then
       _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
       echo "Installing rust:"
@@ -202,11 +177,14 @@ then
       echo
     fi
 
-    _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash"
-    echo "Installing nvm:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
+    if [ ! -d "$HOME/.nvm" ]
+    then
+      _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash"
+      echo "Installing nvm:"
+      echo "$_BOOTSTRAP_INSTALL"
+      echo
+      eval "$_BOOTSTRAP_INSTALL"
+    fi
     if [ ! -n "$(command -v nvm)" ]
     then
       export NVM_DIR="$HOME/.nvm"
@@ -230,13 +208,6 @@ then
       nvm use 20
       npm-install-global
       echo
-    fi
-
-    if [ ! -f "$HOME/dev/z/z.sh" ]
-    then
-      echo "Installing z"
-      git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
-      . "$HOME/dev/z/z.sh"
     fi
 
   else
@@ -341,7 +312,7 @@ then
     echo
   fi
 
-  if [ -s "$(which python3)" ]
+  if [ -s "$(which python3)" ] && [ ! -s "$(which idb)" ]
   then
     echo "Installing idb"
     python3 -m pip install --upgrade fb-idb --prefer-binary
@@ -574,4 +545,3 @@ then
 
   # Golang tools
   go install golang.org/x/tools/gopls@latest
-fi
