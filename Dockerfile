@@ -10,7 +10,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     python3 \
     python3-pip \
-    nodejs \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 24 via NodeSource (matches bootstrap.sh)
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+  && apt-get install -y nodejs \
   && rm -rf /var/lib/apt/lists/*
 
 # Install neovim from official stable release — Ubuntu 24.04 apt ships 0.9.5
