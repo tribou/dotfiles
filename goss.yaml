@@ -1,0 +1,52 @@
+# Core binaries functional
+command:
+  "tmux -V":
+    exit-status: 0
+    stdout:
+      - "tmux"
+  "nvim --version":
+    exit-status: 0
+    stdout:
+      - "NVIM"
+  "git --version":
+    exit-status: 0
+
+# TPM and all plugins installed
+file:
+  /root/.tmux/plugins/tpm:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-sensible:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-resurrect:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-mem-cpu-load:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-copycat:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-open:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-yank:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-prefix-highlight:
+    exists: true
+    filetype: directory
+
+  # vim-plug installed
+  /root/.local/share/nvim/site/autoload/plug.vim:
+    exists: true
+
+  # Neovim plugins installed (plug#begin dir)
+  /root/.local/share/nvim/plugged:
+    exists: true
+    filetype: directory
+
+  # Bootstrap completed successfully
+  /root/.dotfiles-bootstrap-done:
+    exists: true
