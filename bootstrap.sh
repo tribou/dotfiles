@@ -272,56 +272,6 @@ then
     echo
   fi
 
-  if [ ! -d "$HOME/.pyenv/bin" ]
-  then
-    echo "Installing pyenv"
-    curl https://pyenv.run | bash
-  fi
-
-  if [ ! -s "$(which pyenv)"  ]
-  then
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init --path)"
-    eval "$(pyenv init -)"
-  fi
-
-  if [ ! -d "$HOME/.pyenv/versions/3.12.2" ]
-  then
-    echo "Installing python3"
-    pyenv install 3.12.2
-    pyenv global 3.12.2
-    echo "python version: $(python --version)"
-    python3 -m pip install --upgrade pip
-  fi
-
-  if [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
-  then
-    echo "Installing py3nvim virtualenv"
-    eval "$(pyenv init -)"
-    pyenv virtualenv 3.12.2 py3nvim
-    pyenv activate py3nvim
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade pynvim
-    pyenv deactivate
-    echo
-  fi
-
-  if [ -s "$(which python3)" ] && [ ! -s "$(which idb)" ]
-  then
-    echo "Installing idb"
-    python3 -m pip install --upgrade fb-idb --prefer-binary
-    echo
-  else
-    echo "python3 not available or idb already installed. Skipping..."
-    echo
-  fi
-
-  if [ ! -s "$(which pyls)" ]
-  then
-    echo "Installing python-language-server (pyls)"
-    python3 -m pip install --upgrade pyls
-  fi
-
   if [[ "$OSTYPE" == "darwin"* ]]; then
     _PKG_MANAGER="brew"
   elif command -v apt-get &>/dev/null; then
@@ -411,6 +361,7 @@ then
     brew install git \
       alacritty \
       neovim \
+      python \
       bash-completion \
       zlib \
       hashicorp/tap/terraform-ls \
@@ -535,6 +486,13 @@ then
       1password-cli \
       docker \
       postman
+  fi
+
+  # pynvim (Neovim Python support)
+  if [ -s "$(which python3)" ] && ! python3 -c "import pynvim" &>/dev/null
+  then
+    echo "Installing pynvim"
+    pip3 install --user pynvim
   fi
 
   # Golang tools
