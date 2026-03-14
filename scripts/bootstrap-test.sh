@@ -4,6 +4,11 @@ set -eo pipefail
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export DOTFILES
 
+# Initialize bats submodules if not already done
+if [ ! -f "$DOTFILES/tests/test_helper/bats-core/bin/bats" ]; then
+  git -C "$DOTFILES" submodule update --init --recursive tests/test_helper/
+fi
+
 echo "==> Linking dotfiles configs..."
 mkdir -p ~/.config/nvim
 ln -sf "$DOTFILES/tmux/tmux-conf" ~/.tmux.conf
