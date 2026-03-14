@@ -14,7 +14,6 @@ dev:
 build:
     docker compose build --no-cache
 
-# Run existing bash unit tests (phase 2)
+# Run bash unit tests with bats-core
 test-unit:
-    ./tests/test_grep_ticket_number.sh
-    ./tests/test_commit_message.sh
+    ./tests/test_helper/bats-core/bin/bats tests/*.bats
