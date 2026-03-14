@@ -155,6 +155,7 @@ fi
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+"$HOME/.tmux/plugins/tpm/bin/install_plugins"
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
@@ -226,6 +227,8 @@ then
     echo "Installing vim-plug for Neovim"
     sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    echo "Installing Neovim plugins"
+    nvim --headless +"PlugInstall --sync" +qall
   fi
 
   if [ ! -f "$HOME/dev/z/z.sh" ]
@@ -420,7 +423,10 @@ then
       rename \
       shellcheck \
       tldr \
-      just
+      just \
+      cmake \
+      build-essential \
+      xdg-utils
     # lazygit — not in apt, install via release script
     if [ ! -s "$(which lazygit)" ]; then
       LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
@@ -450,7 +456,10 @@ then
       perl-rename \
       shellcheck \
       tldr \
-      just
+      just \
+      cmake \
+      base-devel \
+      xdg-utils
     # lazygit — available in AUR; install via yay if present, else release script
     if [ ! -s "$(which lazygit)" ]; then
       if command -v yay &>/dev/null; then
