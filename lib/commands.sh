@@ -250,10 +250,6 @@ function histgrep ()
 {
   # Remove histfile directory prefix during fzf search
   local AWK_REMOVE_HISTDIR='^\/.*\/\.history\/'
-  # Remove rest of histfile prefix from selection
-  local AWK_HISTFILE_DELIM='^[0-9]{4}\/[0-9]{2}\/\/?[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}_[^:]+:'
-  # Remove current history result prefix from selection
-  local AWK_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} '
 
   # Pipe results from two history sources into cat
   local RESULT
@@ -264,8 +260,8 @@ function histgrep ()
       | xargs grep -r "$1" \
       | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
     | fzf --tmux="70%,80%" \
-    | awk -F "$AWK_HISTFILE_DELIM" '{print $NF}' \
-    | awk -F "$AWK_HISTORY_DELIM" '{print $NF}')
+    | awk -F "$DOTFILES_HISTFILE_DELIM" '{print $NF}' \
+    | awk -F "$DOTFILES_HISTORY_DELIM" '{print $NF}')
 
   # If in tmux, we can use send-keys
   if [ -n "$TMUX" ]
