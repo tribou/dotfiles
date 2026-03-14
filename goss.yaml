@@ -4,15 +4,42 @@ command:
     exit-status: 0
     stdout:
       - "tmux"
+  "git --version":
+    exit-status: 0
+
+  # Neovim must be 0.10+ for vim.uv support (CopilotChat, colorizer, etc.)
   "nvim --version":
     exit-status: 0
     stdout:
       - "NVIM"
-  "git --version":
+      - /NVIM v0\.(1[0-9]|[2-9]\d)|NVIM v[1-9]/
+
+  # Node.js must be v24 (matches bootstrap.sh / nvm default)
+  "node --version":
+    exit-status: 0
+    stdout:
+      - /^v24\./
+
+  # DOTFILES env var must be set — absence causes E484 source errors in nvim
+  "bash -c 'test \"$DOTFILES\" = /dotfiles'":
     exit-status: 0
 
-# TPM and all plugins installed
+# vim source files that init.vim sources via $DOTFILES
 file:
+  /dotfiles/vim/functions.vim:
+    exists: true
+  /dotfiles/vim/lightline.vim:
+    exists: true
+  /dotfiles/vim/ale.vim:
+    exists: true
+  /dotfiles/vim/fzf.vim:
+    exists: true
+  /dotfiles/vim/keymaps.vim:
+    exists: true
+  /dotfiles/vim/visual-at.vim:
+    exists: true
+
+# TPM and all plugins installed
   /root/.tmux/plugins/tpm:
     exists: true
     filetype: directory
@@ -42,8 +69,11 @@ file:
   /root/.local/share/nvim/site/autoload/plug.vim:
     exists: true
 
-  # Neovim plugins installed (plug#begin dir)
+  # Neovim plugins installed — includes CopilotChat which requires nvim 0.10+
   /root/.local/share/nvim/plugged:
+    exists: true
+    filetype: directory
+  /root/.local/share/nvim/plugged/CopilotChat.nvim:
     exists: true
     filetype: directory
 
