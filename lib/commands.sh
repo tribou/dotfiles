@@ -440,19 +440,25 @@ function nu () {
   fi
 }
 
+# Detect which package manager to use based on lock files in the current directory.
+# Outputs: pnpm | yarn | bun | npm
+function _dotfiles_npm_detect_exec ()
+{
+  if [ -f "pnpm-lock.yaml" ]; then
+    echo "pnpm"
+  elif [ -f "yarn.lock" ]; then
+    echo "yarn"
+  elif [ -f "bun.lock" ]; then
+    echo "bun"
+  else
+    echo "npm"
+  fi
+}
+
 function npm-install ()
 {
-  local EXEC="npm"
-  if [ -f "pnpm-lock.yaml" ]
-  then
-    EXEC="pnpm"
-  elif [ -f "yarn.lock" ]
-  then
-    EXEC="yarn"
-  elif [ -f "bun.lock" ]
-  then
-    EXEC="bun"
-  fi
+  local EXEC
+  EXEC="$(_dotfiles_npm_detect_exec)"
   if [ -n "$1" ]
   then
     local SCRIPT="$EXEC install $*"
@@ -478,16 +484,13 @@ function y ()
 
 function npm-run ()
 {
-  local EXEC="npm run --silent"
-  if [ -f "pnpm-lock.yaml" ]
-  then
-    EXEC="pnpm"
-  elif [ -f "yarn.lock" ]
-  then
-    EXEC="yarn"
-  elif [ -f "bun.lock" ]
-  then
+  local EXEC
+  EXEC="$(_dotfiles_npm_detect_exec)"
+  # bun uses 'bun run --silent', others use their own format
+  if [ "$EXEC" = "bun" ]; then
     EXEC="bun run --silent"
+  elif [ "$EXEC" = "npm" ]; then
+    EXEC="npm run --silent"
   fi
   if [ -n "$1" ]
   then
