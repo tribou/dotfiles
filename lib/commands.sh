@@ -95,15 +95,31 @@ function co ()
   fi
 }
 
+# Returns the write command for the system clipboard (no args: just the command string).
+function _dotfiles_clipboard_write_cmd ()
+{
+  if [ -n "$(command -v pbcopy)" ]; then
+    echo "pbcopy"
+  elif [ -n "$(command -v xclip)" ]; then
+    echo "xclip -selection clipboard"
+  fi
+}
+
+# Returns the read command for the system clipboard.
+function _dotfiles_clipboard_read_cmd ()
+{
+  if [ -n "$(command -v pbpaste)" ]; then
+    echo "pbpaste"
+  elif [ -n "$(command -v xclip)" ]; then
+    echo "xclip -o -sel clipboard"
+  fi
+}
+
 function copy_to_clipboard ()
 {
-  if [ -n "$(command -v pbcopy)" ]
-  then
-    pbcopy
-  elif [ -n "$(command -v xclip)" ]
-  then
-    xclip -selection clipboard
-  fi
+  local cmd
+  cmd="$(_dotfiles_clipboard_write_cmd)"
+  [ -n "$cmd" ] && eval "$cmd"
 }
 
 function digitalocean ()
@@ -549,13 +565,9 @@ function ninfo ()
 
 function paste_from_clipboard ()
 {
-  if [ -n "$(command -v pbpaste)" ]
-  then
-    pbpaste
-  elif [ -n "$(command -v xclip)" ]
-  then
-    xclip -o -sel clipboard
-  fi
+  local cmd
+  cmd="$(_dotfiles_clipboard_read_cmd)"
+  [ -n "$cmd" ] && eval "$cmd"
 }
 
 function restart-docker ()
