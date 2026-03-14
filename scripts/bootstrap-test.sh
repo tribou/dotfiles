@@ -14,9 +14,23 @@ if [ ! -d ~/.tmux/plugins/tpm ]; then
 fi
 
 echo "==> Installing tmux plugins..."
-tmux new-session -d -s bootstrap 2>/dev/null || true
-~/.tmux/plugins/tpm/bin/install_plugins
-tmux kill-session -t bootstrap 2>/dev/null || true
+# Clone plugins directly — TPM's install_plugins requires a live tmux session
+# which is unreliable in a headless CI container. Direct clones are equivalent
+# for asserting plugin presence; interactive TPM testing is via `just dev`.
+_clone_plugin() {
+  local name="$1" repo="$2"
+  local dest="$HOME/.tmux/plugins/$name"
+  if [ ! -d "$dest" ]; then
+    git clone --depth 1 "https://github.com/$repo.git" "$dest"
+  fi
+}
+_clone_plugin "tmux-sensible"        "tmux-plugins/tmux-sensible"
+_clone_plugin "tmux-resurrect"       "tmux-plugins/tmux-resurrect"
+_clone_plugin "tmux-mem-cpu-load"    "thewtex/tmux-mem-cpu-load"
+_clone_plugin "tmux-copycat"         "tmux-plugins/tmux-copycat"
+_clone_plugin "tmux-open"            "tmux-plugins/tmux-open"
+_clone_plugin "tmux-yank"            "tmux-plugins/tmux-yank"
+_clone_plugin "tmux-prefix-highlight" "tmux-plugins/tmux-prefix-highlight"
 
 echo "==> Installing vim-plug..."
 if [ ! -f ~/.local/share/nvim/site/autoload/plug.vim ]; then
