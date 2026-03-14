@@ -193,19 +193,13 @@ then
     fi
     echo
 
-    if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 16 | grep 16)" ]
+    if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 24 | grep 24)" ]
     then
-      echo "Installing node 16, 18, 20:"
+      echo "Installing node 24:"
       echo
-      nvm install 16
-      nvm use 16
-      npm-install-global
-      nvm install 18
-      nvm use 18
-      npm-install-global
-      nvm install 20
-      nvm alias default 20
-      nvm use 20
+      nvm install 24
+      nvm alias default 24
+      nvm use 24
       npm-install-global
       echo
     fi
