@@ -10,22 +10,16 @@ on:
       - main
 
 jobs:
-  # Set the job key. The key is displayed as the job name
-  # when a job name is not provided
   test:
-    # Name the Job
     name: Run bash function tests
-    # Set the type of machine to run on
     runs-on: macos-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run ticket number tests
-        run: ./tests/test_grep_ticket_number.sh
-        shell: bash
+      - name: Install just
+        uses: extractions/setup-just@v2
 
-      - name: Run commit msg tests
-        run: ./tests/test_commit_message.sh
-        shell: bash
+      - name: Run bash function tests
+        run: just test-unit
