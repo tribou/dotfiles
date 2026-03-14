@@ -2,6 +2,7 @@
 set -eo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export DOTFILES
 
 echo "==> Linking dotfiles configs..."
 mkdir -p ~/.config/nvim
@@ -39,7 +40,7 @@ if [ ! -f ~/.local/share/nvim/site/autoload/plug.vim ]; then
 fi
 
 echo "==> Installing Neovim plugins..."
-nvim --headless +PlugInstall +qall 2>&1
+nvim --headless +PlugInstall +qall 2>/dev/null
 
 echo "==> Bootstrap complete."
 touch ~/.dotfiles-bootstrap-done
