@@ -5,12 +5,12 @@ setup() {
 }
 
 @test "nvim checkhealth exits without errors" {
-  run nvim --headless -c "checkhealth" -c "qall" 2>&1
+  run nvim --headless --noplugin -c "checkhealth" -c "qall" 2>&1
   refute_output --partial "ERROR"
 }
 
 @test "nvim starts without E-code errors in messages" {
-  run nvim --headless -c "messages" -c "qall" 2>&1
+  run nvim --headless --noplugin -c "messages" -c "qall" 2>&1
   refute_output --regexp "E[0-9]+:"
 }
 
@@ -34,6 +34,6 @@ setup() {
 }
 
 @test "nvim PlugStatus shows no errors" {
-  run nvim --headless -c "PlugStatus" -c "qall" 2>&1
+  run nvim --headless --noplugin -c "PlugStatus" -c "qall" 2>&1
   refute_output --partial "Error"
 }

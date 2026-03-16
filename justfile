@@ -4,7 +4,7 @@ default:
 
 # Run full test suite in Docker (goss infrastructure + bats integration tests)
 test:
-    docker compose run --rm ci
+    docker compose run --rm -T ci
 
 # Spin up interactive dev environment (manual tmux/plugin inspection)
 dev:
