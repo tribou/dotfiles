@@ -10,8 +10,12 @@ test:
 dev:
     docker compose run --rm dev
 
-# Rebuild Docker image from scratch (run when Dockerfile changes)
+# Rebuild Docker image (uses layer cache; run after Dockerfile changes)
 build:
+    docker compose build
+
+# Rebuild Docker image from scratch, ignoring layer cache
+build-clean:
     docker compose build --no-cache
 
 # Run bash unit tests with bats-core
