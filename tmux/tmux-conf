@@ -231,8 +231,9 @@ bind-key C-k send-keys -R \; clear-history
 
 # C-p/C-n: send Up/Down only when at a shell prompt; pass through natively for everything else.
 # This handles vim, nvim, docker, nested tmux, and any other program without needing a whitelist.
-bind-key -n C-p if-shell "echo '#{pane_current_command}' | grep -qE '^(bash|zsh|fish|sh)$'" "send-keys Up" "send-keys C-p"
-bind-key -n C-n if-shell "echo '#{pane_current_command}' | grep -qE '^(bash|zsh|fish|sh)$'" "send-keys Down" "send-keys C-n"
+# Use `tmux list-panes -a -F "#{pane_id} #{pane_current_command}"` to see what tmux thinks the current command is for each pane.
+bind-key -n C-p if-shell "echo '#{pane_current_command}' | grep -qE '^(bash|zsh|fish|sh|railway)$'" "send-keys Up" "send-keys C-p"
+bind-key -n C-n if-shell "echo '#{pane_current_command}' | grep -qE '^(bash|zsh|fish|sh|railway)$'" "send-keys Down" "send-keys C-n"
 
 # The followings are not any kind of setting for Tmux, but crucial to my
 # own productivity. Setting them up is really pain, and I probably going to
