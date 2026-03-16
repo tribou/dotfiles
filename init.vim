@@ -80,25 +80,9 @@ Plug 'prettier/vim-prettier', {
 
 " Auto-complete
 Plug 'dense-analysis/ale', { 'tag': 'v4.*' }
-" coc.nvim and vscode-compatible extensions
+" coc.nvim framework (extensions managed via g:coc_global_extensions below)
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-pairs', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-css', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-highlight', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-json', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-git', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-snippets', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-eslint', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-sources', {'rtp': 'packages/emoji', 'do': 'yarn install --frozen-lockfile'}
-" Plug 'neoclide/coc-emmet', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-solargraph', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-yaml', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-html', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-lists', {'do': 'yarn install --frozen-lockfile'}
-Plug 'iamcco/coc-svg', {'do': 'yarn install --frozen-lockfile'}
-Plug 'amiralies/coc-elixir', {'do': 'yarn install --frozen-lockfile'}
-Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
+Plug 'andys8/vscode-jest-snippets'
 " Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
 if has('nvim-0.10')
   Plug 'zbirenbaum/copilot.lua'
@@ -174,6 +158,24 @@ Plug 'heavenshell/vim-jsdoc'
 Plug 'ryanoasis/vim-devicons'
 
 call plug#end()
+
+" CoC extensions (managed by CoC, not vim-plug)
+let g:coc_global_extensions = [
+  \ 'coc-tsserver',
+  \ 'coc-pairs',
+  \ 'coc-css',
+  \ 'coc-highlight',
+  \ 'coc-json',
+  \ 'coc-git',
+  \ 'coc-snippets',
+  \ 'coc-eslint',
+  \ 'coc-emoji',
+  \ 'coc-solargraph',
+  \ 'coc-yaml',
+  \ 'coc-html',
+  \ 'coc-lists',
+  \ 'coc-svg',
+  \ ]
 
 if has('nvim-0.10')
 lua << EOF

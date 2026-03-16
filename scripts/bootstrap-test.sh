@@ -47,5 +47,20 @@ fi
 echo "==> Installing Neovim plugins..."
 nvim --headless +PlugInstall +qall 2>/dev/null
 
+echo "==> Installing CoC extensions..."
+# CoC installs extensions via npm into ~/.config/coc/extensions/node_modules/.
+# Running CocUpdateSync headlessly hangs because the CoC Node.js service never
+# fully initializes without a real terminal. Install directly with npm instead —
+# this is exactly what CoC does internally when you run :CocInstall.
+mkdir -p ~/.config/coc/extensions
+cd ~/.config/coc/extensions
+[ -f package.json ] || echo '{"dependencies":{}}' > package.json
+npm install --install-strategy=shallow --ignore-scripts --no-bin-links \
+  coc-tsserver coc-pairs coc-css coc-highlight coc-json coc-git \
+  coc-snippets coc-eslint coc-emoji coc-solargraph coc-yaml coc-html \
+  coc-lists coc-svg \
+  2>/dev/null
+cd - > /dev/null
+
 echo "==> Bootstrap complete."
 touch ~/.dotfiles-bootstrap-done
