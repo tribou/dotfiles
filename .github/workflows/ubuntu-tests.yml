@@ -22,7 +22,7 @@ jobs:
           submodules: true
 
       - name: Install just
-        uses: extractions/setup-just@v2
+        uses: extractions/setup-just@v3
 
       - name: Run bash function tests
         run: just test-unit
