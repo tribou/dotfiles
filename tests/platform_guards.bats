@@ -6,7 +6,12 @@ setup() {
 
 # restart-docker guard
 @test "restart-docker exits 1 with error message on Linux" {
-  run bash -c "OSTYPE=linux-gnu . '$REPO_ROOT/lib/_shared.sh' && . '$REPO_ROOT/lib/commands.sh' && restart-docker"
+  run bash -c "
+    OSTYPE=linux-gnu
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    restart-docker
+  "
   assert_failure
   assert_output --partial "not supported on Linux"
 }
