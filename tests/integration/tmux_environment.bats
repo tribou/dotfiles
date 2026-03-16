@@ -1,37 +1,63 @@
 # tests/integration/tmux_environment.bats
+#
+# Tests tmux configuration by parsing the config file directly.
+# Avoids starting a live tmux server (which requires a TTY and hangs in CI).
 setup() {
   load '../test_helper/bats-support/load'
   load '../test_helper/bats-assert/load'
-  # Start a detached tmux server for testing
-  tmux start-server 2>/dev/null || true
+  TMUX_CONF="$DOTFILES/tmux/tmux-conf"
 }
 
-teardown() {
-  tmux kill-server 2>/dev/null || true
+@test "tmux config file exists" {
+  [ -f "$TMUX_CONF" ]
 }
 
-@test "tmux prefix is C-f (not default C-b)" {
-  run tmux show-options -g prefix
-  assert_output --partial "C-f"
-}
-
-@test "tmux-resurrect plugin bindings exist" {
-  run tmux list-keys
-  assert_output --partial "resurrect"
-}
-
-@test "tmux-yank plugin bindings exist" {
-  run tmux list-keys
-  assert_output --partial "yank"
-}
-
-@test "tmux status bar renders without error" {
-  tmux new-session -d -s test_session 2>/dev/null
-  run tmux display-message -t test_session -p "#{status-left}"
+@test "tmux prefix is set to C-f (not default C-b)" {
+  run grep -E "^set -g prefix C-f" "$TMUX_CONF"
   assert_success
 }
 
-@test "tmux split-window bindings are present" {
-  run tmux list-keys
-  assert_output --partial "split-window"
+@test "default C-b prefix is unbound" {
+  run grep -E "^unbind C-b" "$TMUX_CONF"
+  assert_success
+}
+
+@test "vertical split binding exists (C-v)" {
+  run grep -E "split-window" "$TMUX_CONF"
+  assert_success
+  assert_output --partial "C-v"
+}
+
+@test "horizontal split binding exists (C-h)" {
+  run grep -E "split-window" "$TMUX_CONF"
+  assert_success
+  assert_output --partial "C-h"
+}
+
+@test "tmux-resurrect plugin is listed in config" {
+  run grep -r "resurrect" "$DOTFILES/tmux/"
+  assert_success
+}
+
+@test "tmux-yank plugin is listed in config" {
+  run grep -r "yank" "$DOTFILES/tmux/"
+  assert_success
+}
+
+@test "tmux-resurrect plugin directory exists" {
+  [ -d "$HOME/.tmux/plugins/tmux-resurrect" ]
+}
+
+@test "tmux-yank plugin directory exists" {
+  [ -d "$HOME/.tmux/plugins/tmux-yank" ]
+}
+
+@test "mouse mode is enabled in config" {
+  run grep "mouse on" "$TMUX_CONF"
+  assert_success
+}
+
+@test "256color terminal is configured" {
+  run grep "256color" "$TMUX_CONF"
+  assert_success
 }
