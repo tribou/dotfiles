@@ -15,7 +15,9 @@ endfunction
 " Follow python virtualenvs provider instructions to setup:
 " https://github.com/zchee/deoplete-jedi/wiki/Setting-up-Python-for-Neovim
 " https://neovim.io/doc/user/provider.html
-let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
+if filereadable(expand('~/.pyenv/versions/py3nvim/bin/python'))
+  let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
+endif
 
 " Disable Perl support
 let g:loaded_perl_provider = 0
