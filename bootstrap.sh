@@ -405,7 +405,6 @@ then
     sudo apt-get update
     sudo apt-get install -y \
       git \
-      neovim \
       bash-completion \
       nmap \
       golang \
@@ -433,6 +432,13 @@ then
       curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
       tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
       sudo install /tmp/lazygit /usr/local/bin
+    fi
+    # neovim — apt version (0.9.x) is too old for plugins requiring vim.uv (needs 0.10+)
+    if [ ! -s "$(which nvim)" ]; then
+      _NVIM_ARCH=$(uname -m | sed 's/aarch64/arm64/')
+      curl -fsSL "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${_NVIM_ARCH}.tar.gz" \
+        | sudo tar xz -C /opt
+      sudo ln -sf "/opt/nvim-linux-${_NVIM_ARCH}/bin/nvim" /usr/local/bin/nvim
     fi
 
   elif [ "$_PKG_MANAGER" = "pacman" ]; then

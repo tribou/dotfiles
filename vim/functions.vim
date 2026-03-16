@@ -41,12 +41,14 @@ function! ToggleGblame()
   endif
 endfunction
 
-function! QuickChat()
-  let input = input("Quick Chat: ")
-  if input != ""
-    execute 'lua require("CopilotChat").ask("' . input . '", { selection = require("CopilotChat.select").buffer })'
-  endif
-endfunction
+if has('nvim-0.10')
+  function! QuickChat()
+    let input = input("Quick Chat: ")
+    if input != ""
+      execute 'lua require("CopilotChat").ask("' . input . '", { selection = require("CopilotChat.select").buffer })'
+    endif
+  endfunction
+endif
 
 function! OrganizeImports()
   call CocActionAsync('runCommand', 'editor.action.organizeImport')

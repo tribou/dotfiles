@@ -100,9 +100,11 @@ Plug 'iamcco/coc-svg', {'do': 'yarn install --frozen-lockfile'}
 Plug 'amiralies/coc-elixir', {'do': 'yarn install --frozen-lockfile'}
 Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
 " Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
-Plug 'zbirenbaum/copilot.lua'
+if has('nvim-0.10')
+  Plug 'zbirenbaum/copilot.lua'
+  Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'main' }
+endif
 Plug 'nvim-lua/plenary.nvim'
-Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'main' }
 Plug 'github/copilot.vim', {'branch': 'release'}
 
 " Telescope
@@ -173,12 +175,14 @@ Plug 'ryanoasis/vim-devicons'
 
 call plug#end()
 
+if has('nvim-0.10')
 lua << EOF
 require("CopilotChat").setup {
   debug = false, -- Enable debugging
   -- See Configuration section for rest
 }
 EOF
+endif
 
 "" various settings
 silent !mkdir -p $HOME/.vim/swapfiles
