@@ -10,8 +10,13 @@ RUN apt-get update && apt-get install -y \
     curl \
     python3 \
     python3-pip \
+    fzf \
+    fd-find \
+    bat \
   && rm -rf /var/lib/apt/lists/* \
-  && pip3 install --break-system-packages pynvim
+  && pip3 install --break-system-packages pynvim \
+  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
+  && ln -s /usr/bin/batcat /usr/local/bin/bat
 
 # Install Node.js 24 via NodeSource (matches bootstrap.sh)
 RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
