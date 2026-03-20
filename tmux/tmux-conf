@@ -8,7 +8,6 @@ set -g prefix C-f
 bind C-f send-prefix
 
 set -s extended-keys on
-set -s extended-keys-format csi-u
 
 set-environment -g PATH "/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin:/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin"
 
