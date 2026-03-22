@@ -20,6 +20,16 @@ command:
     stdout:
       - /^v24\./
 
+  # fd and bat must be available as canonical names (Ubuntu installs as fdfind/batcat)
+  "fd --version":
+    exit-status: 0
+    stdout:
+      - /^fd /
+  "bat --version":
+    exit-status: 0
+    stdout:
+      - /^bat /
+
   # DOTFILES env var must be set — absence causes E484 source errors in nvim
   "bash -c 'test \"$DOTFILES\" = /dotfiles'":
     exit-status: 0

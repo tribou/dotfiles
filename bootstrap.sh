@@ -248,7 +248,7 @@ then
   if [ ! -d "$HOME/.rbenv/bin" ] && [ ! -s "$(which rbenv)"  ]
   then
     echo "Installing rbenv"
-    curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+    curl -fsSL https://raw.githubusercontent.com/rbenv/rbenv-installer/HEAD/bin/rbenv-installer | bash
     eval "$(rbenv init -)"
   fi
 
@@ -426,6 +426,11 @@ then
       cmake \
       build-essential \
       xdg-utils
+    # On Ubuntu/Debian, some tools install with different binary names to avoid
+    # conflicts with pre-existing packages. Create canonical symlinks in ~/.local/bin.
+    mkdir -p "$HOME/.local/bin"
+    [ -x "$(which fdfind 2>/dev/null)" ] && ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
+    [ -x "$(which batcat 2>/dev/null)" ] && ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
     # lazygit — not in apt, install via release script
     if [ ! -s "$(which lazygit)" ]; then
       LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
