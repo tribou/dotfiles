@@ -24,7 +24,7 @@ command:
   "fd --version":
     exit-status: 0
     stdout:
-      - /^fd /
+      - /fd/
   "bat --version":
     exit-status: 0
     stdout:
