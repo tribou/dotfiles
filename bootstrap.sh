@@ -191,6 +191,7 @@ then
     then
       mise use -g node@lts
       mise use -g ruby@3
+      mise use -g python@3
       echo
     fi
 
@@ -361,7 +362,6 @@ then
       ripgrep \
       bat \
       rename \
-      node@20 \
       navi \
       ngrok/ngrok/ngrok \
       renameutils \
