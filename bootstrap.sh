@@ -76,6 +76,12 @@ linkFileToHome "zshrc" ".zshrc"
 # .tmux.conf
 backupFile ".tmux.conf"
 linkFileToHome "tmux/tmux-conf" ".tmux.conf"
+
+# mise default packages
+linkFileToHome "default-node-packages" ".default-node-packages"
+linkFileToHome "default-gems" ".default-gems"
+linkFileToHome "default-python-packages" ".default-python-packages"
+
 tic -x tmux/xterm-256color-italic.terminfo
 tic -x tmux/tmux-256color.terminfo
 
@@ -235,18 +241,6 @@ then
     ~/.fzf/install
   fi
 
-  if  [ -s "$(which gem)"  ] && [ -z "$(gem list -i "^neovim$")" ]
-  then
-    _BOOTSTRAP_INSTALL="gem install neovim solargraph --no-document"
-    echo "Installing gems:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-    echo
-  else
-    echo "gem not available or neovim already installed. Skipping..."
-    echo
-  fi
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
     _PKG_MANAGER="brew"
@@ -474,12 +468,6 @@ then
       steam
   fi
 
-  # pynvim (Neovim Python support)
-  if [ -s "$(which python3)" ] && ! python3 -c "import pynvim" &>/dev/null
-  then
-    echo "Installing pynvim"
-    pip3 install --user pynvim
-  fi
 
   # Golang tools
   go install golang.org/x/tools/gopls@latest
