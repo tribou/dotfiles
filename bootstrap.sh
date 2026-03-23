@@ -241,7 +241,6 @@ then
     ~/.fzf/install
   fi
 
-
   if [[ "$OSTYPE" == "darwin"* ]]; then
     _PKG_MANAGER="brew"
   elif command -v apt-get &>/dev/null; then
@@ -467,7 +466,6 @@ then
       orbstack \
       steam
   fi
-
 
   # Golang tools
   go install golang.org/x/tools/gopls@latest
