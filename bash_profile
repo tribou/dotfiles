@@ -278,6 +278,13 @@ if [[ "$PROMPT_COMMAND" == *"_direnv_hook"* ]]; then
   export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook/}"
 fi
 
+# Clean up stale read_node_version from PROMPT_COMMAND (replaced by mise)
+if [[ "$PROMPT_COMMAND" == *"read_node_version"* ]]; then
+  export PROMPT_COMMAND="${PROMPT_COMMAND// read_node_version ;/}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//read_node_version ;/}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//read_node_version/}"
+fi
+
 # Set iTerm2 badge
 function set_badge()
 {
