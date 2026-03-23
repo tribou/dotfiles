@@ -178,30 +178,19 @@ then
       echo
     fi
 
-    if [ ! -d "$HOME/.nvm" ]
+    if [ ! -x "$HOME/.local/bin/mise" ]
     then
-      _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash"
-      echo "Installing nvm:"
-      echo "$_BOOTSTRAP_INSTALL"
+      echo "Installing mise:"
+      curl https://mise.run | sh
+      export PATH="$HOME/.local/bin:$PATH"
+      eval "$("$HOME/.local/bin/mise" activate bash)"
       echo
-      eval "$_BOOTSTRAP_INSTALL"
     fi
-    if [ ! -n "$(command -v nvm)" ]
-    then
-      export NVM_DIR="$HOME/.nvm"
-      [ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" # This loads nvm
-      [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
-    fi
-    echo
 
-    if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 24 | grep 24)" ]
+    if [ -x "$HOME/.local/bin/mise" ]
     then
-      echo "Installing node 24:"
-      echo
-      nvm install 24
-      nvm alias default 24
-      nvm use 24
-      npm-install-global
+      mise use -g node@lts
+      mise use -g ruby@3
       echo
     fi
 
@@ -243,23 +232,6 @@ then
     echo "Installing fzf"
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install
-  fi
-
-  if [ ! -d "$HOME/.rbenv/bin" ] && [ ! -s "$(which rbenv)"  ]
-  then
-    echo "Installing rbenv"
-    curl -fsSL https://raw.githubusercontent.com/rbenv/rbenv-installer/HEAD/bin/rbenv-installer | bash
-    eval "$(rbenv init -)"
-  fi
-
-  if [ -z "$(ls -A $HOME/.rbenv/versions/)" ]
-  then
-    echo "Installing latest ruby version"
-    rbenv install "$(rbenv install -l | grep -v - | tail -1)"
-    rbenv global "$(rbenv install -l | grep -v - | tail -1)"
-    echo "Installing React Native ruby version"
-    rbenv install 2.7.6
-    rbenv global 2.7.6
   fi
 
   if  [ -s "$(which gem)"  ] && [ -z "$(gem list -i "^neovim$")" ]
