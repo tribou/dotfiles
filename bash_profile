@@ -148,21 +148,10 @@ if which jenv > /dev/null; then eval "$(jenv init -)"; fi
 # maestro
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
-# ruby rbenv
-[ -f "$HOME/.rbenv/bin/rbenv" ] && export PATH=$PATH:$HOME/.rbenv/bin
-if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
-
-_dotfiles_debug_timing "$LINENO"
-
-# Node.js and NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" --no-use # This loads nvm
-_dotfiles_debug_timing "$LINENO"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-_dotfiles_debug_timing "$LINENO"
-[ "$(type -t nvm 2>/dev/null)" = "function" ] && export HAS_NVM=true || unset HAS_NVM
-# _dotfiles_debug_timing "$LINENO"
-[ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
+# mise — manages Ruby, Node, and other runtime versions
+[ -d "$HOME/.local/bin" ] || mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+[ -x "$HOME/.local/bin/mise" ] && eval "$("$HOME/.local/bin/mise" activate bash)"
 
 _dotfiles_debug_timing "$LINENO"
 
