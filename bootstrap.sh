@@ -466,5 +466,12 @@ then
       steam
   fi
 
+  # pynvim (Neovim Python support) — installed via pip since mise no longer manages Python
+  if [ -s "$(which python3)" ] && ! python3 -c "import pynvim" &>/dev/null
+  then
+    echo "Installing pynvim"
+    pip3 install --user pynvim
+  fi
+
   # Golang tools
   go install golang.org/x/tools/gopls@latest
