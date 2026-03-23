@@ -463,25 +463,15 @@ then
   if [ "$_PKG_MANAGER" = "brew" ]; then
     brew install --cask \
       homebrew/cask/cmake \
-      iterm2 \
-      warp \
-      appcleaner \
-      steam \
-      tunnelblick \
-      imageoptim \
-      vlc \
-      grandperspective \
-      install-disk-creator \
-      iconjar \
-      spectacle \
-      google-cloud-sdk \
-      graphql-playground \
-      sequel-ace \
-      firefox \
       1password \
       1password-cli \
-      docker \
-      postman
+      appcleaner \
+      balenaetcher \
+      bruno \
+      firefox \
+      imageoptim \
+      orbstack \
+      steam
   fi
 
   # pynvim (Neovim Python support)
