@@ -13,6 +13,9 @@ echo "==> Linking dotfiles configs..."
 mkdir -p ~/.config/nvim
 ln -sf "$DOTFILES/tmux/tmux-conf" ~/.tmux.conf
 ln -sf "$DOTFILES/init.vim" ~/.config/nvim/init.vim
+ln -sf "$DOTFILES/default-node-packages" ~/.default-node-packages
+ln -sf "$DOTFILES/default-gems" ~/.default-gems
+ln -sf "$DOTFILES/default-python-packages" ~/.default-python-packages
 
 echo "==> Installing TPM..."
 if [ ! -d ~/.tmux/plugins/tpm ]; then

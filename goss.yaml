@@ -53,6 +53,17 @@ file:
   /dotfiles/vim/visual-at.vim:
     exists: true
 
+# mise default packages files must be symlinked
+  /root/.default-node-packages:
+    exists: true
+    filetype: symlink
+  /root/.default-gems:
+    exists: true
+    filetype: symlink
+  /root/.default-python-packages:
+    exists: true
+    filetype: symlink
+
 # TPM and all plugins installed
   /root/.tmux/plugins/tpm:
     exists: true
