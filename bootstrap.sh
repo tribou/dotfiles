@@ -397,6 +397,10 @@ then
       just \
       cmake \
       build-essential \
+      libssl-dev \
+      libreadline-dev \
+      zlib1g-dev \
+      libyaml-dev \
       xdg-utils
     # On Ubuntu/Debian, some tools install with different binary names to avoid
     # conflicts with pre-existing packages. Create canonical symlinks in ~/.local/bin.
