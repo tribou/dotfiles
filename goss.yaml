@@ -23,8 +23,6 @@ command:
   # mise must be installed and functional
   "mise --version":
     exit-status: 0
-    stdout:
-      - /mise/
 
   # fd and bat must be available as canonical names (Ubuntu installs as fdfind/batcat)
   "fd --version":

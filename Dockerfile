@@ -30,6 +30,10 @@ RUN ARCH=$(uname -m | sed 's/aarch64/arm64/') \
       | tar xz -C /opt \
   && ln -sf "/opt/nvim-linux-${ARCH}/bin/nvim" /usr/local/bin/nvim
 
+# Install mise (replaces rbenv + nvm for Ruby and Node version management)
+RUN curl https://mise.run | sh \
+  && ln -sf /root/.local/bin/mise /usr/local/bin/mise
+
 # Install goss for infrastructure assertions
 RUN curl -fsSL https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 \
     -o /usr/local/bin/goss \
