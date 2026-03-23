@@ -14,11 +14,17 @@ command:
       - "NVIM"
       - /NVIM v0\.(1[0-9]|[2-9]\d)|NVIM v[1-9]/
 
-  # Node.js must be v24 (matches bootstrap.sh / nvm default)
+  # Node.js must be v24 (matches bootstrap.sh / mise default: node@lts)
   "node --version":
     exit-status: 0
     stdout:
       - /^v24\./
+
+  # mise must be installed and functional
+  "mise --version":
+    exit-status: 0
+    stdout:
+      - /mise/
 
   # fd and bat must be available as canonical names (Ubuntu installs as fdfind/batcat)
   "fd --version":
