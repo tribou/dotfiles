@@ -197,7 +197,6 @@ then
     then
       mise use -g node@lts
       mise use -g ruby@3
-      mise use -g python@3.13
       echo
     fi
 
