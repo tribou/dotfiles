@@ -364,7 +364,8 @@ then
       lazydocker \
       lazygit \
       just \
-      lynx
+      lynx \
+      tree-sitter-cli
 
   elif [ "$_PKG_MANAGER" = "apt" ]; then
     sudo apt-get update
