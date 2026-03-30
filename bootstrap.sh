@@ -470,7 +470,7 @@ then
   if [ -s "$(which python3)" ] && ! python3 -c "import pynvim" &>/dev/null
   then
     echo "Installing pynvim"
-    pip3 install --user pynvim
+    pip3 install --user --break-system-packages pynvim
   fi
 
   # Golang tools
