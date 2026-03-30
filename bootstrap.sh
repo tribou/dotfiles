@@ -363,7 +363,8 @@ then
       tldr \
       lazydocker \
       lazygit \
-      just
+      just \
+      lynx
 
   elif [ "$_PKG_MANAGER" = "apt" ]; then
     sudo apt-get update
