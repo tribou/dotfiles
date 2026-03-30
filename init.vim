@@ -12,12 +12,8 @@ function! BuildComposer(info)
 endfunction
 
 " Python
-" Follow python virtualenvs provider instructions to setup:
-" https://github.com/zchee/deoplete-jedi/wiki/Setting-up-Python-for-Neovim
 " https://neovim.io/doc/user/provider.html
-if filereadable(expand('~/.pyenv/versions/py3nvim/bin/python'))
-  let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
-endif
+let g:python3_host_prog = exepath('python3')
 
 " Disable Perl support
 let g:loaded_perl_provider = 0
