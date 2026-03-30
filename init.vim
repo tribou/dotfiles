@@ -15,6 +15,9 @@ endfunction
 " https://neovim.io/doc/user/provider.html
 let g:python3_host_prog = exepath('python3')
 
+" Ruby
+let g:ruby_host_prog = exepath('neovim-ruby-host')
+
 " Disable Perl support
 let g:loaded_perl_provider = 0
 

@@ -475,5 +475,12 @@ then
     pip3 install --user --break-system-packages pynvim
   fi
 
+  # neovim gem (Neovim Ruby support) — installed via mise-managed ruby
+  if [ -s "$(which ruby)" ] && ! gem list neovim -i &>/dev/null
+  then
+    echo "Installing neovim gem"
+    gem install neovim
+  fi
+
   # Golang tools
   go install golang.org/x/tools/gopls@latest
