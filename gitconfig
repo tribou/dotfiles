@@ -51,3 +51,9 @@
 	defaultBranch = main
 [merge]
 	tool = nvimdiff
+
+[credential "https://github.com"]
+    helper = !gh auth git-credential
+
+[checkout]
+    defaultRemote = origin
