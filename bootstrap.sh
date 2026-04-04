@@ -240,21 +240,33 @@ then
     ~/.fzf/install
   fi
 
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    _PKG_MANAGER="brew"
-  elif command -v apt-get &>/dev/null; then
-    _PKG_MANAGER="apt"
-  elif command -v pacman &>/dev/null; then
-    _PKG_MANAGER="pacman"
-  else
-    echo "Unsupported package manager. Install packages manually."
+  # Install brew prerequisites on Linux (needed before brew can install)
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    if command -v apt-get &>/dev/null; then
+      sudo apt-get update
+      sudo apt-get install -y curl git build-essential
+    elif command -v pacman &>/dev/null; then
+      sudo pacman -Syu --noconfirm curl git base-devel
+    fi
+  fi
+
+  # Install brew if not present (macOS and Linux)
+  if ! command -v brew &>/dev/null; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
+    else
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    fi
+  fi
+
+  # Brew is required — exit if still not available
+  if ! command -v brew &>/dev/null; then
+    echo "ERROR: Homebrew installation failed. Install brew manually and re-run."
     exit 1
   fi
 
-  if [ "$_PKG_MANAGER" = "brew" ] && [ ! -s "$(which brew)" ]; then
-    echo "Brew not installed. Skipping the rest of the installs"
-    exit 0
-  fi
+  _PKG_MANAGER="brew"
 
   if [ "$_PKG_MANAGER" = "brew" ]; then
     if [ ! -s "$(which tfenv)" ]
