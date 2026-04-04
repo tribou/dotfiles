@@ -71,6 +71,9 @@ file:
   /root/.default-python-packages:
     exists: true
     filetype: symlink
+  /root/.config/mise/config.toml:
+    exists: true
+    filetype: symlink
 
 # TPM and all plugins installed
   /root/.tmux/plugins/tpm:
