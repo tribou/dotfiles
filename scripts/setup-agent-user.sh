@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# NOTE: This script targets Linux only (uses useradd, groupadd, getent).
+# It is not intended to run on macOS.
+
 # Resolve dotfiles location from this script's own path
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MAIN_USER="${SUDO_USER:-$USER}"
@@ -57,6 +60,7 @@ generate_ssh_key() {
   local key_path="$AGENT_HOME/.ssh/id_ed25519"
   sudo mkdir -p "$AGENT_HOME/.ssh"
   sudo chmod 700 "$AGENT_HOME/.ssh"
+  sudo chown "$AGENT_USER:$AGENT_USER" "$AGENT_HOME/.ssh"
   if sudo test -f "$key_path"; then
     log "SSH key already exists at $key_path, skipping"
   else
@@ -85,8 +89,8 @@ write_bash_profile() {
   local bash_profile="$AGENT_HOME/.bash_profile"
   log "Writing $bash_profile (sourcing dotfiles from $DOTFILES)"
   sudo tee "$bash_profile" > /dev/null <<EOF
-source $DOTFILES/bash_profile
-source ~/.agent_overrides.sh
+source "$DOTFILES/bash_profile"
+[ -f ~/.agent_overrides.sh ] && source ~/.agent_overrides.sh
 EOF
   sudo chown "$AGENT_USER:$AGENT_USER" "$bash_profile"
 }
