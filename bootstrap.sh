@@ -285,7 +285,6 @@ then
       zlib \
       hashicorp/tap/terraform-ls \
       nmap \
-      elixir \
       ansible \
       htop \
       gpg \
