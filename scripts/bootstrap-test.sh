@@ -21,6 +21,7 @@ fi
 
 eval "$("$MISE_BIN" activate bash)"
 mise use -g go@latest
+eval "$("$MISE_BIN" env bash)"
 
 GO_BIN_DIR="${GOBIN:-$GOPATH/bin}"
 if [ ! -x "$GO_BIN_DIR/gopls" ]
