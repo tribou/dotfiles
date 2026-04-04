@@ -291,7 +291,7 @@ then
       rename \
       navi \
       shellcheck \
-      tldr \
+      tlrc \
       lazydocker \
       lazygit \
       just \
