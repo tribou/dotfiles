@@ -265,6 +265,25 @@ function wtc ()
   git worktree add -b "$BRANCH" "$WORKTREE_PATH" && cd "$WORKTREE_PATH" || return
 }
 
+function wt ()
+{
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local RESULT
+  RESULT=$(git worktree list | tail -n +2 | fzf --preview-window wrap --color)
+
+  if [ -n "$RESULT" ]
+  then
+    cd "$(echo "$RESULT" | awk '{print $1}')" || return
+  fi
+}
+
 function gpsu ()
 {
   git push -u origin "$(git branch --show-current)" "$@" && _dotfiles_git_status
