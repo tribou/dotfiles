@@ -235,15 +235,6 @@ then
     echo "npm not available or eslint_d already installed. Skipping..."
   fi
 
-  if [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
-  then
-    echo "Installing vim-plug for Neovim"
-    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-    echo "Installing Neovim plugins"
-    nvim --headless +"PlugInstall --sync" +qall
-  fi
-
   if [ ! -f "$HOME/dev/z/z.sh" ]
   then
     echo "Installing z"
@@ -338,6 +329,16 @@ then
       font-fira-code-nerd-font \
       font-hack-nerd-font \
       font-fontawesome
+  fi
+
+  # vim-plug + Neovim plugins — must run after brew installs neovim
+  if command -v nvim &>/dev/null && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
+  then
+    echo "Installing vim-plug for Neovim"
+    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    echo "Installing Neovim plugins"
+    nvim --headless +"PlugInstall --sync" +qall
   fi
 
   # pynvim (Neovim Python support) — installed via pip since mise no longer manages Python
