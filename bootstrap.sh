@@ -344,7 +344,7 @@ then
   fi
 
   # Golang tools — install after mise provisions Go
-  if [ -s "$(which go)" ] && [ ! -s "$(which gopls)" ]
+  if [ -s "$(which go)" ] && [ ! -x "$GOPATH/bin/gopls" ]
   then
     echo "Installing gopls"
     go install golang.org/x/tools/gopls@latest
