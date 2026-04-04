@@ -233,13 +233,6 @@ then
     . "$HOME/dev/z/z.sh"
   fi
 
-  if [ ! -s "$(which fzf)"  ]
-  then
-    echo "Installing fzf"
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-    ~/.fzf/install
-  fi
-
   # Install brew prerequisites on Linux (needed before brew can install)
   if [[ "$OSTYPE" != "darwin"* ]]; then
     if command -v apt-get &>/dev/null; then
@@ -326,14 +319,6 @@ then
     else
       echo "Fonts already installed Skipping..."
       echo
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which tmux)"  ]
-    then
-      echo "Installing tmux"
-      brew install tmux
     fi
   fi
 
