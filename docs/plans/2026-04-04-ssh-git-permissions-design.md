@@ -26,14 +26,14 @@ Deploy keys are registered per-repo on GitHub/GitLab — the agent only has acce
 
 | Piece | Location |
 |---|---|
-| Setup script | `scripts/setup-agent-user.sh` |
-| Agent overrides | `lib/agent_overrides.sh` |
+| Setup script | `agent/setup-user.sh` |
+| Agent overrides | `agent/overrides.sh` |
 | Convenience alias | `lib/commands.sh` (`alias llm=...`) |
 | Deploy key | Registered manually on GitHub per-repo |
 
 ## Setup Script
 
-`scripts/setup-agent-user.sh` — run once on any server where agent support is needed. Idempotent (safe to re-run).
+`agent/setup-user.sh` — run once on any server where agent support is needed. Idempotent (safe to re-run).
 
 Steps performed:
 1. Create `agent` Linux user
@@ -42,7 +42,7 @@ Steps performed:
 4. Generate `agent`'s SSH key at `/home/agent/.ssh/id_ed25519` (if not already present)
 5. Write `agent`'s `~/.ssh/config`
 6. Write `agent`'s `~/.bash_profile` sourcing dotfiles (path resolved at setup time) then `~/.agent_overrides.sh`
-7. Symlink `~agent/.agent_overrides.sh` → `$DOTFILES/lib/agent_overrides.sh`
+7. Symlink `~agent/.agent_overrides.sh` → `$DOTFILES/agent/overrides.sh`
 8. Write `agent`'s `~/.gitconfig`
 9. Add passwordless sudo entry: `tribou ALL=(agent) NOPASSWD: /bin/bash`
 10. Print the public key for manual registration as a GitHub/GitLab deploy key
@@ -80,7 +80,7 @@ Agent's `~/.gitconfig`:
   email = tribou@users.noreply.github.com
 ```
 
-Git identity is also set via env vars in `lib/agent_overrides.sh` to ensure it takes precedence regardless of repo-level config.
+Git identity is also set via env vars in `agent/overrides.sh` to ensure it takes precedence regardless of repo-level config.
 
 ## Agent Environment
 
@@ -90,7 +90,7 @@ source /home/tribou/dev/dotfiles/bash_profile
 source ~/.agent_overrides.sh
 ```
 
-`lib/agent_overrides.sh` (version-controlled in dotfiles, symlinked into agent's home):
+`agent/overrides.sh` (version-controlled in dotfiles, symlinked into agent's home):
 ```bash
 # Git identity overrides
 export GIT_AUTHOR_NAME="Agent"

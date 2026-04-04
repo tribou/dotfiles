@@ -96,7 +96,7 @@ EOF
 }
 
 symlink_agent_overrides() {
-  local target="$DOTFILES/lib/agent_overrides.sh"
+  local target="$DOTFILES/agent/overrides.sh"
   local link="$AGENT_HOME/.agent_overrides.sh"
   log "Symlinking $link -> $target"
   sudo ln -sf "$target" "$link"

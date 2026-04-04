@@ -10,12 +10,12 @@
 
 ---
 
-### Task 1: Add `lib/agent_overrides.sh`
+### Task 1: Add `agent/overrides.sh`
 
 This file holds all agent-specific overrides — git identity env vars and PS1. It will be symlinked into the agent's home by the setup script.
 
 **Files:**
-- Create: `lib/agent_overrides.sh`
+- Create: `agent/overrides.sh`
 
 **Step 1: Create the file**
 
@@ -34,14 +34,14 @@ PS1='\[\033[0;34m\][llm] \W $(get_git_location) > \[\]'
 
 **Step 2: Verify bash syntax**
 
-Run: `bashcheck lib/agent_overrides.sh`
+Run: `bashcheck agent/overrides.sh`
 Expected: no errors
 
 **Step 3: Commit**
 
 ```bash
-git add lib/agent_overrides.sh
-git commit -m "Add lib/agent_overrides.sh for agent user environment"
+git add agent/overrides.sh
+git commit -m "Add agent/overrides.sh for agent user environment"
 ```
 
 ---
@@ -77,12 +77,12 @@ git commit -m "Add llm alias to switch to agent user"
 
 ---
 
-### Task 3: Create `scripts/setup-agent-user.sh`
+### Task 3: Create `agent/setup-user.sh`
 
 The main setup script. Run once on any server where you want agent support. Idempotent — safe to re-run.
 
 **Files:**
-- Create: `scripts/setup-agent-user.sh`
+- Create: `agent/setup-user.sh`
 
 **Step 1: Write the script**
 
@@ -181,7 +181,7 @@ EOF
 }
 
 symlink_agent_overrides() {
-  local target="$DOTFILES/lib/agent_overrides.sh"
+  local target="$DOTFILES/agent/overrides.sh"
   local link="$AGENT_HOME/.agent_overrides.sh"
   log "Symlinking $link -> $target"
   sudo ln -sf "$target" "$link"
@@ -248,19 +248,19 @@ log "Done! Run 'llm' to switch to the agent user."
 **Step 2: Make it executable**
 
 ```bash
-chmod +x scripts/setup-agent-user.sh
+chmod +x agent/setup-user.sh
 ```
 
 **Step 3: Verify bash syntax**
 
-Run: `bashcheck scripts/setup-agent-user.sh`
+Run: `bashcheck agent/setup-user.sh`
 Expected: no errors
 
 **Step 4: Commit**
 
 ```bash
-git add scripts/setup-agent-user.sh
-git commit -m "Add scripts/setup-agent-user.sh for agent user setup"
+git add agent/setup-user.sh
+git commit -m "Add agent/setup-user.sh for agent user setup"
 ```
 
 ---
@@ -272,7 +272,7 @@ Do a final review of all three files together to check for consistency.
 **Step 1: Confirm all files exist**
 
 ```bash
-ls lib/agent_overrides.sh scripts/setup-agent-user.sh
+ls agent/overrides.sh agent/setup-user.sh
 grep -n "alias llm=" lib/commands.sh
 ```
 
@@ -281,8 +281,8 @@ Expected: files exist, alias found
 **Step 2: Run full bash syntax check**
 
 ```bash
-bashcheck lib/agent_overrides.sh
-bashcheck scripts/setup-agent-user.sh
+bashcheck agent/overrides.sh
+bashcheck agent/setup-user.sh
 bashcheck lib/commands.sh
 ```
 

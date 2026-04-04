@@ -105,6 +105,15 @@ The `lib/` directory contains modular shell functions sourced by `lib/index.sh`:
 - **`curl_it.sh`**: HTTP request helpers
 - **`notify.sh`**: System notification utilities
 
+### Agent Directory
+
+The `agent/` directory contains the isolated LLM agent-user subsystem:
+
+- **`setup-user.sh`**: Linux-only setup script for creating the `agent` user, SSH key, sudoers entry, and shell profile wiring
+- **`overrides.sh`**: Agent-only shell overrides for git identity and the `[llm]` prompt prefix
+
+Important boundary: files in `agent/` are intentionally **not** sourced by `bash_profile` or `lib/index.sh`. They are only consumed by the generated `agent` user's home profile. Keep agent-specific behavior there so normal `tribou` shells never inherit it accidentally.
+
 ### Git Workflow Integration
 
 The repository implements an automated ticket-number-based commit workflow:
