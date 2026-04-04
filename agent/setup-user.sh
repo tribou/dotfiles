@@ -16,6 +16,13 @@ GROUP="devteam"
 
 log() { echo "==> $*"; }
 
+require_linux() {
+  if [[ "${OSTYPE:-}" == darwin* ]] || [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "agent/setup-user.sh is Linux only and is not supported on macOS." >&2
+    exit 1
+  fi
+}
+
 idempotent_useradd() {
   if id "$AGENT_USER" &>/dev/null; then
     log "User '$AGENT_USER' already exists, skipping"
@@ -144,6 +151,7 @@ log "Setting up agent user on $(hostname)"
 log "Dotfiles: $DOTFILES"
 log "Main user: $MAIN_USER"
 
+require_linux
 idempotent_useradd
 idempotent_groupadd
 add_user_to_group "$MAIN_USER"
