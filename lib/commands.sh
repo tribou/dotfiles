@@ -235,6 +235,35 @@ function gbd ()
   fi
 }
 
+function wtc ()
+{
+  if [ -z "$1" ]
+  then
+    echo "Usage: wtc <branch-name>" >&2
+    return 1
+  fi
+
+  local BRANCH="$1"
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local WORKTREE_PATH="$REPO_ROOT/.worktrees/$BRANCH"
+  local GITIGNORE="$REPO_ROOT/.gitignore"
+
+  if ! grep -qF '.worktrees/' "$GITIGNORE" 2>/dev/null
+  then
+    echo '.worktrees/' >> "$GITIGNORE"
+    echo "Added .worktrees/ to .gitignore"
+  fi
+
+  git worktree add -b "$BRANCH" "$WORKTREE_PATH" && cd "$WORKTREE_PATH" || return
+}
+
 function gpsu ()
 {
   git push -u origin "$(git branch --show-current)" "$@" && _dotfiles_git_status
