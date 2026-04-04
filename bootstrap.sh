@@ -274,7 +274,6 @@ then
       elixir \
       ansible \
       htop \
-      tor \
       gpg \
       editorconfig \
       watchman \
@@ -282,7 +281,6 @@ then
       awscli \
       ssh-copy-id \
       git-extras \
-      vimpager \
       jq \
       dos2unix \
       tidy-html5 \
@@ -291,9 +289,7 @@ then
       bat \
       rename \
       navi \
-      renameutils \
       shellcheck \
-      tmux-mem-cpu-load \
       tldr \
       lazydocker \
       lazygit \
@@ -309,10 +305,14 @@ then
         alacritty \
         ngrok/ngrok/ngrok \
         reattach-to-user-namespace \
-        tfenv
+        tfenv \
+        tor \
+        vimpager \
+        renameutils \
+        tmux-mem-cpu-load
 
       brew install --cask \
-        homebrew/cask/cmake \
+        cmake \
         1password \
         1password-cli \
         appcleaner \
