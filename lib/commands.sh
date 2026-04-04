@@ -283,7 +283,7 @@ function wt ()
   fi
 
   local RESULT
-  RESULT=$(git worktree list | tail -n +2 | fzf --preview-window wrap --color)
+  RESULT=$(git worktree list | fzf --preview-window wrap --color)
 
   if [ -n "$RESULT" ]
   then
@@ -325,9 +325,17 @@ function wtd ()
     cd "$MAIN_REPO" || return
   fi
 
-  git worktree remove "$WORKTREE_PATH" \
-    || { rm -rf "$WORKTREE_PATH" && git worktree prune; } \
-    || return
+  if ! git worktree remove "$WORKTREE_PATH"; then
+    if [ -d "$WORKTREE_PATH" ]; then
+      echo
+      read -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
+        && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
+        || return 1
+      git worktree remove --force "$WORKTREE_PATH" || return
+    else
+      git worktree prune || return
+    fi
+  fi
   git branch -d "$BRANCH" || _dotfiles_prompt_git_branch_delete "$BRANCH"
 }
 
