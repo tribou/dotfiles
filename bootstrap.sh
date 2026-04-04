@@ -196,7 +196,11 @@ then
     if [ -x "$HOME/.local/bin/mise" ]
     then
       mise use -g node@lts
-      mise use -g ruby@3
+      # Try precompiled ruby first (fast), fall back to source compilation
+      if ! MISE_RUBY_COMPILE=0 mise use -g ruby@3 2>/dev/null; then
+        echo "No precompiled ruby available for this platform, compiling from source..."
+        mise use -g ruby@3
+      fi
       echo
     fi
 
