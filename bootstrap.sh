@@ -184,7 +184,7 @@ then
       echo
     fi
 
-    MISE_BIN="$(command -v mise 2>/dev/null || true)"
+    MISE_BIN="$(type -P mise 2>/dev/null || true)"
     export PATH="$HOME/.local/bin:$PATH"
 
     if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]
