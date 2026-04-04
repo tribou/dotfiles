@@ -262,7 +262,14 @@ function wtc ()
   fi
 
   mkdir -p "$(dirname "$WORKTREE_PATH")"
-  git worktree add -b "$BRANCH" "$WORKTREE_PATH" && cd "$WORKTREE_PATH" || return
+  git worktree add -b "$BRANCH" "$WORKTREE_PATH" || return
+
+  if [ -d "$REPO_ROOT/.claude" ]
+  then
+    cp -r "$REPO_ROOT/.claude" "$WORKTREE_PATH/.claude"
+  fi
+
+  cd "$WORKTREE_PATH" || return
 }
 
 function wt ()
@@ -311,7 +318,9 @@ function wtd ()
     BRANCH=$(echo "$RESULT" | sed -E 's/.*\[([^]]+)\].*/\1/')
   fi
 
-  git worktree remove "$WORKTREE_PATH" || return
+  git worktree remove "$WORKTREE_PATH" \
+    || { rm -rf "$WORKTREE_PATH" && git worktree prune; } \
+    || return
   git branch -d "$BRANCH" || _dotfiles_prompt_git_branch_delete "$BRANCH"
 }
 
