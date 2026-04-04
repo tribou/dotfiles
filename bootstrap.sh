@@ -184,8 +184,8 @@ then
       echo
     fi
 
-    MISE_BIN="$(type -P mise 2>/dev/null || true)"
     export PATH="$HOME/.local/bin:$PATH"
+    MISE_BIN="$(type -P mise 2>/dev/null || true)"
 
     if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]
     then
@@ -352,7 +352,7 @@ then
 
   # Golang tools — install after mise provisions Go
   GO_BIN_DIR="${GOBIN:-$GOPATH/bin}"
-  if [ -s "$(which go)" ] && [ ! -x "$GO_BIN_DIR/gopls" ]
+  if [ -x "$(which go)" ] && [ ! -x "$GO_BIN_DIR/gopls" ]
   then
     echo "Installing gopls"
     go install golang.org/x/tools/gopls@latest
