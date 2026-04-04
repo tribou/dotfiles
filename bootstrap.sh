@@ -190,12 +190,12 @@ then
     then
       echo "Installing mise:"
       curl https://mise.run | sh
-      eval "$("$HOME/.local/bin/mise" activate bash)"
       echo
     fi
 
     if [ -x "$HOME/.local/bin/mise" ]
     then
+      eval "$("$HOME/.local/bin/mise" activate bash)"
       mise use -g node@lts
       # Try precompiled ruby first (fast), fall back to source compilation
       if ! MISE_RUBY_COMPILE=0 mise use -g ruby@3 2>/dev/null; then
@@ -343,5 +343,9 @@ then
     gem install neovim
   fi
 
-  # Golang tools
-  go install golang.org/x/tools/gopls@latest
+  # Golang tools — install after mise provisions Go
+  if [ -s "$(which go)" ] && [ ! -s "$(which gopls)" ]
+  then
+    echo "Installing gopls"
+    go install golang.org/x/tools/gopls@latest
+  fi
