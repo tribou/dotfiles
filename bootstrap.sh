@@ -201,6 +201,7 @@ then
         echo "No precompiled ruby available for this platform, compiling from source..."
         mise use -g ruby@3
       fi
+      mise use -g go@latest
       echo
     fi
 
@@ -271,7 +272,6 @@ then
       zlib \
       hashicorp/tap/terraform-ls \
       nmap \
-      go \
       elixir \
       ansible \
       htop \
