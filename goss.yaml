@@ -24,6 +24,14 @@ command:
   "mise --version":
     exit-status: 0
 
+  # Go must be available via the mise-managed runtime installed by bootstrap
+  "go version":
+    exit-status: 0
+
+  # gopls must remain available for editor integration after bootstrap
+  "gopls version":
+    exit-status: 0
+
   # fd and bat must be available as canonical names (Ubuntu installs as fdfind/batcat)
   "fd --version":
     exit-status: 0
