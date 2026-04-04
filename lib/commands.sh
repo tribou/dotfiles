@@ -318,6 +318,13 @@ function wtd ()
     BRANCH=$(echo "$RESULT" | sed -E 's/.*\[([^]]+)\].*/\1/')
   fi
 
+  # If CWD is inside the worktree we're about to delete, cd out first
+  if [[ "$PWD" == "$WORKTREE_PATH"* ]]; then
+    local MAIN_REPO
+    MAIN_REPO=$(dirname "$(git rev-parse --git-common-dir)")
+    cd "$MAIN_REPO" || return
+  fi
+
   git worktree remove "$WORKTREE_PATH" \
     || { rm -rf "$WORKTREE_PATH" && git worktree prune; } \
     || return
