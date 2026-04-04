@@ -261,6 +261,7 @@ function wtc ()
     echo "Added .worktrees/ to .gitignore"
   fi
 
+  mkdir -p "$(dirname "$WORKTREE_PATH")"
   git worktree add -b "$BRANCH" "$WORKTREE_PATH" && cd "$WORKTREE_PATH" || return
 }
 
