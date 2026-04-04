@@ -184,18 +184,25 @@ then
       echo
     fi
 
+    MISE_BIN="$(command -v mise 2>/dev/null || true)"
     export PATH="$HOME/.local/bin:$PATH"
 
-    if [ ! -x "$HOME/.local/bin/mise" ]
+    if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]
+    then
+      MISE_BIN="$HOME/.local/bin/mise"
+    fi
+
+    if [ -z "$MISE_BIN" ]
     then
       echo "Installing mise:"
       curl https://mise.run | sh
       echo
+      MISE_BIN="$HOME/.local/bin/mise"
     fi
 
-    if [ -x "$HOME/.local/bin/mise" ]
+    if [ -x "$MISE_BIN" ]
     then
-      eval "$("$HOME/.local/bin/mise" activate bash)"
+      eval "$("$MISE_BIN" activate bash)"
       mise use -g node@lts
       # Try precompiled ruby first (fast), fall back to source compilation
       if ! MISE_RUBY_COMPILE=0 mise use -g ruby@3 2>/dev/null; then
@@ -344,7 +351,8 @@ then
   fi
 
   # Golang tools — install after mise provisions Go
-  if [ -s "$(which go)" ] && [ ! -x "$GOPATH/bin/gopls" ]
+  GO_BIN_DIR="${GOBIN:-$GOPATH/bin}"
+  if [ -s "$(which go)" ] && [ ! -x "$GO_BIN_DIR/gopls" ]
   then
     echo "Installing gopls"
     go install golang.org/x/tools/gopls@latest
