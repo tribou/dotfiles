@@ -259,10 +259,7 @@ then
     exit 1
   fi
 
-  _PKG_MANAGER="brew"
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    brew install \
+  brew install \
       git \
       neovim \
       python \
@@ -299,33 +296,32 @@ then
       fzf \
       tmux
 
-    # macOS-only packages
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      brew install \
-        alacritty \
-        ngrok/ngrok/ngrok \
-        reattach-to-user-namespace \
-        tfenv \
-        tor \
-        vimpager \
-        renameutils \
-        tmux-mem-cpu-load
+  # macOS-only packages
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install \
+      alacritty \
+      ngrok/ngrok/ngrok \
+      reattach-to-user-namespace \
+      tfenv \
+      tor \
+      vimpager \
+      renameutils \
+      tmux-mem-cpu-load
 
-      brew install --cask \
-        cmake \
-        1password \
-        1password-cli \
-        appcleaner \
-        balenaetcher \
-        bruno \
-        firefox \
-        imageoptim \
-        orbstack \
-        steam \
-        font-fira-code-nerd-font \
-        font-hack-nerd-font \
-        font-fontawesome
-    fi
+    brew install --cask \
+      cmake \
+      1password \
+      1password-cli \
+      appcleaner \
+      balenaetcher \
+      bruno \
+      firefox \
+      imageoptim \
+      orbstack \
+      steam \
+      font-fira-code-nerd-font \
+      font-hack-nerd-font \
+      font-fontawesome
   fi
 
   # pynvim (Neovim Python support) — installed via pip since mise no longer manages Python
