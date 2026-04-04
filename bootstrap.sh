@@ -262,76 +262,15 @@ then
   _PKG_MANAGER="brew"
 
   if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which tfenv)" ]
-    then
-      echo "Installing tfenv"
-      if [ -s "$(brew list terraform)"  ]
-      then
-        echo "Existing terraform install. Unlinking..."
-        brew unlink terraform
-        echo
-      fi
-      brew install tfenv
-      tfenv install
-      tfenv use
-      echo
-    fi
-  fi
-
-  JAVA_VERSION=17
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which java)" ]
-    then
-      echo "Installing java"
-      brew install "zulu@$JAVA_VERSION"
-      echo
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which jenv)" ]
-    then
-      echo "Installing jenv"
-      if [ -s "$(brew list jenv)"  ]
-      then
-        echo "Existing jenv install. Unlinking..."
-        brew unlink jenv
-        echo
-      fi
-      brew install jenv
-      eval "$(jenv init -)"
-      jenv add "$(/usr/libexec/java_home)"
-      jenv global $JAVA_VERSION
-      echo
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ -z "$(brew list --cask font-fira-code-nerd-font)" ]
-    then
-      _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
-      echo "Installing fonts:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-      echo
-    else
-      echo "Fonts already installed Skipping..."
-      echo
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    brew install git \
-      alacritty \
+    brew install \
+      git \
       neovim \
       python \
       bash-completion \
       zlib \
       hashicorp/tap/terraform-ls \
-      homebrew/core/nmap \
-      homebrew/core/go \
+      nmap \
+      go \
       elixir \
       ansible \
       htop \
@@ -352,117 +291,41 @@ then
       bat \
       rename \
       navi \
-      ngrok/ngrok/ngrok \
       renameutils \
       shellcheck \
       tmux-mem-cpu-load \
-      reattach-to-user-namespace \
       tldr \
       lazydocker \
       lazygit \
       just \
       lynx \
-      tree-sitter-cli
+      tree-sitter-cli \
+      fzf \
+      tmux
 
-  elif [ "$_PKG_MANAGER" = "apt" ]; then
-    sudo apt-get update
-    sudo apt-get install -y \
-      git \
-      bash-completion \
-      nmap \
-      golang \
-      htop \
-      gnupg \
-      tree \
-      awscli \
-      ssh-copy-id \
-      jq \
-      dos2unix \
-      tidy \
-      fd-find \
-      ripgrep \
-      bat \
-      rename \
-      shellcheck \
-      tldr \
-      just \
-      cmake \
-      build-essential \
-      libssl-dev \
-      libreadline-dev \
-      zlib1g-dev \
-      libyaml-dev \
-      xdg-utils
-    # On Ubuntu/Debian, some tools install with different binary names to avoid
-    # conflicts with pre-existing packages. Create canonical symlinks in ~/.local/bin.
-    mkdir -p "$HOME/.local/bin"
-    [ -x "$(which fdfind 2>/dev/null)" ] && ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
-    [ -x "$(which batcat 2>/dev/null)" ] && ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
-    # lazygit — not in apt, install via release script
-    if [ ! -s "$(which lazygit)" ]; then
-      LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-      curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-      tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-      sudo install /tmp/lazygit /usr/local/bin
-    fi
-    # neovim — apt version (0.9.x) is too old for plugins requiring vim.uv (needs 0.10+)
-    if [ ! -s "$(which nvim)" ]; then
-      _NVIM_ARCH=$(uname -m | sed 's/aarch64/arm64/')
-      curl -fsSL "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${_NVIM_ARCH}.tar.gz" \
-        | sudo tar xz -C /opt
-      sudo ln -sf "/opt/nvim-linux-${_NVIM_ARCH}/bin/nvim" /usr/local/bin/nvim
-    fi
+    # macOS-only packages
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      brew install \
+        alacritty \
+        ngrok/ngrok/ngrok \
+        reattach-to-user-namespace \
+        tfenv
 
-  elif [ "$_PKG_MANAGER" = "pacman" ]; then
-    sudo pacman -Syu --noconfirm \
-      git \
-      neovim \
-      bash-completion \
-      nmap \
-      go \
-      htop \
-      gnupg \
-      tree \
-      aws-cli \
-      openssh \
-      jq \
-      dos2unix \
-      tidy \
-      fd \
-      ripgrep \
-      bat \
-      perl-rename \
-      shellcheck \
-      tldr \
-      just \
-      cmake \
-      base-devel \
-      xdg-utils
-    # lazygit — available in AUR; install via yay if present, else release script
-    if [ ! -s "$(which lazygit)" ]; then
-      if command -v yay &>/dev/null; then
-        yay -S --noconfirm lazygit
-      else
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-        sudo install /tmp/lazygit /usr/local/bin
-      fi
+      brew install --cask \
+        homebrew/cask/cmake \
+        1password \
+        1password-cli \
+        appcleaner \
+        balenaetcher \
+        bruno \
+        firefox \
+        imageoptim \
+        orbstack \
+        steam \
+        font-fira-code-nerd-font \
+        font-hack-nerd-font \
+        font-fontawesome
     fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    brew install --cask \
-      homebrew/cask/cmake \
-      1password \
-      1password-cli \
-      appcleaner \
-      balenaetcher \
-      bruno \
-      firefox \
-      imageoptim \
-      orbstack \
-      steam
   fi
 
   # pynvim (Neovim Python support) — installed via pip since mise no longer manages Python
