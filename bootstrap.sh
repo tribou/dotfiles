@@ -184,11 +184,12 @@ then
       echo
     fi
 
+    export PATH="$HOME/.local/bin:$PATH"
+
     if [ ! -x "$HOME/.local/bin/mise" ]
     then
       echo "Installing mise:"
       curl https://mise.run | sh
-      export PATH="$HOME/.local/bin:$PATH"
       eval "$("$HOME/.local/bin/mise" activate bash)"
       echo
     fi
