@@ -210,6 +210,7 @@ then
       eval "$("$MISE_BIN" activate bash)"
       # Install all tools from mise-config.toml (symlinked to ~/.config/mise/config.toml)
       mise install node go
+      corepack enable
       # Try precompiled ruby first (fast), fall back to source compilation
       if ! MISE_RUBY_COMPILE=0 mise install ruby 2>/dev/null; then
         echo "No precompiled ruby available for this platform, compiling from source..."
