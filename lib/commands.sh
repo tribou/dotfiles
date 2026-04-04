@@ -95,6 +95,25 @@ function co ()
   fi
 }
 
+# Start the Claude keep-alive loop
+function claude-keepalive() {
+  if tmux has-session -t claude-keepalive 2>/dev/null; then
+    echo "Claude keep-alive is already running!"
+  else
+    tmux new-session -d -s claude-keepalive
+    # Use single quotes around the loop so $! doesn't evaluate early in your current shell
+    # shellcheck disable=SC2016
+    tmux send-keys -t claude-keepalive 'while true; do claude --resume & PID=$!; sleep 15; kill $PID 2>/dev/null; sleep 21600; done' C-m
+    echo "Claude keep-alive started in the background!"
+  fi
+}
+
+# Stop the Claude keep-alive loop
+function claude-keepalive-stop() {
+  tmux kill-session -t claude-keepalive 2>/dev/null
+  echo "Claude keep-alive stopped."
+}
+
 # Returns the write command for the system clipboard (no args: just the command string).
 function _dotfiles_clipboard_write_cmd ()
 {
