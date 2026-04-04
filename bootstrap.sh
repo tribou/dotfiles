@@ -111,6 +111,11 @@ mkdir -p ~/.config/alacritty
 backupFile ".config/alacritty/alacritty.toml"
 linkFileToHome "alacritty.toml" ".config/alacritty/alacritty.toml"
 
+# .config/mise/config.toml
+mkdir -p ~/.config/mise
+backupFile ".config/mise/config.toml"
+linkFileToHome "mise-config.toml" ".config/mise/config.toml"
+
 # .config/nvim/coc-settings.json
 backupFile ".config/nvim/coc-settings.json"
 linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
