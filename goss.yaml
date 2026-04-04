@@ -28,6 +28,12 @@ command:
   "go version":
     exit-status: 0
 
+  # yarn and pnpm must be available via corepack (enabled by bootstrap after mise installs node)
+  "yarn --version":
+    exit-status: 0
+  "pnpm --version":
+    exit-status: 0
+
   # gopls must remain available for editor integration after bootstrap
   "gopls version":
     exit-status: 0
