@@ -284,6 +284,37 @@ function wt ()
   fi
 }
 
+function wtd ()
+{
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local WORKTREE_PATH BRANCH
+
+  if [ -n "$1" ]
+  then
+    BRANCH="$1"
+    WORKTREE_PATH="$REPO_ROOT/.worktrees/$BRANCH"
+  else
+    local RESULT
+    RESULT=$(git worktree list | tail -n +2 | fzf --preview-window wrap --color)
+    if [ -z "$RESULT" ]
+    then
+      return 0
+    fi
+    WORKTREE_PATH=$(echo "$RESULT" | awk '{print $1}')
+    BRANCH=$(echo "$RESULT" | sed -E 's/.*\[([^]]+)\].*/\1/')
+  fi
+
+  git worktree remove "$WORKTREE_PATH" || return
+  git branch -d "$BRANCH" || _dotfiles_prompt_git_branch_delete "$BRANCH"
+}
+
 function gpsu ()
 {
   git push -u origin "$(git branch --show-current)" "$@" && _dotfiles_git_status
