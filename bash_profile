@@ -148,6 +148,9 @@ if which jenv > /dev/null; then eval "$(jenv init -)"; fi
 # maestro
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
+# opencode
+[ -d "$HOME/.opencode/bin" ] && export PATH="$HOME/.opencode/bin:$PATH"
+
 # mise — manages Ruby, Node, and other runtime versions
 [ -d "$HOME/.local/bin" ] || mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
