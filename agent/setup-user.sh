@@ -133,36 +133,43 @@ EOF
   sudo chown "$AGENT_USER:$AGENT_USER" "$gitconfig"
 }
 
-install_z() {
-  local z_dir="$AGENT_HOME/dev/z"
-  sudo mkdir -p "$AGENT_HOME/dev/bin"
-  sudo chown -R "$AGENT_USER:$AGENT_USER" "$AGENT_HOME/dev"
-  if sudo test -d "$z_dir"; then
-    log "z already installed at $z_dir, skipping"
-  else
-    log "Installing rupa/z for '$AGENT_USER'"
-    sudo -u "$AGENT_USER" git clone --depth 1 https://github.com/rupa/z.git "$z_dir"
+symlink_dev_dir() {
+  local target="$MAIN_HOME/dev"
+  local link="$AGENT_HOME/dev"
+  if sudo test -L "$link"; then
+    log "$AGENT_HOME/dev symlink already exists, skipping"
+    return
   fi
+  if sudo test -d "$link"; then
+    log "Removing agent-owned ~/dev to replace with shared symlink"
+    sudo rm -rf "$link"
+  fi
+  sudo ln -sf "$target" "$link"
+  sudo chown -h "$AGENT_USER:$AGENT_USER" "$link"
+  log "Symlinked $link -> $target"
 }
 
-install_mise() {
-  local mise_bin="$AGENT_HOME/.local/bin/mise"
-  if sudo test -x "$mise_bin"; then
-    log "mise already installed, skipping"
-  else
-    log "Installing mise for '$AGENT_USER'"
-    sudo -u "$AGENT_USER" bash -c 'curl https://mise.run | sh'
+share_home_dir() {
+  local dir_name="$1"
+  local source="$MAIN_HOME/$dir_name"
+  local link="$AGENT_HOME/$dir_name"
+  if ! sudo test -e "$source"; then
+    log "WARNING: $source does not exist — skipping share"
+    return
   fi
-}
-
-mise_install_tools() {
-  local mise_bin="$AGENT_HOME/.local/bin/mise"
-  log "Installing mise tools (node, go, ruby) for '$AGENT_USER'"
-  sudo -u "$AGENT_USER" "$mise_bin" install node go
-  if ! sudo -u "$AGENT_USER" env MISE_RUBY_COMPILE=0 "$mise_bin" install ruby 2>/dev/null; then
-    log "No precompiled ruby available, compiling from source..."
-    sudo -u "$AGENT_USER" "$mise_bin" install ruby
+  grant_access_to_dir "$source"
+  if sudo test -L "$link"; then
+    log "$link symlink already exists, skipping"
+    return
   fi
+  if sudo test -e "$link"; then
+    log "WARNING: $link already exists and is not a symlink — skipping"
+    return
+  fi
+  sudo mkdir -p "$(dirname "$link")"
+  sudo ln -sf "$source" "$link"
+  sudo chown -h "$AGENT_USER:$AGENT_USER" "$link"
+  log "Symlinked $link -> $source"
 }
 
 symlink_mise_config() {
@@ -174,6 +181,20 @@ symlink_mise_config() {
   sudo chown -R "$AGENT_USER:$AGENT_USER" "$AGENT_HOME/.config"
   sudo ln -sf "$target" "$link"
   sudo chown -h "$AGENT_USER:$AGENT_USER" "$link"
+}
+
+symlink_main_user_bin() {
+  local bin_name="$1"
+  local source="$MAIN_HOME/.local/bin/$bin_name"
+  local link="$AGENT_HOME/.local/bin/$bin_name"
+  if ! sudo test -x "$source"; then
+    log "WARNING: $bin_name not found at $source — skipping symlink"
+    return
+  fi
+  sudo mkdir -p "$(dirname "$link")"
+  sudo ln -sf "$source" "$link"
+  sudo chown -h "$AGENT_USER:$AGENT_USER" "$link"
+  log "Symlinked $bin_name: $link -> $source"
 }
 
 setup_sudoers() {
@@ -230,10 +251,14 @@ write_ssh_config
 write_bash_profile
 symlink_agent_overrides
 write_gitconfig
-install_z
-install_mise
+symlink_dev_dir
+symlink_main_user_bin mise
 symlink_mise_config
-mise_install_tools
+share_home_dir .local/share/mise
+share_home_dir .claude
+share_home_dir .opencode
+symlink_main_user_bin claude
+symlink_main_user_bin opencode
 setup_sudoers
 print_public_key
 
