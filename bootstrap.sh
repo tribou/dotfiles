@@ -247,7 +247,7 @@ then
   if [[ "$OSTYPE" != "darwin"* ]]; then
     if command -v apt-get &>/dev/null; then
       sudo apt-get update
-      sudo apt-get install -y curl git build-essential
+      sudo apt-get install -y curl git build-essential xdg-utils
     elif command -v pacman &>/dev/null; then
       sudo pacman -Syu --noconfirm curl git base-devel
     fi
