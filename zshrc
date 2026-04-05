@@ -1,5 +1,9 @@
-# Change zsh prompt
-export PS1='%{$fg[green]%}%m:%~>%{$reset_color%} '
+# Change zsh prompt (show hostname only in SSH sessions)
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  export PS1='%{$fg[green]%}%m:%~>%{$reset_color%} '
+else
+  export PS1='%{$fg[green]%}%~>%{$reset_color%} '
+fi
 
 alias -g gp='| grep -i '
 
