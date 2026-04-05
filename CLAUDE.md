@@ -11,11 +11,8 @@ This is a personal dotfiles repository for managing shell configurations, Neovim
 ### Bootstrap and Installation
 
 ```bash
-# Initial setup (creates symlinks and sets up environment)
+# Initial setup (creates symlinks, installs all dependencies idempotently)
 ./bootstrap.sh
-
-# Install all dependencies (Homebrew, languages, tools, etc.)
-./bootstrap.sh --install-deps
 
 # Run tests
 make test

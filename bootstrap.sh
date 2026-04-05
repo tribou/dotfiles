@@ -45,7 +45,7 @@ function linkFileToHome ()
 
 # Setup dev and gopath
 mkdir -p "$HOME/dev/bin" || true
-mkdir ~/dev/go/pkg || true
+mkdir -p ~/dev/go/pkg
 mkdir -p ~/dev/go/src/github.com/tribou || true
 mkdir -p ~/dev/go/src/bitbucket.org || true
 mkdir -p ~/dev/go/src/github.com/rocksauce || true
@@ -179,7 +179,7 @@ then
 
   if   [ ! -s "$(which cargo)"  ]
     then
-      _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+      _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
       echo "Installing rust:"
       echo "$_BOOTSTRAP_INSTALL"
       echo
