@@ -51,16 +51,20 @@ add_user_to_group() {
   fi
 }
 
-setup_dev_permissions() {
-  local dev_dir="$MAIN_HOME/dev"
-  if [ ! -d "$dev_dir" ]; then
-    log "WARNING: $dev_dir does not exist — skipping permissions setup"
+grant_access_to_dir() {
+  local target_dir="$1"
+  if [ ! -d "$target_dir" ]; then
+    log "WARNING: $target_dir does not exist — skipping permissions setup"
     return
   fi
-  log "Setting group ownership and setgid on $dev_dir"
-  sudo chown -R "$MAIN_USER:$GROUP" "$dev_dir"
-  sudo chmod -R g+rw "$dev_dir"
-  sudo find "$dev_dir" -type d -exec chmod g+s {} \;
+  log "Setting group ownership and setgid on $target_dir"
+  sudo chown -R "$MAIN_USER:$GROUP" "$target_dir"
+  sudo chmod -R g+rw "$target_dir"
+  sudo find "$target_dir" -type d -exec chmod g+s {} \;
+}
+
+setup_dev_permissions() {
+  grant_access_to_dir "$MAIN_HOME/dev"
 }
 
 generate_ssh_key() {
@@ -147,6 +151,19 @@ print_public_key() {
 
 # --- Main ---
 
+# --grant [DIR]: grant agent group access to a specific directory (or pwd)
+if [[ "${1:-}" == "--grant" ]]; then
+  require_linux
+  TARGET="${2:-$PWD}"
+  log "Granting agent group access to $TARGET"
+  idempotent_groupadd
+  add_user_to_group "$MAIN_USER"
+  add_user_to_group "$AGENT_USER"
+  grant_access_to_dir "$TARGET"
+  log "Done! Agent user can now read/write $TARGET"
+  exit 0
+fi
+
 log "Setting up agent user on $(hostname)"
 log "Dotfiles: $DOTFILES"
 log "Main user: $MAIN_USER"
@@ -157,6 +174,7 @@ idempotent_groupadd
 add_user_to_group "$MAIN_USER"
 add_user_to_group "$AGENT_USER"
 setup_dev_permissions
+grant_access_to_dir "$DOTFILES"
 generate_ssh_key
 write_ssh_config
 write_bash_profile

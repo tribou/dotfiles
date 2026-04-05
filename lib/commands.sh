@@ -1031,6 +1031,13 @@ alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
 alias less='less -r'
 alias ll='ls -lah'
 alias llm='sudo -u agent -i'
+agent-grant() {
+  local target="${1:-$PWD}"
+  local dotfiles="${DOTFILES:-$HOME/dev/dotfiles}"
+  read -rp "Grant agent group access to '$target'? (y/n): " confirm
+  [[ "$confirm" == [yY] ]] || { echo "Aborted."; return 1; }
+  sudo bash "$dotfiles/agent/setup-user.sh" --grant "$target"
+}
 alias ls='ls -G'
 alias lt='ls -lath'
 alias md='merge develop'
