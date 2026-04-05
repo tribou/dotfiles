@@ -35,12 +35,16 @@ if [ ! -f "$DOTFILES/tests/test_helper/bats-core/bin/bats" ]; then
 fi
 
 echo "==> Linking dotfiles configs..."
-mkdir -p ~/.config/nvim
+mkdir -p ~/.config/nvim ~/.config/mise
 ln -sf "$DOTFILES/tmux/tmux-conf" ~/.tmux.conf
 ln -sf "$DOTFILES/init.vim" ~/.config/nvim/init.vim
 ln -sf "$DOTFILES/default-node-packages" ~/.default-node-packages
 ln -sf "$DOTFILES/default-gems" ~/.default-gems
 ln -sf "$DOTFILES/default-python-packages" ~/.default-python-packages
+ln -sf "$DOTFILES/mise-config.toml" ~/.config/mise/config.toml
+
+echo "==> Enabling corepack (yarn, pnpm)..."
+corepack enable
 
 echo "==> Installing TPM..."
 if [ ! -d ~/.tmux/plugins/tpm ]; then
