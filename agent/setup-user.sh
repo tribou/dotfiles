@@ -123,7 +123,9 @@ symlink_agent_overrides() {
 write_gitconfig() {
   local gitconfig="$AGENT_HOME/.gitconfig"
   log "Writing $gitconfig"
-  sudo tee "$gitconfig" > /dev/null <<'EOF'
+  sudo tee "$gitconfig" > /dev/null <<EOF
+[include]
+  path = $DOTFILES/gitconfig
 [user]
   name = Agent
   email = tribou@users.noreply.github.com

@@ -124,6 +124,31 @@ linux_env() {
   assert_output --partial "/tmp/test-target"
 }
 
+# --- write_gitconfig includes dotfiles aliases ---
+
+@test "write_gitconfig includes dotfiles gitconfig so git aliases are available" {
+  local tmp_home
+  tmp_home="$(mktemp -d)"
+  # sudo passthrough: the mock IS sudo, so just run all args directly
+  write_mock sudo '"$@"'
+
+  run env PATH="$MOCK_BIN:$PATH" bash -c "
+    AGENT_HOME='$tmp_home'
+    AGENT_USER=agent
+    DOTFILES='$REPO_ROOT'
+    log() { :; }
+    # Extract and source only the write_gitconfig function
+    eval \"\$(awk '/^write_gitconfig\(\)/,/^\}/' '$REPO_ROOT/agent/setup-user.sh')\"
+    write_gitconfig
+    cat '$tmp_home/.gitconfig'
+  "
+
+  assert_success
+  assert_output --partial '[include]'
+  assert_output --partial "path = $REPO_ROOT/gitconfig"
+  rm -rf "$tmp_home"
+}
+
 @test "agent-grant defaults to PWD when no argument given" {
   write_mock sudo 'echo "sudo: $*"'
   local target
