@@ -11,7 +11,7 @@
   navigate = true
   dark = true
   line-numbers = true
-  syntax-theme = Dracula
+  syntax-theme = TwoDark
 [credential]
 [color]
   ui = true
