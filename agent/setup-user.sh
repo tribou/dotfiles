@@ -51,6 +51,12 @@ add_user_to_group() {
   fi
 }
 
+grant_home_traversal() {
+  log "Granting group traversal access to $MAIN_HOME"
+  sudo chown "$MAIN_USER:$GROUP" "$MAIN_HOME"
+  sudo chmod g+x "$MAIN_HOME"
+}
+
 grant_access_to_dir() {
   local target_dir="$1"
   if [ ! -d "$target_dir" ]; then
@@ -59,7 +65,7 @@ grant_access_to_dir() {
   fi
   log "Setting group ownership and setgid on $target_dir"
   sudo chown -R "$MAIN_USER:$GROUP" "$target_dir"
-  sudo chmod -R g+rw "$target_dir"
+  sudo chmod -R g+rwX "$target_dir"
   sudo find "$target_dir" -type d -exec chmod g+s {} \;
 }
 
@@ -173,6 +179,7 @@ idempotent_useradd
 idempotent_groupadd
 add_user_to_group "$MAIN_USER"
 add_user_to_group "$AGENT_USER"
+grant_home_traversal
 setup_dev_permissions
 grant_access_to_dir "$DOTFILES"
 generate_ssh_key
