@@ -155,6 +155,16 @@ install_mise() {
   fi
 }
 
+mise_install_tools() {
+  local mise_bin="$AGENT_HOME/.local/bin/mise"
+  log "Installing mise tools (node, go, ruby) for '$AGENT_USER'"
+  sudo -u "$AGENT_USER" "$mise_bin" install node go
+  if ! sudo -u "$AGENT_USER" env MISE_RUBY_COMPILE=0 "$mise_bin" install ruby 2>/dev/null; then
+    log "No precompiled ruby available, compiling from source..."
+    sudo -u "$AGENT_USER" "$mise_bin" install ruby
+  fi
+}
+
 symlink_mise_config() {
   local target="$DOTFILES/mise-config.toml"
   local config_dir="$AGENT_HOME/.config/mise"
@@ -223,6 +233,7 @@ write_gitconfig
 install_z
 install_mise
 symlink_mise_config
+mise_install_tools
 setup_sudoers
 print_public_key
 
