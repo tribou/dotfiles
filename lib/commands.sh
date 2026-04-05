@@ -325,13 +325,20 @@ function wtd ()
     cd "$MAIN_REPO" || return
   fi
 
-  if ! git worktree remove "$WORKTREE_PATH"; then
+  local _wtd_remove_err
+  if ! _wtd_remove_err=$(git worktree remove "$WORKTREE_PATH" 2>&1); then
     if [ -d "$WORKTREE_PATH" ]; then
-      echo
-      read -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
-        && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
-        || return 1
-      git worktree remove --force "$WORKTREE_PATH" || return
+      if echo "$_wtd_remove_err" | grep -q "submodule"; then
+        # git worktree remove (even --force) cannot remove worktrees containing
+        # submodules; fall back to manual removal
+        rm -rf "$WORKTREE_PATH" && git worktree prune || return
+      else
+        echo
+        read -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
+          && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
+          || return 1
+        git worktree remove --force "$WORKTREE_PATH" || return
+      fi
     else
       git worktree prune || return
     fi
