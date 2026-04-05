@@ -133,6 +133,39 @@ EOF
   sudo chown "$AGENT_USER:$AGENT_USER" "$gitconfig"
 }
 
+install_z() {
+  local z_dir="$AGENT_HOME/dev/z"
+  sudo mkdir -p "$AGENT_HOME/dev/bin"
+  sudo chown -R "$AGENT_USER:$AGENT_USER" "$AGENT_HOME/dev"
+  if sudo test -d "$z_dir"; then
+    log "z already installed at $z_dir, skipping"
+  else
+    log "Installing rupa/z for '$AGENT_USER'"
+    sudo -u "$AGENT_USER" git clone --depth 1 https://github.com/rupa/z.git "$z_dir"
+  fi
+}
+
+install_mise() {
+  local mise_bin="$AGENT_HOME/.local/bin/mise"
+  if sudo test -x "$mise_bin"; then
+    log "mise already installed, skipping"
+  else
+    log "Installing mise for '$AGENT_USER'"
+    sudo -u "$AGENT_USER" bash -c 'curl https://mise.run | sh'
+  fi
+}
+
+symlink_mise_config() {
+  local target="$DOTFILES/mise-config.toml"
+  local config_dir="$AGENT_HOME/.config/mise"
+  local link="$config_dir/config.toml"
+  log "Symlinking $link -> $target"
+  sudo mkdir -p "$config_dir"
+  sudo chown -R "$AGENT_USER:$AGENT_USER" "$AGENT_HOME/.config"
+  sudo ln -sf "$target" "$link"
+  sudo chown -h "$AGENT_USER:$AGENT_USER" "$link"
+}
+
 setup_sudoers() {
   local sudoers_file="/etc/sudoers.d/agent-access"
   if sudo test -f "$sudoers_file"; then
@@ -187,6 +220,9 @@ write_ssh_config
 write_bash_profile
 symlink_agent_overrides
 write_gitconfig
+install_z
+install_mise
+symlink_mise_config
 setup_sudoers
 print_public_key
 
