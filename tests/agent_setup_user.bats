@@ -215,7 +215,7 @@ linux_env() {
 
 # --- setup_gh_credential_helper ---
 
-@test "setup_gh_credential_helper calls gh auth setup-git as agent user" {
+@test "setup_gh_credential_helper calls gh auth setup-git via bash login shell" {
   local tmp_home
   tmp_home="$(mktemp -d)"
   write_mock sudo 'echo "sudo: $*"'
@@ -231,7 +231,11 @@ linux_env() {
   "
 
   assert_success
-  assert_output --partial 'auth setup-git'
+  # Must use bash -lc so gh is found via login shell PATH, not sudo's restricted PATH
+  assert_output --partial 'bash -lc'
+  assert_output --partial 'gh auth setup-git'
+  # Must NOT hardcode a path (that was the bug: path didn't exist when gh installed elsewhere)
+  refute_output --partial '.local/bin/gh'
   rm -rf "$tmp_home"
 }
 
