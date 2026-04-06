@@ -149,6 +149,30 @@ linux_env() {
   rm -rf "$tmp_home"
 }
 
+# --- write_gitconfig includes safe.directory for cross-user repos ---
+
+@test "write_gitconfig includes safe.directory = * to allow agent to fetch repos owned by main user" {
+  local tmp_home
+  tmp_home="$(mktemp -d)"
+  write_mock sudo '"$@"'
+
+  run env PATH="$MOCK_BIN:$PATH" bash -c "
+    AGENT_HOME='$tmp_home'
+    AGENT_USER=agent
+    DOTFILES='$REPO_ROOT'
+    MAIN_HOME='/home/tribou'
+    log() { :; }
+    eval \"\$(awk '/^write_gitconfig\(\)/,/^\}/' '$REPO_ROOT/agent/setup-user.sh')\"
+    write_gitconfig
+    cat '$tmp_home/.gitconfig'
+  "
+
+  assert_success
+  assert_output --partial '[safe]'
+  assert_output --partial 'directory = *'
+  rm -rf "$tmp_home"
+}
+
 # --- write_gitconfig uses HTTPS URL rewrites, not sshCommand ---
 
 @test "write_gitconfig does not contain sshCommand" {

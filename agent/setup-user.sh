@@ -129,6 +129,8 @@ write_gitconfig() {
   insteadOf = git@github.com:
 [url "https://gitlab.com/"]
   insteadOf = git@gitlab.com:
+[safe]
+  directory = *
 EOF
   sudo chown "$AGENT_USER:$AGENT_USER" "$gitconfig"
 }
