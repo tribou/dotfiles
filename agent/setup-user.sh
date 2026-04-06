@@ -210,14 +210,14 @@ setup_sudoers() {
 
 setup_gh_credential_helper() {
   log "Configuring gh credential helper for agent user"
-  sudo -u "$AGENT_USER" gh auth setup-git
+  sudo -u "$AGENT_USER" "$AGENT_HOME/.local/bin/gh" auth setup-git
 }
 
 print_gh_auth_instructions() {
   echo
   echo "================================================================"
   echo "NEXT STEP: Authenticate agent with GitHub using a fine-grained PAT:"
-  echo "  sudo -u agent gh auth login --with-token <<< \"YOUR_FINE_GRAINED_PAT\""
+  echo "  sudo -u agent $AGENT_HOME/.local/bin/gh auth login --with-token <<< \"YOUR_FINE_GRAINED_PAT\""
   echo "Token rotation: re-run the above command with a new token at any time."
   echo "================================================================"
 }
