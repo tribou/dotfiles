@@ -253,6 +253,49 @@ linux_env() {
 
 # --- agent-grant defaults ---
 
+# --- grant_access_to_dir permissions ---
+
+@test "grant_access_to_dir sets setgid on directories and group rw on files" {
+  # sudo passthrough: run commands directly (we own the temp dir)
+  write_mock sudo '"$@"'
+  # chown no-op: group 'devteam' won't exist locally
+  write_mock chown ':'
+
+  local target
+  target="$(mktemp -d)"
+  mkdir -p "$target/subdir"
+  touch "$target/file.txt"
+  touch "$target/subdir/nested.txt"
+
+  run env PATH="$MOCK_BIN:$PATH" bash -c "
+    MAIN_USER='$(id -un)'
+    GROUP='devteam'
+    log() { :; }
+    eval \"\$(awk '/^grant_access_to_dir\(\)/,/^\}/' '$REPO_ROOT/agent/setup-user.sh')\"
+    grant_access_to_dir '$target'
+  "
+
+  assert_success
+
+  # Directories must have setgid ('s' at group-execute position in ls output)
+  run bash -c "ls -ld '$target' | awk '{print \$1}'"
+  assert_output --regexp '^d.....s'
+
+  run bash -c "ls -ld '$target/subdir' | awk '{print \$1}'"
+  assert_output --regexp '^d.....s'
+
+  # Files must have group read and write (positions 5-6 in ls permission string)
+  run bash -c "ls -l '$target/file.txt' | awk '{print \$1}'"
+  assert_output --regexp '^....rw'
+
+  run bash -c "ls -l '$target/subdir/nested.txt' | awk '{print \$1}'"
+  assert_output --regexp '^....rw'
+
+  rm -rf "$target"
+}
+
+# --- agent-grant defaults ---
+
 @test "agent-grant defaults to PWD when no argument given" {
   write_mock sudo 'echo "sudo: $*"'
   local target

@@ -65,8 +65,7 @@ grant_access_to_dir() {
   fi
   log "Setting group ownership and setgid on $target_dir"
   sudo chown -R "$MAIN_USER:$GROUP" "$target_dir"
-  sudo chmod -R g+rwX "$target_dir"
-  sudo find "$target_dir" -type d -exec chmod g+s {} \;
+  sudo find "$target_dir" \( -type d -exec chmod g+s,g+rwx {} + \) -o \( -type f -exec chmod g+rw {} + \)
 }
 
 setup_dev_permissions() {
