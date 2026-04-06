@@ -210,7 +210,7 @@ setup_sudoers() {
 
 setup_gh_credential_helper() {
   log "Configuring gh credential helper for agent user"
-  sudo -u "$AGENT_USER" bash -lc "gh auth setup-git"
+  sudo -u "$AGENT_USER" bash -lc "gh auth setup-git" || log "WARNING: gh auth setup-git failed (expected if not yet authenticated — see instructions below)"
 }
 
 print_gh_auth_instructions() {
