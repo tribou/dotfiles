@@ -45,7 +45,7 @@ function linkFileToHome ()
 
 # Setup dev and gopath
 mkdir -p "$HOME/dev/bin" || true
-mkdir ~/dev/go/pkg || true
+mkdir -p ~/dev/go/pkg
 mkdir -p ~/dev/go/src/github.com/tribou || true
 mkdir -p ~/dev/go/src/bitbucket.org || true
 mkdir -p ~/dev/go/src/github.com/rocksauce || true
@@ -111,6 +111,11 @@ mkdir -p ~/.config/alacritty
 backupFile ".config/alacritty/alacritty.toml"
 linkFileToHome "alacritty.toml" ".config/alacritty/alacritty.toml"
 
+# .config/mise/config.toml
+mkdir -p ~/.config/mise
+backupFile ".config/mise/config.toml"
+linkFileToHome "mise-config.toml" ".config/mise/config.toml"
+
 # .config/nvim/coc-settings.json
 backupFile ".config/nvim/coc-settings.json"
 linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
@@ -174,7 +179,7 @@ then
 
   if   [ ! -s "$(which cargo)"  ]
     then
-      _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+      _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
       echo "Installing rust:"
       echo "$_BOOTSTRAP_INSTALL"
       echo
@@ -184,19 +189,33 @@ then
       echo
     fi
 
-    if [ ! -x "$HOME/.local/bin/mise" ]
+    export PATH="$HOME/.local/bin:$PATH"
+    MISE_BIN="$(type -P mise 2>/dev/null || true)"
+
+    if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]
+    then
+      MISE_BIN="$HOME/.local/bin/mise"
+    fi
+
+    if [ -z "$MISE_BIN" ]
     then
       echo "Installing mise:"
       curl https://mise.run | sh
-      export PATH="$HOME/.local/bin:$PATH"
-      eval "$("$HOME/.local/bin/mise" activate bash)"
       echo
+      MISE_BIN="$HOME/.local/bin/mise"
     fi
 
-    if [ -x "$HOME/.local/bin/mise" ]
+    if [ -x "$MISE_BIN" ]
     then
-      mise use -g node@lts
-      mise use -g ruby@3
+      eval "$("$MISE_BIN" activate bash)"
+      # Install all tools from mise-config.toml (symlinked to ~/.config/mise/config.toml)
+      mise install node go
+      corepack enable
+      # Try precompiled ruby first (fast), fall back to source compilation
+      if ! MISE_RUBY_COMPILE=0 mise install ruby 2>/dev/null; then
+        echo "No precompiled ruby available for this platform, compiling from source..."
+        mise install ruby
+      fi
       echo
     fi
 
@@ -217,15 +236,6 @@ then
     echo "npm not available or eslint_d already installed. Skipping..."
   fi
 
-  if [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
-  then
-    echo "Installing vim-plug for Neovim"
-    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-    echo "Installing Neovim plugins"
-    nvim --headless +"PlugInstall --sync" +qall
-  fi
-
   if [ ! -f "$HOME/dev/z/z.sh" ]
   then
     echo "Installing z"
@@ -233,112 +243,42 @@ then
     . "$HOME/dev/z/z.sh"
   fi
 
-  if [ ! -s "$(which fzf)"  ]
-  then
-    echo "Installing fzf"
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-    ~/.fzf/install
+  # Install brew prerequisites on Linux (needed before brew can install)
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    if command -v apt-get &>/dev/null; then
+      sudo apt-get update
+      sudo apt-get install -y curl git build-essential xdg-utils
+    elif command -v pacman &>/dev/null; then
+      sudo pacman -Syu --noconfirm curl git base-devel
+    fi
   fi
 
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    _PKG_MANAGER="brew"
-  elif command -v apt-get &>/dev/null; then
-    _PKG_MANAGER="apt"
-  elif command -v pacman &>/dev/null; then
-    _PKG_MANAGER="pacman"
-  else
-    echo "Unsupported package manager. Install packages manually."
+  # Install brew if not present (macOS and Linux)
+  if ! command -v brew &>/dev/null; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
+    else
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    fi
+  fi
+
+  # Brew is required — exit if still not available
+  if ! command -v brew &>/dev/null; then
+    echo "ERROR: Homebrew installation failed. Install brew manually and re-run."
     exit 1
   fi
 
-  if [ "$_PKG_MANAGER" = "brew" ] && [ ! -s "$(which brew)" ]; then
-    echo "Brew not installed. Skipping the rest of the installs"
-    exit 0
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which tfenv)" ]
-    then
-      echo "Installing tfenv"
-      if [ -s "$(brew list terraform)"  ]
-      then
-        echo "Existing terraform install. Unlinking..."
-        brew unlink terraform
-        echo
-      fi
-      brew install tfenv
-      tfenv install
-      tfenv use
-      echo
-    fi
-  fi
-
-  JAVA_VERSION=17
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which java)" ]
-    then
-      echo "Installing java"
-      brew install "zulu@$JAVA_VERSION"
-      echo
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which jenv)" ]
-    then
-      echo "Installing jenv"
-      if [ -s "$(brew list jenv)"  ]
-      then
-        echo "Existing jenv install. Unlinking..."
-        brew unlink jenv
-        echo
-      fi
-      brew install jenv
-      eval "$(jenv init -)"
-      jenv add "$(/usr/libexec/java_home)"
-      jenv global $JAVA_VERSION
-      echo
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ -z "$(brew list --cask font-fira-code-nerd-font)" ]
-    then
-      _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
-      echo "Installing fonts:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-      echo
-    else
-      echo "Fonts already installed Skipping..."
-      echo
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    if [ ! -s "$(which tmux)"  ]
-    then
-      echo "Installing tmux"
-      brew install tmux
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
-    brew install git \
-      alacritty \
+  brew install \
+      git \
       neovim \
       python \
       bash-completion \
       zlib \
       hashicorp/tap/terraform-ls \
-      homebrew/core/nmap \
-      homebrew/core/go \
-      elixir \
+      nmap \
       ansible \
       htop \
-      tor \
       gpg \
       editorconfig \
       watchman \
@@ -346,7 +286,6 @@ then
       awscli \
       ssh-copy-id \
       git-extras \
-      vimpager \
       jq \
       dos2unix \
       tidy-html5 \
@@ -355,108 +294,32 @@ then
       bat \
       rename \
       navi \
-      ngrok/ngrok/ngrok \
-      renameutils \
       shellcheck \
-      tmux-mem-cpu-load \
-      reattach-to-user-namespace \
-      tldr \
+      tlrc \
       lazydocker \
       lazygit \
       just \
       lynx \
-      tree-sitter-cli
+      tree-sitter-cli \
+      fzf \
+      tmux \
+      git-delta \
+      gh
 
-  elif [ "$_PKG_MANAGER" = "apt" ]; then
-    sudo apt-get update
-    sudo apt-get install -y \
-      git \
-      bash-completion \
-      nmap \
-      golang \
-      htop \
-      gnupg \
-      tree \
-      awscli \
-      ssh-copy-id \
-      jq \
-      dos2unix \
-      tidy \
-      fd-find \
-      ripgrep \
-      bat \
-      rename \
-      shellcheck \
-      tldr \
-      just \
-      cmake \
-      build-essential \
-      libssl-dev \
-      libreadline-dev \
-      zlib1g-dev \
-      libyaml-dev \
-      xdg-utils
-    # On Ubuntu/Debian, some tools install with different binary names to avoid
-    # conflicts with pre-existing packages. Create canonical symlinks in ~/.local/bin.
-    mkdir -p "$HOME/.local/bin"
-    [ -x "$(which fdfind 2>/dev/null)" ] && ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
-    [ -x "$(which batcat 2>/dev/null)" ] && ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
-    # lazygit — not in apt, install via release script
-    if [ ! -s "$(which lazygit)" ]; then
-      LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-      curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-      tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-      sudo install /tmp/lazygit /usr/local/bin
-    fi
-    # neovim — apt version (0.9.x) is too old for plugins requiring vim.uv (needs 0.10+)
-    if [ ! -s "$(which nvim)" ]; then
-      _NVIM_ARCH=$(uname -m | sed 's/aarch64/arm64/')
-      curl -fsSL "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${_NVIM_ARCH}.tar.gz" \
-        | sudo tar xz -C /opt
-      sudo ln -sf "/opt/nvim-linux-${_NVIM_ARCH}/bin/nvim" /usr/local/bin/nvim
-    fi
+  # macOS-only packages
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install \
+      alacritty \
+      ngrok/ngrok/ngrok \
+      reattach-to-user-namespace \
+      tfenv \
+      tor \
+      vimpager \
+      renameutils \
+      tmux-mem-cpu-load
 
-  elif [ "$_PKG_MANAGER" = "pacman" ]; then
-    sudo pacman -Syu --noconfirm \
-      git \
-      neovim \
-      bash-completion \
-      nmap \
-      go \
-      htop \
-      gnupg \
-      tree \
-      aws-cli \
-      openssh \
-      jq \
-      dos2unix \
-      tidy \
-      fd \
-      ripgrep \
-      bat \
-      perl-rename \
-      shellcheck \
-      tldr \
-      just \
-      cmake \
-      base-devel \
-      xdg-utils
-    # lazygit — available in AUR; install via yay if present, else release script
-    if [ ! -s "$(which lazygit)" ]; then
-      if command -v yay &>/dev/null; then
-        yay -S --noconfirm lazygit
-      else
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-        sudo install /tmp/lazygit /usr/local/bin
-      fi
-    fi
-  fi
-
-  if [ "$_PKG_MANAGER" = "brew" ]; then
     brew install --cask \
-      homebrew/cask/cmake \
+      cmake \
       1password \
       1password-cli \
       appcleaner \
@@ -465,7 +328,20 @@ then
       firefox \
       imageoptim \
       orbstack \
-      steam
+      steam \
+      font-fira-code-nerd-font \
+      font-hack-nerd-font \
+      font-fontawesome
+  fi
+
+  # vim-plug + Neovim plugins — must run after brew installs neovim
+  if command -v nvim &>/dev/null && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
+  then
+    echo "Installing vim-plug for Neovim"
+    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    echo "Installing Neovim plugins"
+    nvim --headless +"PlugInstall --sync" +qall
   fi
 
   # pynvim (Neovim Python support) — installed via pip since mise no longer manages Python
@@ -482,5 +358,10 @@ then
     gem install neovim
   fi
 
-  # Golang tools
-  go install golang.org/x/tools/gopls@latest
+  # Golang tools — install after mise provisions Go
+  GO_BIN_DIR="${GOBIN:-$GOPATH/bin}"
+  if [ -x "$(which go)" ] && [ ! -x "$GO_BIN_DIR/gopls" ]
+  then
+    echo "Installing gopls"
+    go install golang.org/x/tools/gopls@latest
+  fi

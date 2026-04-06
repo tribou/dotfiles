@@ -95,6 +95,25 @@ function co ()
   fi
 }
 
+# Start the Claude keep-alive loop
+function claude-keepalive() {
+  if tmux has-session -t claude-keepalive 2>/dev/null; then
+    echo "Claude keep-alive is already running!"
+  else
+    tmux new-session -d -s claude-keepalive
+    # Use single quotes around the loop so $! doesn't evaluate early in your current shell
+    # shellcheck disable=SC2016
+    tmux send-keys -t claude-keepalive 'while true; do claude --resume & PID=$!; sleep 15; kill $PID 2>/dev/null; sleep 21600; done' C-m
+    echo "Claude keep-alive started in the background!"
+  fi
+}
+
+# Stop the Claude keep-alive loop
+function claude-keepalive-stop() {
+  tmux kill-session -t claude-keepalive 2>/dev/null
+  echo "Claude keep-alive stopped."
+}
+
 # Returns the write command for the system clipboard (no args: just the command string).
 function _dotfiles_clipboard_write_cmd ()
 {
@@ -214,6 +233,117 @@ function gbd ()
       _eval_script "$SCRIPT"
     fi
   fi
+}
+
+function wtc ()
+{
+  if [ -z "$1" ]
+  then
+    echo "Usage: wtc <branch-name>" >&2
+    return 1
+  fi
+
+  local BRANCH="$1"
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local WORKTREE_PATH="$REPO_ROOT/.worktrees/$BRANCH"
+  local GITIGNORE="$REPO_ROOT/.gitignore"
+
+  if ! grep -qF '.worktrees/' "$GITIGNORE" 2>/dev/null
+  then
+    echo '.worktrees/' >> "$GITIGNORE"
+    echo "Added .worktrees/ to .gitignore"
+  fi
+
+  mkdir -p "$(dirname "$WORKTREE_PATH")"
+  git worktree add -b "$BRANCH" "$WORKTREE_PATH" || return
+
+  if [ -d "$REPO_ROOT/.claude" ]
+  then
+    cp -r "$REPO_ROOT/.claude" "$WORKTREE_PATH/.claude"
+  fi
+
+  cd "$WORKTREE_PATH" || return
+}
+
+function wt ()
+{
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local RESULT
+  RESULT=$(git worktree list | fzf --preview-window wrap --color)
+
+  if [ -n "$RESULT" ]
+  then
+    cd "$(echo "$RESULT" | awk '{print $1}')" || return
+  fi
+}
+
+function wtd ()
+{
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local WORKTREE_PATH BRANCH
+
+  if [ -n "$1" ]
+  then
+    BRANCH="$1"
+    WORKTREE_PATH="$REPO_ROOT/.worktrees/$BRANCH"
+  else
+    local RESULT
+    RESULT=$(git worktree list | tail -n +2 | fzf --preview-window wrap --color)
+    if [ -z "$RESULT" ]
+    then
+      return 0
+    fi
+    WORKTREE_PATH=$(echo "$RESULT" | awk '{print $1}')
+    BRANCH=$(echo "$RESULT" | sed -E 's/.*\[([^]]+)\].*/\1/')
+  fi
+
+  # If CWD is inside the worktree we're about to delete, cd out first
+  if [[ "$PWD" == "$WORKTREE_PATH"* ]]; then
+    local MAIN_REPO
+    MAIN_REPO=$(dirname "$(git rev-parse --git-common-dir)")
+    cd "$MAIN_REPO" || return
+  fi
+
+  local _wtd_remove_err
+  if ! _wtd_remove_err=$(git worktree remove "$WORKTREE_PATH" 2>&1); then
+    if [ -d "$WORKTREE_PATH" ]; then
+      if echo "$_wtd_remove_err" | grep -q "submodule"; then
+        # git worktree remove (even --force) cannot remove worktrees containing
+        # submodules; fall back to manual removal
+        rm -rf "$WORKTREE_PATH" && git worktree prune || return
+      else
+        echo
+        read -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
+          && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
+          || return 1
+        git worktree remove --force "$WORKTREE_PATH" || return
+      fi
+    else
+      git worktree prune || return
+    fi
+  fi
+  git branch -d "$BRANCH" || _dotfiles_prompt_git_branch_delete "$BRANCH"
 }
 
 function gpsu ()
@@ -887,7 +1017,7 @@ alias gbdr='git branch -d -r'
 alias gc='gcloud compute'
 alias gci='gcloud compute instances'
 alias gd='git diff'
-alias gds='git diff --staged --color-words'
+alias gds='git diff --staged'
 alias gdw='git diff --color-words'
 alias gdww='git diff-word'
 alias gf='git flow'
@@ -907,6 +1037,14 @@ alias kd='kubectl describe'
 alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
 alias less='less -r'
 alias ll='ls -lah'
+alias llm='sudo -u agent -i'
+agent-grant() {
+  local target="${1:-$PWD}"
+  local dotfiles="${DOTFILES:-$HOME/dev/dotfiles}"
+  read -rp "Grant agent group access to '$target'? (y/n): " confirm
+  [[ "$confirm" == [yY] ]] || { echo "Aborted."; return 1; }
+  sudo bash "$dotfiles/agent/setup-user.sh" --grant "$target"
+}
 alias ls='ls -G'
 alias lt='ls -lath'
 alias md='merge develop'

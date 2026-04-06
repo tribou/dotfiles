@@ -148,6 +148,9 @@ if which jenv > /dev/null; then eval "$(jenv init -)"; fi
 # maestro
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
+# opencode
+[ -d "$HOME/.opencode/bin" ] && export PATH="$HOME/.opencode/bin:$PATH"
+
 # mise — manages Ruby, Node, and other runtime versions
 [ -d "$HOME/.local/bin" ] || mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
@@ -155,8 +158,12 @@ export PATH="$HOME/.local/bin:$PATH"
 
 _dotfiles_debug_timing "$LINENO"
 
-# Change bash prompt
-export PS1="\[\033[0;34m\]\W \$(get_git_location) > \[$(tput sgr0)\]"
+# Change bash prompt (show hostname only in SSH sessions)
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  export PS1="\[\033[0;34m\]$HOSTNAME_SHORT:\W \$(get_git_location) > \[$(tput sgr0)\]"
+else
+  export PS1="\[\033[0;34m\]\W \$(get_git_location) > \[$(tput sgr0)\]"
+fi
 
 
 # AWS CLI

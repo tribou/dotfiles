@@ -340,7 +340,7 @@ set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 set -g @tpm-clean 'u'
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
-run -b '~/.tmux/plugins/tpm/tpm'
+run '~/.tmux/plugins/tpm/tpm'
 
 # Local overrides (not tracked in dotfiles)
 source-file -q ~/.tmux.conf.local

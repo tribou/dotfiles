@@ -3,6 +3,31 @@ set -eo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export DOTFILES
+export GOPATH="$HOME/dev/go"
+mkdir -p "$GOPATH/bin"
+
+export PATH="$HOME/.local/bin:$PATH"
+MISE_BIN="$(type -P mise 2>/dev/null || true)"
+if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]
+then
+  MISE_BIN="$HOME/.local/bin/mise"
+fi
+
+if [ -z "$MISE_BIN" ]
+then
+  curl https://mise.run | sh
+  MISE_BIN="$HOME/.local/bin/mise"
+fi
+
+eval "$("$MISE_BIN" activate bash)"
+mise use -g go@latest
+eval "$("$MISE_BIN" env bash)"
+
+GO_BIN_DIR="${GOBIN:-$GOPATH/bin}"
+if [ ! -x "$GO_BIN_DIR/gopls" ]
+then
+  go install golang.org/x/tools/gopls@latest
+fi
 
 # Initialize bats submodules if not already done
 if [ ! -f "$DOTFILES/tests/test_helper/bats-core/bin/bats" ]; then
@@ -10,12 +35,16 @@ if [ ! -f "$DOTFILES/tests/test_helper/bats-core/bin/bats" ]; then
 fi
 
 echo "==> Linking dotfiles configs..."
-mkdir -p ~/.config/nvim
+mkdir -p ~/.config/nvim ~/.config/mise
 ln -sf "$DOTFILES/tmux/tmux-conf" ~/.tmux.conf
 ln -sf "$DOTFILES/init.vim" ~/.config/nvim/init.vim
 ln -sf "$DOTFILES/default-node-packages" ~/.default-node-packages
 ln -sf "$DOTFILES/default-gems" ~/.default-gems
 ln -sf "$DOTFILES/default-python-packages" ~/.default-python-packages
+ln -sf "$DOTFILES/mise-config.toml" ~/.config/mise/config.toml
+
+echo "==> Enabling corepack (yarn, pnpm)..."
+corepack enable
 
 echo "==> Installing TPM..."
 if [ ! -d ~/.tmux/plugins/tpm ]; then

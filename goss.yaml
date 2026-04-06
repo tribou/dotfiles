@@ -24,6 +24,20 @@ command:
   "mise --version":
     exit-status: 0
 
+  # Go must be available via the mise-managed runtime installed by bootstrap
+  "go version":
+    exit-status: 0
+
+  # yarn and pnpm must be available via corepack (enabled by bootstrap after mise installs node)
+  "yarn --version":
+    exit-status: 0
+  "pnpm --version":
+    exit-status: 0
+
+  # gopls must remain available for editor integration after bootstrap
+  "gopls version":
+    exit-status: 0
+
   # fd and bat must be available as canonical names (Ubuntu installs as fdfind/batcat)
   "fd --version":
     exit-status: 0
@@ -61,6 +75,9 @@ file:
     exists: true
     filetype: symlink
   /root/.default-python-packages:
+    exists: true
+    filetype: symlink
+  /root/.config/mise/config.toml:
     exists: true
     filetype: symlink
 

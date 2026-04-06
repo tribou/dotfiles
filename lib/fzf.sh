@@ -37,7 +37,7 @@ fo() {
 }
 
 # https://github.com/junegunn/fzf/wiki/examples#z
-unalias z
+unalias z 2>/dev/null || true
 z() {
   if [[ -z "$*" ]]; then
     cd "$(_z -l 2>&1 | fzf +s --tac | sed 's/^[0-9,.]* *//')"
