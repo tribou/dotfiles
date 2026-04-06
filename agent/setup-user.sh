@@ -90,11 +90,8 @@ write_ssh_config() {
   local ssh_config="$AGENT_HOME/.ssh/config"
   log "Writing $ssh_config"
   sudo tee "$ssh_config" > /dev/null <<'EOF'
-Host github.com
-  IdentityFile ~/.ssh/id_ed25519
-  IdentitiesOnly yes
-
-Host gitlab.com
+# SSH key used for server-to-server auth (not GitHub git auth — gh CLI handles that)
+Host *
   IdentityFile ~/.ssh/id_ed25519
   IdentitiesOnly yes
 EOF
@@ -129,8 +126,10 @@ write_gitconfig() {
 [user]
   name = Agent
   email = tribou@users.noreply.github.com
-[core]
-  sshCommand = ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes
+[url "https://github.com/"]
+  insteadOf = git@github.com:
+[url "https://gitlab.com/"]
+  insteadOf = git@gitlab.com:
 EOF
   sudo chown "$AGENT_USER:$AGENT_USER" "$gitconfig"
 }
@@ -210,14 +209,17 @@ setup_sudoers() {
   fi
 }
 
-print_public_key() {
-  local pub_key="$AGENT_HOME/.ssh/id_ed25519.pub"
+setup_gh_credential_helper() {
+  log "Configuring gh credential helper for agent user"
+  sudo -u "$AGENT_USER" gh auth setup-git
+}
+
+print_gh_auth_instructions() {
   echo
   echo "================================================================"
-  echo "NEXT STEP: Register this deploy key on GitHub/GitLab per-repo:"
-  echo "  Repo -> Settings -> Deploy keys -> Add deploy key"
-  echo "================================================================"
-  sudo cat "$pub_key"
+  echo "NEXT STEP: Authenticate agent with GitHub using a fine-grained PAT:"
+  echo "  sudo -u agent gh auth login --with-token <<< \"YOUR_FINE_GRAINED_PAT\""
+  echo "Token rotation: re-run the above command with a new token at any time."
   echo "================================================================"
 }
 
@@ -261,7 +263,9 @@ share_home_dir .claude
 share_home_dir .opencode
 symlink_main_user_bin claude
 symlink_main_user_bin opencode
+symlink_main_user_bin gh
+setup_gh_credential_helper
 setup_sudoers
-print_public_key
+print_gh_auth_instructions
 
 log "Done! Run 'llm' to switch to the agent user."

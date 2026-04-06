@@ -303,7 +303,8 @@ then
       tree-sitter-cli \
       fzf \
       tmux \
-      git-delta
+      git-delta \
+      gh
 
   # macOS-only packages
   if [[ "$OSTYPE" == "darwin"* ]]; then

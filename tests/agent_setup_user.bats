@@ -149,6 +149,110 @@ linux_env() {
   rm -rf "$tmp_home"
 }
 
+# --- write_gitconfig uses HTTPS URL rewrites, not sshCommand ---
+
+@test "write_gitconfig does not contain sshCommand" {
+  local tmp_home
+  tmp_home="$(mktemp -d)"
+  write_mock sudo '"$@"'
+
+  run env PATH="$MOCK_BIN:$PATH" bash -c "
+    AGENT_HOME='$tmp_home'
+    AGENT_USER=agent
+    DOTFILES='$REPO_ROOT'
+    log() { :; }
+    eval \"\$(awk '/^write_gitconfig\(\)/,/^\}/' '$REPO_ROOT/agent/setup-user.sh')\"
+    write_gitconfig
+    cat '$tmp_home/.gitconfig'
+  "
+
+  assert_success
+  refute_output --partial 'sshCommand'
+  rm -rf "$tmp_home"
+}
+
+@test "write_gitconfig rewrites git@github.com SSH URLs to HTTPS" {
+  local tmp_home
+  tmp_home="$(mktemp -d)"
+  write_mock sudo '"$@"'
+
+  run env PATH="$MOCK_BIN:$PATH" bash -c "
+    AGENT_HOME='$tmp_home'
+    AGENT_USER=agent
+    DOTFILES='$REPO_ROOT'
+    log() { :; }
+    eval \"\$(awk '/^write_gitconfig\(\)/,/^\}/' '$REPO_ROOT/agent/setup-user.sh')\"
+    write_gitconfig
+    cat '$tmp_home/.gitconfig'
+  "
+
+  assert_success
+  assert_output --partial 'insteadOf = git@github.com:'
+  assert_output --partial 'https://github.com/'
+  rm -rf "$tmp_home"
+}
+
+@test "write_gitconfig rewrites git@gitlab.com SSH URLs to HTTPS" {
+  local tmp_home
+  tmp_home="$(mktemp -d)"
+  write_mock sudo '"$@"'
+
+  run env PATH="$MOCK_BIN:$PATH" bash -c "
+    AGENT_HOME='$tmp_home'
+    AGENT_USER=agent
+    DOTFILES='$REPO_ROOT'
+    log() { :; }
+    eval \"\$(awk '/^write_gitconfig\(\)/,/^\}/' '$REPO_ROOT/agent/setup-user.sh')\"
+    write_gitconfig
+    cat '$tmp_home/.gitconfig'
+  "
+
+  assert_success
+  assert_output --partial 'insteadOf = git@gitlab.com:'
+  assert_output --partial 'https://gitlab.com/'
+  rm -rf "$tmp_home"
+}
+
+# --- setup_gh_credential_helper ---
+
+@test "setup_gh_credential_helper calls gh auth setup-git as agent user" {
+  local tmp_home
+  tmp_home="$(mktemp -d)"
+  write_mock sudo 'echo "sudo: $*"'
+  write_mock gh 'echo "gh: $*"'
+
+  run env PATH="$MOCK_BIN:$PATH" bash -c "
+    AGENT_HOME='$tmp_home'
+    AGENT_USER=agent
+    DOTFILES='$REPO_ROOT'
+    log() { :; }
+    eval \"\$(awk '/^setup_gh_credential_helper\(\)/,/^\}/' '$REPO_ROOT/agent/setup-user.sh')\"
+    setup_gh_credential_helper
+  "
+
+  assert_success
+  assert_output --partial 'auth setup-git'
+  rm -rf "$tmp_home"
+}
+
+# --- print_gh_auth_instructions ---
+
+@test "main run prints gh auth login instructions instead of deploy key instructions" {
+  linux_env
+  write_mock ssh-keygen 'echo "ssh-keygen: $*"'
+  write_mock gh 'echo "gh: $*"'
+  write_mock useradd 'echo "useradd: $*"'
+
+  run env OSTYPE=linux-gnu PATH="$MOCK_BIN:$PATH" \
+    bash "$REPO_ROOT/agent/setup-user.sh"
+
+  assert_output --partial 'gh auth login'
+  refute_output --partial 'Deploy keys'
+  refute_output --partial 'deploy key'
+}
+
+# --- agent-grant defaults ---
+
 @test "agent-grant defaults to PWD when no argument given" {
   write_mock sudo 'echo "sudo: $*"'
   local target
