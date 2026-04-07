@@ -1,7 +1,12 @@
 setup() {
   load 'test_helper/common_setup'
   common_setup
+  _ORIG_PATH="$PATH"
   . "$REPO_ROOT/lib/path.sh"
+}
+
+teardown() {
+  export PATH="$_ORIG_PATH"
 }
 
 @test "_path_strip removes entries matching a single glob pattern" {
