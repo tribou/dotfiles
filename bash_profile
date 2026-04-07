@@ -310,6 +310,11 @@ _dotfiles_debug_timing "$LINENO"
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
+# Deduplicate PATH and ensure homebrew takes precedence
+_path_strip "*homebrew*" "*linuxbrew*"
+_path_dedup
+[ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Cleanup debug timing
 unset DOTFILES_DEBUG_LAST_TIME
