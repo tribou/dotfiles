@@ -28,6 +28,18 @@ setup() {
   assert_equal "$PATH" ""
 }
 
+@test "_path_strip with no arguments is a no-op" {
+  export PATH="/usr/bin:/bin"
+  _path_strip
+  assert_equal "$PATH" "/usr/bin:/bin"
+}
+
+@test "_path_strip removes all entries when all match" {
+  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin"
+  _path_strip "*homebrew*"
+  assert_equal "$PATH" ""
+}
+
 @test "_path_dedup removes duplicate entries preserving first occurrence" {
   export PATH="/usr/bin:/usr/local/bin:/usr/bin:/bin"
   _path_dedup
@@ -50,4 +62,10 @@ setup() {
   export PATH=""
   _path_dedup
   assert_equal "$PATH" ""
+}
+
+@test "_path_dedup is a no-op on a single-entry PATH" {
+  export PATH="/usr/bin"
+  _path_dedup
+  assert_equal "$PATH" "/usr/bin"
 }
