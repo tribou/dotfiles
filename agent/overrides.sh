@@ -6,6 +6,9 @@ export GIT_COMMITTER_NAME="Agent"
 export GIT_AUTHOR_EMAIL="tribou@users.noreply.github.com"
 export GIT_COMMITTER_EMAIL="tribou@users.noreply.github.com"
 
+alias claude='claude --dangerously-skip-permissions'
+alias codex='codex --dangerously-bypass-approvals-and-sandbox'
+
 # Prompt — [llm] prefix with hostname (agent user only exists on remote servers)
 PS1="\[\033[0;34m\][llm] $HOSTNAME_SHORT:\W \$(get_git_location) > \[$(tput sgr0)\]"
 export PS1
