@@ -71,6 +71,7 @@ Plug 'janko/vim-test'
 Plug 'benmills/vimux'
 Plug 'sk1418/HowMuch'
 Plug 'norcalli/nvim-colorizer.lua'
+Plug 'kdheepak/lazygit.nvim'
 
 " Debugging
 Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
