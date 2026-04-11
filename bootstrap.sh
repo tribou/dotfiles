@@ -305,7 +305,8 @@ then
       tmux \
       delta \
       git-delta \
-      gh
+      gh \
+      beads
 
   # macOS-only packages
   if [[ "$OSTYPE" == "darwin"* ]]; then
