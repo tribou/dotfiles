@@ -1036,7 +1036,7 @@ alias kd='kubectl describe'
 alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
 alias less='less -r'
 alias ll='ls -lah'
-alias llm='sudo -u agent -i'
+llm() { STARTPATH="$PWD" sudo --preserve-env=STARTPATH -u agent -i; }
 agent-grant() {
   local target="${1:-$PWD}"
   local dotfiles="${DOTFILES:-$HOME/dev/dotfiles}"
