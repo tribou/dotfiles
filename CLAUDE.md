@@ -6,6 +6,7 @@
 2. **Bug fixes require tests**: see [docs/testing.md](docs/testing.md) for policy
 3. **Bash syntax checking**: use `bashcheck` — never `bash -n`
 4. **Git commits**: single-line only with `git commit -m "..."`, no heredoc, no Co-Authored-By
+5. **Issue tracking**: this project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
 
 ## Key Commands
 
