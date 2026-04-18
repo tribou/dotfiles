@@ -49,3 +49,11 @@ When generating `CLAUDE.md`, you MUST enforce limiting and curating proper globa
 5. **Creating new skills**: use `superpowers:writing-skills` skill
 
 You MUST also prompt the user to review and suggest additional global rules when appropriate.
+
+## Red Flags & Bulletproofing Against Rationalizations
+You MUST explicitly forbid common shortcuts:
+- *"It's faster to write a single `CLAUDE.md`."* -> **Counter**: Do NOT combine architecture, testing, or development into the root `CLAUDE.md`. You MUST split them into the `docs/` directory.
+- *"The repo is too simple for multiple files."* -> **Counter**: Even simple repos require the standard split to maintain consistency across projects.
+
+## Error Handling
+If the repository structure is highly non-standard or overly large to scan efficiently, lean more heavily on the interactive questionnaire to gather context rather than attempting error-prone guesses.
