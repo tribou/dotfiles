@@ -14,7 +14,7 @@ This skill can be used to either setup a new repository or to groom an existing 
 
 ## Process Flow
 
-**Mandatory Step**: The skill MUST instruct the agent to use the `todowrite` tool to create a checklist for the following phases before taking action.
+**Mandatory Step**: The skill MUST instruct the agent to check if the repository uses BEADS (by calling `bd prime` to check usage). If it does, the agent MUST use `bd` to manage tasks. Otherwise, the agent MUST use the `todowrite` tool to create a checklist for the following phases before taking action.
 
 ### 1. Scan Phase
 The agent autonomously scans the repository:
@@ -37,7 +37,7 @@ The agent drafts and writes the primary context files. **All primary context fil
 | `AGENTS.md` | *Non-interactive shell safety flags — everything else lives in CLAUDE.md* |
 | `docs/ARCHITECTURE.md` | *What is this system? — components, data flow, DB schema, external APIs, and directory layout* |
 | `docs/DEVELOPMENT.md` | *How do we write code here? — naming conventions, design principles, error handling, reliability strategy, and planned stack* |
-| `docs/PRODUCT.md` | *What are we building and why? — user story, physics model, score scale, PoC success criteria, and project quality grades* |
+| `docs/PRODUCT.md` | *What are we building and why? — user story, requirements, success criteria, and business domain context helpful for understanding **why** features are built the way they are* |
 | `docs/SECURITY.md` | *How do we keep secrets safe? — environment variables, API key policy, and auth posture* |
 | `docs/TESTING.md` | *How do we test and fix bugs? — testing requirements, test running instructions, and bug fix policies.* |
 
