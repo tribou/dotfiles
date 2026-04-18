@@ -1,3 +1,5 @@
+*What is this system? — components, data flow, DB schema, external APIs, and directory layout*
+
 # Architecture
 
 ## Entry Points

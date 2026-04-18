@@ -1,3 +1,5 @@
+*How do we test and fix bugs? — testing requirements, test running instructions, and bug fix policies.*
+
 # Testing
 
 ## Test Commands

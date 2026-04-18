@@ -1,8 +1,30 @@
-# Patterns & Workflows
+*How do we write code here? — naming conventions, design principles, error handling, reliability strategy, and planned stack*
+
+# Development
+
+## Tech Stack
+- **Bash Scripts**: Core functionality
+- **Docker**: For isolation and dev environments
+- **bats-core**: Bash unit testing framework
+- **just**: Command runner (`justfile`)
+- **mise**: Version manager
+
+## Design Principles
+- Keep scripts modular by breaking them into `lib/` files
+- Sourced functions should be reliable and prefer fast execution
+- The repository assumes macOS (checks for Darwin in multiple places)
+- NVM loaded with `--no-use` for performance; Node auto-switches on directory change via PROMPT_COMMAND
+
+## Naming Conventions
+- Internal functions typically start with an underscore (e.g., `_dotfiles_full_path`)
+- Ticket-related branches use `AB-123/description`, `ab123-description`, or `123_AT_Description` (DCX pattern)
+
+## Reliability
+- Use `bashcheck` instead of `bash -n` for syntax verification
+- Include bats tests for new functions
+- GPG signing required for commits — set `GIT_SIGNING_KEY` in `~/.ssh/api_keys`
 
 ## Git Workflow with Ticket Numbers
-
-Branch naming convention: `AB-123/description`, `ab123-description`, or `123_AT_Description` (DCX pattern)
 
 The `c` function automatically prefixes commits with the ticket number:
 
@@ -34,6 +56,8 @@ tmux-xl ~/myapp    # Create XL layout for myapp (uses z to resolve)
 search "pattern"   # Git grep excluding vendor/node_modules/lockfiles
 ```
 
+- `z` must be installed at `~/dev/z/z.sh`
+
 ## FZF Integration
 
 Many commands use fzf for interactive selection when called without arguments:
@@ -64,10 +88,3 @@ Defined in `lib/commands.sh`:
 - **`gitconfig`**: GPG signing, useful aliases (`tree`, `tree-one`, `diff-word`, `forget`), LFS, SSH for GitHub, nvimdiff merge tool
 - **`alacritty.toml`**: Alacritty terminal emulator config
 - **`ripgreprc`**: Ripgrep defaults (exported via `RIPGREP_CONFIG_PATH`)
-
-## Notes
-
-- The repository assumes macOS (checks for Darwin in multiple places)
-- GPG signing required for commits — set `GIT_SIGNING_KEY` in `~/.ssh/api_keys`
-- NVM loaded with `--no-use` for performance; Node auto-switches on directory change via PROMPT_COMMAND
-- `z` must be installed at `~/dev/z/z.sh`
