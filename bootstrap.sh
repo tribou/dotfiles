@@ -120,6 +120,11 @@ linkFileToHome "mise-config.toml" ".config/mise/config.toml"
 backupFile ".config/nvim/coc-settings.json"
 linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
 
+# .claude/skills
+mkdir -p ~/.claude
+backupFile ".claude/skills"
+linkFileToHome "skills" ".claude/skills"
+
 # setup API keys file
 if [ ! -f "$HOME/.ssh/api_keys" ]
 then
