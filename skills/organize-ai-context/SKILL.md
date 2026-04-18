@@ -20,3 +20,9 @@ Autonomously scan the repository:
 - **Tech Stack**: Use `read`, `glob`, `bash` to analyze root config files (e.g., `package.json`, `Cargo.toml`, `requirements.txt`).
 - **Testing**: Look for test directories (`tests/`, `__tests__/`, `spec/`) to infer the testing framework.
 - **Conventions**: Check any existing `README.md` or `docs/` for current guidelines.
+
+## 2. Interactive Phase
+Engage the user to fill in gaps and confirm assumptions using the `question` tool:
+- Verify the inferred tech stack.
+- Ask for core architectural entry points and design patterns.
+- Confirm the bug fix and testing policy (e.g., required CI commands like `just test-unit`).
