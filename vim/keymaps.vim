@@ -78,8 +78,9 @@ nmap <silent> <space>f :<c-u>call CocActionAsync('doHover')<CR>
 nmap <silent> <space>h :<c-u>call CocActionAsync('doHover')<CR>
 " Manage extensions
 nnoremap <space>e  :<c-u>CocList extensions<CR>
-" Find symbol of current document
+" Find symbol of current document (overridden for markdown by autocmd below)
 nnoremap <space>o  :<c-u>CocList outline<CR>
+autocmd FileType markdown nmap <silent> <buffer> <space>o <Plug>(dotfiles-composer-toggle)
 " Search workspace symbols
 nnoremap <space>s  :<c-u>CocList -I symbols<CR>
 " Do default action for next item.
