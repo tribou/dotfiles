@@ -6,7 +6,13 @@ A skill to help any repo organize its AI agent context into standard files: `CLA
 ## Architecture
 - A new skill file located at `skills/organize-ai-context/SKILL.md`.
 
+## YAML Frontmatter (Claude Search Optimization)
+- **name**: `organize-ai-context`
+- **description**: Use when setting up a new repository, when AI agents lack project context, or when codebase guidelines are scattered and unstructured. *(Note: Must not summarize workflow)*
+
 ## Process Flow
+
+**Mandatory Step**: The skill MUST instruct the agent to use the `todowrite` tool to create a checklist for the following phases before taking action.
 
 ### 1. Scan Phase
 The agent autonomously scans the repository:
@@ -28,8 +34,16 @@ The agent drafts and writes the context files:
 - **`docs/patterns.md`**: Code style, established conventions, and typical developer workflows.
 - **`docs/testing.md`**: Testing requirements, test running instructions, and bug fix policies.
 
+## Red Flags & Bulletproofing Against Rationalizations
+The skill must explicitly forbid common shortcuts.
+- *"It's faster to write a single `CLAUDE.md`."* -> **Counter**: Do NOT combine architecture, testing, or patterns into the root `CLAUDE.md`. You MUST split them into the `docs/` directory.
+- *"The repo is too simple for multiple files."* -> **Counter**: Even simple repos require the standard split to maintain consistency across projects.
+
 ## Error Handling
 - If the repository structure is highly non-standard or overly large to scan efficiently, the skill will lean more heavily on the interactive questionnaire to gather context rather than attempting error-prone guesses.
 
-## Testing Strategy
-- Manual verification: Run the skill on this dotfiles repository itself or an empty sample repo to ensure it accurately drafts and splits the files correctly.
+## Testing Strategy (TDD for Skills)
+We must follow the strict RED-GREEN-REFACTOR cycle for skill authoring:
+1. **RED (Baseline)**: Run a pressure scenario asking a subagent to "organize the AI context for this repo" WITHOUT the skill. Document its exact failures and rationalizations (e.g., dumping everything into `CLAUDE.md`, failing to ask questions).
+2. **GREEN**: Write the minimal skill to address those specific baseline failures, then run the scenario WITH the skill to verify the agent complies with the strict split and interactive phases.
+3. **REFACTOR**: Identify any new rationalizations the agent makes during testing and plug the loopholes in the skill documentation.
