@@ -1,7 +1,9 @@
 # Organize AI Context Skill Design
 
 ## Overview
-A skill to help any repo organize its AI agent context into standard files: `CLAUDE.md`, `AGENTS.md`, and `docs/` files (like architecture, testing, and patterns).
+A skill to help any repo organize its AI agent context into standard files: `CLAUDE.md`, `AGENTS.md`, and `docs/` files (like `ARCHITECTURE.md`, `TESTING.md`, and `DEVELOPMENT.md`).
+
+This skill can be used to either setup a new repository or to groom an existing one to realign its project context. It is intended to be run many times over the course of a codebase's lifetime to continually align and improve the context—much like weeding a garden.
 
 ## Architecture
 - A new skill file located at `skills/organize-ai-context/SKILL.md`.
@@ -27,16 +29,21 @@ The agent engages the user to fill in gaps and confirm assumptions using the `qu
 - Confirms the bug fix and testing policy (e.g., required CI commands like `just test-unit`).
 
 ### 3. Generation Phase
-The agent drafts and writes the context files:
-- **`CLAUDE.md`**: Global rules, default tech stack, and a Context Index pointing to the docs directory.
-- **`AGENTS.md`**: Defines agent responsibilities, subagent routing, and general workflow rules.
-- **`docs/architecture.md`**: High-level system design and key code locations.
-- **`docs/patterns.md`**: Code style, established conventions, and typical developer workflows.
-- **`docs/testing.md`**: Testing requirements, test running instructions, and bug fix policies.
+The agent drafts and writes the primary context files. **All primary context files should require a theme statement at the top to help align the current and future content.**
+
+| File | Theme Statement |
+|---|---|
+| `CLAUDE.md` | *Global rules, command reference, and index to all project context — the only file AI agents need to open first* |
+| `AGENTS.md` | *Non-interactive shell safety flags — everything else lives in CLAUDE.md* |
+| `docs/ARCHITECTURE.md` | *What is this system? — components, data flow, DB schema, external APIs, and directory layout* |
+| `docs/DEVELOPMENT.md` | *How do we write code here? — naming conventions, design principles, error handling, reliability strategy, and planned stack* |
+| `docs/PRODUCT.md` | *What are we building and why? — user story, physics model, score scale, PoC success criteria, and project quality grades* |
+| `docs/SECURITY.md` | *How do we keep secrets safe? — environment variables, API key policy, and auth posture* |
+| `docs/TESTING.md` | *How do we test and fix bugs? — testing requirements, test running instructions, and bug fix policies.* |
 
 ## Red Flags & Bulletproofing Against Rationalizations
 The skill must explicitly forbid common shortcuts.
-- *"It's faster to write a single `CLAUDE.md`."* -> **Counter**: Do NOT combine architecture, testing, or patterns into the root `CLAUDE.md`. You MUST split them into the `docs/` directory.
+- *"It's faster to write a single `CLAUDE.md`."* -> **Counter**: Do NOT combine architecture, testing, or development into the root `CLAUDE.md`. You MUST split them into the `docs/` directory.
 - *"The repo is too simple for multiple files."* -> **Counter**: Even simple repos require the standard split to maintain consistency across projects.
 
 ## Error Handling
