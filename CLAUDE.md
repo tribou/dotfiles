@@ -7,6 +7,7 @@
 2. **Bug fixes require tests**: see [docs/testing.md](docs/testing.md) for policy
 3. **Bash syntax checking**: use `bashcheck` — never `bash -n`
 4. **Git commits**: single-line only with `git commit -m "..."`, no heredoc, no Co-Authored-By
+5. **Creating new skills**: use `superpowers:writing-skills` skill
 
 ## Key Commands
 
@@ -21,3 +22,4 @@ just test           # Full test suite in Docker
 - Architecture, entry points, mise, environment config → [docs/architecture.md](docs/architecture.md)
 - Patterns, workflows, aliases, common commands → [docs/patterns.md](docs/patterns.md)
 - Testing policy and bug fix guidance → [docs/testing.md](docs/testing.md)
+- Custom AI skills (Claude Code + opencode) → `skills/`
