@@ -7,3 +7,7 @@ private
 
 # Beads / Dolt files (added by bd init)
 .beads-credential-key
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db

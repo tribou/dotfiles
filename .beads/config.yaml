@@ -53,4 +53,4 @@
 # - github.org
 # - github.repo
 
-sync.remote: "git+https://github.com/tribou/dotfiles.git"
+sync.remote: "git+ssh://git@github.com/tribou/dotfiles.git"
