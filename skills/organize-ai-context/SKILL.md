@@ -28,7 +28,7 @@ Engage the user to fill in gaps and confirm assumptions using the `question` too
 - Confirm the bug fix and testing policy (e.g., required CI commands like `just test-unit`).
 
 ## 3. Generation Phase
-Draft and write the primary context files. **All primary context files MUST require the following theme statement at the top to help align the current and future content.**
+Draft and write the primary context files. **All primary context files MUST require the following theme statement at the top to help align the current and future content.** (Note: You may properly combine similar context files into a single file within `docs/` if appropriate, merging their theme statements).
 
 | File | Theme Statement |
 |---|---|
@@ -41,7 +41,12 @@ Draft and write the primary context files. **All primary context files MUST requ
 | `docs/TESTING.md` | *How do we test and fix bugs? — testing requirements, test running instructions, and bug fix policies.* |
 
 ### Enforcing CRITICAL Rules in CLAUDE.md
-When generating `CLAUDE.md`, you MUST enforce limiting and curating proper global rules under a "CRITICAL Rules" heading. You must suggest the following best practice rules for every repo:
+When generating `CLAUDE.md`, you MUST enforce limiting and curating proper global rules under a SINGLE "CRITICAL Rules" heading. 
+**DO NOT create an additional Rules section of any kind.**
+- If a rule is truly global, it goes in "CRITICAL Rules".
+- If a rule is not global, it MUST go in the appropriate `docs/*` file (e.g., `docs/DEVELOPMENT.md`).
+
+You must suggest the following best practice rules for the "CRITICAL Rules" section in every repo:
 1. **Git commits**: single-line only with `git commit -m "..."`, no Co-Authored-By
 2. **Bash syntax checking**: use `bashcheck` — never `bash -n`
 3. **After making any changes, run tests**: [concisely instruct how to run tests in the repo]
@@ -52,8 +57,8 @@ You MUST also prompt the user to review and suggest additional global rules when
 
 ## Red Flags & Bulletproofing Against Rationalizations
 You MUST explicitly forbid common shortcuts:
-- *"It's faster to write a single `CLAUDE.md`."* -> **Counter**: Do NOT combine architecture, testing, or development into the root `CLAUDE.md`. You MUST split them into the `docs/` directory.
-- *"The repo is too simple for multiple files."* -> **Counter**: Even simple repos require the standard split to maintain consistency across projects.
+- *"It's faster to write a single `CLAUDE.md`."* -> **Counter**: Do NOT combine architecture, testing, or development into the root `CLAUDE.md`. You MUST place them in the `docs/` directory. You may properly combine similar context files within `docs/` when appropriate (e.g., if the repo is very small or the topics overlap significantly).
+- *"The repo is too simple for multiple files."* -> **Counter**: While you may combine similar context files within `docs/`, you must still keep them out of the root `CLAUDE.md` to maintain a clean project root.
 
 ## Error Handling
 If the repository structure is highly non-standard or overly large to scan efficiently, lean more heavily on the interactive questionnaire to gather context rather than attempting error-prone guesses.
