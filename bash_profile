@@ -219,7 +219,7 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 # fi
 
 # Google Antigravity
-[ -d "$HOME/.antigravity/antigravity/bin" ] && export PATH="/Users/tribou/.antigravity/antigravity/bin:$PATH"
+[ -d "$HOME/.antigravity/antigravity/bin" ] && export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 
 _dotfiles_debug_timing "$LINENO"
 

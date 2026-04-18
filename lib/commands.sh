@@ -86,10 +86,10 @@ function co ()
     local RESULT
     RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap)
     local CLEANED_RESULT
-    CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
+    CLEANED_RESULT="$(echo "${RESULT//\*}" | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
     if [ -n "$CLEANED_RESULT" ]
     then
-      local SCRIPT="git checkout $CLEANED_RESULT"
+      local SCRIPT="git checkout \"$CLEANED_RESULT\""
       _eval_script "$SCRIPT && _dotfiles_git_status"
     fi
   fi
@@ -164,7 +164,7 @@ function dminit ()
     local dm_name="$1"
   fi
 
-  eval "$(docker-machine env $dm_name)"
+  eval "$(docker-machine env "$dm_name")"
 }
 
 function da ()
@@ -226,10 +226,10 @@ function gbd ()
     local RESULT
     RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap --color)
     local CLEANED_RESULT
-    CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
+    CLEANED_RESULT="$(echo "${RESULT//\*}" | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
     if [ -n "$CLEANED_RESULT" ]
     then
-      local SCRIPT="git branch -d $CLEANED_RESULT || _dotfiles_prompt_git_branch_delete $CLEANED_RESULT"
+      local SCRIPT="git branch -d \"$CLEANED_RESULT\" || _dotfiles_prompt_git_branch_delete \"$CLEANED_RESULT\""
       _eval_script "$SCRIPT"
     fi
   fi
