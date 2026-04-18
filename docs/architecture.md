@@ -31,6 +31,7 @@ The `lib/` directory contains modular shell functions sourced by `lib/index.sh`:
 
 - **`commands.sh`**: Custom shell functions and aliases (primary functionality)
 - **`fzf.sh`**: FZF integration for fuzzy finding
+- **`path.sh`**: PATH manipulation and resolution helpers
 - **`init_project.sh`**: Project initialization utilities
 - **`replace.sh`**: Batch file replacement utilities
 - **`remind.sh`**: Terminal notification system
@@ -47,6 +48,23 @@ The `agent/` directory contains the isolated LLM agent-user subsystem:
 - **`overrides.sh`**: Agent-only shell overrides for git identity and the `[llm]` prompt prefix
 
 **Important boundary**: files in `agent/` are intentionally **not** sourced by `bash_profile` or `lib/index.sh`. Only consumed by the generated `agent` user's home profile.
+
+## Scripts Directory
+
+The `scripts/` directory contains standalone utility scripts (not sourced; run directly):
+
+- **`battery.sh`**: Battery level reporting for terminal prompt or notifications
+- **`bootstrap-test.sh`**: Smoke test helper for bootstrap validation
+- **`brew_update.sh`**: Homebrew update automation
+- **`dm_update_ip.sh`**: Docker Machine IP update utility
+- **`install.sh`**: Dependency installer (called by bootstrap.sh with `-i` flag)
+- **`internet.sh`**: Internet connectivity check
+
+## Templates Directory
+
+The `templates/` directory contains scaffold templates for new projects:
+
+- **`templates/init/`**: Node.js project scaffold with `package.json`, `nodemon.json`, `README.md`, standard `lib/` layout, and MIT license
 
 ## Version Management (mise)
 
@@ -98,3 +116,13 @@ legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
 - Prefix key: `Ctrl-f`
 - Integration with system clipboard via reattach-to-user-namespace
 - Predefined layouts via shell functions: `tmux-large`, `tmux-small`, `tmux-xl`
+
+## Test Infrastructure
+
+- **`tests/*.bats`**: Unit tests (bats-core); run fast with no Docker required
+- **`tests/integration/`**: Integration tests run inside Docker
+  - `nvim_health.bats`: Validates Neovim plugin health
+  - `nvim_keymaps.bats`: Verifies key mappings are configured correctly
+  - `tmux_environment.bats`: Validates tmux session and environment setup
+- **`goss.yaml`**: Infrastructure assertions (binary presence, environment variables) validated by goss inside Docker
+- **`Dockerfile`** + **`docker-compose.yml`**: Defines the CI/CD test environment

@@ -3,11 +3,12 @@
 # Development
 
 ## Tech Stack
-- **Bash Scripts**: Core functionality
-- **Docker**: For isolation and dev environments
+- **Bash Scripts**: Core functionality (macOS primary, Linux secondary)
+- **Docker**: For isolation and CI/CD test environments
 - **bats-core**: Bash unit testing framework
+- **goss**: Infrastructure/environment assertion testing
 - **just**: Command runner (`justfile`)
-- **mise**: Version manager
+- **mise**: Version manager (replaces nvm/rbenv/pyenv per-project)
 
 ## Design Principles
 - Keep scripts modular by breaking them into `lib/` files
@@ -21,8 +22,9 @@
 
 ## Reliability
 - Use `bashcheck` instead of `bash -n` for syntax verification
-- Include bats tests for new functions
+- Include bats tests for new functions in `tests/*.bats`
 - GPG signing required for commits — set `GIT_SIGNING_KEY` in `~/.ssh/api_keys`
+- New infrastructure dependencies (binaries, env vars) should have a `goss.yaml` assertion
 
 ## Git Workflow with Ticket Numbers
 

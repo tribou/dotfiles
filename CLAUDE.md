@@ -5,13 +5,9 @@
 1. **Git commits**: single-line only with `git commit -m "..."`, no Co-Authored-By
 2. **Bash syntax checking**: use `bashcheck` — never `bash -n`
 3. **After making any changes, run tests**: `just test-unit` first, then `just test`
-4. **Bug fixes require tests**: see `docs/TESTING.md` for policy
+4. **Bug fixes require tests**: see [docs/TESTING.md](docs/TESTING.md) for policy
 5. **Creating new skills**: use `superpowers:writing-skills` skill
-
-## Additional Rules
-
-1. **Beads issue references**: `dotfiles-*` (e.g. `dotfiles-6x9`) are beads issue keys — look them up with `bd show <id>`
-2. **Bead lifecycle during superpowers skills**: When any superpowers skill (brainstorming, design, planning, or execution) is invoked for a bead, immediately run `bd update <id> --status=in_progress`. If execution does not complete before the agent stops, run `bd update <id> --status=ready` to reset it.
+6. **BEADS issue tracking**: `dotfiles-*` keys (e.g. `dotfiles-6x9`) are BEADS issues — use `bd show <id>` to look them up; when a superpowers skill is invoked for a bead, immediately run `bd update <id> --status=in_progress`; if execution doesn't complete before agent stops, run `bd update <id> --status=ready` to reset
 
 ## Key Commands
 
@@ -28,5 +24,4 @@ just test           # Full test suite in Docker
 - Product and domain context → [docs/PRODUCT.md](docs/PRODUCT.md)
 - Security policies and secrets → [docs/SECURITY.md](docs/SECURITY.md)
 - Testing policy and bug fix guidance → [docs/TESTING.md](docs/TESTING.md)
-- Non-interactive shell safety flags → [AGENTS.md](AGENTS.md)
 - Custom AI skills (Claude Code + opencode) → `skills/`
