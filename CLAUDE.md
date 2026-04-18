@@ -4,10 +4,10 @@
 
 1. **Beads issue references**: `dotfiles-*` (e.g. `dotfiles-6x9`) are beads issue keys — look them up with `bd show <id>`
 2. **After making any changes, run tests**: `just test-unit` first, then `just test`
-2. **Bug fixes require tests**: see [docs/testing.md](docs/testing.md) for policy
-3. **Bash syntax checking**: use `bashcheck` — never `bash -n`
-4. **Git commits**: single-line only with `git commit -m "..."`, no heredoc, no Co-Authored-By
-5. **Creating new skills**: use `superpowers:writing-skills` skill
+3. **Bug fixes require tests**: see [docs/testing.md](docs/testing.md) for policy
+4. **Bash syntax checking**: use `bashcheck` — never `bash -n`
+5. **Git commits**: single-line only with `git commit -m "..."`, no heredoc, no Co-Authored-By
+6. **Creating new skills**: use `superpowers:writing-skills` skill
 
 ## Key Commands
 
