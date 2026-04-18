@@ -31,6 +31,15 @@ The agent engages the user to fill in gaps and confirm assumptions using the `qu
 ### 3. Generation Phase
 The agent drafts and writes the primary context files. **All primary context files should require a theme statement at the top to help align the current and future content.**
 
+When generating `CLAUDE.md`, the skill must enforce limiting and curating proper global rules under a "CRITICAL Rules" heading. It should suggest the following best practice rules for every repo:
+1. **Git commits**: single-line only with `git commit -m "..."`, no Co-Authored-By
+2. **Bash syntax checking**: use `bashcheck` — never `bash -n`
+3. **After making any changes, run tests**: [concisely instruct how to run tests in the repo]
+4. **Bug fixes require TDD tests**: see `docs/TESTING.md` for policy
+5. **Creating new skills**: use `superpowers:writing-skills` skill
+
+The skill should also prompt the user to review and suggest additional global rules when appropriate.
+
 | File | Theme Statement |
 |---|---|
 | `CLAUDE.md` | *Global rules, command reference, and index to all project context — the only file AI agents need to open first* |
