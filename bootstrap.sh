@@ -173,7 +173,7 @@ fi
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-"$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
+TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/tpm/" "$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
