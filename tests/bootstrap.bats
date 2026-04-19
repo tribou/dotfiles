@@ -10,3 +10,8 @@ setup() {
 @test "bootstrap: calls hash -r after mise install node to pick up newly created shims" {
   awk '/mise install node go/{found=1} found && /hash -r/{found=2} END{exit (found!=2)}' "$REPO_ROOT/bootstrap.sh"
 }
+
+@test "bootstrap: installs gcc via brew on Linux only" {
+  grep -q 'brew install gcc' "$REPO_ROOT/bootstrap.sh"
+  awk '/\!\= .*darwin/{inblock=1} inblock && /brew install gcc/{found=1} inblock && /^  fi/{inblock=0} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
+}

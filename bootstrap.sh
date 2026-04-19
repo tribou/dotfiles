@@ -313,6 +313,11 @@ then
       gh \
       beads
 
+  # Linux-only packages
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    brew install gcc
+  fi
+
   # macOS-only packages
   if [[ "$OSTYPE" == "darwin"* ]]; then
     brew install \
