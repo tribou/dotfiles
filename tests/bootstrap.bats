@@ -40,3 +40,7 @@ setup() {
   grep -q 'brew install gcc' "$REPO_ROOT/bootstrap.sh"
   awk '/\!\= .*darwin/{inblock=1} inblock && /brew install gcc/{found=1} inblock && /^  fi/{inblock=0} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
 }
+
+@test "bootstrap: linkFileToHome uses rm -f before ln -sf to prevent nested symlinks on re-run" {
+  awk '/function linkFileToHome/,/^\}/' "$REPO_ROOT/bootstrap.sh" | grep -q 'rm -f'
+}

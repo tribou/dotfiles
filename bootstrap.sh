@@ -28,6 +28,7 @@ function backupFile ()
 function linkFileToHome ()
 {
   echo "Creating a symlink for ${2}"
+  rm -f ~/"${2}"
   ln -sf "${THIS_DIR}/${1}" ~/"${2}"
 }
 

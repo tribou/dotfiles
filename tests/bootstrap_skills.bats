@@ -25,3 +25,24 @@ teardown() {
   target=$(readlink "$TEMP_HOME/.claude/skills")
   [ "$target" = "$TEMP_REPO/skills" ]
 }
+
+@test "bootstrap: re-running linkFileToHome for skills does not create nested skills/skills" {
+  # Simulate first bootstrap run
+  mkdir -p "$TEMP_HOME/.claude"
+  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.claude/skills"
+
+  # Simulate second bootstrap run (the bug: ln -sf on macOS creates skills/skills)
+  # The fix uses rm -f before ln -sf to prevent this
+  rm -f "$TEMP_HOME/.claude/skills"
+  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.claude/skills"
+
+  # Symlink must still point correctly
+  [ -L "$TEMP_HOME/.claude/skills" ]
+  local target
+  target=$(readlink "$TEMP_HOME/.claude/skills")
+  [ "$target" = "$TEMP_REPO/skills" ]
+
+  # No nested skills/skills must exist
+  run ls "$TEMP_REPO/skills/"
+  [[ "$output" != *"skills"* ]]
+}
