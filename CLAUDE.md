@@ -5,7 +5,7 @@
 1. **Git commits**: single-line only with `git commit -m "..."`, no Co-Authored-By
 2. **Bash syntax checking**: use `bashcheck` — never `bash -n`
 3. **After making any changes, run tests**: `just test-unit` first, then `just test`
-4. **Bug fixes require tests**: see [docs/TESTING.md](docs/TESTING.md) for policy
+4. **Bug fixes require TDD tests**: write a failing test first that reproduces the bug, then fix — see [docs/TESTING.md](docs/TESTING.md) for policy
 5. **Creating new skills**: use `superpowers:writing-skills` skill
 6. **BEADS issue tracking**: `dotfiles-*` keys (e.g. `dotfiles-6x9`) are BEADS issues — use `bd show <id>` to look them up; when a superpowers skill is invoked for a bead, immediately run `bd update <id> --status=in_progress`; if execution doesn't complete before agent stops, run `bd update <id> --status=ready` to reset
 
