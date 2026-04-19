@@ -208,6 +208,10 @@ then
       curl https://mise.run | sh
       echo
       MISE_BIN="$HOME/.local/bin/mise"
+    else
+      echo "Updating mise:"
+      "$MISE_BIN" self-update --yes || true
+      echo
     fi
 
     if [ -x "$MISE_BIN" ]
