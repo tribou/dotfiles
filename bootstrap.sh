@@ -178,13 +178,10 @@ fi
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
-# Install dependencies
-source "$THIS_DIR/scripts/install.sh"
-
-if   [ -s "$(which curl)"  ]
+if   command -v curl &>/dev/null
 then
 
-  if   [ ! -s "$(which cargo)"  ]
+  if   ! command -v cargo &>/dev/null
     then
       _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
       echo "Installing rust:"
@@ -232,7 +229,7 @@ then
   fi
 
 
-  if  [ -s "$(which npm)"  ] && [ ! -n "$(which eslint_d)" ]
+  if  command -v npm &>/dev/null && ! command -v eslint_d &>/dev/null
   then
     _BOOTSTRAP_INSTALL="npm install --location=global neovim eslint_d editorconfig"
     echo "Installing global node modules:"
@@ -354,14 +351,14 @@ then
   fi
 
   # pynvim (Neovim Python support) — installed via pip since mise no longer manages Python
-  if [ -s "$(which python3)" ] && ! python3 -c "import pynvim" &>/dev/null
+  if command -v python3 &>/dev/null && ! python3 -c "import pynvim" &>/dev/null
   then
     echo "Installing pynvim"
     pip3 install --user --break-system-packages pynvim
   fi
 
   # neovim gem (Neovim Ruby support) — installed via mise-managed ruby
-  if [ -s "$(which ruby)" ] && ! gem list neovim -i &>/dev/null
+  if command -v ruby &>/dev/null && ! gem list neovim -i &>/dev/null
   then
     echo "Installing neovim gem"
     gem install neovim
