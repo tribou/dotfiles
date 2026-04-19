@@ -298,7 +298,6 @@ then
       bat \
       navi \
       shellcheck \
-
       tlrc \
       lazydocker \
       lazygit \

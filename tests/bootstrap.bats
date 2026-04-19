@@ -30,6 +30,12 @@ setup() {
   awk '/# macOS-only packages/,/^  fi/' "$REPO_ROOT/bootstrap.sh" | grep -qw 'rename'
 }
 
+@test "bootstrap: shared brew install block has no blank lines within continuations (blank lines break line continuation)" {
+  # Only check lines that are inside the continuation (i.e., preceded by a \-terminated line)
+  run bash -c "awk '/^  brew install \\\\/,/^  # Linux-only/' \"$REPO_ROOT/bootstrap.sh\" | awk 'prev ~ /\\\\$/ && /^$/{found=1} {prev=\$0} END{exit !found}'"
+  [ "$status" -eq 1 ]
+}
+
 @test "bootstrap: installs gcc via brew on Linux only" {
   grep -q 'brew install gcc' "$REPO_ROOT/bootstrap.sh"
   awk '/\!\= .*darwin/{inblock=1} inblock && /brew install gcc/{found=1} inblock && /^  fi/{inblock=0} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
