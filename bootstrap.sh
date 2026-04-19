@@ -252,9 +252,9 @@ then
   if [[ "$OSTYPE" != "darwin"* ]]; then
     if command -v apt-get &>/dev/null; then
       sudo apt-get update
-      sudo apt-get install -y curl git build-essential xdg-utils
+      sudo apt-get install -y curl git build-essential xdg-utils bash-completion
     elif command -v pacman &>/dev/null; then
-      sudo pacman -Syu --noconfirm curl git base-devel
+      sudo pacman -Syu --noconfirm curl git base-devel bash-completion
     fi
   fi
 
@@ -278,7 +278,6 @@ then
       git \
       neovim \
       python \
-      bash-completion \
       zlib \
       hashicorp/tap/terraform-ls \
       nmap \
@@ -321,6 +320,7 @@ then
   # macOS-only packages
   if [[ "$OSTYPE" == "darwin"* ]]; then
     brew install \
+      bash-completion \
       alacritty \
       ngrok/ngrok/ngrok \
       reattach-to-user-namespace \
