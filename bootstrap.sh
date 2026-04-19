@@ -296,9 +296,9 @@ then
       fd \
       ripgrep \
       bat \
-      rename \
       navi \
       shellcheck \
+
       tlrc \
       lazydocker \
       lazygit \
@@ -321,6 +321,7 @@ then
   if [[ "$OSTYPE" == "darwin"* ]]; then
     brew install \
       bash-completion \
+      rename \
       alacritty \
       ngrok/ngrok/ngrok \
       reattach-to-user-namespace \

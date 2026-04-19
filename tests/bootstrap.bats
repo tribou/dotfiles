@@ -21,6 +21,15 @@ setup() {
   awk '/# macOS-only packages/,/^  fi/' "$REPO_ROOT/bootstrap.sh" | grep -q 'bash-completion'
 }
 
+@test "bootstrap: rename is not in the shared brew install block (conflicts with util-linux on Linux)" {
+  run bash -c "awk '/^  brew install \\\\/,/^  # Linux-only/' \"$REPO_ROOT/bootstrap.sh\" | grep -cw 'rename'"
+  [ "$output" = "0" ]
+}
+
+@test "bootstrap: rename is installed in the macOS-only brew block" {
+  awk '/# macOS-only packages/,/^  fi/' "$REPO_ROOT/bootstrap.sh" | grep -qw 'rename'
+}
+
 @test "bootstrap: installs gcc via brew on Linux only" {
   grep -q 'brew install gcc' "$REPO_ROOT/bootstrap.sh"
   awk '/\!\= .*darwin/{inblock=1} inblock && /brew install gcc/{found=1} inblock && /^  fi/{inblock=0} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
