@@ -183,10 +183,12 @@ let g:coc_global_extensions = [
 
 if has('nvim-0.10')
 lua << EOF
-require("CopilotChat").setup {
-  debug = false, -- Enable debugging
-  -- See Configuration section for rest
-}
+local _ok, _copilot_chat = pcall(require, "CopilotChat")
+if _ok then
+  _copilot_chat.setup {
+    debug = false,
+  }
+end
 EOF
 endif
 
@@ -329,7 +331,7 @@ inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 " inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
 
 " colorizer
-lua require'colorizer'.setup()
+lua pcall(function() require'colorizer'.setup() end)
 
 " deoplete
 let g:deoplete#enable_at_startup = 1
