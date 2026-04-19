@@ -56,7 +56,7 @@ zz() {
 function _dotfiles_beads_show() {
   local issue_id
   issue_id=$(bd list --all | fzf --ansi --reverse \
-    --preview 'bd show $(echo {} | awk '"'"'{print $2}'"'"')' \
+    --preview 'bd show {2}' \
     --preview-window right:60% | awk '{print $2}')
   [[ -n "$issue_id" ]] && bd show "$issue_id"
 }
