@@ -214,6 +214,7 @@ then
       eval "$("$MISE_BIN" activate bash)"
       # Install all tools from mise-config.toml (symlinked to ~/.config/mise/config.toml)
       mise install node go
+      hash -r
       corepack enable
       # Try precompiled ruby first (fast), fall back to source compilation
       if ! MISE_RUBY_COMPILE=0 mise install ruby 2>/dev/null; then
@@ -259,7 +260,7 @@ then
 
   # Install brew if not present (macOS and Linux)
   if ! command -v brew &>/dev/null; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     if [[ "$OSTYPE" == "darwin"* ]]; then
       eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
     else
