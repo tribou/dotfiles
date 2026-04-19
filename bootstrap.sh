@@ -1,9 +1,10 @@
 #!/bin/bash
+set -euo pipefail
 
 # Install all the dotfiles
 
 # Rudimentary flags parsing
-if [ "$1" = "-h" ] || [ "$1" = "--help" ]
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]
 then
   usage='Usage: ./bootstrap.sh'
   echo "$usage"
@@ -82,22 +83,22 @@ linkFileToHome "default-node-packages" ".default-node-packages"
 linkFileToHome "default-gems" ".default-gems"
 linkFileToHome "default-python-packages" ".default-python-packages"
 
-tic -x tmux/xterm-256color-italic.terminfo
-tic -x tmux/tmux-256color.terminfo
+tic -x tmux/xterm-256color-italic.terminfo || true
+tic -x tmux/tmux-256color.terminfo || true
 
 # .gnupg/gpg-agent.conf
 mkdir -p ~/.gnupg
 backupFile ".gnupg/gpg-agent.conf"
 linkFileToHome "gpg-agent-conf" ".gnupg/gpg-agent.conf"
-chown -R "$(whoami)" ~/.gnupg/
-chmod 600 ~/.gnupg/*
-chmod 700 ~/.gnupg
+  chown -R "$(whoami)" ~/.gnupg/
+  chmod 600 ~/.gnupg/* || true
+  chmod 700 ~/.gnupg
 # Restart gpg-agent
 if [ "$(which gpgconf)" ] && [ "$(which gpg-agent)" ]
 then
   echo "Restarting gpg-agent"
   gpgconf --kill gpg-agent
-  eval "$(gpg-agent --daemon 2>/dev/null)"
+  eval "$(gpg-agent --daemon 2>/dev/null)" || true
 fi
 
 # .config/nvim/init.vim
@@ -159,25 +160,26 @@ fi
 
 # Setup ssh-agent
 ## If agent socket isn't available, source it
-[ -s "$SSH_AUTH_SOCK" ] || eval `ssh-agent -s`
+[ -s "${SSH_AUTH_SOCK:-}" ] || eval "$(ssh-agent -s)"
 ## Add keys to keychain
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  [ -f "$HOME/.ssh/id_rsa" ] && ssh-add -K "$HOME/.ssh/id_rsa" > /dev/null 2>&1
-  [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add -K "$HOME/.ssh/id_ed25519" > /dev/null 2>&1
+  # --apple-use-keychain replaces -K (removed in macOS Ventura 13+); fall back to plain ssh-add
+  [ -f "$HOME/.ssh/id_rsa" ] && { ssh-add --apple-use-keychain "$HOME/.ssh/id_rsa" 2>/dev/null || ssh-add "$HOME/.ssh/id_rsa" 2>/dev/null || true; }
+  [ -f "$HOME/.ssh/id_ed25519" ] && { ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519" 2>/dev/null || ssh-add "$HOME/.ssh/id_ed25519" 2>/dev/null || true; }
 else
-  [ -f "$HOME/.ssh/id_rsa" ] && ssh-add "$HOME/.ssh/id_rsa"
-  [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519"
+  [ -f "$HOME/.ssh/id_rsa" ] && ssh-add "$HOME/.ssh/id_rsa" || true
+  [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519" || true
 fi
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-"$HOME/.tmux/plugins/tpm/bin/install_plugins"
+"$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
 # Install dependencies
-source "./scripts/install.sh"
+source "$THIS_DIR/scripts/install.sh"
 
 if   [ -s "$(which curl)"  ]
 then
