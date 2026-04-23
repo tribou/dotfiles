@@ -218,7 +218,7 @@ then
     then
       eval "$("$MISE_BIN" activate bash)"
       # Install all tools from mise-config.toml (symlinked to ~/.config/mise/config.toml)
-      mise install node go
+      mise install node go bun
       hash -r
       corepack enable
       # Try precompiled ruby first (fast), fall back to source compilation

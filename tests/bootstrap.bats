@@ -44,3 +44,7 @@ setup() {
 @test "bootstrap: linkFileToHome uses rm -f before ln -sf to prevent nested symlinks on re-run" {
   awk '/function linkFileToHome/,/^\}/' "$REPO_ROOT/bootstrap.sh" | grep -q 'rm -f'
 }
+
+@test "bootstrap: installs bun via mise" {
+  grep -q 'mise install.*bun' "$REPO_ROOT/bootstrap.sh"
+}
