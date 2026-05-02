@@ -95,7 +95,51 @@ check_tools() {
 
 # --- Main ---
 main() {
-    echo "doctor: starting checks"
+    local total_checks=21  # 14 symlinks + 7 tools
+    local output=""
+    local passed=0
+    local failed=0
+
+    # Run symlink checks
+    local symlink_output
+    symlink_output=$(check_symlinks)
+    output+="$symlink_output"$'\n'
+    local symlink_passed=0 symlink_failed=0
+    while IFS= read -r line; do
+        if [[ "$line" == *"✓"* ]]; then
+            ((symlink_passed++))
+        elif [[ "$line" == *"✗"* ]]; then
+            ((symlink_failed++))
+        fi
+    done <<< "$symlink_output"
+
+    # Run tool checks
+    local tool_output
+    tool_output=$(check_tools)
+    output+="$tool_output"$'\n'
+    local tool_passed=0 tool_failed=0
+    while IFS= read -r line; do
+        if [[ "$line" == *"✓"* ]]; then
+            ((tool_passed++))
+        elif [[ "$line" == *"✗"* ]]; then
+            ((tool_failed++))
+        fi
+    done <<< "$tool_output"
+
+    passed=$((symlink_passed + tool_passed))
+    failed=$((symlink_failed + tool_failed))
+
+    # Print all output
+    echo "$output"
+    # Print summary
+    echo "doctor: $passed/$total_checks checks passed ($failed failures)"
+    
+    # Exit with appropriate code
+    if [[ $failed -gt 0 ]]; then
+        exit 1
+    else
+        exit 0
+    fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
