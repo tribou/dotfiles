@@ -104,3 +104,9 @@ setup() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"doctor: 0/21 checks passed (21 failures)"* ]]
 }
+
+@test "justfile has doctor recipe" {
+    run grep -A 2 '^doctor:' justfile
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"./scripts/doctor.sh"* ]]
+}
