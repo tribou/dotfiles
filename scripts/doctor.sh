@@ -65,6 +65,34 @@ check_symlinks() {
     return $failed
 }
 
+# --- Tool check ---
+check_tools() {
+    local failed=0
+    # Tool definitions: "tool~remediation"
+    local tools=(
+        "git~run: brew install git"
+        "nvim~run: brew install neovim"
+        "tmux~run: brew install tmux"
+        "mise~run: brew install mise"
+        "node~run: mise install node"
+        "go~run: mise install go"
+        "bun~run: mise install bun"
+    )
+
+    echo "Tools:"
+    for tool in "${tools[@]}"; do
+        local cmd="${tool%~*}"
+        local remediation="${tool#*~}"
+        if command -v "$cmd" &>/dev/null; then
+            pass "$cmd"
+        else
+            fail "$cmd" "$remediation"
+            failed=1
+        fi
+    done
+    return $failed
+}
+
 # --- Main ---
 main() {
     echo "doctor: starting checks"
