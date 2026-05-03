@@ -110,3 +110,18 @@ setup() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"./scripts/doctor.sh"* ]]
 }
+
+@test "doctor.sh produces output when checks fail (set -e regression)" {
+    # Tests the real subprocess — BATS 'run main' disables set -e so it misses this bug.
+    # When check_symlinks/check_tools return non-zero, set -e must not kill the script
+    # before printing the summary line.
+    local tmp_home tmp_dotfiles
+    tmp_home="$(mktemp -d)"
+    tmp_dotfiles="$(mktemp -d)"
+    # No symlinks set up, so all symlink checks fail.
+    # System tools (git, nvim, etc.) likely absent in a stripped path — tool checks fail.
+
+    run bash -c "HOME='$tmp_home' DOTFILES='$tmp_dotfiles' bash scripts/doctor.sh"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"doctor:"* ]]
+}

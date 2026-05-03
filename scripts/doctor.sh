@@ -102,27 +102,27 @@ main() {
 
     # Run symlink checks
     local symlink_output
-    symlink_output=$(check_symlinks)
+    symlink_output=$(check_symlinks) || true
     output+="$symlink_output"$'\n'
     local symlink_passed=0 symlink_failed=0
     while IFS= read -r line; do
         if [[ "$line" == *"✓"* ]]; then
-            ((symlink_passed++))
+            (( symlink_passed += 1 ))
         elif [[ "$line" == *"✗"* ]]; then
-            ((symlink_failed++))
+            (( symlink_failed += 1 ))
         fi
     done <<< "$symlink_output"
 
     # Run tool checks
     local tool_output
-    tool_output=$(check_tools)
+    tool_output=$(check_tools) || true
     output+="$tool_output"$'\n'
     local tool_passed=0 tool_failed=0
     while IFS= read -r line; do
         if [[ "$line" == *"✓"* ]]; then
-            ((tool_passed++))
+            (( tool_passed += 1 ))
         elif [[ "$line" == *"✗"* ]]; then
-            ((tool_failed++))
+            (( tool_failed += 1 ))
         fi
     done <<< "$tool_output"
 
