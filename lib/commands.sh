@@ -84,12 +84,13 @@ function co ()
     eval "$SCRIPT"
   else
     local RESULT
-    RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap)
-    local CLEANED_RESULT
-    CLEANED_RESULT="$(echo "${RESULT}" | sed -E 's/^[* +]+//; s/^remotes\/[A-Z0-9a-z]+\///')"
-    if [ -n "$CLEANED_RESULT" ]
+    RESULT=$({
+      git for-each-ref refs/heads --sort=-committerdate --format='%(refname:short)'
+      git for-each-ref refs/remotes --sort=-committerdate --format='%(refname:strip=3)' | grep -v '^HEAD$'
+    } | sort -u | fzf --preview-window wrap)
+    if [ -n "$RESULT" ]
     then
-      local SCRIPT="git checkout \"$CLEANED_RESULT\""
+      local SCRIPT="git checkout \"$RESULT\""
       _eval_script "$SCRIPT && _dotfiles_git_status"
     fi
   fi
@@ -224,12 +225,13 @@ function gbd ()
     eval "$SCRIPT"
   else
     local RESULT
-    RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap --color)
-    local CLEANED_RESULT
-    CLEANED_RESULT="$(echo "${RESULT}" | sed -E 's/^[* +]+//; s/^remotes\/[A-Z0-9a-z]+\///')"
-    if [ -n "$CLEANED_RESULT" ]
+    RESULT=$({
+      git for-each-ref refs/heads --sort=-committerdate --format='%(refname:short)'
+      git for-each-ref refs/remotes --sort=-committerdate --format='%(refname:strip=3)' | grep -v '^HEAD$'
+    } | sort -u | fzf --preview-window wrap --color)
+    if [ -n "$RESULT" ]
     then
-      local SCRIPT="git branch -d \"$CLEANED_RESULT\" || _dotfiles_prompt_git_branch_delete \"$CLEANED_RESULT\""
+      local SCRIPT="git branch -d \"$RESULT\" || _dotfiles_prompt_git_branch_delete \"$RESULT\""
       _eval_script "$SCRIPT"
     fi
   fi
