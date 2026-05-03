@@ -35,20 +35,24 @@ setup() {
 }
 
 @test "check_tools passes for available tool" {
-    export PATH="$(mktemp -d):$PATH"
-    local tool_dir="$(echo "$PATH" | cut -d: -f1)"
-    touch "$tool_dir/git"
-    chmod +x "$tool_dir/git"
-    
+    local tool_dir
+    tool_dir="$(mktemp -d)"
+    for tool in git nvim tmux mise node go bun; do
+        touch "$tool_dir/$tool"
+        chmod +x "$tool_dir/$tool"
+    done
+    export PATH="$tool_dir:$PATH"
+
     run check_tools
     [ "$status" -eq 0 ]
     [[ "$output" == *"✓ git"* ]]
 }
 
 @test "check_tools fails for missing tool" {
+    local saved_path="$PATH"
     export PATH="$(mktemp -d)"
-    
     run check_tools
+    export PATH="$saved_path"
     [ "$status" -eq 1 ]
     [[ "$output" == *"✗ go → run: mise install go"* ]]
 }
@@ -56,7 +60,14 @@ setup() {
 @test "main exits 0 when all checks pass" {
     export HOME="$(mktemp -d)"
     export DOTFILES="$(mktemp -d)"
-    
+    local tool_dir
+    tool_dir="$(mktemp -d)"
+    for tool in git nvim tmux mise node go bun; do
+        touch "$tool_dir/$tool"
+        chmod +x "$tool_dir/$tool"
+    done
+    export PATH="$tool_dir:$PATH"
+
     # Set up valid symlinks for all 14 entries
     local symlinks=(
         "~/.bash_profile~bash_profile"
@@ -96,11 +107,12 @@ setup() {
     export HOME="$(mktemp -d)"
     export DOTFILES="$(mktemp -d)"
     # No symlinks set up (all fail)
+    local saved_path="$PATH"
     local tools_dir="$(mktemp -d)"
     cp "$(type -P grep)" "$tools_dir/"  # Only grep available
     export PATH="$tools_dir"  # No other tools (all fail)
-    
     run main
+    export PATH="$saved_path"
     [ "$status" -eq 1 ]
     [[ "$output" == *"doctor: 0/21 checks passed (21 failures)"* ]]
 }
