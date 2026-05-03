@@ -21,3 +21,7 @@ build-clean:
 # Run bash unit tests with bats-core
 test-unit:
     ./tests/test_helper/bats-core/bin/bats tests/*.bats
+
+# Run local health checks (symlinks, tools)
+doctor:
+    ./scripts/doctor.sh
