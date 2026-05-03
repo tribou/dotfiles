@@ -7,8 +7,9 @@ function! DeleteBuffer()
     bdelete
     file
   else
+    let l:bufnr = bufnr('%')
     bprevious
-    bdelete #
+    call setbufvar(l:bufnr, '&buflisted', 0)
     file
   endif
 endfunction
@@ -40,15 +41,29 @@ function! ToggleGblame()
   endif
 endfunction
 
-function! QuickChat()
-  let input = input("Quick Chat: ")
-  if input != ""
-    execute 'lua require("CopilotChat").ask("' . input . '", { selection = require("CopilotChat.select").buffer })'
-  endif
-endfunction
+if has('nvim-0.10')
+  function! QuickChat()
+    let input = input("Quick Chat: ")
+    if input != ""
+      execute 'lua require("CopilotChat").ask("' . input . '", { selection = require("CopilotChat.select").buffer })'
+    endif
+  endfunction
+endif
 
 function! OrganizeImports()
   call CocActionAsync('runCommand', 'editor.action.organizeImport')
+endfunction
+
+function! ComposerToggle()
+  let l:output = ''
+  redir => l:output
+  silent ComposerJob
+  redir END
+  if trim(l:output) ==# 'No job running'
+    ComposerStart
+  else
+    ComposerOpen
+  endif
 endfunction
 
 " Export functions in <Plug> namespace
@@ -57,6 +72,7 @@ nnoremap <Plug>(dotfiles-bnext) :<c-u>call NextBuffer()<CR>
 nnoremap <Plug>(dotfiles-bprevious) :<c-u>call PreviousBuffer()<CR>
 nnoremap <Plug>(dotfiles-gblame) :<c-u>call ToggleGblame()<CR>
 nnoremap <Plug>(dotfiles-quickchat) :<c-u>call QuickChat()<CR>
+nnoremap <Plug>(dotfiles-composer-toggle) :<c-u>call ComposerToggle()<CR>
 
 command! OrganizeImports call OrganizeImports()
 command! ToggleGblame call ToggleGblame()

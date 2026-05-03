@@ -37,7 +37,7 @@ fo() {
 }
 
 # https://github.com/junegunn/fzf/wiki/examples#z
-unalias z
+unalias z 2>/dev/null || true
 z() {
   if [[ -z "$*" ]]; then
     cd "$(_z -l 2>&1 | fzf +s --tac | sed 's/^[0-9,.]* *//')"
@@ -50,3 +50,15 @@ z() {
 zz() {
   cd "$(_z -l 2>&1 | sed 's/^[0-9,.]* *//' | fzf -q "$_last_z_args")"
 }
+
+# _dotfiles_beads_show - interactive beads issue browser with fzf
+# Aliases: bdr (beads read), bds (beads show)
+function _dotfiles_beads_show() {
+  local issue_id
+  issue_id=$(bd list --all | fzf --ansi --reverse \
+    --preview 'bd show {2}' \
+    --preview-window up:60% | awk '{print $2}')
+  [[ -n "$issue_id" ]] && bd show "$issue_id"
+}
+alias bdr='_dotfiles_beads_show'
+alias bds='_dotfiles_beads_show'

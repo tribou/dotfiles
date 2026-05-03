@@ -4,6 +4,14 @@
 [core]
   editor = nvim
   excludesfile = ~/.gitignore_global
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true
+  dark = true
+  line-numbers = true
+  syntax-theme = TwoDark
 [credential]
 [color]
   ui = true
@@ -16,8 +24,8 @@
 [color "diff"]
   meta = yellow
   frag = blue
-  old = red reverse
-  new = green reverse
+  old = red bold
+  new = green bold
 [color "decorate"]
   head = reverse red
 [color "status"]
@@ -41,17 +49,19 @@
   required = true
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
-[url "ssh://git@github.com/"]
-  insteadOf = https://github.com/
 [filter "omitsigningkey"]
   clean = sed -E '/signingkey = [A-Z0-9]+$/d'
-[gpg]
-  program = /opt/homebrew/bin/gpg
 [pull]
 	ff = only
-[commit]
-	gpgsign = true
+; [commit]
+; 	gpgsign = true
 [init]
 	defaultBranch = main
 [merge]
 	tool = nvimdiff
+
+[credential "https://github.com"]
+    helper = !gh auth git-credential
+
+[checkout]
+    defaultRemote = origin

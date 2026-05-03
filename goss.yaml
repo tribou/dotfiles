@@ -1,0 +1,124 @@
+# Core binaries functional
+command:
+  "tmux -V":
+    exit-status: 0
+    stdout:
+      - "tmux"
+  "git --version":
+    exit-status: 0
+
+  # Neovim must be 0.10+ for vim.uv support (CopilotChat, colorizer, etc.)
+  "nvim --version":
+    exit-status: 0
+    stdout:
+      - "NVIM"
+      - /NVIM v0\.(1[0-9]|[2-9]\d)|NVIM v[1-9]/
+
+  # Node.js must be v24 (matches bootstrap.sh / mise default: node@lts)
+  "node --version":
+    exit-status: 0
+    stdout:
+      - /^v24\./
+
+  # mise must be installed and functional
+  "mise --version":
+    exit-status: 0
+
+  # Go must be available via the mise-managed runtime installed by bootstrap
+  "go version":
+    exit-status: 0
+
+  # yarn and pnpm must be available via corepack (enabled by bootstrap after mise installs node)
+  "yarn --version":
+    exit-status: 0
+  "pnpm --version":
+    exit-status: 0
+
+  # gopls must remain available for editor integration after bootstrap
+  "gopls version":
+    exit-status: 0
+
+  # fd and bat must be available as canonical names (Ubuntu installs as fdfind/batcat)
+  "fd --version":
+    exit-status: 0
+    stdout:
+      - /fd/
+  "bat --version":
+    exit-status: 0
+    stdout:
+      - /^bat /
+
+  # DOTFILES env var must be set — absence causes E484 source errors in nvim
+  "bash -c 'test \"$DOTFILES\" = /dotfiles'":
+    exit-status: 0
+
+# vim source files that init.vim sources via $DOTFILES
+file:
+  /dotfiles/vim/functions.vim:
+    exists: true
+  /dotfiles/vim/lightline.vim:
+    exists: true
+  /dotfiles/vim/ale.vim:
+    exists: true
+  /dotfiles/vim/fzf.vim:
+    exists: true
+  /dotfiles/vim/keymaps.vim:
+    exists: true
+  /dotfiles/vim/visual-at.vim:
+    exists: true
+
+# mise default packages files must be symlinked
+  /root/.default-node-packages:
+    exists: true
+    filetype: symlink
+  /root/.default-gems:
+    exists: true
+    filetype: symlink
+  /root/.default-python-packages:
+    exists: true
+    filetype: symlink
+  /root/.config/mise/config.toml:
+    exists: true
+    filetype: symlink
+
+# TPM and all plugins installed
+  /root/.tmux/plugins/tpm:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-sensible:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-resurrect:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-mem-cpu-load:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-copycat:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-open:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-yank:
+    exists: true
+    filetype: directory
+  /root/.tmux/plugins/tmux-prefix-highlight:
+    exists: true
+    filetype: directory
+
+  # vim-plug installed
+  /root/.local/share/nvim/site/autoload/plug.vim:
+    exists: true
+
+  # Neovim plugins installed — includes CopilotChat which requires nvim 0.10+
+  /root/.local/share/nvim/plugged:
+    exists: true
+    filetype: directory
+  /root/.local/share/nvim/plugged/CopilotChat.nvim:
+    exists: true
+    filetype: directory
+
+  # Bootstrap completed successfully
+  /root/.dotfiles-bootstrap-done:
+    exists: true

@@ -1,5 +1,9 @@
-# Change zsh prompt
-export PS1='%{$fg[green]%}%m:%~>%{$reset_color%} '
+# Change zsh prompt (show hostname only in SSH sessions)
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  export PS1='%{$fg[green]%}%m:%~>%{$reset_color%} '
+else
+  export PS1='%{$fg[green]%}%~>%{$reset_color%} '
+fi
 
 alias -g gp='| grep -i '
 
@@ -12,4 +16,4 @@ export SDKMAN_DIR="/Users/aaron.tribou/.sdkman"
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
 autoload -U +X bashcompinit && bashcompinit
-[ -s "/opt/homebrew/bin/terraform" ] && complete -o nospace -C /opt/homebrew/bin/terraform terraform
+[ -s "$(command -v terraform)" ] && complete -o nospace -C "$(command -v terraform)" terraform

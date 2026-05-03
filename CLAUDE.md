@@ -1,0 +1,75 @@
+*Global rules, command reference, and index to all project context — the only file AI agents need to open first*
+
+# CRITICAL Rules
+
+1. **Git commits**: single-line only with `git commit -m "..."`, no Co-Authored-By
+2. **Bash syntax checking**: use `bashcheck` — never `bash -n`
+3. **After making any changes, run tests**: `just test-unit` first, then `just test`
+4. **Bug fixes require TDD tests**: write a failing test first that reproduces the bug, then fix — see [docs/TESTING.md](docs/TESTING.md) for policy
+5. **Creating new skills**: use `superpowers:writing-skills` skill
+6. **BEADS issue tracking**: `dotfiles-*` keys (e.g. `dotfiles-6x9`) are BEADS issues — use `bd show <id>` to look them up; when a superpowers skill is invoked for a bead, immediately run `bd update <id> --status=in_progress`; if execution doesn't complete before agent stops, run `bd update <id> --status=ready` to reset
+
+## Key Commands
+
+```bash
+./bootstrap.sh      # Initial setup (symlinks + optional deps with -i flag)
+just test-unit      # Fast bash unit tests (bats-core, no Docker)
+just test           # Full test suite in Docker
+```
+
+## Context Index
+
+- Architecture, entry points, mise, environment config → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Development, naming conventions, design principles, patterns, workflows, aliases, common commands → [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- Product and domain context → [docs/PRODUCT.md](docs/PRODUCT.md)
+- Security policies and secrets → [docs/SECURITY.md](docs/SECURITY.md)
+- Testing policy and bug fix guidance → [docs/TESTING.md](docs/TESTING.md)
+- Custom AI skills (Claude Code + opencode) → `skills/`
+
+
+<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
+## Beads Issue Tracker
+
+This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+
+### Quick Reference
+
+```bash
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --claim  # Claim work
+bd close <id>         # Complete work
+```
+
+### Rules
+
+- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- Run `bd prime` for detailed command reference and session close protocol
+- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+
+## Session Completion
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd dolt push
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
+<!-- END BEADS INTEGRATION -->

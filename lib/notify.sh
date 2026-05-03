@@ -5,6 +5,8 @@ function notify ()
 
   local usage='Usage: notify [MESSAGE]'
 
+  [[ "$OSTYPE" != "darwin"* ]] && return 0
+
   if [ ! $(which osascript) ]
   then
     echo "osascript needs to be installed and available"
@@ -33,6 +35,9 @@ function notify ()
     local SUBTITLE="$3"
   fi
 
-  osascript -e 'display notification "'"$MESSAGE"'" with title "'"$TITLE"'" subtitle "'"$SUBTITLE"'"'
+  local SAFE_MESSAGE="${MESSAGE//\"/\\\"}"
+  local SAFE_TITLE="${TITLE//\"/\\\"}"
+  local SAFE_SUBTITLE="${SUBTITLE//\"/\\\"}"
+  osascript -e 'display notification "'"$SAFE_MESSAGE"'" with title "'"$SAFE_TITLE"'" subtitle "'"$SAFE_SUBTITLE"'"'
 }
 

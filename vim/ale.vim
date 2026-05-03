@@ -2,6 +2,7 @@
 let g:ale_completion_enabled = 0 " using deoplete instead
 let g:ale_fix_on_save = 0 " enable on project-by-project basis with local .exrc
 let g:ale_floating_preview = 1
+let g:ale_use_neovim_diagnostics_api = 1
 let g:ale_javascript_eslint_executable = 'eslint_d'
 let g:ale_javascript_eslint_use_global = 1
 let g:ale_typescript_eslint_executable = 'eslint_d'
@@ -13,6 +14,7 @@ let g:ale_php_cs_fixer_use_global = 1
 " let g:ale_php_cs_fixer_options = '--cache-file ' . $HOME . '/.vim/php-cs-fixer-cache' . getcwd() . '/.php_cs.cache'
 let g:ale_php_cs_fixer_options = '--using-cache=no'
 let g:ale_go_bingo_executable = 'gopls'
+let g:ale_sql_pgformatter_options = '--keep-newline --wrap-after 80 --wrap-comment --spaces 2'
 let g:ale_linters = {
   \   'javascript': [
   \       'eslint',
@@ -38,6 +40,9 @@ let g:ale_linters = {
   \       'php',
   \       'langserver',
   \   ],
+  \   'sql': [
+  \       'pgformatter',
+  \   ],
   \   'sh': [
   \       'language_server',
   \       'shellcheck',
@@ -45,8 +50,7 @@ let g:ale_linters = {
   \   'go': [
   \       'gofmt',
   \       'golint',
-  \       'govet',
-  \       'golangserver',
+  \       'gopls',
   \   ],
   \   'vue': [
   \       'vls',
@@ -96,6 +100,9 @@ let g:ale_fixers = {
   \   ],
   \   'sh': [
   \       'trim_whitespace',
+  \   ],
+  \   'sql': [
+  \       'pgformatter',
   \   ],
   \   'yaml': [
   \       'prettier',

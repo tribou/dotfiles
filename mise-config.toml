@@ -1,0 +1,8 @@
+[tools]
+node = "lts"
+ruby = "3"
+go = "latest"
+bun = "latest"
+
+[settings]
+legacy_version_file = true

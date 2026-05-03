@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# History parsing patterns (used by histgrep in commands.sh)
+# Strips the histfile path prefix: YYYY/MM/DD.HH.MM.SS_hostname:
+DOTFILES_HISTFILE_DELIM='^[0-9]{4}/[0-9]{2}//?[0-9]{2}[.][0-9]{2}[.][0-9]{2}[.][0-9]{2}_[^:]+:'
+# Strips the shell history line prefix: '  NNN  YYYY-MM-DD HH:MM:SS '
+DOTFILES_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} '
+
 # Helper functions
 function _dotfiles_full_path () {
   _z -e "$1"

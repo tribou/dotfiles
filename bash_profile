@@ -30,7 +30,16 @@ function _dotfiles_debug_timing ()
 
 # Set dev paths
 export DEVPATH=$HOME/dev
-export DOTFILES=$DEVPATH/dotfiles
+
+# Detect DOTFILES from actual location of this script (resolves symlinks)
+_dotfiles_source="${BASH_SOURCE[0]}"
+while [ -h "$_dotfiles_source" ]; do
+  _dotfiles_dir="$(cd -P "$(dirname "$_dotfiles_source")" && pwd)"
+  _dotfiles_source="$(readlink "$_dotfiles_source")"
+  [[ "$_dotfiles_source" != /* ]] && _dotfiles_source="$_dotfiles_dir/$_dotfiles_source"
+done
+export DOTFILES="$(cd -P "$(dirname "$_dotfiles_source")" && pwd)"
+unset _dotfiles_source _dotfiles_dir
 
 # Reset debug timing
 _dotfiles_debug_timing "$LINENO"
@@ -106,13 +115,17 @@ export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 _dotfiles_debug_timing "$LINENO"
 
 # Set path for HOMEBREW
-[ ! -s "$(which brew)"  ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-[ -s "$(which brew >/dev/null 2>&1)" ] && BREW_PREFIX=$(brew --prefix)
+[ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 
 export GOPATH=$DEVPATH/go
 export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin:$DEVPATH/bin
-export ANDROID_HOME=$HOME/Library/Android/sdk
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export ANDROID_HOME=$HOME/Library/Android/sdk
+else
+  export ANDROID_HOME=$HOME/Android/Sdk
+fi
 export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 
 # fzf
@@ -135,26 +148,22 @@ if which jenv > /dev/null; then eval "$(jenv init -)"; fi
 # maestro
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
 
-# ruby rbenv
-[ -f "$HOME/.rbenv/bin/rbenv" ] && export PATH=$PATH:$HOME/.rbenv/bin
-if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
+# opencode
+[ -d "$HOME/.opencode/bin" ] && export PATH="$HOME/.opencode/bin:$PATH"
+
+# mise — manages Ruby, Node, and other runtime versions
+[ -d "$HOME/.local/bin" ] || mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+[ -x "$HOME/.local/bin/mise" ] && eval "$("$HOME/.local/bin/mise" activate bash)"
 
 _dotfiles_debug_timing "$LINENO"
 
-# Node.js and NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" --no-use # This loads nvm
-_dotfiles_debug_timing "$LINENO"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-_dotfiles_debug_timing "$LINENO"
-export HAS_NVM=$([ $(command -v nvm) ] && echo true)
-# _dotfiles_debug_timing "$LINENO"
-[ -n "$HAS_NVM" ] && nvm use --delete-prefix default --silent
-
-_dotfiles_debug_timing "$LINENO"
-
-# Change bash prompt
-export PS1="\[\033[0;34m\]\W \$([ -n "$HAS_NVM" ] && nvm current) \$(get_git_location) > \[$(tput sgr0)\]"
+# Change bash prompt (show hostname only in SSH sessions)
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  export PS1="\[\033[0;34m\]$HOSTNAME_SHORT:\W \$(get_git_location) > \[$(tput sgr0)\]"
+else
+  export PS1="\[\033[0;34m\]\W \$(get_git_location) > \[$(tput sgr0)\]"
+fi
 
 
 # AWS CLI
@@ -209,14 +218,14 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 #   . "$NEW_GCLOUD_PATH/completion.bash.inc"
 # fi
 
+# Google Antigravity
+[ -d "$HOME/.antigravity/antigravity/bin" ] && export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+
 _dotfiles_debug_timing "$LINENO"
 
 # z
 export _Z_NO_RESOLVE_SYMLINKS=1
 [ -f "$DEVPATH/z/z.sh" ] && . "$DEVPATH/z/z.sh"
-
-# git
-export PATH=/usr/local/git/bin:$PATH
 
 _dotfiles_debug_timing "$LINENO"
 
@@ -229,19 +238,20 @@ fi
 
 _dotfiles_debug_timing "$LINENO"
 
+# Local bin
+[ -d "$HOME/.local/bin" ] && export PATH=$PATH:$HOME/.local/bin
+
 # Marker
 [[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
 
 _dotfiles_debug_timing "$LINENO"
 
-# pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-if [ -d "$PYENV_ROOT" ]
-then
-  export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init --path)"
-  eval "$(pyenv init -)"
-fi
+# OrbStack
+[ -f "$HOME/.orbstack/shell/init.bash" ] && source "$HOME/.orbstack/shell/init.bash"
+
+# Postgres
+[ -d "/opt/homebrew/opt/postgresql@17/bin" ] && export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+
 
 _dotfiles_debug_timing "$LINENO"
 
@@ -252,7 +262,7 @@ _dotfiles_debug_timing "$LINENO"
 export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
 
 # terraform
-[ -s "/opt/homebrew/bin/terraform" ] && complete -C /opt/homebrew/bin/terraform terraform
+[ -s "$(command -v terraform)" ] && complete -C "$(command -v terraform)" terraform
 
 # tmux
 export TMUX_VERSION=$(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")
@@ -268,45 +278,19 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 _dotfiles_debug_timing "$LINENO"
 
+# Clean up any stale direnv hooks from PROMPT_COMMAND (since direnv is disabled)
+if [[ "$PROMPT_COMMAND" == *"_direnv_hook"* ]]; then
+  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook;/}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook /}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook/}"
+fi
 
-## Setup PROMPT_COMMAND
-# Activate a version of Node that is read from a text file via NVM
-function use_node_version()
-{
-  local TEXT_FILE_NAME="$1"
-  local CURRENT_VERSION=$([ -n "$HAS_NVM" ] && nvm current)
-  local PROJECT_VERSION=$([ -n "$HAS_NVM" ] && nvm version $(cat "$TEXT_FILE_NAME"))
-  # If the project file version is different than the current version
-  if [ "$CURRENT_VERSION" != "$PROJECT_VERSION" ]
-  then
-    [ -n "$HAS_NVM" ] && nvm use "$PROJECT_VERSION"
-  fi
-}
-
-# Read the .nvmrc and switch nvm versions if exists upon dir changes
-function read_node_version()
-{
-  # Only run if we actually changed directories
-  if [ "$PWD" != "$READ_NODE_VERSION_PREV_PWD" ]
-	then
-    export READ_NODE_VERSION_PREV_PWD="$PWD";
-
-    # If there's an .nvmrc here
-    if [ -e ".nvmrc" ]
-		then
-      use_node_version ".nvmrc"
-      return
-    fi
-
-    # If there's a .node-version here
-    if [ -e ".node-version" ]
-		then
-      use_node_version ".node-version"
-      return
-    fi
-  fi
-}
-[[ $PROMPT_COMMAND != *"read_node_version"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND read_node_version ;"
+# Clean up stale read_node_version from PROMPT_COMMAND (replaced by mise)
+if [[ "$PROMPT_COMMAND" == *"read_node_version"* ]]; then
+  export PROMPT_COMMAND="${PROMPT_COMMAND// read_node_version ;/}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//read_node_version ;/}"
+  export PROMPT_COMMAND="${PROMPT_COMMAND//read_node_version/}"
+fi
 
 # Set iTerm2 badge
 function set_badge()
@@ -317,9 +301,20 @@ function set_badge()
 
 _dotfiles_debug_timing "$LINENO"
 
+# # direnv
+# if [ -n "$(command -v direnv)" ]
+# then
+#   eval "$(direnv hook bash)"
+# fi
+
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
+# Deduplicate PATH and ensure homebrew takes precedence
+_path_strip "*homebrew*" "*linuxbrew*"
+_path_dedup
+[ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Cleanup debug timing
 unset DOTFILES_DEBUG_LAST_TIME

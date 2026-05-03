@@ -12,10 +12,11 @@ function! BuildComposer(info)
 endfunction
 
 " Python
-" Follow python virtualenvs provider instructions to setup:
-" https://github.com/zchee/deoplete-jedi/wiki/Setting-up-Python-for-Neovim
 " https://neovim.io/doc/user/provider.html
-let g:python3_host_prog = expand('~/.pyenv/versions/py3nvim/bin/python')
+let g:python3_host_prog = exepath('python3')
+
+" Ruby
+let g:ruby_host_prog = exepath('neovim-ruby-host')
 
 " Disable Perl support
 let g:loaded_perl_provider = 0
@@ -59,6 +60,9 @@ Plug 'radenling/vim-dispatch-neovim'
 Plug 't9md/vim-surround_custom_mapping'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-dotenv'
+Plug 'tpope/vim-dadbod'
+Plug 'kristijanhusak/vim-dadbod-ui'
+Plug 'kristijanhusak/vim-dadbod-completion'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
 " Plug 'junegunn/rainbow_parentheses.vim'
@@ -66,6 +70,8 @@ Plug 'mbbill/undotree'
 Plug 'janko/vim-test'
 Plug 'benmills/vimux'
 Plug 'sk1418/HowMuch'
+Plug 'norcalli/nvim-colorizer.lua'
+Plug 'kdheepak/lazygit.nvim'
 
 " Debugging
 Plug 'vim-vdebug/vdebug', { 'on': 'VdebugStart' }
@@ -78,30 +84,16 @@ Plug 'prettier/vim-prettier', {
   \ 'for': ['javascript', 'javascript.jsx', 'typescript', 'typescriptreact', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 
 " Auto-complete
-Plug 'dense-analysis/ale', { 'tag': 'v3.*' }
-" coc.nvim and vscode-compatible extensions
+Plug 'dense-analysis/ale', { 'tag': 'v4.*' }
+" coc.nvim framework (extensions managed via g:coc_global_extensions below)
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'neoclide/coc-tsserver', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-pairs', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-css', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-highlight', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-json', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-git', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-snippets', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-eslint', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-sources', {'rtp': 'packages/emoji', 'do': 'yarn install --frozen-lockfile'}
-" Plug 'neoclide/coc-emmet', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-solargraph', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-yaml', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-html', {'do': 'yarn install --frozen-lockfile'}
-Plug 'neoclide/coc-lists', {'do': 'yarn install --frozen-lockfile'}
-Plug 'iamcco/coc-svg', {'do': 'yarn install --frozen-lockfile'}
-Plug 'amiralies/coc-elixir', {'do': 'yarn install --frozen-lockfile'}
-Plug 'andys8/vscode-jest-snippets', {'do': 'npm ci'}
+Plug 'andys8/vscode-jest-snippets'
 " Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
-Plug 'zbirenbaum/copilot.lua'
+if has('nvim-0.10')
+  Plug 'zbirenbaum/copilot.lua'
+  Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'main' }
+endif
 Plug 'nvim-lua/plenary.nvim'
-Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'canary' }
 Plug 'github/copilot.vim', {'branch': 'release'}
 
 " Telescope
@@ -120,7 +112,7 @@ Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
 " Misc syntax
 " TODO: test vim-polyglot and remove most other syntax plugins
 Plug 'sheerun/vim-polyglot'
-Plug 'tpope/vim-liquid'
+Plug 'uiiaoo/java-syntax.vim'
 Plug 'neoclide/jsonc.vim'
 
 " Other JS/CSS/HTML
@@ -134,12 +126,6 @@ Plug 'mustache/vim-mustache-handlebars'
 Plug 'euclio/vim-markdown-composer', {
   \ 'do': function('BuildComposer'),
   \ 'for': ['markdown'],
-  \ }
-
-"" Golang
-Plug 'fatih/vim-go', {
-  \ 'tag': '*', 'do': ':GoInstallBinaries',
-  \ 'for': ['go'],
   \ }
 
 "" HashiCorp
@@ -177,12 +163,34 @@ Plug 'ryanoasis/vim-devicons'
 
 call plug#end()
 
+" CoC extensions (managed by CoC, not vim-plug)
+let g:coc_global_extensions = [
+  \ 'coc-tsserver',
+  \ 'coc-pairs',
+  \ 'coc-css',
+  \ 'coc-highlight',
+  \ 'coc-json',
+  \ 'coc-git',
+  \ 'coc-snippets',
+  \ 'coc-eslint',
+  \ 'coc-emoji',
+  \ 'coc-solargraph',
+  \ 'coc-yaml',
+  \ 'coc-html',
+  \ 'coc-lists',
+  \ 'coc-svg',
+  \ ]
+
+if has('nvim-0.10')
 lua << EOF
-require("CopilotChat").setup {
-  debug = false, -- Enable debugging
-  -- See Configuration section for rest
-}
+local _ok, _copilot_chat = pcall(require, "CopilotChat")
+if _ok then
+  _copilot_chat.setup {
+    debug = false,
+  }
+end
 EOF
+endif
 
 "" various settings
 silent !mkdir -p $HOME/.vim/swapfiles
@@ -322,6 +330,8 @@ inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 " Or use `complete_info` if your vim support it, like:
 " inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
 
+" colorizer
+lua pcall(function() require'colorizer'.setup() end)
 
 " deoplete
 let g:deoplete#enable_at_startup = 1
@@ -370,6 +380,7 @@ let g:buftabline_path=1
 
 " vim-commentary
 autocmd FileType json setlocal commentstring=//\ %s
+autocmd FileType sql setlocal commentstring=--\ %s
 
 
 " vim-dotenv

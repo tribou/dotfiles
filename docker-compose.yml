@@ -1,0 +1,24 @@
+services:
+  base:
+    build: .
+    volumes:
+      - .:/dotfiles
+
+  ci:
+    extends:
+      service: base
+    init: true
+    command: >
+      bash -c "
+        . scripts/bootstrap-test.sh &&
+        goss validate --format tap &&
+        ./tests/test_helper/bats-core/bin/bats tests/integration/
+      "
+
+  dev:
+    extends:
+      service: base
+    stdin_open: true
+    tty: true
+    command: >
+      bash -c "scripts/bootstrap-test.sh && bash"

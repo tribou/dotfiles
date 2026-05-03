@@ -1,17 +1,19 @@
 #!/bin/bash
+set -euo pipefail
 
 # Install all the dotfiles
 
 # Rudimentary flags parsing
-if [ "$1" = "-h" ] || [ "$1" = "--help" ]
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]
 then
-  usage='Usage: ./bootstrap.sh [-i|--install-deps]'
+  usage='Usage: ./bootstrap.sh'
   echo "$usage"
   exit 1
 fi
 
 # Get bootstrap script directory
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
+export DOTFILES="$THIS_DIR"
 
 function backupFile ()
 {
@@ -26,6 +28,7 @@ function backupFile ()
 function linkFileToHome ()
 {
   echo "Creating a symlink for ${2}"
+  rm -f ~/"${2}"
   ln -sf "${THIS_DIR}/${1}" ~/"${2}"
 }
 
@@ -44,11 +47,17 @@ function linkFileToHome ()
 
 # Setup dev and gopath
 mkdir -p "$HOME/dev/bin" || true
-mkdir ~/dev/go/pkg || true
+mkdir -p ~/dev/go/pkg
 mkdir -p ~/dev/go/src/github.com/tribou || true
 mkdir -p ~/dev/go/src/bitbucket.org || true
 mkdir -p ~/dev/go/src/github.com/rocksauce || true
 export GOPATH=~/dev/go
+
+# Install z (rupa/z) for directory jumping
+if [ ! -d "$HOME/dev/z" ]; then
+  echo "Installing z..."
+  git clone https://github.com/rupa/z.git "$HOME/dev/z"
+fi
 
 # .bash_profile
 backupFile ".bash_profile"
@@ -69,22 +78,28 @@ linkFileToHome "zshrc" ".zshrc"
 # .tmux.conf
 backupFile ".tmux.conf"
 linkFileToHome "tmux/tmux-conf" ".tmux.conf"
-tic -x tmux/xterm-256color-italic.terminfo
-tic -x tmux/tmux-256color.terminfo
+
+# mise default packages
+linkFileToHome "default-node-packages" ".default-node-packages"
+linkFileToHome "default-gems" ".default-gems"
+linkFileToHome "default-python-packages" ".default-python-packages"
+
+tic -x tmux/xterm-256color-italic.terminfo || true
+tic -x tmux/tmux-256color.terminfo || true
 
 # .gnupg/gpg-agent.conf
 mkdir -p ~/.gnupg
 backupFile ".gnupg/gpg-agent.conf"
 linkFileToHome "gpg-agent-conf" ".gnupg/gpg-agent.conf"
-chown -R "$(whoami)" ~/.gnupg/
-chmod 600 ~/.gnupg/*
-chmod 700 ~/.gnupg
+  chown -R "$(whoami)" ~/.gnupg/
+  chmod 600 ~/.gnupg/* || true
+  chmod 700 ~/.gnupg
 # Restart gpg-agent
 if [ "$(which gpgconf)" ] && [ "$(which gpg-agent)" ]
 then
   echo "Restarting gpg-agent"
   gpgconf --kill gpg-agent
-  eval "$(gpg-agent --daemon 2>/dev/null)"
+  eval "$(gpg-agent --daemon 2>/dev/null)" || true
 fi
 
 # .config/nvim/init.vim
@@ -98,9 +113,19 @@ mkdir -p ~/.config/alacritty
 backupFile ".config/alacritty/alacritty.toml"
 linkFileToHome "alacritty.toml" ".config/alacritty/alacritty.toml"
 
+# .config/mise/config.toml
+mkdir -p ~/.config/mise
+backupFile ".config/mise/config.toml"
+linkFileToHome "mise-config.toml" ".config/mise/config.toml"
+
 # .config/nvim/coc-settings.json
 backupFile ".config/nvim/coc-settings.json"
 linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
+
+# .claude/skills
+mkdir -p ~/.claude
+backupFile ".claude/skills"
+linkFileToHome "skills" ".claude/skills"
 
 # setup API keys file
 if [ ! -f "$HOME/.ssh/api_keys" ]
@@ -136,51 +161,30 @@ fi
 
 # Setup ssh-agent
 ## If agent socket isn't available, source it
-[ -s "$SSH_AUTH_SOCK" ] || eval `ssh-agent -s`
+[ -s "${SSH_AUTH_SOCK:-}" ] || eval "$(ssh-agent -s)"
 ## Add keys to keychain
-[ -f "$HOME/.ssh/id_rsa" ] && (ssh-add -K "$HOME/.ssh/id_rsa" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_rsa")
-[ -f "$HOME/.ssh/id_ed25519" ] && (ssh-add -K "$HOME/.ssh/id_ed25519" > /dev/null 2>&1 || ssh-add "$HOME/.ssh/id_ed25519")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # --apple-use-keychain replaces -K (removed in macOS Ventura 13+); fall back to plain ssh-add
+  [ -f "$HOME/.ssh/id_rsa" ] && { ssh-add --apple-use-keychain "$HOME/.ssh/id_rsa" 2>/dev/null || ssh-add "$HOME/.ssh/id_rsa" 2>/dev/null || true; }
+  [ -f "$HOME/.ssh/id_ed25519" ] && { ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519" 2>/dev/null || ssh-add "$HOME/.ssh/id_ed25519" 2>/dev/null || true; }
+else
+  [ -f "$HOME/.ssh/id_rsa" ] && ssh-add "$HOME/.ssh/id_rsa" || true
+  [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519" || true
+fi
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/tpm/" "$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
-# More rudimentary flags parsing
-if [ "$1" = "-i" ] || [ "$1" = "--install-deps" ]
+if   command -v curl &>/dev/null
 then
-  echo "--install-deps detected. Installing dependencies..."
-  echo
 
-  source "./scripts/install.sh"
-
-  if   [ -s "$(which curl)"  ]
-  then
-
-    if   [ ! -f "$HOME/.vim/autoload/plug.vim" ]
+  if   ! command -v cargo &>/dev/null
     then
-      _BOOTSTRAP_INSTALL="sh -c 'curl -fLo \"${XDG_DATA_HOME:-$HOME/.local/share}\"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
-      echo "Installing vim-plug:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-      echo
-    fi
-
-    if   [ ! -s "$(which nvim)"  ] && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
-    then
-      _BOOTSTRAP_INSTALL="curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-      echo "Installing vim-plug for neovim:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-      echo
-    fi
-
-    if   [ ! -s "$(which cargo)"  ]
-    then
-      _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+      _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
       echo "Installing rust:"
       echo "$_BOOTSTRAP_INSTALL"
       echo
@@ -190,41 +194,39 @@ then
       echo
     fi
 
-    _BOOTSTRAP_INSTALL="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash"
-    echo "Installing nvm:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-    if [ ! -n "$(command -v nvm)" ]
-    then
-      export NVM_DIR="$HOME/.nvm"
-      [ -s "$NVM_DIR/nvm.sh"  ] && source "$NVM_DIR/nvm.sh" # This loads nvm
-      [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
-    fi
-    echo
+    export PATH="$HOME/.local/bin:$PATH"
+    MISE_BIN="$(type -P mise 2>/dev/null || true)"
 
-    if [ -n "$(command -v nvm)" ] && [ ! -n "$(nvm ls 16 | grep 16)" ]
+    if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]
     then
-      echo "Installing node 16, 18, 20:"
+      MISE_BIN="$HOME/.local/bin/mise"
+    fi
+
+    if [ -z "$MISE_BIN" ]
+    then
+      echo "Installing mise:"
+      curl https://mise.run | sh
       echo
-      nvm install 16
-      nvm use 16
-      npm-install-global
-      nvm install 18
-      nvm use 18
-      npm-install-global
-      nvm install 20
-      nvm alias default 20
-      nvm use 20
-      npm-install-global
+      MISE_BIN="$HOME/.local/bin/mise"
+    else
+      echo "Updating mise:"
+      "$MISE_BIN" self-update --yes || true
       echo
     fi
 
-    if [ ! -f "$HOME/dev/z/z.sh" ]
+    if [ -x "$MISE_BIN" ]
     then
-      echo "Installing z"
-      git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
-      . "$HOME/dev/z/z.sh"
+      eval "$("$MISE_BIN" activate bash)"
+      # Install all tools from mise-config.toml (symlinked to ~/.config/mise/config.toml)
+      mise install node go bun
+      hash -r
+      corepack enable
+      # Try precompiled ruby first (fast), fall back to source compilation
+      if ! MISE_RUBY_COMPILE=0 mise install ruby 2>/dev/null; then
+        echo "No precompiled ruby available for this platform, compiling from source..."
+        mise install ruby
+      fi
+      echo
     fi
 
   else
@@ -233,7 +235,7 @@ then
   fi
 
 
-  if  [ -s "$(which npm)"  ] && [ ! -n "$(which eslint_d)" ]
+  if  command -v npm &>/dev/null && ! command -v eslint_d &>/dev/null
   then
     _BOOTSTRAP_INSTALL="npm install --location=global neovim eslint_d editorconfig"
     echo "Installing global node modules:"
@@ -244,13 +246,6 @@ then
     echo "npm not available or eslint_d already installed. Skipping..."
   fi
 
-  if [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
-  then
-    echo "Installing vim-plug for Neovim"
-    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-  fi
-
   if [ ! -f "$HOME/dev/z/z.sh" ]
   then
     echo "Installing z"
@@ -258,211 +253,132 @@ then
     . "$HOME/dev/z/z.sh"
   fi
 
-  if [ ! -s "$(which fzf)"  ]
-  then
-    echo "Installing fzf"
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-    ~/.fzf/install
-  fi
-
-  if [ ! -d "$HOME/.rbenv/bin" ] && [ ! -s "$(which rbenv)"  ]
-  then
-    echo "Installing rbenv"
-    curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
-    eval "$(rbenv init -)"
-  fi
-
-  if [ -z "$(ls -A $HOME/.rbenv/versions/)" ]
-  then
-    echo "Installing latest ruby version"
-    rbenv install "$(rbenv install -l | grep -v - | tail -1)"
-    rbenv global "$(rbenv install -l | grep -v - | tail -1)"
-    echo "Installing React Native ruby version"
-    rbenv install 2.7.6
-    rbenv global 2.7.6
-  fi
-
-  if  [ -s "$(which gem)"  ] && [ -z "$(gem list -i "^neovim$")" ]
-  then
-    _BOOTSTRAP_INSTALL="gem install neovim solargraph --no-document"
-    echo "Installing gems:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-    echo
-  else
-    echo "gem not available or neovim already installed. Skipping..."
-    echo
-  fi
-
-  if [ ! -d "$HOME/.pyenv/bin" ]
-  then
-    echo "Installing pyenv"
-    curl https://pyenv.run | bash
-  fi
-
-  if [ ! -s "$(which pyenv)"  ]
-  then
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init --path)"
-    eval "$(pyenv init -)"
-  fi
-
-  if [ ! -d "$HOME/.pyenv/versions/3.12.2" ]
-  then
-    echo "Installing python3"
-    pyenv install 3.12.2
-    pyenv global 3.12.2
-    echo "python version: $(python --version)"
-    python3 -m pip install --upgrade pip
-  fi
-
-  if [ ! -d "$HOME/.pyenv/versions/py3nvim" ]
-  then
-    echo "Installing py3nvim virtualenv"
-    eval "$(pyenv init -)"
-    pyenv virtualenv 3.12.2 py3nvim
-    pyenv activate py3nvim
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade pynvim
-    pyenv deactivate
-    echo
-  fi
-
-  if [ -s "$(which python3)" ]
-  then
-    echo "Installing idb"
-    python3 -m pip install --upgrade fb-idb --prefer-binary
-    echo
-  else
-    echo "python3 not available or idb already installed. Skipping..."
-    echo
-  fi
-
-  if [ ! -s "$(which pyls)" ]
-  then
-    echo "Installing python-language-server (pyls)"
-    python3 -m pip install --upgrade pyls
-  fi
-
-  if [ ! -s "$(which brew)" ]
-  then
-    echo "Brew not installed. Skipping the rest of the installs"
-    exit 0
-  fi
-
-  if [ ! -s "$(which tfenv)" ]
-  then
-    echo "Installing tfenv"
-    if [ -s "$(brew list terraform)"  ]
-    then
-      echo "Existing terraform install. Unlinking..."
-      brew unlink terraform
-      echo
+  # Install brew prerequisites on Linux (needed before brew can install)
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    if command -v apt-get &>/dev/null; then
+      sudo apt-get update
+      sudo apt-get install -y curl git build-essential xdg-utils bash-completion
+    elif command -v pacman &>/dev/null; then
+      sudo pacman -Syu --noconfirm curl git base-devel bash-completion
     fi
-    brew install tfenv
-    tfenv install
-    tfenv use
-    echo
   fi
 
-  JAVA_VERSION=17
-
-  if [ ! -s "$(which java)" ]
-  then
-    echo "Installing java"
-    brew install "zulu@$JAVA_VERSION"
-    echo
-  fi
-
-  if [ ! -s "$(which jenv)" ]
-  then
-    echo "Installing jenv"
-    if [ -s "$(brew list jenv)"  ]
-    then
-      echo "Existing jenv install. Unlinking..."
-      brew unlink jenv
-      echo
+  # Install brew if not present (macOS and Linux)
+  if ! command -v brew &>/dev/null; then
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
+    else
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
     fi
-    brew install jenv
-    eval "$(jenv init -)"
-    jenv add "$(/usr/libexec/java_home)"
-    jenv global $JAVA_VERSION
-    echo
   fi
 
-  if [ -z "$(brew list --cask font-fira-code-nerd-font)" ]
+  # Brew is required — exit if still not available
+  if ! command -v brew &>/dev/null; then
+    echo "ERROR: Homebrew installation failed. Install brew manually and re-run."
+    exit 1
+  fi
+
+  brew install \
+      git \
+      neovim \
+      python \
+      zlib \
+      hashicorp/tap/terraform-ls \
+      nmap \
+      ansible \
+      htop \
+      gpg \
+      editorconfig \
+      watchman \
+      tree \
+      awscli \
+      ssh-copy-id \
+      git-extras \
+      jq \
+      dos2unix \
+      tidy-html5 \
+      fd \
+      ripgrep \
+      bat \
+      navi \
+      shellcheck \
+      tlrc \
+      lazydocker \
+      lazygit \
+      just \
+      lynx \
+      tree-sitter-cli \
+      fzf \
+      tmux \
+      delta \
+      git-delta \
+      gh \
+      beads
+
+  # Linux-only packages
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    brew install gcc
+  fi
+
+  # macOS-only packages
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install \
+      bash-completion \
+      rename \
+      alacritty \
+      ngrok/ngrok/ngrok \
+      reattach-to-user-namespace \
+      tfenv \
+      tor \
+      vimpager \
+      renameutils \
+      tmux-mem-cpu-load
+
+    brew install --cask \
+      cmake \
+      1password \
+      1password-cli \
+      appcleaner \
+      balenaetcher \
+      bruno \
+      firefox \
+      imageoptim \
+      orbstack \
+      steam \
+      font-fira-code-nerd-font \
+      font-hack-nerd-font \
+      font-fontawesome
+  fi
+
+  # vim-plug + Neovim plugins — must run after brew installs neovim
+  if command -v nvim &>/dev/null && [ ! -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]
   then
-    _BOOTSTRAP_INSTALL="brew tap homebrew/cask-fonts && brew install --cask font-fira-code-nerd-font font-hack-nerd-font font-fontawesome"
-    echo "Installing fonts:"
-    echo "$_BOOTSTRAP_INSTALL"
-    echo
-    eval "$_BOOTSTRAP_INSTALL"
-    echo
-  else
-    echo "Fonts already installed Skipping..."
-    echo
+    echo "Installing vim-plug for Neovim"
+    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    echo "Installing Neovim plugins"
+    nvim --headless +"PlugInstall --sync" +qall
   fi
 
-  if [ ! -s "$(which tmux)"  ]
+  # pynvim (Neovim Python support) — installed via pip since mise no longer manages Python
+  if command -v python3 &>/dev/null && ! python3 -c "import pynvim" &>/dev/null
   then
-    echo "Installing tmux"
-    brew install tmux
+    echo "Installing pynvim"
+    pip3 install --user --break-system-packages pynvim
   fi
 
-  brew install git \
-    alacritty \
-    neovim \
-    bash-completion \
-    zlib \
-    hashicorp/tap/terraform-ls \
-    homebrew/core/nmap \
-    homebrew/core/go \
-    elixir \
-    ansible \
-    htop \
-    tor \
-    gpg \
-    editorconfig \
-    watchman \
-    tree \
-    awscli \
-    ssh-copy-id \
-    git-extras \
-    vimpager \
-    jq \
-    dos2unix \
-    tidy-html5 \
-    fd \
-    ripgrep \
-    bat \
-    rename \
-    node@20 \
-    navi \
-    ngrok/ngrok/ngrok \
-    renameutils \
-    shellcheck \
-    tmux-mem-cpu-load
+  # neovim gem (Neovim Ruby support) — installed via mise-managed ruby
+  if command -v ruby &>/dev/null && ! gem list neovim -i &>/dev/null
+  then
+    echo "Installing neovim gem"
+    gem install neovim
+  fi
 
-  brew install --cask \
-    homebrew/cask/cmake \
-    iterm2 \
-    warp \
-    appcleaner \
-    steam \
-    tunnelblick \
-    imageoptim \
-    vlc \
-    grandperspective \
-    install-disk-creator \
-    iconjar \
-    spectacle \
-    google-cloud-sdk \
-    graphql-playground \
-    sequel-ace \
-    firefox \
-    1password \
-    1password-cli \
-    homebrew/cask/docker \
-    postman
-fi
+  # Golang tools — install after mise provisions Go
+  GO_BIN_DIR="${GOBIN:-$GOPATH/bin}"
+  if [ -x "$(which go)" ] && [ ! -x "$GO_BIN_DIR/gopls" ]
+  then
+    echo "Installing gopls"
+    go install golang.org/x/tools/gopls@latest
+  fi

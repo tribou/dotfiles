@@ -84,26 +84,62 @@ function co ()
     eval "$SCRIPT"
   else
     local RESULT
-    RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap)
-    local CLEANED_RESULT
-    CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
-    if [ -n "$CLEANED_RESULT" ]
+    RESULT=$({
+      git for-each-ref refs/heads --sort=-committerdate --format='%(refname:short)'
+      git for-each-ref refs/remotes --sort=-committerdate --format='%(refname:strip=3)' | grep -v '^HEAD$'
+    } | sort -u | fzf --preview-window wrap)
+    if [ -n "$RESULT" ]
     then
-      local SCRIPT="git checkout $CLEANED_RESULT"
+      local SCRIPT="git checkout \"$RESULT\""
       _eval_script "$SCRIPT && _dotfiles_git_status"
     fi
   fi
 }
 
+# Start the Claude keep-alive loop
+function claude-keepalive() {
+  if tmux has-session -t claude-keepalive 2>/dev/null; then
+    echo "Claude keep-alive is already running!"
+  else
+    tmux new-session -d -s claude-keepalive
+    # Use single quotes around the loop so $! doesn't evaluate early in your current shell
+    # shellcheck disable=SC2016
+    tmux send-keys -t claude-keepalive 'while true; do claude --resume & PID=$!; sleep 15; kill $PID 2>/dev/null; sleep 21600; done' C-m
+    echo "Claude keep-alive started in the background!"
+  fi
+}
+
+# Stop the Claude keep-alive loop
+function claude-keepalive-stop() {
+  tmux kill-session -t claude-keepalive 2>/dev/null
+  echo "Claude keep-alive stopped."
+}
+
+# Returns the write command for the system clipboard (no args: just the command string).
+function _dotfiles_clipboard_write_cmd ()
+{
+  if [ -n "$(command -v pbcopy)" ]; then
+    echo "pbcopy"
+  elif [ -n "$(command -v xclip)" ]; then
+    echo "xclip -selection clipboard"
+  fi
+}
+
+# Returns the read command for the system clipboard.
+function _dotfiles_clipboard_read_cmd ()
+{
+  if [ -n "$(command -v pbpaste)" ]; then
+    echo "pbpaste"
+  elif [ -n "$(command -v xclip)" ]; then
+    echo "xclip -o -sel clipboard"
+  fi
+}
+
 function copy_to_clipboard ()
 {
-  if [ -n "$(command -v pbcopy)" ]
-  then
-    pbcopy
-  elif [ -n "$(command -v xclip)" ]
-  then
-    xclip
-  fi
+  local cmd
+  cmd="$(_dotfiles_clipboard_write_cmd)"
+  [ -n "$cmd" ] && eval "$cmd"
 }
 
 function digitalocean ()
@@ -129,7 +165,7 @@ function dminit ()
     local dm_name="$1"
   fi
 
-  eval "$(docker-machine env $dm_name)"
+  eval "$(docker-machine env "$dm_name")"
 }
 
 function da ()
@@ -147,6 +183,18 @@ function ds ()
   cid=$(docker ps | sed 1d | fzf -q "$1" | awk '{print $1}')
 
   [ -n "$cid" ] && docker stop "$cid"
+}
+
+function dlogs ()
+{
+  # Select a docker container (running or stopped) and stream its logs
+  local cid
+  cid=$(docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}" \
+    | sed 1d \
+    | fzf -1 -q "$1" \
+    | awk '{print $1}')
+
+  [ -n "$cid" ] && docker logs -f --timestamps "$cid"
 }
 
 function f ()
@@ -177,15 +225,127 @@ function gbd ()
     eval "$SCRIPT"
   else
     local RESULT
-    RESULT=$(git branch -a --sort=-committerdate | fzf --preview-window wrap --color)
-    local CLEANED_RESULT
-    CLEANED_RESULT="$(echo ${RESULT//\*} | sed -E 's/^remotes\/[A-Z0-9a-z]+\///')"
-    if [ -n "$CLEANED_RESULT" ]
+    RESULT=$({
+      git for-each-ref refs/heads --sort=-committerdate --format='%(refname:short)'
+      git for-each-ref refs/remotes --sort=-committerdate --format='%(refname:strip=3)' | grep -v '^HEAD$'
+    } | sort -u | fzf --preview-window wrap --color)
+    if [ -n "$RESULT" ]
     then
-      local SCRIPT="git branch -d $CLEANED_RESULT || _dotfiles_prompt_git_branch_delete $CLEANED_RESULT"
+      local SCRIPT="git branch -d \"$RESULT\" || _dotfiles_prompt_git_branch_delete \"$RESULT\""
       _eval_script "$SCRIPT"
     fi
   fi
+}
+
+function wtc ()
+{
+  if [ -z "$1" ]
+  then
+    echo "Usage: wtc <branch-name>" >&2
+    return 1
+  fi
+
+  local BRANCH="$1"
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local WORKTREE_PATH="$REPO_ROOT/.worktrees/$BRANCH"
+  local GITIGNORE="$REPO_ROOT/.gitignore"
+
+  if ! grep -qF '.worktrees/' "$GITIGNORE" 2>/dev/null
+  then
+    echo '.worktrees/' >> "$GITIGNORE"
+    echo "Added .worktrees/ to .gitignore"
+  fi
+
+  mkdir -p "$(dirname "$WORKTREE_PATH")"
+  git worktree add -b "$BRANCH" "$WORKTREE_PATH" || return
+
+  if [ -d "$REPO_ROOT/.claude" ]
+  then
+    cp -r "$REPO_ROOT/.claude" "$WORKTREE_PATH/.claude"
+  fi
+
+  cd "$WORKTREE_PATH" || return
+}
+
+function wt ()
+{
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local RESULT
+  RESULT=$(git worktree list | fzf --preview-window wrap --color)
+
+  if [ -n "$RESULT" ]
+  then
+    cd "$(echo "$RESULT" | awk '{print $1}')" || return
+  fi
+}
+
+function wtd ()
+{
+  local REPO_ROOT
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -z "$REPO_ROOT" ]
+  then
+    echo "Not in a git repository" >&2
+    return 1
+  fi
+
+  local WORKTREE_PATH BRANCH
+
+  if [ -n "$1" ]
+  then
+    BRANCH="$1"
+    WORKTREE_PATH="$REPO_ROOT/.worktrees/$BRANCH"
+  else
+    local RESULT
+    RESULT=$(git worktree list | tail -n +2 | fzf --preview-window wrap --color)
+    if [ -z "$RESULT" ]
+    then
+      return 0
+    fi
+    WORKTREE_PATH=$(echo "$RESULT" | awk '{print $1}')
+    BRANCH=$(echo "$RESULT" | sed -E 's/.*\[([^]]+)\].*/\1/')
+  fi
+
+  # If CWD is inside the worktree we're about to delete, cd out first
+  if [[ "$PWD" == "$WORKTREE_PATH"* ]]; then
+    local MAIN_REPO
+    MAIN_REPO=$(dirname "$(git rev-parse --git-common-dir)")
+    cd "$MAIN_REPO" || return
+  fi
+
+  local _wtd_remove_err
+  if ! _wtd_remove_err=$(git worktree remove "$WORKTREE_PATH" 2>&1); then
+    if [ -d "$WORKTREE_PATH" ]; then
+      if echo "$_wtd_remove_err" | grep -q "submodule"; then
+        # git worktree remove (even --force) cannot remove worktrees containing
+        # submodules; fall back to manual removal
+        rm -rf "$WORKTREE_PATH" && git worktree prune || return
+      else
+        echo
+        read -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
+          && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
+          || return 1
+        git worktree remove --force "$WORKTREE_PATH" || return
+      fi
+    else
+      git worktree prune || return
+    fi
+  fi
+  git branch -d "$BRANCH" || _dotfiles_prompt_git_branch_delete "$BRANCH"
 }
 
 function gpsu ()
@@ -222,10 +382,6 @@ function histgrep ()
 {
   # Remove histfile directory prefix during fzf search
   local AWK_REMOVE_HISTDIR='^\/.*\/\.history\/'
-  # Remove rest of histfile prefix from selection
-  local AWK_HISTFILE_DELIM='^[0-9]{4}\/[0-9]{2}\/\/?[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}_.*_.*[0-9]+:'
-  # Remove current history result prefix from selection
-  local AWK_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} '
 
   # Pipe results from two history sources into cat
   local RESULT
@@ -236,8 +392,8 @@ function histgrep ()
       | xargs grep -r "$1" \
       | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
     | fzf --tmux="70%,80%" \
-    | awk -F "$AWK_HISTFILE_DELIM" '{print $NF}' \
-    | awk -F "$AWK_HISTORY_DELIM" '{print $NF}')
+    | awk -F "$DOTFILES_HISTFILE_DELIM" '{print $NF}' \
+    | awk -F "$DOTFILES_HISTORY_DELIM" '{print $NF}')
 
   # If in tmux, we can use send-keys
   if [ -n "$TMUX" ]
@@ -245,7 +401,7 @@ function histgrep ()
     tmux send-keys -t "$TMUX_PANE" "$RESULT"
   else
     echo "$RESULT"
-    printf '%s' "$RESULT" | pbcopy
+    printf '%s' "$RESULT" | copy_to_clipboard
   fi
 }
 
@@ -280,6 +436,33 @@ function merge ()
   else
     _dotfiles_git_status
   fi
+}
+
+function mkrepo()
+{
+  if [ -z "$1" ]; then
+    echo "Usage: mkrepo <project-name>"
+    return 1
+  fi
+
+  # 1. Create directory and navigate into it
+  mkdir -p "$1"
+  cd "$1" || return
+
+  # 2. Initialize git and create a basic README
+  git init -b main
+  echo "# $1" > README.md
+
+  # 3. Initial commit
+  git add README.md
+  git commit -m "Initial commit"
+
+  # 4. Create the repo under the 'tribou' owner
+  # --source=. tells gh to use the current folder
+  # --push automatically pushes the initial commit
+  gh repo create "tribou/$1" --private --source=. --remote=origin --push
+
+  echo "✅ Created https://github.com/tribou/$1 and synced locally."
 }
 
 function new-docker ()
@@ -358,6 +541,7 @@ function npm-install-global ()
 {
   echo "Installing global modules"
   npm install --location=global \
+    eas-cli \
     eslint_d \
     editorconfig \
     intelephense \
@@ -400,20 +584,89 @@ function nu () {
   fi
 }
 
-function nr ()
+# Detect which package manager to use based on lock files in the current directory.
+# Outputs: pnpm | yarn | bun | npm
+function _dotfiles_npm_detect_exec ()
+{
+  if [ -f "pnpm-lock.yaml" ]; then
+    echo "pnpm"
+  elif [ -f "yarn.lock" ]; then
+    echo "yarn"
+  elif [ -f "bun.lock" ]; then
+    echo "bun"
+  else
+    echo "npm"
+  fi
+}
+
+function npm-install ()
+{
+  local EXEC
+  EXEC="$(_dotfiles_npm_detect_exec)"
+  if [ -n "$1" ]
+  then
+    local SCRIPT="$EXEC install $*"
+    echo "$SCRIPT"
+    echo
+    eval "$SCRIPT"
+  else
+    local SCRIPT="$EXEC install"
+    _eval_script "$SCRIPT"
+  fi
+}
+
+function y ()
 {
   if [ -n "$1" ]
   then
-    local SCRIPT="npm run --silent $*"
+    local SCRIPT="yarn $*" && echo "$SCRIPT" && echo && eval "$SCRIPT"
+  else
+    local SCRIPT="npm-install"
+    eval "$SCRIPT"
+  fi
+}
+
+function npm-run ()
+{
+  local EXEC
+  EXEC="$(_dotfiles_npm_detect_exec)"
+  # bun uses 'bun run --silent', others use their own format
+  if [ "$EXEC" = "bun" ]; then
+    EXEC="bun run --silent"
+  elif [ "$EXEC" = "npm" ]; then
+    EXEC="npm run --silent"
+  fi
+  if [ -n "$1" ]
+  then
+    local SCRIPT="$EXEC $*"
     echo "$SCRIPT"
     echo
     eval "$SCRIPT"
   else
     local RESULT
-    RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
+    RESULT=$(jq '.scripts' package.json | grep -E '[a-zA-Z0-9]' | fzf --tiebreak=chunk | awk -F'"' '{print $2}')
     if [ -n "$RESULT" ]
     then
-      local SCRIPT="npm run --silent $RESULT"
+      local SCRIPT="$EXEC $RESULT"
+      _eval_script "$SCRIPT"
+    fi
+  fi
+}
+
+function mise-run ()
+{
+  if [ -n "$1" ]
+  then
+    local SCRIPT="mise run $*"
+    echo "$SCRIPT"
+    echo
+    eval "$SCRIPT"
+  else
+    local RESULT
+    RESULT=$(mise tasks ls --no-header | fzf --tiebreak=chunk | awk '{print $1}')
+    if [ -n "$RESULT" ]
+    then
+      local SCRIPT="mise run $RESULT"
       _eval_script "$SCRIPT"
     fi
   fi
@@ -440,17 +693,17 @@ function ninfo ()
 
 function paste_from_clipboard ()
 {
-  if [ -n "$(command -v pbpaste)" ]
-  then
-    pbpaste
-  elif [ -n "$(command -v xclip)" ]
-  then
-    xclip -o -sel clipboard
-  fi
+  local cmd
+  cmd="$(_dotfiles_clipboard_read_cmd)"
+  [ -n "$cmd" ] && eval "$cmd"
 }
 
 function restart-docker ()
 {
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    echo "restart-docker is not supported on Linux. Use: sudo systemctl restart docker"
+    return 1
+  fi
   printf "Restarting Docker service..."
   # Restart Docker app
   osascript -e 'quit app "Docker"' && open -a Docker
@@ -498,7 +751,52 @@ function search ()
     ':!bin/**' \
     ':!flow-typed/**' \
     ':!vendor/**' \
-    ':!yarn.lock'
+    ':!*.lock' \
+    ':!*.pnp.*' \
+    ':!package-lock.json' \
+    ':!pnpm-lock.yaml'
+}
+
+function supabase-profile() {
+  local cfg="${SUPABASE_PROFILES:-$HOME/.config/supabase/profiles.tsv}"
+
+  # Create config if missing
+  if [[ ! -f "$cfg" ]]; then
+    mkdir -p "$(dirname "$cfg")"
+    umask 077
+    cat > "$cfg" <<'EOF'
+# name<TAB>token<TAB>project_ref(optional)<TAB>url(optional)
+work	<paste-work-token-here>	<project-ref>	https://<project>.supabase.co
+personal	<paste-personal-token-here>	<project-ref>	https://<project>.supabase.co
+EOF
+    chmod 600 "$cfg"
+    echo "Created $cfg — please fill in your tokens and rerun." >&2
+    return 1
+  fi
+
+  local sel name line token proj url
+  sel="$(
+    awk -F'\t' 'BEGIN{OFS="\t"} /^[^#]/ && NF>=2 {
+      name=$1; token=$2; proj=(NF>=3?$3:""); url=(NF>=4?$4:"");
+      mask=substr(token,1,6) "…" substr(token,length(token)-3,4);
+      print name, (proj?proj:"—"), (url?url:"—"), mask
+    }' "$cfg" \
+    | fzf --header=$'Select a Supabase profile\n(name\tproject\turl\t(token masked))' \
+          --with-nth=1,2,3 \
+          --preview-window=down,3,wrap \
+          --preview 'printf "Name: %s\nProject: %s\nURL: %s\nToken: %s\n" {1} {2} {3} {4}'
+  )" || return 1
+  [[ -n "$sel" ]] || return 1
+
+  name=$(awk -F'\t' '{print $1}' <<<"$sel")
+  line="$(awk -F'\t' -v n="$name" '/^[^#]/ && $1==n {print; exit}' "$cfg")" || return 1
+  IFS=$'\t' read -r _ token proj url <<<"$line"
+
+  export SUPABASE_ACCESS_TOKEN="$token"
+  [[ -n "$proj" ]] && export SUPABASE_PROJECT_REF="$proj" || unset SUPABASE_PROJECT_REF
+  [[ -n "$url"  ]] && export SUPABASE_URL="$url" || unset SUPABASE_URL
+
+  echo "Activated Supabase profile: $name  (project: ${proj:-n/a})"
 }
 
 function tf ()
@@ -553,13 +851,13 @@ function tmux-small ()
   _PRIMARY=$(_dotfiles_primary_full_path "$1")
 
   tmux new -A -s main -d
-  tmux split-window -h -l 55% -c "$_PRIMARY"
+  tmux split-window -h -l 50% -c "$_PRIMARY"
+  tmux select-pane -t 2
+  tmux split-window -v -b -l 75% -c "$_PRIMARY"
   tmux select-pane -t 1
-  tmux split-window -v -l 25% -c "$_PRIMARY"
-  tmux select-pane -t 3
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
-  tmux send-keys -t 2
-  tmux send-keys -t 3 v Enter
+  tmux send-keys -t 2 v Enter
+  tmux send-keys -t 3
 }
 
 # Create a crossover for small and large monitors
@@ -631,22 +929,46 @@ function useLocalIfAvailable ()
   fi
 }
 
-function yr ()
+function bashcheck ()
 {
-  if [ -n "$1" ]
-  then
-    local SCRIPT="yarn $*"
-    echo "$SCRIPT"
-    echo
-    eval "$SCRIPT"
-  else
-    local RESULT
-    RESULT=$(jq '.scripts' package.json | fzf | awk -F'"' '{print $2}')
-    if [ -n "$RESULT" ]
-    then
-      local SCRIPT="yarn $RESULT"
-      _eval_script "$SCRIPT"
+  local files=("$@")
+
+  # Default: find all .sh files recursively, excluding common vendor dirs
+  if [[ ${#files[@]} -eq 0 ]]; then
+    mapfile -t files < <(find . -name "*.sh" \
+      -not -path "*/node_modules/*" \
+      -not -path "*/.git/*" \
+      -not -path "*/vendor/*" | sort)
+  fi
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    echo "No .sh files found"
+    return 1
+  fi
+
+  local errors=0
+  local has_shellcheck
+  command -v shellcheck &>/dev/null && has_shellcheck=1
+
+  for file in "${files[@]}"; do
+    echo "==> $file"
+    if [[ ! -f "$file" ]]; then
+      echo "bashcheck: $file: No such file"
+      errors=$((errors + 1))
+      continue
     fi
+    bash -n "$file" || errors=$((errors + 1))
+    if [[ -n "$has_shellcheck" ]]; then
+      shellcheck "$file" || errors=$((errors + 1))
+    fi
+  done
+
+  echo
+  if [[ $errors -eq 0 ]]; then
+    echo "All files passed"
+  else
+    echo "$errors check(s) failed"
+    return 1
   fi
 }
 
@@ -659,7 +981,6 @@ alias ag='rg'
 alias amend='git commit --amend && _dotfiles_git_log_commit && _dotfiles_git_status'
 alias b='git branch -a --sort=-committerdate'
 alias back='cd "$OLDPWD"'
-alias bd='docker-machine'
 alias be='bundle exec'
 alias bfg='java -jar /usr/local/bin/bfg.jar'
 alias cherry='git cherry-pick -x'
@@ -673,8 +994,8 @@ alias convert-tabs-spaces="replace '	' '  '"
 alias count='sed "/^\s*$/d" | wc -l | xargs'
 alias d='docker'
 alias dc='docker compose'
+alias docker-compose='docker compose'
 alias di='docker images'
-alias dm='docker-machine'
 #alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
 alias dps='docker ps'
 alias dpsa='docker ps -a'
@@ -697,7 +1018,7 @@ alias gbdr='git branch -d -r'
 alias gc='gcloud compute'
 alias gci='gcloud compute instances'
 alias gd='git diff'
-alias gds='git diff --staged --color-words'
+alias gds='git diff --staged'
 alias gdw='git diff --color-words'
 alias gdww='git diff-word'
 alias gf='git flow'
@@ -717,15 +1038,25 @@ alias kd='kubectl describe'
 alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
 alias less='less -r'
 alias ll='ls -lah'
+llm() { local _d; _d=$(printf '%q' "$PWD"); sudo -u agent -i bash -c "cd $_d && exec bash -li"; }
+agent-grant() {
+  local target="${1:-$PWD}"
+  local dotfiles="${DOTFILES:-$HOME/dev/dotfiles}"
+  read -rp "Grant agent group access to '$target'? (y/n): " confirm
+  [[ "$confirm" == [yY] ]] || { echo "Aborted."; return 1; }
+  sudo bash "$dotfiles/agent/setup-user.sh" --grant "$target"
+}
 alias ls='ls -G'
 alias lt='ls -lath'
 alias md='merge develop'
 alias mm='merge main'
 alias mp='merge prod'
+alias mr='mise-run'
 alias ms='merge staging'
-alias ni='npm install'
+alias ni='npm-install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
+alias nr='npm-run'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
 alias ntsc='npx tsc --noemit --watch --pretty'
@@ -735,6 +1066,7 @@ alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
 alias revert='git revert HEAD'
 alias s='_dotfiles_git_status'
+alias sb='supabase'
 alias setdotglob='shopt -s dotglob'
 alias sprofile='. ~/.bash_profile'
 alias survey='sudo nmap -sP 10.0.1.1/24'
@@ -759,9 +1091,9 @@ alias v='nvim'
 alias vc='vimcat'
 alias webpack-bundle-analyzer='npx webpack-bundle-analyzer'
 alias webpack='useLocalIfAvailable webpack'
-alias y='yarn'
-alias yi='yarn install'
+alias yi='npm-install'
 alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
+alias yr='npm-run'
 alias ytsc='yarn tsc --noemit --watch --pretty'
 alias yw='yarn workspaces'
 

@@ -2,3 +2,12 @@
 private
 .DS_Store
 *.log
+.claude/
+.worktrees/
+
+# Beads / Dolt files (added by bd init)
+.beads-credential-key
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
