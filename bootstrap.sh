@@ -127,6 +127,11 @@ mkdir -p ~/.claude
 backupFile ".claude/skills"
 linkFileToHome "skills" ".claude/skills"
 
+# .config/opencode/skills
+mkdir -p ~/.config/opencode
+backupFile ".config/opencode/skills"
+linkFileToHome "skills" ".config/opencode/skills"
+
 # setup API keys file
 if [ ! -f "$HOME/.ssh/api_keys" ]
 then

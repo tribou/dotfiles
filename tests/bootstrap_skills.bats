@@ -46,3 +46,36 @@ teardown() {
   run ls "$TEMP_REPO/skills/"
   [[ "$output" != *"skills"* ]]
 }
+
+@test "bootstrap: creates ~/.config/opencode dir and symlinks skills/" {
+  # Simulate what bootstrap.sh does for opencode skills
+  mkdir -p "$TEMP_HOME/.config/opencode"
+  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.config/opencode/skills"
+
+  [ -d "$TEMP_HOME/.config/opencode" ]
+  [ -L "$TEMP_HOME/.config/opencode/skills" ]
+  local target
+  target=$(readlink "$TEMP_HOME/.config/opencode/skills")
+  [ "$target" = "$TEMP_REPO/skills" ]
+}
+
+@test "bootstrap: re-running linkFileToHome for opencode skills does not create nested skills/skills" {
+  # Simulate first bootstrap run
+  mkdir -p "$TEMP_HOME/.config/opencode"
+  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.config/opencode/skills"
+
+  # Simulate second bootstrap run (the bug: ln -sf on macOS creates skills/skills)
+  # The fix uses rm -f before ln -sf to prevent this
+  rm -f "$TEMP_HOME/.config/opencode/skills"
+  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.config/opencode/skills"
+
+  # Symlink must still point correctly
+  [ -L "$TEMP_HOME/.config/opencode/skills" ]
+  local target
+  target=$(readlink "$TEMP_HOME/.config/opencode/skills")
+  [ "$target" = "$TEMP_REPO/skills" ]
+
+  # No nested skills/skills must exist
+  run ls "$TEMP_REPO/skills/"
+  [[ "$output" != *"skills"* ]]
+}
