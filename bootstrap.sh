@@ -174,7 +174,11 @@ fi
 
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/tpm/" "$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
+if command -v tmux &> /dev/null; then
+  tmux start-server
+  tmux set-environment -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/plugins/"
+  "$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
+fi
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
