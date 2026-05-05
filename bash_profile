@@ -128,6 +128,9 @@ else
 fi
 export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 
+# go (default)
+[ -d "$HOME/go/bin" ] && export PATH=$PATH:$HOME/go/bin
+
 # fzf
 [ -d "$HOME/.fzf/bin" ] && export PATH=$PATH:$HOME/.fzf/bin
 
