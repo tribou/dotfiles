@@ -180,9 +180,17 @@ fi
 # Install tmux plugins
 [ ! -d "$HOME/.tmux/plugins/tpm" ] && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 if command -v tmux &> /dev/null; then
-  tmux start-server
-  tmux set-environment -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/plugins/"
-  "$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
+  if [ -n "${TMUX:-}" ]; then
+    tmux set-environment -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/plugins/"
+    "$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
+  else
+    # Outside tmux: anchor the work in an ephemeral detached session so the
+    # server stays alive across set-environment and install_plugins.
+    tmux new-session -d -s _bootstrap_tpm
+    tmux set-environment -t _bootstrap_tpm -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/plugins/"
+    "$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
+    tmux kill-session -t _bootstrap_tpm 2>/dev/null || true
+  fi
 fi
 
 # Source all lib scripts

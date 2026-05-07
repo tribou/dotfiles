@@ -48,3 +48,15 @@ setup() {
 @test "bootstrap: installs bun via mise" {
   grep -q 'mise install.*bun' "$REPO_ROOT/bootstrap.sh"
 }
+
+@test "bootstrap: tpm install is anchored in an ephemeral detached session so it works in non-tmux shells" {
+  # 'tmux start-server' alone does not keep the server alive between commands;
+  # the next 'tmux set-environment -g' then fails with "no server running" outside
+  # tmux and aborts the script under set -euo pipefail. A detached new-session
+  # keeps the server up for the duration of the install.
+  awk '/# Install tmux plugins/,/^fi$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'tmux new-session -d'
+}
+
+@test "bootstrap: tpm install branches on \$TMUX so it reuses an existing server when already inside tmux" {
+  awk '/# Install tmux plugins/,/^fi$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'TMUX:-'
+}
