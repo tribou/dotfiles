@@ -297,6 +297,7 @@ then
   fi
 
   brew install \
+      bash \
       git \
       neovim \
       python \
