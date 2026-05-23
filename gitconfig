@@ -61,7 +61,11 @@
 	tool = nvimdiff
 
 [credential "https://github.com"]
-    helper = !gh auth git-credential
+	helper =
+	helper = !/usr/bin/env gh auth git-credential
 
 [checkout]
     defaultRemote = origin
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/usr/bin/env gh auth git-credential
