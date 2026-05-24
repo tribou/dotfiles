@@ -47,7 +47,7 @@ When generating `CLAUDE.md`, you MUST enforce limiting and curating proper globa
 - If a rule is not global, it MUST go in the appropriate `docs/*` file (e.g., `docs/DEVELOPMENT.md`).
 
 You must suggest the following best practice rules for the "CRITICAL Rules" section in every repo:
-1. **Git commits**: single-line only with `git commit -m "..."`, no Co-Authored-By
+1. **Git commits**: single-line only with `git commit -m "..."`, no heredoc, no Co-Authored-By. Prefer Conventional Commits style.
 2. **Bash syntax checking**: use `bashcheck` — never `bash -n`
 3. **After making any changes, run tests**: [concisely instruct how to run tests in the repo]
 4. **Bug fixes require TDD tests**: see `docs/TESTING.md` for policy
