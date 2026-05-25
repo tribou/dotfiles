@@ -6,76 +6,96 @@ setup() {
   TEMP_REPO=$(mktemp -d)
 
   # Create a minimal fake repo with skills/
-  mkdir -p "$TEMP_REPO/skills"
-  touch "$TEMP_REPO/skills/.keep"
+  mkdir -p "$TEMP_REPO/skills/skill-a"
+  mkdir -p "$TEMP_REPO/skills/skill-b"
+  touch "$TEMP_REPO/skills/skill-a/SKILL.md"
+  touch "$TEMP_REPO/skills/skill-b/SKILL.md"
+
+  # Extract linkSkillsDir from bootstrap.sh and define it
+  eval "$(sed -n '/^function linkSkillsDir/,/^}/p' "$BATS_TEST_DIRNAME/../bootstrap.sh")"
 }
 
 teardown() {
   rm -rf "$TEMP_HOME" "$TEMP_REPO"
 }
 
-@test "bootstrap: creates ~/.claude dir and symlinks skills/" {
-  # Simulate what bootstrap.sh does for skills
-  mkdir -p "$TEMP_HOME/.claude"
-  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.claude/skills"
+@test "linkSkillsDir: creates individual symlinks in target directory" {
+  run linkSkillsDir "$TEMP_REPO/skills" "$TEMP_HOME/.test/skills"
 
-  [ -d "$TEMP_HOME/.claude" ]
-  [ -L "$TEMP_HOME/.claude/skills" ]
-  local target
-  target=$(readlink "$TEMP_HOME/.claude/skills")
-  [ "$target" = "$TEMP_REPO/skills" ]
+  [ -d "$TEMP_HOME/.test/skills" ]
+  [ -L "$TEMP_HOME/.test/skills/skill-a" ]
+  [ -L "$TEMP_HOME/.test/skills/skill-b" ]
+  local target_a
+  target_a=$(readlink "$TEMP_HOME/.test/skills/skill-a")
+  [ "$target_a" = "$TEMP_REPO/skills/skill-a" ]
+  [[ "$output" == *"Creating a symlink for"*"skill-a"* ]]
+  [[ "$output" == *"Creating a symlink for"*"skill-b"* ]]
 }
 
-@test "bootstrap: re-running linkFileToHome for skills does not create nested skills/skills" {
-  # Simulate first bootstrap run
-  mkdir -p "$TEMP_HOME/.claude"
-  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.claude/skills"
+@test "linkSkillsDir: preserves existing non-symlink contents in target" {
+  # Setup: target has a real directory (built-in skill) and a file
+  mkdir -p "$TEMP_HOME/.test/skills"
+  mkdir -p "$TEMP_HOME/.test/skills/built-in"
+  touch "$TEMP_HOME/.test/skills/built-in/SKILL.md"
+  touch "$TEMP_HOME/.test/skills/other-file"
 
-  # Simulate second bootstrap run (the bug: ln -sf on macOS creates skills/skills)
-  # The fix uses rm -f before ln -sf to prevent this
-  rm -f "$TEMP_HOME/.claude/skills"
-  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.claude/skills"
+  linkSkillsDir "$TEMP_REPO/skills" "$TEMP_HOME/.test/skills"
 
-  # Symlink must still point correctly
-  [ -L "$TEMP_HOME/.claude/skills" ]
-  local target
-  target=$(readlink "$TEMP_HOME/.claude/skills")
-  [ "$target" = "$TEMP_REPO/skills" ]
-
-  # No nested skills/skills must exist
-  run ls "$TEMP_REPO/skills/"
-  [[ "$output" != *"skills"* ]]
+  # Built-in directory should still exist
+  [ -d "$TEMP_HOME/.test/skills/built-in" ]
+  [ -f "$TEMP_HOME/.test/skills/built-in/SKILL.md" ]
+  # Other file should still exist
+  [ -f "$TEMP_HOME/.test/skills/other-file" ]
+  # Dotfiles skills should be symlinks
+  [ -L "$TEMP_HOME/.test/skills/skill-a" ]
+  [ -L "$TEMP_HOME/.test/skills/skill-b" ]
 }
 
-@test "bootstrap: creates ~/.config/opencode dir and symlinks skills/" {
-  # Simulate what bootstrap.sh does for opencode skills
-  mkdir -p "$TEMP_HOME/.config/opencode"
-  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.config/opencode/skills"
+@test "linkSkillsDir: overwrites existing built-in skills with dotfiles version" {
+  # Setup: target has an old version of skill-a as a real directory
+  mkdir -p "$TEMP_HOME/.test/skills"
+  mkdir -p "$TEMP_HOME/.test/skills/skill-a"
+  touch "$TEMP_HOME/.test/skills/skill-a/OLD.md"
 
-  [ -d "$TEMP_HOME/.config/opencode" ]
-  [ -L "$TEMP_HOME/.config/opencode/skills" ]
+  linkSkillsDir "$TEMP_REPO/skills" "$TEMP_HOME/.test/skills"
+
+  # Should now be a symlink to dotfiles version
+  [ -L "$TEMP_HOME/.test/skills/skill-a" ]
   local target
-  target=$(readlink "$TEMP_HOME/.config/opencode/skills")
-  [ "$target" = "$TEMP_REPO/skills" ]
+  target=$(readlink "$TEMP_HOME/.test/skills/skill-a")
+  [ "$target" = "$TEMP_REPO/skills/skill-a" ]
+  # Old file should be gone
+  [ ! -f "$TEMP_HOME/.test/skills/skill-a/OLD.md" ]
+  [ -f "$TEMP_HOME/.test/skills/skill-a/SKILL.md" ]
 }
 
-@test "bootstrap: re-running linkFileToHome for opencode skills does not create nested skills/skills" {
-  # Simulate first bootstrap run
-  mkdir -p "$TEMP_HOME/.config/opencode"
-  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.config/opencode/skills"
+@test "linkSkillsDir: removes stale symlinks for deleted skills" {
+  # First run: create all symlinks
+  linkSkillsDir "$TEMP_REPO/skills" "$TEMP_HOME/.test/skills"
+  [ -L "$TEMP_HOME/.test/skills/skill-a" ]
+  [ -L "$TEMP_HOME/.test/skills/skill-b" ]
 
-  # Simulate second bootstrap run (the bug: ln -sf on macOS creates skills/skills)
-  # The fix uses rm -f before ln -sf to prevent this
-  rm -f "$TEMP_HOME/.config/opencode/skills"
-  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.config/opencode/skills"
+  # Remove skill-b from source
+  rm -rf "$TEMP_REPO/skills/skill-b"
 
-  # Symlink must still point correctly
-  [ -L "$TEMP_HOME/.config/opencode/skills" ]
-  local target
-  target=$(readlink "$TEMP_HOME/.config/opencode/skills")
-  [ "$target" = "$TEMP_REPO/skills" ]
+  # Second run: should remove stale symlink
+  linkSkillsDir "$TEMP_REPO/skills" "$TEMP_HOME/.test/skills"
+  [ -L "$TEMP_HOME/.test/skills/skill-a" ]
+  [ ! -e "$TEMP_HOME/.test/skills/skill-b" ]
+}
 
-  # No nested skills/skills must exist
-  run ls "$TEMP_REPO/skills/"
-  [[ "$output" != *"skills"* ]]
+@test "linkSkillsDir: migrates old whole-directory symlink to per-skill symlinks" {
+  # Setup: old whole-directory symlink
+  mkdir -p "$TEMP_HOME/.test"
+  ln -sf "$TEMP_REPO/skills" "$TEMP_HOME/.test/skills"
+
+  [ -L "$TEMP_HOME/.test/skills" ]
+
+  linkSkillsDir "$TEMP_REPO/skills" "$TEMP_HOME/.test/skills"
+
+  # Should now be a directory with individual symlinks
+  [ -d "$TEMP_HOME/.test/skills" ]
+  [ ! -L "$TEMP_HOME/.test/skills" ]
+  [ -L "$TEMP_HOME/.test/skills/skill-a" ]
+  [ -L "$TEMP_HOME/.test/skills/skill-b" ]
 }

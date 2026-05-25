@@ -32,6 +32,41 @@ function linkFileToHome ()
   ln -sf "${THIS_DIR}/${1}" ~/"${2}"
 }
 
+function linkSkillsDir ()
+{
+  local source_dir="$1"
+  local target_dir="$2"
+
+  # Migrate old whole-directory symlink to directory
+  if [ -L "$target_dir" ]; then
+    rm -f "$target_dir"
+  fi
+
+  mkdir -p "$target_dir"
+
+  # Create/update symlinks for each skill in source
+  for skill_path in "$source_dir"/*; do
+    [ -d "$skill_path" ] || continue
+    local skill_name
+    skill_name=$(basename "$skill_path")
+    local target_display
+    target_display="${target_dir/#$HOME\//~\/}"
+    echo "Creating a symlink for ${target_display}/${skill_name}"
+    rm -rf "$target_dir/$skill_name"
+    ln -sf "$skill_path" "$target_dir/$skill_name"
+  done
+
+  # Remove stale symlinks (skills removed from dotfiles)
+  for link_path in "$target_dir"/*; do
+    [ -L "$link_path" ] || continue
+    local link_target
+    link_target=$(readlink "$link_path")
+    if [ ! -d "$link_target" ]; then
+      rm -f "$link_path"
+    fi
+  done
+}
+
 # Backup existing files and replace with symlinks
 # files=(
 #   ".bash_profile"
@@ -123,14 +158,13 @@ backupFile ".config/nvim/coc-settings.json"
 linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
 
 # .claude/skills
-mkdir -p ~/.claude
-backupFile ".claude/skills"
-linkFileToHome "skills" ".claude/skills"
+linkSkillsDir "$THIS_DIR/skills" "$HOME/.claude/skills"
 
 # .config/opencode/skills
-mkdir -p ~/.config/opencode
-backupFile ".config/opencode/skills"
-linkFileToHome "skills" ".config/opencode/skills"
+linkSkillsDir "$THIS_DIR/skills" "$HOME/.config/opencode/skills"
+
+# .gemini/config/skills
+linkSkillsDir "$THIS_DIR/skills" "$HOME/.gemini/config/skills"
 
 # setup API keys file
 if [ ! -f "$HOME/.ssh/api_keys" ]
