@@ -32,7 +32,6 @@ The `lib/` directory contains modular shell functions sourced by `lib/index.sh`:
 - **`commands.sh`**: Custom shell functions and aliases (primary functionality)
 - **`fzf.sh`**: FZF integration for fuzzy finding
 - **`path.sh`**: PATH manipulation and resolution helpers
-- **`init_project.sh`**: Project initialization utilities
 - **`replace.sh`**: Batch file replacement utilities
 - **`remind.sh`**: Terminal notification system
 - **`command_reference.sh`**: Command help/reference
@@ -59,12 +58,6 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 - **`dm_update_ip.sh`**: Docker Machine IP update utility
 - **`install.sh`**: Dependency installer (called by bootstrap.sh with `-i` flag)
 - **`internet.sh`**: Internet connectivity check
-
-## Templates Directory
-
-The `templates/` directory contains scaffold templates for new projects:
-
-- **`templates/init/`**: Node.js project scaffold with `package.json`, `nodemon.json`, `README.md`, standard `lib/` layout, and MIT license
 
 ## Version Management (mise)
 

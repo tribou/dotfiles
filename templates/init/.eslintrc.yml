@@ -1,7 +1,0 @@
----
-extends:
-  - tribou
-
-settings:
-  flowtype:
-    onlyFilesWithFlowAnnotation: true
