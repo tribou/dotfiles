@@ -92,10 +92,17 @@ check_skills_dirs() {
         # Every symlink inside must resolve to an existing dir under $DOTFILES/skills/.
         local dir_ok=1
         local link_path
-        for link_path in "$dir"/*; do
+        shopt -s nullglob
+        local -a skill_links=("$dir"/*)
+        shopt -u nullglob
+        for link_path in "${skill_links[@]}"; do
             [[ -L "$link_path" ]] || continue
             local resolved
-            resolved="$(readlink "$link_path")"
+            if [[ "$(uname)" == "Darwin" ]]; then
+                resolved="$(readlink "$link_path")"
+            else
+                resolved="$(readlink -f "$link_path")"
+            fi
             if [[ "$resolved" != "$DOTFILES/skills/"* || ! -d "$resolved" ]]; then
                 dir_ok=0
                 break
