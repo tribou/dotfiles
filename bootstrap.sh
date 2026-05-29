@@ -50,7 +50,11 @@ function linkSkillsDir ()
     local skill_name
     skill_name=$(basename "$skill_path")
     local target_display
-    target_display="${target_dir/#$HOME\//~\/}"
+    if [[ "$target_dir" == "$HOME"/* ]]; then
+      target_display="~${target_dir#"$HOME"}"
+    else
+      target_display="$target_dir"
+    fi
     echo "Creating a symlink for ${target_display}/${skill_name}"
     rm -rf "$target_dir/$skill_name"
     ln -sf "$skill_path" "$target_dir/$skill_name"

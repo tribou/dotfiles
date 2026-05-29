@@ -84,6 +84,19 @@ teardown() {
   [ ! -e "$TEMP_HOME/.test/skills/skill-b" ]
 }
 
+@test "linkSkillsDir: displays target path with ~ prefix and no stray backslash" {
+  # Run under /bin/bash (the shell bootstrap.sh uses via its shebang) so this
+  # catches the bash 3.2 parameter-expansion backslash bug on macOS, which
+  # bats itself never reproduces because it runs under a newer bash.
+  run /bin/bash -c '
+    eval "$(sed -n "/^function linkSkillsDir/,/^}/p" "$1")"
+    HOME="$2" linkSkillsDir "$3/skills" "$2/.test/skills"
+  ' _ "$BATS_TEST_DIRNAME/../bootstrap.sh" "$TEMP_HOME" "$TEMP_REPO"
+
+  [[ "$output" == *"Creating a symlink for ~/.test/skills/skill-a"* ]]
+  [[ "$output" != *'~\/'* ]]
+}
+
 @test "linkSkillsDir: migrates old whole-directory symlink to per-skill symlinks" {
   # Setup: old whole-directory symlink
   mkdir -p "$TEMP_HOME/.test"
