@@ -107,7 +107,7 @@ setup() {
     done
     export PATH="$tool_dir:$PATH"
 
-    # Set up valid symlinks for all 14 entries
+    # Set up valid symlinks for all 13 entries
     local symlinks=(
         "~/.bash_profile~bash_profile"
         "~/.vimrc~init.vim"
@@ -122,9 +122,8 @@ setup() {
         "~/.config/alacritty/alacritty.toml~alacritty.toml"
         "~/.config/mise/config.toml~mise-config.toml"
         "~/.config/nvim/coc-settings.json~coc-settings.json"
-        "~/.claude/skills~skills"
     )
-    
+
     for link in "${symlinks[@]}"; do
         local target source target_path source_path
         IFS='~' read -r _ target source <<< "$link"
@@ -136,10 +135,17 @@ setup() {
         echo "test" > "$source_path"
         ln -sf "$source_path" "$target_path"
     done
-    
+
+    # Set up valid per-skill symlinks for the three skills target dirs
+    mkdir -p "$DOTFILES/skills/skill-a"
+    for skills_dir in "$HOME/.claude/skills" "$HOME/.config/opencode/skills" "$HOME/.gemini/config/skills"; do
+        mkdir -p "$skills_dir"
+        ln -sf "$DOTFILES/skills/skill-a" "$skills_dir/skill-a"
+    done
+
     run main
     [ "$status" -eq 0 ]
-    [[ "$output" == *"doctor: 21/21 checks passed (0 failures)"* ]]
+    [[ "$output" == *"doctor: 23/23 checks passed (0 failures)"* ]]
 }
 
 @test "main exits 1 when checks fail" {
@@ -153,7 +159,7 @@ setup() {
     run main
     export PATH="$saved_path"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"doctor: 0/21 checks passed (21 failures)"* ]]
+    [[ "$output" == *"doctor: 0/23 checks passed (23 failures)"* ]]
 }
 
 @test "justfile has doctor recipe" {

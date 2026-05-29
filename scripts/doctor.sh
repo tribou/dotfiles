@@ -29,7 +29,6 @@ check_symlinks() {
             "~/.config/alacritty/alacritty.toml~alacritty.toml"
             "~/.config/mise/config.toml~mise-config.toml"
             "~/.config/nvim/coc-settings.json~coc-settings.json"
-            "~/.claude/skills~skills"
         )
     fi
 
@@ -149,7 +148,7 @@ check_tools() {
 
 # --- Main ---
 main() {
-    local total_checks=21  # 14 symlinks + 7 tools
+    local total_checks=23  # 13 symlinks + 3 skills dirs + 7 tools
     local output=""
     local passed=0
     local failed=0
@@ -167,6 +166,19 @@ main() {
         fi
     done <<< "$symlink_output"
 
+    # Run skills directory checks
+    local skills_output
+    skills_output=$(check_skills_dirs) || true
+    output+="$skills_output"$'\n'
+    local skills_passed=0 skills_failed=0
+    while IFS= read -r line; do
+        if [[ "$line" == *"✓"* ]]; then
+            (( skills_passed += 1 ))
+        elif [[ "$line" == *"✗"* ]]; then
+            (( skills_failed += 1 ))
+        fi
+    done <<< "$skills_output"
+
     # Run tool checks
     local tool_output
     tool_output=$(check_tools) || true
@@ -180,8 +192,8 @@ main() {
         fi
     done <<< "$tool_output"
 
-    passed=$((symlink_passed + tool_passed))
-    failed=$((symlink_failed + tool_failed))
+    passed=$((symlink_passed + skills_passed + tool_passed))
+    failed=$((symlink_failed + skills_failed + tool_failed))
 
     # Print all output
     echo "$output"
