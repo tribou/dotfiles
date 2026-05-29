@@ -34,6 +34,45 @@ setup() {
     [[ "$output" == *"✗ ~/.test-link → run: ./bootstrap.sh"* ]]
 }
 
+@test "check_skills_dirs passes for dir of valid skill symlinks" {
+    export HOME="$(mktemp -d)"
+    export DOTFILES="$(mktemp -d)"
+    mkdir -p "$DOTFILES/skills/skill-a" "$DOTFILES/skills/skill-b"
+    mkdir -p "$HOME/.claude/skills"
+    ln -sf "$DOTFILES/skills/skill-a" "$HOME/.claude/skills/skill-a"
+    ln -sf "$DOTFILES/skills/skill-b" "$HOME/.claude/skills/skill-b"
+
+    run check_skills_dirs "$HOME/.claude/skills"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"✓"* ]]
+}
+
+@test "check_skills_dirs fails when target is a whole-dir symlink (old layout)" {
+    export HOME="$(mktemp -d)"
+    export DOTFILES="$(mktemp -d)"
+    mkdir -p "$DOTFILES/skills/skill-a"
+    mkdir -p "$HOME/.claude"
+    ln -sf "$DOTFILES/skills" "$HOME/.claude/skills"
+
+    run check_skills_dirs "$HOME/.claude/skills"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"✗"* ]]
+    [[ "$output" == *"run: ./bootstrap.sh"* ]]
+}
+
+@test "check_skills_dirs fails on a broken skill symlink" {
+    export HOME="$(mktemp -d)"
+    export DOTFILES="$(mktemp -d)"
+    mkdir -p "$DOTFILES/skills/skill-a"
+    mkdir -p "$HOME/.claude/skills"
+    ln -sf "$DOTFILES/skills/skill-a" "$HOME/.claude/skills/skill-a"
+    ln -sf "$DOTFILES/skills/removed-skill" "$HOME/.claude/skills/removed-skill"
+
+    run check_skills_dirs "$HOME/.claude/skills"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"✗"* ]]
+}
+
 @test "check_tools passes for available tool" {
     local tool_dir
     tool_dir="$(mktemp -d)"

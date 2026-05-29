@@ -65,6 +65,53 @@ check_symlinks() {
     return $failed
 }
 
+# --- Skills directory check ---
+check_skills_dirs() {
+    local failed=0
+    # Target dirs of per-skill symlinks (accepts args to override default list)
+    local -a dirs=("$@")
+    if [[ ${#dirs[@]} -eq 0 ]]; then
+        dirs=(
+            "$HOME/.claude/skills"
+            "$HOME/.config/opencode/skills"
+            "$HOME/.gemini/config/skills"
+        )
+    fi
+
+    echo "Skills:"
+    for dir in "${dirs[@]}"; do
+        local display="${dir/#$HOME\//~\/}"
+
+        # Must be a real directory, not the old whole-dir symlink or missing.
+        if [[ -L "$dir" || ! -d "$dir" ]]; then
+            fail "$display" "run: ./bootstrap.sh"
+            failed=1
+            continue
+        fi
+
+        # Every symlink inside must resolve to an existing dir under $DOTFILES/skills/.
+        local dir_ok=1
+        local link_path
+        for link_path in "$dir"/*; do
+            [[ -L "$link_path" ]] || continue
+            local resolved
+            resolved="$(readlink "$link_path")"
+            if [[ "$resolved" != "$DOTFILES/skills/"* || ! -d "$resolved" ]]; then
+                dir_ok=0
+                break
+            fi
+        done
+
+        if [[ $dir_ok -eq 1 ]]; then
+            pass "$display"
+        else
+            fail "$display" "run: ./bootstrap.sh"
+            failed=1
+        fi
+    done
+    return $failed
+}
+
 # --- Tool check ---
 check_tools() {
     local failed=0
