@@ -60,6 +60,24 @@ setup() {
     [[ "$output" == *"run: ./bootstrap.sh"* ]]
 }
 
+@test "check_skills_dirs passes for shared dir with valid foreign symlinks" {
+    export HOME="$(mktemp -d)"
+    export DOTFILES="$(mktemp -d)"
+    mkdir -p "$DOTFILES/skills/skill-a"
+    # A foreign skills source outside dotfiles (e.g. another tool's skills),
+    # which lands valid symlinks in the same shared target dir.
+    local foreign
+    foreign="$(mktemp -d)"
+    mkdir -p "$foreign/foreign-skill"
+    mkdir -p "$HOME/.claude/skills"
+    ln -sf "$DOTFILES/skills/skill-a" "$HOME/.claude/skills/skill-a"
+    ln -sf "$foreign/foreign-skill" "$HOME/.claude/skills/foreign-skill"
+
+    run check_skills_dirs "$HOME/.claude/skills"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"✓"* ]]
+}
+
 @test "check_skills_dirs fails on a broken skill symlink" {
     export HOME="$(mktemp -d)"
     export DOTFILES="$(mktemp -d)"

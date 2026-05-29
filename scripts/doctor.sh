@@ -88,7 +88,10 @@ check_skills_dirs() {
             continue
         fi
 
-        # Every symlink inside must resolve to an existing dir under $DOTFILES/skills/.
+        # These are shared dirs: other tools (e.g. Gemini) add their own valid
+        # skill symlinks here too. Bootstrap only prunes broken symlinks and
+        # coexists with foreign valid ones, so we mirror that contract — fail
+        # only on a broken symlink (one that doesn't resolve to a directory).
         local dir_ok=1
         local link_path
         shopt -s nullglob
@@ -96,13 +99,7 @@ check_skills_dirs() {
         shopt -u nullglob
         for link_path in "${skill_links[@]}"; do
             [[ -L "$link_path" ]] || continue
-            local resolved
-            if [[ "$(uname)" == "Darwin" ]]; then
-                resolved="$(readlink "$link_path")"
-            else
-                resolved="$(readlink -f "$link_path")"
-            fi
-            if [[ "$resolved" != "$DOTFILES/skills/"* || ! -d "$resolved" ]]; then
+            if [[ ! -d "$link_path" ]]; then
                 dir_ok=0
                 break
             fi
