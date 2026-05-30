@@ -125,7 +125,7 @@ setup() {
     done
     export PATH="$tool_dir:$PATH"
 
-    # Set up valid symlinks for all 13 entries
+    # Set up valid symlinks for all 15 entries
     local symlinks=(
         "~/.bash_profile~bash_profile"
         "~/.vimrc~init.vim"
@@ -140,6 +140,8 @@ setup() {
         "~/.config/alacritty/alacritty.toml~alacritty.toml"
         "~/.config/mise/config.toml~mise-config.toml"
         "~/.config/nvim/coc-settings.json~coc-settings.json"
+        "~/.local/bin/dotfiles_remote_browser_open.sh~scripts/dotfiles_remote_browser_open.sh"
+        "~/.local/bin/dotfiles_local_browser_helper.sh~scripts/dotfiles_local_browser_helper.sh"
     )
 
     for link in "${symlinks[@]}"; do
@@ -163,7 +165,7 @@ setup() {
 
     run main
     [ "$status" -eq 0 ]
-    [[ "$output" == *"doctor: 23/23 checks passed (0 failures)"* ]]
+    [[ "$output" == *"doctor: 25/25 checks passed (0 failures)"* ]]
 }
 
 @test "main exits 1 when checks fail" {
@@ -177,7 +179,7 @@ setup() {
     run main
     export PATH="$saved_path"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"doctor: 0/23 checks passed (23 failures)"* ]]
+    [[ "$output" == *"doctor: 0/25 checks passed (25 failures)"* ]]
 }
 
 @test "justfile has doctor recipe" {
