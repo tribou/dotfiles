@@ -29,6 +29,8 @@ check_symlinks() {
             "~/.config/alacritty/alacritty.toml~alacritty.toml"
             "~/.config/mise/config.toml~mise-config.toml"
             "~/.config/nvim/coc-settings.json~coc-settings.json"
+            "~/.local/bin/dotfiles_remote_browser_open.sh~scripts/dotfiles_remote_browser_open.sh"
+            "~/.local/bin/dotfiles_local_browser_helper.sh~scripts/dotfiles_local_browser_helper.sh"
         )
     fi
 
@@ -145,7 +147,7 @@ check_tools() {
 
 # --- Main ---
 main() {
-    local total_checks=23  # 13 symlinks + 3 skills dirs + 7 tools
+    local total_checks=25  # 15 symlinks + 3 skills dirs + 7 tools
     local output=""
     local passed=0
     local failed=0
