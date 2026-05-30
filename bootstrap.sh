@@ -442,3 +442,13 @@ then
     echo "Installing gopls"
     go install golang.org/x/tools/gopls@latest
   fi
+
+  # beads issue database — hydrate from the Dolt remote (refs/dolt/data) on a
+  # fresh clone only. The embedded Dolt DB is gitignored, so it is absent on a
+  # new machine; bd bootstrap clones it from sync.remote. Guarded on the missing
+  # data dir so it never touches an existing machine's local issue state.
+  if command -v bd &>/dev/null && [ ! -d "$THIS_DIR/.beads/embeddeddolt" ]
+  then
+    echo "Hydrating beads issue database from Dolt remote"
+    bd -C "$THIS_DIR" bootstrap --yes || echo "warning: beads hydration failed; run 'bd bootstrap' manually"
+  fi

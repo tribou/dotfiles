@@ -8,6 +8,7 @@
 4. **Bug fixes require TDD tests**: write a failing test first that reproduces the bug, then fix — see [docs/TESTING.md](docs/TESTING.md) for policy
 5. **Creating new skills**: use `superpowers:writing-skills` skill
 6. **BEADS issue tracking**: `dotfiles-*` keys (e.g. `dotfiles-6x9`) are BEADS issues — use `bd show <id>` to look them up; when a superpowers skill is invoked for a bead, immediately run `bd update <id> --status=in_progress`; if execution doesn't complete before agent stops, run `bd update <id> --status=ready` to reset
+7. **BEADS sync model**: the issue DB is the embedded Dolt database, synced across machines via the Dolt remote (`refs/dolt/data` on the GitHub repo) — `.beads/issues.jsonl` is gitignored and is NOT the sync mechanism. Run `bd dolt pull` at session START; `bd dolt push` runs before `git push` at session end. Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Key Commands
 

@@ -119,3 +119,15 @@ legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
   - `tmux_environment.bats`: Validates tmux session and environment setup
 - **`goss.yaml`**: Infrastructure assertions (binary presence, environment variables) validated by goss inside Docker
 - **`Dockerfile`** + **`docker-compose.yml`**: Defines the CI/CD test environment
+
+## Issue Tracking (beads)
+
+This repo uses **bd (beads)** for issue tracking. The source of truth is an embedded Dolt database under `.beads/embeddeddolt/` (gitignored). Issues sync across machines via a **Dolt remote** backed by the same GitHub repo:
+
+- Remote `git+ssh://git@github.com/tribou/dotfiles.git`, configured as `sync.remote` in `.beads/config.yaml`.
+- Dolt data lives under the `refs/dolt/data` ref on GitHub — separate from `refs/heads/main` (your code) and invisible in the file browser.
+- `bd dolt pull` hydrates the local DB from that ref; `bd dolt push` uploads local commits to it. These are independent of `git pull`/`git push`.
+
+`.beads/issues.jsonl` is a local, **gitignored** export — a human-readable snapshot for `bv`/grep, not the sync mechanism. It is intentionally untracked: tracking it caused recurring cross-machine diffs because each machine re-derived it from its own independently-built Dolt DB, which differ in provenance fields (e.g. `created_by`). The Dolt remote is the single source of truth.
+
+**Sync discipline:** `bd dolt pull` at session start; `bd dolt push` before `git push` at session end. Fresh clones hydrate via `bd bootstrap` (run automatically by `bootstrap.sh` when no local DB exists), which clones the database from `sync.remote`.

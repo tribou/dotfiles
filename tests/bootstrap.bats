@@ -60,3 +60,11 @@ setup() {
 @test "bootstrap: tpm install branches on \$TMUX so it reuses an existing server when already inside tmux" {
   awk '/# Install tmux plugins/,/^fi$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'TMUX:-'
 }
+
+@test "bootstrap: hydrates the beads issue DB via 'bd bootstrap' on a fresh clone" {
+  awk '/# beads issue database/,/^  fi/' "$REPO_ROOT/bootstrap.sh" | grep -q 'bd -C "$THIS_DIR" bootstrap --yes'
+}
+
+@test "bootstrap: beads hydration is guarded on a missing embedded Dolt dir so it never clobbers existing local issues" {
+  awk '/# beads issue database/,/^  fi/' "$REPO_ROOT/bootstrap.sh" | grep -q 'embeddeddolt'
+}

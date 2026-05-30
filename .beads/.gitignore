@@ -56,6 +56,11 @@ dolt-server.activity
 # Backup data (auto-exported JSONL, local-only)
 backup/
 
+# Auto-exported issue snapshot (local-only, human-readable view for bv/grep).
+# Source of truth is the Dolt DB synced via the Dolt remote (refs/dolt/data),
+# NOT this file. Tracking it caused recurring cross-machine provenance diffs.
+issues.jsonl
+
 # Per-project environment file (Dolt connection config, GH#2520)
 .env
 
