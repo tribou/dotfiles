@@ -161,6 +161,10 @@ linkFileToHome "mise-config.toml" ".config/mise/config.toml"
 backupFile ".config/nvim/coc-settings.json"
 linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
 
+# Symlink helper scripts for SSH markdown preview
+linkFileToHome "scripts/dotfiles_remote_browser_open.sh" ".local/bin/dotfiles_remote_browser_open.sh"
+linkFileToHome "scripts/dotfiles_local_browser_helper.sh" ".local/bin/dotfiles_local_browser_helper.sh"
+
 # .claude/skills
 linkSkillsDir "$THIS_DIR/skills" "$HOME/.claude/skills"
 
