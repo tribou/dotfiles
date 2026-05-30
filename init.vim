@@ -426,6 +426,14 @@ let g:jsx_ext_required = 0
 let g:markdown_composer_autostart = 0
 let g:markdown_composer_syntax_theme = 'github-dark'
 
+" SSH markdown preview support
+" When connected via SSH, bind composer to a fixed port and route browser opens
+" through the reverse SSH tunnel to the local machine.
+if exists('$SSH_CLIENT') || exists('$SSH_TTY')
+  let g:markdown_composer_port = 15678
+  let g:markdown_composer_browser = expand('~/.local/bin/dotfiles_remote_browser_open.sh')
+  let g:markdown_composer_open_browser = 1
+endif
 
 " vim-prettier
 let g:prettier#autoformat = 0
