@@ -66,5 +66,9 @@ setup() {
 }
 
 @test "bootstrap: beads hydration is guarded on a missing embedded Dolt dir so it never clobbers existing local issues" {
-  awk '/# beads issue database/,/^  fi/' "$REPO_ROOT/bootstrap.sh" | grep -q 'embeddeddolt'
+  awk '/# beads issue database/,/^  fi$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'embeddeddolt'
+}
+
+@test "bootstrap: registers/repairs the beads Dolt remote from config.yaml sync.remote on existing machines" {
+  awk '/# beads issue database/,/^  fi$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'dolt remote add origin "$_beads_remote"'
 }

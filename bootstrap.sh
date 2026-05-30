@@ -443,12 +443,28 @@ then
     go install golang.org/x/tools/gopls@latest
   fi
 
-  # beads issue database — hydrate from the Dolt remote (refs/dolt/data) on a
-  # fresh clone only. The embedded Dolt DB is gitignored, so it is absent on a
-  # new machine; bd bootstrap clones it from sync.remote. Guarded on the missing
-  # data dir so it never touches an existing machine's local issue state.
-  if command -v bd &>/dev/null && [ ! -d "$THIS_DIR/.beads/embeddeddolt" ]
+  # beads issue database — keep the Dolt remote in sync with config.yaml and
+  # hydrate fresh clones. The embedded Dolt DB and its remote list are per-machine
+  # local state (gitignored / not carried by git), so each machine must register
+  # the remote and hydrate on its own. The remote uses a git+https URL so it
+  # authenticates via git's credential helper (e.g. 'gh auth setup-git'), not SSH.
+  if command -v bd &>/dev/null
   then
-    echo "Hydrating beads issue database from Dolt remote"
-    bd -C "$THIS_DIR" bootstrap --yes || echo "warning: beads hydration failed; run 'bd bootstrap' manually"
+    _beads_remote="$(awk -F'"' '/^sync\.remote:/ {print $2; exit}' "$THIS_DIR/.beads/config.yaml")"
+    if [ -n "$_beads_remote" ]
+    then
+      if [ ! -d "$THIS_DIR/.beads/embeddeddolt" ]
+      then
+        # Fresh clone: no local DB yet. Clone it from the remote.
+        echo "Hydrating beads issue database from Dolt remote"
+        bd -C "$THIS_DIR" bootstrap --yes || echo "warning: beads hydration failed; run 'bd bootstrap' manually"
+      elif ! bd -C "$THIS_DIR" dolt remote list 2>/dev/null | grep -qF "$_beads_remote"
+      then
+        # Existing DB, but its 'origin' is missing or points elsewhere: re-register
+        # to match config.yaml so 'bd dolt pull/push' works. Does not touch issues.
+        echo "Registering beads Dolt remote (origin -> $_beads_remote)"
+        bd -C "$THIS_DIR" dolt remote remove origin &>/dev/null || true
+        bd -C "$THIS_DIR" dolt remote add origin "$_beads_remote" || echo "warning: could not register beads Dolt remote"
+      fi
+    fi
   fi

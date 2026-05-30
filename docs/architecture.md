@@ -124,9 +124,11 @@ legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
 
 This repo uses **bd (beads)** for issue tracking. The source of truth is an embedded Dolt database under `.beads/embeddeddolt/` (gitignored). Issues sync across machines via a **Dolt remote** backed by the same GitHub repo:
 
-- Remote `git+ssh://git@github.com/tribou/dotfiles.git`, configured as `sync.remote` in `.beads/config.yaml`.
+- Remote `git+https://github.com/tribou/dotfiles.git`, configured as `sync.remote` in `.beads/config.yaml`.
 - Dolt data lives under the `refs/dolt/data` ref on GitHub — separate from `refs/heads/main` (your code) and invisible in the file browser.
 - `bd dolt pull` hydrates the local DB from that ref; `bd dolt push` uploads local commits to it. These are independent of `git pull`/`git push`.
+
+**Authentication:** the `git+https://` remote uses git's credential helper, so it works with `gh` (run `gh auth setup-git` once; the token needs `repo` scope) — no SSH key required. A `git+ssh://git@github.com/...` URL also works on machines set up with SSH keys. The Dolt remote list is **per-machine local state** (not carried by `git pull`), so each machine must register `origin` itself: `bootstrap.sh` registers/repairs it from `sync.remote` on every run, or do it manually with `bd dolt remote add origin "<url>"`.
 
 `.beads/issues.jsonl` is a local, **gitignored** export — a human-readable snapshot for `bv`/grep, not the sync mechanism. It is intentionally untracked: tracking it caused recurring cross-machine diffs because each machine re-derived it from its own independently-built Dolt DB, which differ in provenance fields (e.g. `created_by`). The Dolt remote is the single source of truth.
 
