@@ -84,6 +84,34 @@ Defined in `lib/commands.sh`:
 - **Utilities**: `ll` (ls -lah), `lt` (ls sorted by time), `tree` (excludes node_modules/dist)
 - **Docker**: `d` (docker), `dc` (docker compose), `dps` (docker ps), `da` (attach), `ds` (stop)
 
+## Remote Development (SSH)
+
+### Markdown Preview Over SSH
+
+When editing markdown files on a remote server via SSH, `<space>o` can open the
+browser on your **local** machine using port forwarding:
+
+1. **Add port forwarding to your SSH config** (`~/.ssh/config`):
+   ```
+   Host myremote
+       # Forward remote composer's HTTP server to local machine
+       LocalForward 15678 localhost:15678
+       # Reverse forward: remote can signal local machine to open browser
+       RemoteForward 15679 localhost:15679
+   ```
+
+2. **Start the local browser helper** on your local machine:
+   ```bash
+   nohup dotfiles_local_browser_helper.sh >/dev/null 2>&1 &
+   ```
+
+3. **Verify**: SSH into the remote, open a markdown file in neovim, and press
+   `<space>o`. The preview should open in your local browser.
+
+The neovim config auto-detects SSH sessions via `$SSH_CLIENT`/`$SSH_TTY` and
+adjusts the composer settings automatically. No manual neovim configuration is
+needed beyond running `bootstrap.sh` on the remote machine.
+
 ## Configuration Files
 
 - **`.editorconfig`**: Consistent formatting across editors

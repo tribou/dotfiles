@@ -59,7 +59,7 @@ the **local** machine with a live preview of the remote markdown file.
 
 ## Components
 
-### 1. SSH Config (manual step, not in dotfiles)
+### 1. SSH Config (manual step)
 
 Add port forwarding to the relevant `Host` entries in `~/.ssh/config`:
 
@@ -76,9 +76,13 @@ Host myremote
 The fixed port (`15678`) is used so the neovim config can predictably set
 `g:markdown_composer_port`.
 
+These instructions are also documented in `docs/DEVELOPMENT.md` under the
+"Remote Development (SSH)" section so they are discoverable alongside other
+workflow documentation.
+
 ### 2. Remote Browser Open Script
 
-`scripts/dotfiles-remote-browser-open`:
+`scripts/dotfiles_remote_browser_open.sh`:
 
 ```bash
 #!/usr/bin/env bash
@@ -92,7 +96,7 @@ URL="$1"
 ENCODED_URL=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$URL'''))")
 curl -sf "http://localhost:15679/open?url=${ENCODED_URL}" >/dev/null 2>&1 || {
     echo "dotfiles: local browser helper not running on port 15679" >&2
-    echo "Start it locally with: nohup dotfiles-local-browser-helper >/dev/null 2>&1 &" >&2
+    echo "Start it locally with: nohup dotfiles_local_browser_helper.sh >/dev/null 2>&1 &" >&2
     exit 1
 }
 ```
@@ -101,7 +105,7 @@ This script is symlinked to `~/.local/bin/` by `bootstrap.sh`.
 
 ### 3. Local Browser Helper
 
-`scripts/dotfiles-local-browser-helper`:
+`scripts/dotfiles_local_browser_helper.sh`:
 
 ```python
 #!/usr/bin/env python3
@@ -147,6 +151,13 @@ if __name__ == '__main__':
 This script is symlinked to `~/.local/bin/` by `bootstrap.sh` on **both** local and
 remote machines. It only needs to be running on the **local** machine.
 
+**Language choice**: Python stdlib is used because it is already installed on all
+supported platforms (bootstrap ensures `python3`), requires zero compilation, and
+uses ~5–8 MB idle. Bun’s runtime alone is ~40 MB+ and would need the `bun` binary
+running continuously. A compiled Rust binary would be smaller (~1–2 MB) but adds
+a cross-platform compilation step and an HTTP-server dependency that complicates
+maintenance and testing for a trivial utility.
+
 ### 4. Neovim Configuration
 
 Add conditional configuration to `init.vim` (or a sourced file):
@@ -157,7 +168,7 @@ Add conditional configuration to `init.vim` (or a sourced file):
 " through the reverse SSH tunnel to the local machine.
 if exists('$SSH_CLIENT') || exists('$SSH_TTY')
   let g:markdown_composer_port = 15678
-  let g:markdown_composer_browser = expand('~/.local/bin/dotfiles-remote-browser-open')
+  let g:markdown_composer_browser = expand('~/.local/bin/dotfiles_remote_browser_open.sh')
   let g:markdown_composer_open_browser = 1
 endif
 ```
@@ -166,21 +177,32 @@ This ensures the composer server binds to `localhost:15678` (which is forwarded
 to the local machine via `LocalForward`), and the browser open command sends a
 request back through the reverse tunnel (`RemoteForward 15679`).
 
+### 6. Doctor Validation
+
+Add the new symlinks to `scripts/doctor.sh` in the `check_symlinks` default array:
+
+```bash
+"~/.local/bin/dotfiles_remote_browser_open.sh~scripts/dotfiles_remote_browser_open.sh"
+"~/.local/bin/dotfiles_local_browser_helper.sh~scripts/dotfiles_local_browser_helper.sh"
+```
+
+Update `total_checks` accordingly (add 2 to the count).
+
 ### 5. Bootstrap Integration
 
-In `bootstrap.sh`, add symlinks for the new scripts:
+In `bootstrap.sh`, add symlinks using the existing `linkFileToHome` helper:
 
 ```bash
 # Symlink helper scripts for SSH markdown preview
-mkdir -p ~/.local/bin
-for script in dotfiles-remote-browser-open dotfiles-local-browser-helper; do
-  if [ -f "$DOTFILES/scripts/$script" ]; then
-    rm -f "$HOME/.local/bin/$script"
-    ln -sf "$DOTFILES/scripts/$script" "$HOME/.local/bin/$script"
-    chmod +x "$HOME/.local/bin/$script"
-  fi
-done
+linkFileToHome "scripts/dotfiles_remote_browser_open.sh" ".local/bin/dotfiles_remote_browser_open.sh"
+linkFileToHome "scripts/dotfiles_local_browser_helper.sh" ".local/bin/dotfiles_local_browser_helper.sh"
 ```
+
+This follows the same pattern as all other dotfile symlinks and is validated by
+`just doctor` (see below).
+
+**Permissions**: the scripts must be executable in the repository. `bootstrap.sh`
+does not chmod symlinks, so commit them with `chmod +x`.
 
 ## Data Flow
 
@@ -188,7 +210,7 @@ done
 2. `ComposerToggle()` starts the composer server on `localhost:15678`
 3. The server is accessible locally on the user's machine via `LocalForward 15678`
 4. `ComposerToggle()` then calls `ComposerOpen`, which sends an `open_browser` RPC to the composer
-5. The composer spawns the configured browser command: `~/.local/bin/dotfiles-remote-browser-open http://localhost:15678`
+5. The composer spawns the configured browser command: `~/.local/bin/dotfiles_remote_browser_open.sh http://localhost:15678`
 6. The remote script curls `http://localhost:15679/open?url=...` through the reverse tunnel
 7. The local helper receives the request and calls `webbrowser.open()`
 8. The local browser opens `http://localhost:15678` (the forwarded composer server)
@@ -198,7 +220,7 @@ done
 
 | Scenario | Behavior |
 |----------|----------|
-| Local helper not running | Remote script prints error to neovim message line with instructions to start it |
+| Local helper not running | `dotfiles_remote_browser_open.sh` prints error to neovim message line with instructions to start it |
 | SSH tunnel not configured | Composer binds to `localhost:15678` but browser open fails; user sees error message |
 | Port 15678 already in use | Composer fails to start; standard neovim error output |
 | Port 15679 already in use | Local helper fails to start; user sees "Address already in use" |
@@ -223,9 +245,11 @@ done
 1. Add `LocalForward 15678 localhost:15678` and `RemoteForward 15679 localhost:15679` to relevant `Host` entries in `~/.ssh/config`
 2. Start the local helper in a terminal or add to local shell startup:
    ```bash
-   nohup dotfiles-local-browser-helper >/dev/null 2>&1 &
+   nohup dotfiles_local_browser_helper.sh >/dev/null 2>&1 &
    ```
 3. Run `bootstrap.sh` on both local and remote machines to install scripts
+
+Detailed instructions are in `docs/DEVELOPMENT.md` under the "Remote Development (SSH)" section.
 
 ## Rollout Plan
 
@@ -233,5 +257,6 @@ done
 2. Update `init.vim` with SSH conditional config
 3. Update `bootstrap.sh` to symlink scripts
 4. Write tests
-5. Update documentation (AGENTS.md or DEVELOPMENT.md with SSH workflow notes)
-6. Manual validation on an actual SSH session
+5. Update `docs/DEVELOPMENT.md` with SSH workflow notes
+6. Update `scripts/doctor.sh` to validate the new symlinks
+7. Manual validation on an actual SSH session
