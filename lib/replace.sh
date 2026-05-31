@@ -18,8 +18,8 @@ findfiles() {
   # Optional first arg
   if [ $# -eq 1 ]
   then
-    # Remove trailing slash if any
-    local search_dir=`echo "$1" | sed 's/\/$//'`
+    local search_dir
+    search_dir=$(echo "$1" | sed 's/\/$//')
   fi
 
   find "$search_dir" \
@@ -70,6 +70,11 @@ Examples:
     local search_dir="$3"
   fi
 
+  local sed_i=(-i)
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed_i=(-i "")
+  fi
+
   git grep --untracked -I -l "$1" -- \
     "$search_dir" \
     ':!build/**' \
@@ -81,7 +86,7 @@ Examples:
     ':!*.pnp.*' \
     ':!pnpm-lock.yaml' \
     ':!package-lock.json' \
-    | xargs sed -i.bak -e ''s/"$1"/"$2"/g'' && find . -name '*.bak' -delete
+    | xargs sed "${sed_i[@]}" -e ''s/"$1"/"$2"/g''
 }
 
 # "Write" complement to ripgrep (rg --replace)
@@ -136,9 +141,9 @@ Examples:
       if test -n "$currentFile"; then
         echo "$currentFile"
         (sed '$d' | sed '$d') <<< "$part" > "$currentFile"
-        local didChange='true'
+        didChange='true'
       fi
-      local currentFile="$(tail -n 1 <<< "$part")"
+      currentFile="$(tail -n 1 <<< "$part")"
     done
 
     if test -z "$didChange"; then
