@@ -447,7 +447,7 @@ function mkrepo()
 function npm-install-global ()
 {
   echo "Installing global modules"
-  npm install --location=global \
+  npm install -g \
     eas-cli \
     eslint_d \
     editorconfig \
