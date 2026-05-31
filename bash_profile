@@ -95,8 +95,10 @@ bind "set show-all-if-ambiguous on"
 # Glob includes hidden files
 shopt -s dotglob
 
+. "$DOTFILES/lib/platform.sh"
+
 # Increase open files limit
-[ "$OS" == "Darwin" ] && ulimit -n 10000
+is_macos && ulimit -n 10000
 
 # Set hostname vars
 export HOSTNAME="$(hostname)"

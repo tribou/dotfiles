@@ -5,7 +5,7 @@ function notify ()
 
   local usage='Usage: notify [MESSAGE]'
 
-  [[ "$OSTYPE" != "darwin"* ]] && return 0
+  ! is_macos && return 0
 
   if [ ! $(which osascript) ]
   then
