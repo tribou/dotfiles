@@ -943,7 +943,7 @@ alias j='TZ=UTC yarn jest --watch'
 alias k='kubectl'
 alias kd='kubectl describe'
 alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
-alias less='less -r'
+alias less='less -R'
 alias ll='ls -lah'
 llm() { local _d; _d=$(printf '%q' "$PWD"); sudo -u agent -i bash -c "cd $_d && exec bash -li"; }
 agent-grant() {
@@ -953,7 +953,11 @@ agent-grant() {
   [[ "$confirm" == [yY] ]] || { echo "Aborted."; return 1; }
   sudo bash "$dotfiles/agent/setup-user.sh" --grant "$target"
 }
-alias ls='ls -G'
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  alias ls='ls -G'
+else
+  alias ls='ls --color=auto'
+fi
 alias lt='ls -lath'
 alias md='merge develop'
 alias mm='merge main'
@@ -967,7 +971,7 @@ alias nr='npm-run'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
 alias ntsc='npx tsc --noemit --watch --pretty'
-alias prettyjson='python -m json.tool'
+alias prettyjson='python3 -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
@@ -990,7 +994,11 @@ alias tms='tmux-small'
 alias tint='_dotfiles_git_log_branch_diff'
 alias to='echo; echo; git tree-one'
 alias tone='echo; echo; git tree-one'
-alias top='top -o cpu'
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  alias top='top -o cpu'
+else
+  alias top='top -o %CPU'
+fi
 alias tree='tree -I "bower_components|dist|node_modules|temp|tmp"'
 alias ts='echo; echo; git tree-short'
 alias unsetdotglob='shopt -u dotglob'
