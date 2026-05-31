@@ -361,6 +361,7 @@ then
       tmux \
       git-delta \
       gh \
+      glow \
       beads
 
   # Linux-only packages
