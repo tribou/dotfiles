@@ -607,7 +607,7 @@ function paste_from_clipboard ()
 
 function restart-docker ()
 {
-  if [[ "$OSTYPE" != "darwin"* ]]; then
+  if ! is_macos; then
     echo "restart-docker is not supported on Linux. Use: sudo systemctl restart docker"
     return 1
   fi
