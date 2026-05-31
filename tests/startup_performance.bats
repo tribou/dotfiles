@@ -9,10 +9,10 @@ setup() {
   local best_ms=999999
   for i in 1 2 3; do
     local start end ms
-    start=$(date +%s%N)
+    start="${EPOCHREALTIME/./}"
     bash -c 'source "$REPO_ROOT/bash_profile"'
-    end=$(date +%s%N)
-    ms=$(( (end - start) / 1000000 ))
+    end="${EPOCHREALTIME/./}"
+    ms=$(( (end - start) / 1000 ))
     if [ "$ms" -lt "$best_ms" ]; then
       best_ms=$ms
     fi
