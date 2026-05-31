@@ -233,9 +233,10 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 _dotfiles_debug_timing "$LINENO"
 
-# z
-export _Z_NO_RESOLVE_SYMLINKS=1
-[ -f "$DEVPATH/z/z.sh" ] && . "$DEVPATH/z/z.sh"
+# zoxide (modern directory switching)
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init bash)"
+fi
 
 _dotfiles_debug_timing "$LINENO"
 

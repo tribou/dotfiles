@@ -17,3 +17,8 @@ export SDKMAN_DIR="/Users/aaron.tribou/.sdkman"
 
 autoload -U +X bashcompinit && bashcompinit
 [ -s "$(command -v terraform)" ] && complete -o nospace -C "$(command -v terraform)" terraform
+
+# zoxide (modern directory switching)
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+fi
