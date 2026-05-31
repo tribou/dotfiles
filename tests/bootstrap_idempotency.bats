@@ -24,14 +24,15 @@ setup() {
   echo 'echo "SSH_AUTH_SOCK=/tmp/ssh-mock; export SSH_AUTH_SOCK; SSH_AGENT_PID=12345; export SSH_AGENT_PID;"' >> "$mock_bin/ssh-agent"
   chmod +x "$mock_bin/ssh-agent"
   
-  # Custom mock for git to handle directory setup for z and tpm
+  # Create mock for zoxide binary so bootstrap sourcing doesn't fail
+  echo '#!/bin/sh' > "$mock_bin/zoxide"
+  echo 'exit 0' >> "$mock_bin/zoxide"
+  chmod +x "$mock_bin/zoxide"
+
+  # Custom mock for git to handle directory setup for tpm
   cat << 'EOF' > "$mock_bin/git"
 #!/bin/sh
 if [ "$1" = "clone" ]; then
-  # Create target file for z.sh so sourcing doesn't fail
-  mkdir -p "$HOME/dev/z"
-  touch "$HOME/dev/z/z.sh"
-  
   # Create mock install_plugins for tpm
   mkdir -p "$HOME/.tmux/plugins/tpm/bin"
   echo '#!/bin/sh' > "$HOME/.tmux/plugins/tpm/bin/install_plugins"
