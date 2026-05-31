@@ -72,17 +72,6 @@ function linkSkillsDir ()
 }
 
 # Backup existing files and replace with symlinks
-# files=(
-#   ".bash_profile"
-#   ".config/nvim/init.vim"
-#   ".gitconfig"
-#   ".zshrc"
-# )
-# for file in "${files[@]}"; do
-#   backupFile file
-#   echo "Creating a symlink for ${file}"
-# 	ln -sf ${THIS_DIR}/${file} ~/${file}
-# done
 
 # Setup dev and gopath
 mkdir -p "$HOME/dev/bin" || true
@@ -335,7 +324,7 @@ then
   # Brew is required — exit if still not available
   if ! command -v brew &>/dev/null; then
     echo "ERROR: Homebrew installation failed. Install brew manually and re-run."
-    exit 1
+  exit 0
   fi
 
   brew install \
