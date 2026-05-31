@@ -372,7 +372,7 @@ then
       fzf \
       tmux \
       delta \
-      git-delta \
+
       gh \
       beads
 
