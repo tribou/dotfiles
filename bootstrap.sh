@@ -178,6 +178,8 @@ linkSkillsDir "$THIS_DIR/skills" "$HOME/.gemini/config/skills"
 if [ ! -f "$HOME/.ssh/api_keys" ]
 then
   touch "$HOME/.ssh/api_keys"
+
+  echo "WARNING: ~/.ssh/api_keys did not exist. Created empty file."
 fi
 
 # Setup ssh key
