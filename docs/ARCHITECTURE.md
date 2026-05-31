@@ -54,8 +54,6 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 
 - **`battery.sh`**: Battery level reporting for terminal prompt or notifications
 - **`bootstrap-test.sh`**: Smoke test helper for bootstrap validation
-- **`brew_update.sh`**: Homebrew update automation
-- **`dm_update_ip.sh`**: Docker Machine IP update utility
 - **`install.sh`**: Dependency installer (called by bootstrap.sh with `-i` flag)
 - **`internet.sh`**: Internet connectivity check
 
