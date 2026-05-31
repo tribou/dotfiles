@@ -4,8 +4,9 @@ setup() {
 }
 
 @test "platform: is_macos returns true on Darwin" {
-  run bash -c "
-    OSTYPE=darwin20
+  run env OSTYPE=darwin20 bash -c "
+    uname() { echo 'Darwin'; }
+    export -f uname
     . '$REPO_ROOT/lib/platform.sh'
     is_macos && echo 'yes' || echo 'no'
   "
@@ -13,8 +14,9 @@ setup() {
 }
 
 @test "platform: is_macos returns false on Linux" {
-  run bash -c "
-    OSTYPE=linux-gnu
+  run env OSTYPE=linux-gnu bash -c "
+    uname() { echo 'Linux'; }
+    export -f uname
     . '$REPO_ROOT/lib/platform.sh'
     is_macos && echo 'yes' || echo 'no'
   "
@@ -22,8 +24,9 @@ setup() {
 }
 
 @test "platform: is_linux returns true on Linux" {
-  run bash -c "
-    OSTYPE=linux-gnu
+  run env OSTYPE=linux-gnu bash -c "
+    uname() { echo 'Linux'; }
+    export -f uname
     . '$REPO_ROOT/lib/platform.sh'
     is_linux && echo 'yes' || echo 'no'
   "
@@ -31,8 +34,9 @@ setup() {
 }
 
 @test "platform: is_linux returns false on Darwin" {
-  run bash -c "
-    OSTYPE=darwin20
+  run env OSTYPE=darwin20 bash -c "
+    uname() { echo 'Darwin'; }
+    export -f uname
     . '$REPO_ROOT/lib/platform.sh'
     is_linux && echo 'yes' || echo 'no'
   "

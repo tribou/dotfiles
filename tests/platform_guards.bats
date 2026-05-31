@@ -6,8 +6,9 @@ setup() {
 
 # restart-docker guard
 @test "restart-docker exits 1 with error message on Linux" {
-  run bash -c "
-    OSTYPE=linux-gnu
+  run env OSTYPE=linux-gnu bash -c "
+    uname() { echo 'Linux'; }
+    export -f uname
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     restart-docker
@@ -20,12 +21,12 @@ setup() {
   # We can't fully run restart-docker (it calls osascript), but we can verify
   # the guard does NOT trigger (returns past the guard) on darwin.
   # Stub osascript and open to prevent actual Docker restart.
-  run bash -c "
-    OSTYPE=darwin20
+  run env OSTYPE=darwin20 bash -c "
+    uname() { echo 'Darwin'; }
     osascript() { return 0; }
     open() { return 0; }
     docker() { return 0; }
-    export -f osascript open docker
+    export -f uname osascript open docker
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     # Override wait loop to exit immediately
