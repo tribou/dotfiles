@@ -178,7 +178,7 @@ then
 fi
 if [ ! -f "$HOME/.ssh/id_ed25519" ]
 then
-  ssh-keygen -t ed25519 -C "tribou@users.noreply.github.com"
+  ssh-keygen -t ed25519 -C "tribou@users.noreply.github.com" -N ""
 fi
 ## If macOS
 if [[ "$OSTYPE" == "darwin"* ]] && ! grep -q "AddKeysToAgent" ~/.ssh/config
