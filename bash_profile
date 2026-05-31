@@ -10,10 +10,16 @@ function _dotfiles_debug_timing ()
 {
   if [ -n "$DEBUG_BASH_PROFILE" ]
   then
+    local _date_cmd="date"
+    if [ "$OS" = "Darwin" ] && command -v gdate >/dev/null 2>&1
+    then
+      _date_cmd="gdate"
+    fi
+
     local LAST_TIME="$DOTFILES_DEBUG_LAST_TIME"
-    local LAST_TIME_NANO=$(gdate -u -d "$LAST_TIME" +"%s%N")
-    local NOW=$(gdate -u +"%Y-%m-%dT%H:%M:%S.%NZ")
-    local NOW_NANO=$(gdate -u -d "$NOW" +"%s%N")
+    local LAST_TIME_NANO=$($_date_cmd -u -d "$LAST_TIME" +"%s%N")
+    local NOW=$($_date_cmd -u +"%Y-%m-%dT%H:%M:%S.%NZ")
+    local NOW_NANO=$($_date_cmd -u -d "$NOW" +"%s%N")
     local DIFF="0"
     local MSG="$NOW $1 +$DIFF"
 
