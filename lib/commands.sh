@@ -147,27 +147,6 @@ function digitalocean ()
   curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool
 }
 
-function dminit ()
-{
-  local usage='Usage: dminit [NAME]'
-  local dm_name
-  dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
-
-  # Return usage if 0 or more than 2 args are passed
-  if [ $# -gt 1 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  if [ $# -eq 1 ]
-  then
-    local dm_name="$1"
-  fi
-
-  eval "$(docker-machine env "$dm_name")"
-}
-
 function da ()
 {
   # Select a docker container to start and attach to
@@ -465,82 +444,10 @@ function mkrepo()
   echo "✅ Created https://github.com/tribou/$1 and synced locally."
 }
 
-function new-docker ()
-{
-  local usage='Usage: new-docker [NAME] [ACCESS_TOKEN]'
-
-  if [ $# -gt 3 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  if [ -z "$1" ]
-  then
-    local MACHINE_NAME=dev
-  else
-    local MACHINE_NAME="$1"
-  fi
-
-  if [ -z "$2" ]
-  then
-    local ACCESS_TOKEN="${DIGITALOCEAN_RS_TOKEN}"
-  else
-    local ACCESS_TOKEN="$2"
-  fi
-
-  echo "Creating ${MACHINE_NAME}..."
-
-  docker-machine create --driver digitalocean \
-    --digitalocean-access-token "${DIGITALOCEAN_RS_TOKEN}" \
-    --digitalocean-image ubuntu-16-04-x64 \
-    --digitalocean-region nyc3 \
-    --digitalocean-size 2gb \
-    --digitalocean-ssh-key-fingerprint "77:70:98:0d:d6:48:01:79:7b:41:f4:66:00:95:54:12" \
-    "${MACHINE_NAME}"
-  local MACHINE_IP
-  MACHINE_IP=$(docker-machine ip "$MACHINE_NAME") && \
-  install-swap "${MACHINE_IP}" && \
-  dminit "${MACHINE_NAME}"
-}
-
-function new-docker-generic ()
-{
-  local usage='Usage: new-docker-generic IP_ADDRESS [NAME] [PRIVATE_KEY_PATH]'
-
-  if [ $# -lt 1 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  local MACHINE_IP="$1"
-
-  if [ -z "$2" ]
-  then
-    local MACHINE_NAME="dev"
-  else
-    local MACHINE_NAME="$2"
-  fi
-
-  # if [ -z "$3" ]
-  # then
-  #   PRIVATE_KEY='~/.ssh/id_rsa'
-  # else
-  #   PRIVATE_KEY="$3"
-  # fi
-
-  docker-machine create --driver generic \
-    --generic-ip-address "${MACHINE_IP}" \
-    "${MACHINE_NAME}" && \
-  install-swap "${MACHINE_IP}" && \
-  dminit "${MACHINE_NAME}"
-}
-
 function npm-install-global ()
 {
   echo "Installing global modules"
-  npm install --location=global \
+  npm install -g \
     eas-cli \
     eslint_d \
     editorconfig \
@@ -700,7 +607,7 @@ function paste_from_clipboard ()
 
 function restart-docker ()
 {
-  if [[ "$OSTYPE" != "darwin"* ]]; then
+  if ! is_macos; then
     echo "restart-docker is not supported on Linux. Use: sudo systemctl restart docker"
     return 1
   fi
@@ -996,7 +903,7 @@ alias d='docker'
 alias dc='docker compose'
 alias docker-compose='docker compose'
 alias di='docker images'
-#alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
+
 alias dps='docker ps'
 alias dpsa='docker ps -a'
 alias drm='docker rm'
@@ -1036,7 +943,7 @@ alias j='TZ=UTC yarn jest --watch'
 alias k='kubectl'
 alias kd='kubectl describe'
 alias kg='kubectl get pods,rc,svc,ing -o wide --show-labels'
-alias less='less -r'
+alias less='less -R'
 alias ll='ls -lah'
 llm() { local _d; _d=$(printf '%q' "$PWD"); sudo -u agent -i bash -c "cd $_d && exec bash -li"; }
 agent-grant() {
@@ -1046,7 +953,11 @@ agent-grant() {
   [[ "$confirm" == [yY] ]] || { echo "Aborted."; return 1; }
   sudo bash "$dotfiles/agent/setup-user.sh" --grant "$target"
 }
-alias ls='ls -G'
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  alias ls='ls -G'
+else
+  alias ls='ls --color=auto'
+fi
 alias lt='ls -lath'
 alias md='merge develop'
 alias mm='merge main'
@@ -1060,7 +971,7 @@ alias nr='npm-run'
 alias nrs='npm rm --save'
 alias nrsd='npm rm --save-dev'
 alias ntsc='npx tsc --noemit --watch --pretty'
-alias prettyjson='python -m json.tool'
+alias prettyjson='python3 -m json.tool'
 alias proxy-mini='ssh -D 8001 tbomini-remote'
 alias r='git remote -v'
 alias remote-mini='ssh -L 9000:localhost:5900 -L 35729:localhost:35729 -L 4200:localhost:4200 -L 3000:localhost:3000 -L 8090:localhost:8090 -L 8000:localhost:8000 tbomini-remote'
@@ -1083,7 +994,11 @@ alias tms='tmux-small'
 alias tint='_dotfiles_git_log_branch_diff'
 alias to='echo; echo; git tree-one'
 alias tone='echo; echo; git tree-one'
-alias top='top -o cpu'
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  alias top='top -o cpu'
+else
+  alias top='top -o %CPU'
+fi
 alias tree='tree -I "bower_components|dist|node_modules|temp|tmp"'
 alias ts='echo; echo; git tree-short'
 alias unsetdotglob='shopt -u dotglob'

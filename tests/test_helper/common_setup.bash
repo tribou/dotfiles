@@ -7,11 +7,15 @@ load "${_helper_dir}/bats-assert/load"
 REPO_ROOT="$(cd "${_helper_dir}/../.." && pwd)"
 
 common_setup() {
+  # Ensure DOTFILES is defined so platform.sh can source correctly
+  export DOTFILES="$REPO_ROOT"
+
   # Source shared lib (order matters: _shared first)
   . "$REPO_ROOT/lib/_shared.sh"
   . "$REPO_ROOT/lib/commands.sh"
   # Export REPO_ROOT and all _dotfiles_* functions for use in bash -c subshells
   export REPO_ROOT
+  export -f is_macos is_linux
   while IFS= read -r _fn; do
     export -f "$_fn" 2>/dev/null || true
   done < <(declare -F | awk '{print $3}' | grep '^_dotfiles_')

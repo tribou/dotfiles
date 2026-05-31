@@ -72,17 +72,6 @@ function linkSkillsDir ()
 }
 
 # Backup existing files and replace with symlinks
-# files=(
-#   ".bash_profile"
-#   ".config/nvim/init.vim"
-#   ".gitconfig"
-#   ".zshrc"
-# )
-# for file in "${files[@]}"; do
-#   backupFile file
-#   echo "Creating a symlink for ${file}"
-# 	ln -sf ${THIS_DIR}/${file} ~/${file}
-# done
 
 # Setup dev and gopath
 mkdir -p "$HOME/dev/bin" || true
@@ -162,6 +151,7 @@ backupFile ".config/nvim/coc-settings.json"
 linkFileToHome "coc-settings.json" ".config/nvim/coc-settings.json"
 
 # Symlink helper scripts for SSH markdown preview
+mkdir -p ~/.local/bin
 linkFileToHome "scripts/dotfiles_remote_browser_open.sh" ".local/bin/dotfiles_remote_browser_open.sh"
 linkFileToHome "scripts/dotfiles_local_browser_helper.sh" ".local/bin/dotfiles_local_browser_helper.sh"
 
@@ -175,9 +165,12 @@ linkSkillsDir "$THIS_DIR/skills" "$HOME/.config/opencode/skills"
 linkSkillsDir "$THIS_DIR/skills" "$HOME/.gemini/config/skills"
 
 # setup API keys file
+mkdir -p "$HOME/.ssh"
 if [ ! -f "$HOME/.ssh/api_keys" ]
 then
   touch "$HOME/.ssh/api_keys"
+
+  echo "WARNING: ~/.ssh/api_keys did not exist. Created empty file."
 fi
 
 # Setup ssh key
@@ -187,7 +180,7 @@ then
 fi
 if [ ! -f "$HOME/.ssh/id_ed25519" ]
 then
-  ssh-keygen -t ed25519 -C "tribou@users.noreply.github.com"
+  ssh-keygen -t ed25519 -C "tribou@users.noreply.github.com" -N ""
 fi
 ## If macOS
 if [[ "$OSTYPE" == "darwin"* ]] && ! grep -q "AddKeysToAgent" ~/.ssh/config
@@ -335,7 +328,7 @@ then
   # Brew is required — exit if still not available
   if ! command -v brew &>/dev/null; then
     echo "ERROR: Homebrew installation failed. Install brew manually and re-run."
-    exit 1
+  exit 0
   fi
 
   brew install \
@@ -371,7 +364,6 @@ then
       tree-sitter-cli \
       fzf \
       tmux \
-      delta \
       git-delta \
       gh \
       beads
@@ -437,7 +429,7 @@ then
 
   # Golang tools — install after mise provisions Go
   GO_BIN_DIR="${GOBIN:-$GOPATH/bin}"
-  if [ -x "$(which go)" ] && [ ! -x "$GO_BIN_DIR/gopls" ]
+  if [ -x "$(command -v go)" ] && [ ! -x "$GO_BIN_DIR/gopls" ]
   then
     echo "Installing gopls"
     go install golang.org/x/tools/gopls@latest

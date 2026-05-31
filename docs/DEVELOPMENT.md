@@ -118,3 +118,38 @@ needed beyond running `bootstrap.sh` on the remote machine.
 - **`gitconfig`**: GPG signing, useful aliases (`tree`, `tree-one`, `diff-word`, `forget`), LFS, SSH for GitHub, nvimdiff merge tool
 - **`alacritty.toml`**: Alacritty terminal emulator config
 - **`ripgreprc`**: Ripgrep defaults (exported via `RIPGREP_CONFIG_PATH`)
+
+## AI Skills
+
+The `skills/` directory contains custom AI agent skills used by both Claude Code and opencode.
+
+### Directory Layout
+
+Each skill lives in its own subdirectory under `skills/<skill-name>/` and must contain a `SKILL.md` file at minimum:
+
+```
+skills/
+  organize-ai-context/
+    SKILL.md
+```
+
+### SKILL.md Frontmatter
+
+The `SKILL.md` file must begin with YAML frontmatter:
+
+```yaml
+---
+name: organize-ai-context
+description: Use when setting up a new repository, when AI agents lack project context, or when codebase guidelines are scattered and unstructured.
+---
+```
+
+- `name`: matches the directory name (kebab-case)
+- `description`: a concise trigger phrase that tells the agent when to invoke the skill
+
+### Discovery Behavior
+
+- **Claude Code**: Skills are discovered from the `skills/` directory in the project root and from the user's global skills path.
+- **opencode**: Skills are discovered from the `skills/` directory in the project root and from `~/.config/opencode/skills/`. The opencode `skill` tool loads the full `SKILL.md` content on demand.
+
+When adding a new skill, ensure the frontmatter is valid YAML and the `name` matches the directory name exactly.

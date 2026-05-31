@@ -11,8 +11,10 @@ Example:
 '
 
   local MESSAGE="${@:-`cat -`}"
-  local SCREEN_LINES=`tput lines`
-  local SCREEN_COLUMNS=`tput cols`
+  local SCREEN_LINES=$(tput lines 2>/dev/null)
+  local SCREEN_COLUMNS=$(tput cols 2>/dev/null)
+  SCREEN_LINES=${SCREEN_LINES:-24}
+  SCREEN_COLUMNS=${SCREEN_COLUMNS:-80}
   local MESSAGE_LENGTH=1
   local MESSAGE_LINE_COUNTS
   local N=0

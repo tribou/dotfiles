@@ -7,7 +7,7 @@
 - **`bootstrap.sh`**: Main installation script
   - Creates symlinks from dotfiles to home directory (~/.bash_profile, ~/.vimrc, ~/.gitconfig, etc.)
   - Sets up directory structure (~/dev, ~/dev/go, etc.)
-  - Optionally installs dependencies with `-i` or `--install-deps` flag
+  - Installs dependencies automatically (Homebrew, mise, rustup, npm globals, etc.)
   - Configures SSH keys, GPG agent, tmux plugins
 
 - **`bash_profile`**: Main bash configuration loaded on shell startup
@@ -54,8 +54,6 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 
 - **`battery.sh`**: Battery level reporting for terminal prompt or notifications
 - **`bootstrap-test.sh`**: Smoke test helper for bootstrap validation
-- **`brew_update.sh`**: Homebrew update automation
-- **`dm_update_ip.sh`**: Docker Machine IP update utility
 - **`install.sh`**: Dependency installer (called by bootstrap.sh with `-i` flag)
 - **`internet.sh`**: Internet connectivity check
 

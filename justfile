@@ -19,8 +19,9 @@ build-clean:
     docker compose build --no-cache
 
 # Run bash unit tests with bats-core
-test-unit:
-    ./tests/test_helper/bats-core/bin/bats tests/*.bats
+test-unit *args="tests/*.bats":
+    ./tests/test_helper/bats-core/bin/bats {{args}}
+
 
 # Run local health checks (symlinks, tools)
 doctor:
