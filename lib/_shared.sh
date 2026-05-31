@@ -6,6 +6,8 @@ DOTFILES_HISTFILE_DELIM='^[0-9]{4}/[0-9]{2}//?[0-9]{2}[.][0-9]{2}[.][0-9]{2}[.][
 # Strips the shell history line prefix: '  NNN  YYYY-MM-DD HH:MM:SS '
 DOTFILES_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} '
 
+. "$DOTFILES/lib/platform.sh"
+
 # Helper functions
 function _dotfiles_full_path () {
   _z -e "$1"
@@ -33,7 +35,7 @@ function _dotfiles_grep_ticket_number () {
     e=$(echo "$d" | sed -E 's/^([0-9]{1,7})\_.*$/DCX\1/')
     # echo "e: $e" >&2
     # Filter out anything other than ab123 or abc-123 or DCX123
-    if [[ "$OSTYPE" == "darwin"* ]]; then
+    if is_macos; then
       f=$(echo "$e" | grep -E '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,5}\-)\d{1,7}|DCX[0-9]{1,7}$')
     else
       f=$(echo "$e" | grep -P '^([a-zA-Z]{2}[0-9]{1,7}|[a-zA-Z0-9]{2,5}\-)\d{1,7}|DCX[0-9]{1,7}$')
