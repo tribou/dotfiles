@@ -81,7 +81,7 @@ Examples:
     ':!*.pnp.*' \
     ':!pnpm-lock.yaml' \
     ':!package-lock.json' \
-    | xargs sed -i '' -e ''s/"$1"/"$2"/g''
+    | xargs sed -i.bak -e ''s/"$1"/"$2"/g'' && find . -name '*.bak' -delete
 }
 
 # "Write" complement to ripgrep (rg --replace)
