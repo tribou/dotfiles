@@ -81,11 +81,7 @@ mkdir -p ~/dev/go/src/bitbucket.org || true
 mkdir -p ~/dev/go/src/github.com/rocksauce || true
 export GOPATH=~/dev/go
 
-# Install z (rupa/z) for directory jumping
-if [ ! -d "$HOME/dev/z" ]; then
-  echo "Installing z..."
-  git clone https://github.com/rupa/z.git "$HOME/dev/z"
-fi
+# Zoxide and its database migration are handled post-installation
 
 # .bash_profile
 backupFile ".bash_profile"
@@ -293,12 +289,7 @@ then
     echo "npm not available or eslint_d already installed. Skipping..."
   fi
 
-  if [ ! -f "$HOME/dev/z/z.sh" ]
-  then
-    echo "Installing z"
-    git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
-    . "$HOME/dev/z/z.sh"
-  fi
+  # Sourcing z.sh is obsolete
 
   # Install brew prerequisites on Linux (needed before brew can install)
   if [[ "$OSTYPE" != "darwin"* ]]; then
@@ -362,7 +353,8 @@ then
       git-delta \
       gh \
       glow \
-      beads
+      beads \
+      zoxide
 
   # Linux-only packages
   if [[ "$OSTYPE" != "darwin"* ]]; then
@@ -414,6 +406,21 @@ then
   then
     echo "Installing pynvim"
     pip3 install --user --break-system-packages pynvim
+  fi
+
+  # Automatically migrate legacy rupa/z history to zoxide if applicable
+  if command -v zoxide &>/dev/null && [ -f "$HOME/.z" ]; then
+    local zoxide_db
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      zoxide_db="$HOME/Library/Application Support/zoxide/db.zo"
+    else
+      zoxide_db="${XDG_DATA_HOME:-$HOME/.local/share}/zoxide/db.zo"
+    fi
+
+    if [ ! -f "$zoxide_db" ] || [ ! -s "$zoxide_db" ]; then
+      echo "Migrating legacy rupa/z history to zoxide..."
+      zoxide import --from z "$HOME/.z" || echo "warning: zoxide history import failed"
+    fi
   fi
 
   # neovim gem (Neovim Ruby support) — installed via mise-managed ruby
