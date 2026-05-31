@@ -1089,6 +1089,8 @@ alias to='echo; echo; git tree-one'
 alias tone='echo; echo; git tree-one'
 if [[ "$OSTYPE" == "darwin"* ]]; then
   alias top='top -o cpu'
+else
+  alias top='top -o %CPU'
 fi
 alias tree='tree -I "bower_components|dist|node_modules|temp|tmp"'
 alias ts='echo; echo; git tree-short'
