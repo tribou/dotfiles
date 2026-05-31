@@ -410,16 +410,12 @@ then
 
   # Automatically migrate legacy rupa/z history to zoxide if applicable
   if command -v zoxide &>/dev/null && [ -f "$HOME/.z" ]; then
-    local zoxide_db
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      zoxide_db="$HOME/Library/Application Support/zoxide/db.zo"
+    echo "Migrating legacy rupa/z history to zoxide..."
+    if zoxide import --from z "$HOME/.z"; then
+      mv "$HOME/.z" "$HOME/.z.migrated"
+      echo "Legacy history migrated successfully (~/.z -> ~/.z.migrated)."
     else
-      zoxide_db="${XDG_DATA_HOME:-$HOME/.local/share}/zoxide/db.zo"
-    fi
-
-    if [ ! -f "$zoxide_db" ] || [ ! -s "$zoxide_db" ]; then
-      echo "Migrating legacy rupa/z history to zoxide..."
-      zoxide import --from z "$HOME/.z" || echo "warning: zoxide history import failed"
+      echo "warning: zoxide history import failed"
     fi
   fi
 
