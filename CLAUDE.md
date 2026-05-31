@@ -25,7 +25,7 @@ just test           # Full test suite in Docker
 - Product and domain context → [docs/PRODUCT.md](docs/PRODUCT.md)
 - Security policies and secrets → [docs/SECURITY.md](docs/SECURITY.md)
 - Testing policy and bug fix guidance → [docs/TESTING.md](docs/TESTING.md)
-- Custom AI skills (Claude Code + opencode) → `skills/`
+- Custom AI skills (Claude Code + opencode) → `skills/` (see docs/DEVELOPMENT.md for authoring conventions)
 
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
