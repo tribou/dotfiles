@@ -65,6 +65,14 @@ setup() {
   local nongit_budget=${PROMPT_NONGIT_BUDGET:-50}
   local git_budget=${PROMPT_GIT_BUDGET:-60}
 
+  # Log to performance file
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  local commit
+  commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  echo "{\"timestamp\": \"$timestamp\", \"commit\": \"$commit\", \"metric\": \"prompt_nongit_ms\", \"value\": $best_nongit}" >> "$REPO_ROOT/tests/.perf_log.jsonl"
+  echo "{\"timestamp\": \"$timestamp\", \"commit\": \"$commit\", \"metric\": \"prompt_git_ms\", \"value\": $best_git}" >> "$REPO_ROOT/tests/.perf_log.jsonl"
+
   [ "$best_nongit" -lt "$nongit_budget" ]
   [ "$best_git" -lt "$git_budget" ]
 }

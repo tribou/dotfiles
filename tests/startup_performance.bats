@@ -19,5 +19,13 @@ setup() {
   done
 
   echo "Best startup time: ${best_ms}ms"
+
+  # Log to performance file
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  local commit
+  commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  echo "{\"timestamp\": \"$timestamp\", \"commit\": \"$commit\", \"metric\": \"startup_ms\", \"value\": $best_ms}" >> "$REPO_ROOT/tests/.perf_log.jsonl"
+
   [ "$best_ms" -lt 300 ]
 }
