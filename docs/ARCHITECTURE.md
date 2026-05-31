@@ -13,7 +13,7 @@
 - **`bash_profile`**: Main bash configuration loaded on shell startup
   - Sources all lib scripts via `lib/index.sh`
   - Sets up environment variables (DEVPATH, DOTFILES, GOPATH, etc.)
-  - Configures PATH for Homebrew, NVM, pyenv, rbenv, jenv, and other tools
+  - Configures PATH for Homebrew, mise, and other tools
   - Implements prompt customization with git branch detection
   - Auto-loads correct Node version from .nvmrc or .node-version files
 
