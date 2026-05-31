@@ -4,6 +4,7 @@ private
 *.log
 .claude/
 .worktrees/
+tests/.perf_log.jsonl
 
 # Beads / Dolt files (added by bd init)
 .beads-credential-key

@@ -26,3 +26,7 @@ test-unit *args="tests/*.bats":
 # Run local health checks (symlinks, tools)
 doctor:
     ./scripts/doctor.sh
+
+# Show interactive performance history report
+perf:
+    @bash ./scripts/perf_report.sh
