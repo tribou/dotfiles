@@ -281,95 +281,6 @@ then
       echo
     fi
 
-    if  command -v npm &>/dev/null && ! command -v eslint_d &>/dev/null
-    then
-      _BOOTSTRAP_INSTALL="npm install --location=global neovim eslint_d editorconfig"
-      echo "Installing global node modules:"
-      echo "$_BOOTSTRAP_INSTALL"
-      echo
-      eval "$_BOOTSTRAP_INSTALL"
-    else
-      echo "npm not available or eslint_d already installed. Skipping..."
-    fi
-
-    if [ ! -f "$HOME/dev/z/z.sh" ]
-    then
-      echo "Installing z"
-      git clone --depth 1 https://github.com/rupa/z.git ~/dev/z
-      . "$HOME/dev/z/z.sh"
-    fi
-
-    # Install brew prerequisites on Linux (needed before brew can install)
-    if [[ "$OSTYPE" != "darwin"* ]]; then
-      if command -v apt-get &>/dev/null; then
-        sudo apt-get update
-        sudo apt-get install -y curl git build-essential xdg-utils bash-completion
-      elif command -v pacman &>/dev/null; then
-        sudo pacman -Syu --noconfirm curl git base-devel bash-completion
-      fi
-    fi
-
-    # Install brew if not present (macOS and Linux)
-    if ! command -v brew &>/dev/null; then
-      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
-      elif command -v brew &>/dev/null; then
-        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv 2>/dev/null || true)"
-      fi
-    fi
-
-    # Brew is required — exit if still not available
-    if ! command -v brew &>/dev/null; then
-      echo "ERROR: Homebrew installation failed. Install brew manually and re-run."
-      exit 1
-    fi
-
-  else
-    echo "ERROR: curl not available! Skipping all installs"
-    echo
-  fi
-
-    export PATH="$HOME/.local/bin:$PATH"
-    MISE_BIN="$(type -P mise 2>/dev/null || true)"
-
-    if [ -z "$MISE_BIN" ] && [ -x "$HOME/.local/bin/mise" ]
-    then
-      MISE_BIN="$HOME/.local/bin/mise"
-    fi
-
-    if [ -z "$MISE_BIN" ]
-    then
-      echo "Installing mise:"
-      curl https://mise.run | sh
-      echo
-      MISE_BIN="$HOME/.local/bin/mise"
-    else
-      echo "Updating mise:"
-      "$MISE_BIN" self-update --yes || true
-      echo
-    fi
-
-    if [ -x "$MISE_BIN" ]
-    then
-      eval "$("$MISE_BIN" activate bash)"
-      # Install all tools from mise-config.toml (symlinked to ~/.config/mise/config.toml)
-      mise install node go bun
-      hash -r
-      corepack enable
-      # Try precompiled ruby first (fast), fall back to source compilation
-      if ! MISE_RUBY_COMPILE=0 mise install ruby 2>/dev/null; then
-        echo "No precompiled ruby available for this platform, compiling from source..."
-        mise install ruby
-      fi
-      echo
-    fi
-
-  else
-    echo "ERROR: curl not available! Skipping all installs"
-    echo
-  fi
-
 
   if  command -v npm &>/dev/null && ! command -v eslint_d &>/dev/null
   then
@@ -544,3 +455,8 @@ then
       fi
     fi
   fi
+
+else
+  echo "ERROR: curl not available! Skipping all installs"
+  echo
+fi
