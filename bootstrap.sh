@@ -281,11 +281,6 @@ then
       echo
     fi
 
-  else
-    echo "ERROR: curl not available! Skipping all installs"
-    echo
-  fi
-
 
   if  command -v npm &>/dev/null && ! command -v eslint_d &>/dev/null
   then
@@ -460,3 +455,8 @@ then
       fi
     fi
   fi
+
+else
+  echo "ERROR: curl not available! Skipping all installs"
+  echo
+fi
