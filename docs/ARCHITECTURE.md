@@ -7,7 +7,7 @@
 - **`bootstrap.sh`**: Main installation script
   - Creates symlinks from dotfiles to home directory (~/.bash_profile, ~/.vimrc, ~/.gitconfig, etc.)
   - Sets up directory structure (~/dev, ~/dev/go, etc.)
-  - Optionally installs dependencies with `-i` or `--install-deps` flag
+  - Installs dependencies automatically (Homebrew, mise, rustup, npm globals, etc.)
   - Configures SSH keys, GPG agent, tmux plugins
 
 - **`bash_profile`**: Main bash configuration loaded on shell startup
