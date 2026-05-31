@@ -147,27 +147,6 @@ function digitalocean ()
   curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool
 }
 
-function dminit ()
-{
-  local usage='Usage: dminit [NAME]'
-  local dm_name
-  dm_name=$(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}")
-
-  # Return usage if 0 or more than 2 args are passed
-  if [ $# -gt 1 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  if [ $# -eq 1 ]
-  then
-    local dm_name="$1"
-  fi
-
-  eval "$(docker-machine env "$dm_name")"
-}
-
 function da ()
 {
   # Select a docker container to start and attach to
@@ -463,78 +442,6 @@ function mkrepo()
   gh repo create "tribou/$1" --private --source=. --remote=origin --push
 
   echo "✅ Created https://github.com/tribou/$1 and synced locally."
-}
-
-function new-docker ()
-{
-  local usage='Usage: new-docker [NAME] [ACCESS_TOKEN]'
-
-  if [ $# -gt 3 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  if [ -z "$1" ]
-  then
-    local MACHINE_NAME=dev
-  else
-    local MACHINE_NAME="$1"
-  fi
-
-  if [ -z "$2" ]
-  then
-    local ACCESS_TOKEN="${DIGITALOCEAN_RS_TOKEN}"
-  else
-    local ACCESS_TOKEN="$2"
-  fi
-
-  echo "Creating ${MACHINE_NAME}..."
-
-  docker-machine create --driver digitalocean \
-    --digitalocean-access-token "${DIGITALOCEAN_RS_TOKEN}" \
-    --digitalocean-image ubuntu-16-04-x64 \
-    --digitalocean-region nyc3 \
-    --digitalocean-size 2gb \
-    --digitalocean-ssh-key-fingerprint "77:70:98:0d:d6:48:01:79:7b:41:f4:66:00:95:54:12" \
-    "${MACHINE_NAME}"
-  local MACHINE_IP
-  MACHINE_IP=$(docker-machine ip "$MACHINE_NAME") && \
-  install-swap "${MACHINE_IP}" && \
-  dminit "${MACHINE_NAME}"
-}
-
-function new-docker-generic ()
-{
-  local usage='Usage: new-docker-generic IP_ADDRESS [NAME] [PRIVATE_KEY_PATH]'
-
-  if [ $# -lt 1 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  local MACHINE_IP="$1"
-
-  if [ -z "$2" ]
-  then
-    local MACHINE_NAME="dev"
-  else
-    local MACHINE_NAME="$2"
-  fi
-
-  # if [ -z "$3" ]
-  # then
-  #   PRIVATE_KEY='~/.ssh/id_rsa'
-  # else
-  #   PRIVATE_KEY="$3"
-  # fi
-
-  docker-machine create --driver generic \
-    --generic-ip-address "${MACHINE_IP}" \
-    "${MACHINE_NAME}" && \
-  install-swap "${MACHINE_IP}" && \
-  dminit "${MACHINE_NAME}"
 }
 
 function npm-install-global ()
@@ -996,7 +903,7 @@ alias d='docker'
 alias dc='docker compose'
 alias docker-compose='docker compose'
 alias di='docker images'
-#alias dminit='eval "$(docker-machine env $(docker-machine ls --filter driver=virtualbox --filter state=Running --format "{{.Name}}"))"'
+
 alias dps='docker ps'
 alias dpsa='docker ps -a'
 alias drm='docker rm'
