@@ -364,7 +364,6 @@ then
       tree-sitter-cli \
       fzf \
       tmux \
-      delta \
       git-delta \
       gh \
       beads
