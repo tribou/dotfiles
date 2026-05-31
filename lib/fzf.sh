@@ -36,20 +36,7 @@ fo() {
   fi
 }
 
-# https://github.com/junegunn/fzf/wiki/examples#z
-unalias z 2>/dev/null || true
-z() {
-  if [[ -z "$*" ]]; then
-    cd "$(_z -l 2>&1 | fzf +s --tac | sed 's/^[0-9,.]* *//')"
-  else
-    _last_z_args="$@"
-    _z "$@"
-  fi
-}
-
-zz() {
-  cd "$(_z -l 2>&1 | sed 's/^[0-9,.]* *//' | fzf -q "$_last_z_args")"
-}
+# Zoxide replaces custom fzf-z overrides natively with 'zi'
 
 # _dotfiles_beads_show - interactive beads issue browser with fzf
 # Aliases: bdr (beads read), bds (beads show)

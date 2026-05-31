@@ -10,7 +10,13 @@ DOTFILES_HISTORY_DELIM='^ {0,4}[0-9]+  [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]
 
 # Helper functions
 function _dotfiles_full_path () {
-  _z -e "$1"
+  if [ -d "$1" ]; then
+    (cd "$1" && pwd)
+  elif command -v zoxide &>/dev/null; then
+    zoxide query "$1" 2>/dev/null || echo "$1"
+  else
+    echo "$1"
+  fi
 }
 
 function _dotfiles_git_status () {
