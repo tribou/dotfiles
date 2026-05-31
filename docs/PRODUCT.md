@@ -14,7 +14,7 @@ As a developer setting up a new machine (or helping someone else set up theirs),
 
 - **Single-command bootstrap**: `./bootstrap.sh -i` sets up a fully working environment from scratch
 - **Idempotent**: Running bootstrap repeatedly must not break anything
-- **Fast shell startup**: Lib scripts and NVM loading are optimized to minimize prompt latency
+- **Fast shell startup**: Lib scripts and mise loading are optimized to minimize prompt latency
 - **Fuzzy-first UX**: Common tasks (branch checkout, npm scripts, AWS profiles) use fzf for interactive selection when no args are provided
 - **Tmux-integrated**: Shell commands and project layouts are tmux-aware
 - **AI-ready**: Includes an isolated `agent/` user account for LLM agent sessions with sandboxed git identity and shell profile
@@ -24,7 +24,7 @@ As a developer setting up a new machine (or helping someone else set up theirs),
 
 - `./bootstrap.sh` runs on a fresh macOS machine without errors
 - `just test` passes inside Docker, validating the full environment
-- Shell startup time remains fast (NVM loads with `--no-use`; plugins are lazy-loaded)
+- Shell startup time remains fast (mise loads with `--no-use`; plugins are lazy-loaded)
 - Ticket-number-prefixed commits, fuzzy branch checkout, and tmux layouts all work out of the box
 - The `agent` user account is correctly isolated from the primary user's identity
 

@@ -14,7 +14,7 @@
 - Keep scripts modular by breaking them into `lib/` files
 - Sourced functions should be reliable and prefer fast execution
 - The repository assumes macOS (checks for Darwin in multiple places)
-- NVM loaded with `--no-use` for performance; Node auto-switches on directory change via PROMPT_COMMAND
+- mise loaded with `--no-use` for performance; Node auto-switches on directory change via PROMPT_COMMAND
 
 ## Naming Conventions
 - Internal functions typically start with an underscore (e.g., `_dotfiles_full_path`)
