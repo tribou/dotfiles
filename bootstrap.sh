@@ -388,7 +388,7 @@ then
       steam \
       font-fira-code-nerd-font \
       font-hack-nerd-font \
-      font-fontawesome
+      font-fontawesome || echo "Did not install all casks"
   fi
 
   # vim-plug + Neovim plugins — must run after brew installs neovim
@@ -411,7 +411,7 @@ then
   # Automatically migrate legacy rupa/z history to zoxide if applicable
   if command -v zoxide &>/dev/null && [ -f "$HOME/.z" ]; then
     echo "Migrating legacy rupa/z history to zoxide..."
-    if zoxide import --from z "$HOME/.z"; then
+    if zoxide import --from z "$HOME/.z" --merge; then
       mv "$HOME/.z" "$HOME/.z.migrated"
       echo "Legacy history migrated successfully (~/.z -> ~/.z.migrated)."
     else
