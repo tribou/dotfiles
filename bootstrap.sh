@@ -160,6 +160,9 @@ linkSkillsDir "$THIS_DIR/skills" "$HOME/.config/opencode/skills"
 # .gemini/config/skills
 linkSkillsDir "$THIS_DIR/skills" "$HOME/.gemini/config/skills"
 
+# .agents/skills
+linkSkillsDir "$HOME/.agents/skills" "$HOME/.config/opencode/skills"
+
 # setup API keys file
 mkdir -p "$HOME/.ssh"
 if [ ! -f "$HOME/.ssh/api_keys" ]
