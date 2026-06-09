@@ -256,7 +256,7 @@ then
     if [ -z "$MISE_BIN" ]
     then
       echo "Installing mise:"
-      curl https://mise.run | sh
+      curl -fsSL https://mise.run | sh
       echo
       MISE_BIN="$HOME/.local/bin/mise"
     else
