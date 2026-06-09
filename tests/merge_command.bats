@@ -75,3 +75,19 @@ setup() {
   "
   [ "$status" -eq 5 ]
 }
+
+@test "merge: works with no arguments" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    git() {
+      if [ \"\$1\" = \"merge\" ]; then
+        echo \"git_merge_empty\" >&2
+      fi
+    }
+    _dotfiles_git_status() { echo \"git_status\"; }
+    merge
+  "
+  assert_success
+}
+
