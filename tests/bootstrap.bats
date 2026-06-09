@@ -72,3 +72,8 @@ setup() {
 @test "bootstrap: registers/repairs the beads Dolt remote from config.yaml sync.remote on existing machines" {
   awk '/# beads issue database/,/^  fi$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'dolt remote add origin "$_beads_remote"'
 }
+
+@test "bootstrap: installs mise using curl with -fsSL flags" {
+  grep -q 'curl -fsSL https://mise.run' "$REPO_ROOT/bootstrap.sh"
+}
+
