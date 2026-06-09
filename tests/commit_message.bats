@@ -42,3 +42,9 @@ teardown() {
   run _dotfiles_commit_message "123" "test commit message"
   assert_output "123 - test commit message"
 }
+
+@test "custom empty separator formats correctly" {
+  DOTFILES_COMMIT_SEPARATOR=""
+  run _dotfiles_commit_message "123" "test commit message"
+  assert_output "123: test commit message"
+}
