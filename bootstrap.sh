@@ -380,15 +380,12 @@ then
 
     brew install --cask \
       cmake \
-      1password \
-      1password-cli \
       appcleaner \
       balenaetcher \
       bruno \
       firefox \
       imageoptim \
       orbstack \
-      steam \
       font-fira-code-nerd-font \
       font-hack-nerd-font \
       font-fontawesome || echo "Did not install all casks"
