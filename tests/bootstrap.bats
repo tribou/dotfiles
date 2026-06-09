@@ -81,3 +81,8 @@ setup() {
   grep -q 'curl -fsSL https://mise.run' "$REPO_ROOT/Dockerfile"
 }
 
+@test "bootstrap-test: installs mise using curl with -fsSL flags" {
+  grep -q 'curl -fsSL https://mise.run' "$REPO_ROOT/scripts/bootstrap-test.sh"
+}
+
+

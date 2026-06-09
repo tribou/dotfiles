@@ -15,7 +15,7 @@ fi
 
 if [ -z "$MISE_BIN" ]
 then
-  curl https://mise.run | sh
+  curl -fsSL https://mise.run | sh
   MISE_BIN="$HOME/.local/bin/mise"
 fi
 
