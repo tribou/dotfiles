@@ -7,6 +7,23 @@ setup() {
   grep -q 'NONINTERACTIVE=1' "$REPO_ROOT/bootstrap.sh"
 }
 
+@test "bootstrap: exports NONINTERACTIVE=1 near the top for all Homebrew commands" {
+  awk 'NR <= 25 && /export NONINTERACTIVE=1/{found=1} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
+}
+
+@test "bootstrap: claude upgrade is gated behind command -v claude" {
+  awk '/command -v claude/,/claude upgrade/' "$REPO_ROOT/bootstrap.sh" | grep -q 'claude upgrade'
+}
+
+@test "bootstrap: opencode upgrade is gated behind type -P opencode, not command -v" {
+  awk '/OPENCODE_BIN=.*type -P opencode/,/opencode.*upgrade/' "$REPO_ROOT/bootstrap.sh" | grep -q '"$OPENCODE_BIN" upgrade'
+  ! awk '/OPENCODE_BIN/,/opencode.*upgrade/' "$REPO_ROOT/bootstrap.sh" | grep -q 'command -v opencode'
+}
+
+@test "bootstrap: apt-get block upgrades packages non-interactively after update" {
+  awk '/command -v apt-get/,/apt-get install/' "$REPO_ROOT/bootstrap.sh" | awk '/apt-get update/{updated=1} updated && /apt-get upgrade -y/{upgraded=1} END{exit !upgraded}'
+}
+
 @test "bootstrap: calls hash -r after mise install node to pick up newly created shims" {
   awk '/mise install node go/{found=1} found && /hash -r/{found=2} END{exit (found!=2)}' "$REPO_ROOT/bootstrap.sh"
 }

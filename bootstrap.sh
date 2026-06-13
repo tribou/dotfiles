@@ -14,6 +14,7 @@ fi
 # Get bootstrap script directory
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
 export DOTFILES="$THIS_DIR"
+export NONINTERACTIVE=1
 
 function backupFile ()
 {
@@ -265,6 +266,21 @@ then
       echo
     fi
 
+    if command -v claude &>/dev/null
+    then
+      echo "Upgrading claude"
+      claude upgrade || true
+      echo
+    fi
+
+    OPENCODE_BIN="$(type -P opencode 2>/dev/null || true)"
+    if [ -n "$OPENCODE_BIN" ]
+    then
+      echo "Upgrading opencode"
+      "$OPENCODE_BIN" upgrade || true
+      echo
+    fi
+
     if [ -x "$MISE_BIN" ]
     then
       eval "$("$MISE_BIN" activate bash)"
@@ -298,6 +314,7 @@ then
   if [[ "$OSTYPE" != "darwin"* ]]; then
     if command -v apt-get &>/dev/null; then
       sudo apt-get update
+      sudo apt-get upgrade -y
       sudo apt-get install -y curl git build-essential xdg-utils bash-completion
     elif command -v pacman &>/dev/null; then
       sudo pacman -Syu --noconfirm curl git base-devel bash-completion
