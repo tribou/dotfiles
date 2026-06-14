@@ -53,6 +53,6 @@
 # - github.org
 # - github.repo
 
-# sync.remote: "git+https://github.com/tribou/dotfiles.git"
+sync.remote: "git+https://github.com/tribou/dotfiles.git"
 
 export.git-add: false
