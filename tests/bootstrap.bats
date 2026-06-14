@@ -11,6 +11,10 @@ setup() {
   awk 'NR <= 25 && /export NONINTERACTIVE=1/{found=1} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
 }
 
+@test "bootstrap: exports HOMEBREW_NONINTERACTIVE=1 near the top for all Homebrew commands" {
+  awk 'NR <= 25 && /export HOMEBREW_NONINTERACTIVE=1/{found=1} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
+}
+
 @test "bootstrap: claude upgrade is gated behind command -v claude" {
   awk '/command -v claude/,/claude upgrade/' "$REPO_ROOT/bootstrap.sh" | grep -q 'claude upgrade'
 }

@@ -15,6 +15,7 @@ fi
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
 export DOTFILES="$THIS_DIR"
 export NONINTERACTIVE=1
+export HOMEBREW_NONINTERACTIVE=1
 
 function backupFile ()
 {

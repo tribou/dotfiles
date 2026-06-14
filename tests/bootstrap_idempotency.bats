@@ -13,7 +13,7 @@ setup() {
   mkdir -p "$mock_bin"
   
   # Create basic mock commands that exit 0
-  for cmd in brew curl gpgconf gpg-agent tic tmux ssh-keygen ssh-add mise corepack npm pip3 gem go bd apt-get pacman sudo nvim; do
+  for cmd in brew curl gpgconf gpg-agent tic tmux ssh-keygen ssh-add mise corepack npm pip3 gem go bd apt-get pacman sudo nvim claude opencode; do
     echo '#!/bin/sh' > "$mock_bin/$cmd"
     echo 'exit 0' >> "$mock_bin/$cmd"
     chmod +x "$mock_bin/$cmd"
