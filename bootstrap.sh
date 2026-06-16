@@ -15,7 +15,9 @@ fi
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
 export DOTFILES="$THIS_DIR"
 export NONINTERACTIVE=1
-export HOMEBREW_NONINTERACTIVE=1
+# Disables brew's default "ask mode" confirmation prompt for install/upgrade/
+# reinstall (HOMEBREW_NONINTERACTIVE is not a real Homebrew var and has no effect).
+export HOMEBREW_NO_ASK=1
 
 function backupFile ()
 {

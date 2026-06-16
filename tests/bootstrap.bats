@@ -11,8 +11,12 @@ setup() {
   awk 'NR <= 25 && /export NONINTERACTIVE=1/{found=1} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
 }
 
-@test "bootstrap: exports HOMEBREW_NONINTERACTIVE=1 near the top for all Homebrew commands" {
-  awk 'NR <= 25 && /export HOMEBREW_NONINTERACTIVE=1/{found=1} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
+@test "bootstrap: does not export the nonexistent HOMEBREW_NONINTERACTIVE var (brew never reads it; only HOMEBREW_NO_ASK disables the install confirmation prompt)" {
+  ! grep -q 'export HOMEBREW_NONINTERACTIVE' "$REPO_ROOT/bootstrap.sh"
+}
+
+@test "bootstrap: exports HOMEBREW_NO_ASK=1 near the top to skip brew's default ask-mode confirmation prompt" {
+  awk 'NR <= 25 && /export HOMEBREW_NO_ASK=1/{found=1} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
 }
 
 @test "bootstrap: claude upgrade is gated behind command -v claude" {
