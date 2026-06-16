@@ -377,6 +377,12 @@ then
       beads \
       zoxide
 
+  # Reinstall delta if shared libraries are mismatched (brew upgrade cleanup)
+  if command -v delta &>/dev/null && ! delta --version &>/dev/null 2>&1; then
+    echo "Reinstalling git-delta to fix shared library mismatch..."
+    brew reinstall git-delta
+  fi
+
   # Linux-only packages
   if [[ "$OSTYPE" != "darwin"* ]]; then
     brew install gcc

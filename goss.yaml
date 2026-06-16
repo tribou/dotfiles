@@ -43,6 +43,8 @@ command:
     exit-status: 0
     stdout:
       - /fd/
+  "delta --version":
+    exit-status: 0
   "bat --version":
     exit-status: 0
     stdout:

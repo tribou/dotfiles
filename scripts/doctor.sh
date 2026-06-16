@@ -117,6 +117,23 @@ check_skills_dirs() {
     return $failed
 }
 
+# --- Delta runtime check ---
+check_delta() {
+    local failed=0
+    echo "Delta:"
+    if ! command -v delta &>/dev/null; then
+        fail "delta" "run: brew install git-delta"
+        return 1
+    fi
+    if delta --version &>/dev/null 2>&1; then
+        pass "delta"
+    else
+        fail "delta" "run: brew reinstall git-delta"
+        failed=1
+    fi
+    return $failed
+}
+
 # --- Tool check ---
 check_tools() {
     local failed=0
@@ -147,7 +164,7 @@ check_tools() {
 
 # --- Main ---
 main() {
-    local total_checks=25  # 15 symlinks + 3 skills dirs + 7 tools
+    local total_checks=26  # 15 symlinks + 3 skills dirs + 7 tools + 1 delta runtime
     local output=""
     local passed=0
     local failed=0
@@ -191,8 +208,21 @@ main() {
         fi
     done <<< "$tool_output"
 
-    passed=$((symlink_passed + skills_passed + tool_passed))
-    failed=$((symlink_failed + skills_failed + tool_failed))
+    # Run delta runtime check
+    local delta_output
+    delta_output=$(check_delta) || true
+    output+="$delta_output"$'\n'
+    local delta_passed=0 delta_failed=0
+    while IFS= read -r line; do
+        if [[ "$line" == *"✓"* ]]; then
+            (( delta_passed += 1 ))
+        elif [[ "$line" == *"✗"* ]]; then
+            (( delta_failed += 1 ))
+        fi
+    done <<< "$delta_output"
+
+    passed=$((symlink_passed + skills_passed + tool_passed + delta_passed))
+    failed=$((symlink_failed + skills_failed + tool_failed + delta_failed))
 
     # Print all output
     echo "$output"

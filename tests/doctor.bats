@@ -123,6 +123,11 @@ setup() {
         touch "$tool_dir/$tool"
         chmod +x "$tool_dir/$tool"
     done
+    cat > "$tool_dir/delta" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+    chmod +x "$tool_dir/delta"
     export PATH="$tool_dir:$PATH"
 
     # Set up valid symlinks for all 15 entries
@@ -165,7 +170,7 @@ setup() {
 
     run main
     [ "$status" -eq 0 ]
-    [[ "$output" == *"doctor: 25/25 checks passed (0 failures)"* ]]
+    [[ "$output" == *"doctor: 26/26 checks passed (0 failures)"* ]]
 }
 
 @test "main exits 1 when checks fail" {
@@ -179,13 +184,52 @@ setup() {
     run main
     export PATH="$saved_path"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"doctor: 0/25 checks passed (25 failures)"* ]]
+    [[ "$output" == *"doctor: 0/26 checks passed (26 failures)"* ]]
 }
 
 @test "justfile has doctor recipe" {
     run grep -A 2 '^doctor:' justfile
     [ "$status" -eq 0 ]
     [[ "$output" == *"./scripts/doctor.sh"* ]]
+}
+
+@test "check_delta fails when delta is not found" {
+    local saved_path="$PATH"
+    export PATH="$(mktemp -d)"
+    run check_delta
+    export PATH="$saved_path"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"✗ delta → run: brew install git-delta"* ]]
+}
+
+@test "check_delta fails when delta binary exists but cannot run" {
+    local tool_dir
+    tool_dir="$(mktemp -d)"
+    cat > "$tool_dir/delta" <<'EOF'
+#!/usr/bin/env bash
+exit 1
+EOF
+    chmod +x "$tool_dir/delta"
+    export PATH="$tool_dir:$PATH"
+
+    run check_delta
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"✗ delta → run: brew reinstall git-delta"* ]]
+}
+
+@test "check_delta passes when delta runs correctly" {
+    local tool_dir
+    tool_dir="$(mktemp -d)"
+    cat > "$tool_dir/delta" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+    chmod +x "$tool_dir/delta"
+    export PATH="$tool_dir:$PATH"
+
+    run check_delta
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"✓ delta"* ]]
 }
 
 @test "doctor.sh produces output when checks fail (set -e regression)" {
