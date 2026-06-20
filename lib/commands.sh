@@ -73,6 +73,44 @@ function _dotfiles_commit_sanitize_message ()
   printf '%s' "$1" | head -n1 | sed -E "s/^[\"'\`[:space:]]+//; s/[\"'\`[:space:]]+$//"
 }
 
+function _dotfiles_commit_prompt ()
+{
+  local ticket="$1"
+
+  if [ -n "$ticket" ]
+  then
+    printf '%s' 'Write a one-line git commit message summarizing the staged diff. Use plain imperative mood (e.g. "fix the thing"). Do not add a type or scope prefix like "feat:" or "fix(scope):" -- a ticket prefix will be added separately. Output a single line only, with no surrounding quotes or backticks, no Co-Authored-By line, and no other text.'
+  else
+    printf '%s' 'Write a one-line git commit message summarizing the staged diff. Use Conventional Commits style (e.g. "fix(scope): summary") when it fits, otherwise a plain imperative summary. Output a single line only, with no surrounding quotes or backticks, no Co-Authored-By line, and no other text.'
+  fi
+}
+
+function _dotfiles_commit_generate_message ()
+{
+  local ticket="$1"
+
+  if ! command -v claude > /dev/null 2>&1
+  then
+    return 1
+  fi
+
+  local raw
+  if ! raw=$(git diff --cached | head -c 100000 | claude -p --model haiku "$(_dotfiles_commit_prompt "$ticket")")
+  then
+    return 1
+  fi
+
+  local sanitized
+  sanitized=$(_dotfiles_commit_sanitize_message "$raw")
+
+  if [ -z "$sanitized" ]
+  then
+    return 1
+  fi
+
+  printf '%s' "$sanitized"
+}
+
 function clean ()
 {
   if ! git clean -f -- build/ public/ vendor/; then return 1; fi
