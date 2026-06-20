@@ -111,6 +111,35 @@ function _dotfiles_commit_generate_message ()
   printf '%s' "$sanitized"
 }
 
+function commit ()
+{
+  git add -A
+
+  if git diff --cached --quiet
+  then
+    echo "nothing to commit"
+    return 0
+  fi
+
+  local ticket
+  ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
+
+  local generated
+  generated=$(_dotfiles_commit_generate_message "$ticket")
+
+  if [ -z "$generated" ]
+  then
+    echo "claude unavailable, falling back to manual commit" >&2
+    c
+    return
+  fi
+
+  local message
+  message=$(_dotfiles_commit_message "$ticket" "$generated")
+
+  git commit -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
+}
+
 function clean ()
 {
   if ! git clean -f -- build/ public/ vendor/; then return 1; fi
@@ -943,7 +972,6 @@ alias cod='co develop'
 alias cop='co prod'
 alias com='co main'
 alias cos='co staging'
-alias commit='git commit -ev' # non-signed commit
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
 alias convert-tabs-spaces="replace '	' '  '"
 alias count='sed "/^\s*$/d" | wc -l | xargs'
