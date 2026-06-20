@@ -864,7 +864,12 @@ function bashcheck ()
       errors=$((errors + 1))
       continue
     fi
-    bash -n "$file" || errors=$((errors + 1))
+    # bats' `@test "..." { ... }` syntax isn't valid raw bash, so bash -n
+    # always misfires on .bats files; shellcheck understands bats syntax
+    # natively, so skip bash -n for that extension and rely on shellcheck.
+    if [[ "$file" != *.bats ]]; then
+      bash -n "$file" || errors=$((errors + 1))
+    fi
     if [[ -n "$has_shellcheck" ]]; then
       shellcheck "$file" || errors=$((errors + 1))
     fi
