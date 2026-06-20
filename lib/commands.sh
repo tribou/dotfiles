@@ -68,6 +68,11 @@ function cn ()
   fi
 }
 
+function _dotfiles_commit_sanitize_message ()
+{
+  printf '%s' "$1" | head -n1 | sed -E "s/^[\"'\`[:space:]]+//; s/[\"'\`[:space:]]+$//"
+}
+
 function clean ()
 {
   if ! git clean -f -- build/ public/ vendor/; then return 1; fi
