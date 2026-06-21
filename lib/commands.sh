@@ -140,11 +140,30 @@ function _dotfiles_commit_generate_message ()
     return 1
   fi
 
-  local raw
-  if ! raw=$(git diff --cached | head -c 100000 | claude -p --model haiku "$(_dotfiles_commit_prompt "$ticket")")
+  local outfile
+  outfile=$(mktemp)
+
+  git diff --cached | head -c 100000 | claude -p --model haiku "$(_dotfiles_commit_prompt "$ticket")" > "$outfile" &
+  local pid=$!
+
+  _dotfiles_spinner_wait "$pid" "Asking Claude for a commit message..."
+  local wait_status=$?
+
+  if [ "$wait_status" -eq 130 ]
   then
+    rm -f "$outfile"
+    return 130
+  fi
+
+  if [ "$wait_status" -ne 0 ]
+  then
+    rm -f "$outfile"
     return 1
   fi
+
+  local raw
+  raw=$(cat "$outfile")
+  rm -f "$outfile"
 
   local sanitized
   sanitized=$(_dotfiles_commit_sanitize_message "$raw")
