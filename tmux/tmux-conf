@@ -137,19 +137,13 @@ if-shell -b '[ "$(echo "$TMUX_VERSION > 2.5" | bc)" = 1 ]' ' \
   send-keys -X no-clear'
 
 # Paste with right click
-unbind-key -n MouseDown3Pane # unbind default right click
-bind-key -T copy-mode-vi MouseDown3Pane run " \
-    X=$(paste_from_clipboard); \
-    tmux set-buffer \"$X\"; \
-    tmux paste-buffer -p; \
-    tmux display-message 'pasted!'; \
-    tmux send -X cancel \
-"
-bind-key -n MouseDown3Pane run " \
-    X=$(paste_from_clipboard); \
-    tmux set-buffer \"$X\"; \
-    tmux paste-buffer -p; \
-    tmux display-message 'pasted!' \
+# Skip the custom binding over SSH: the terminal/SSH client's native right-click
+# paste already sends the local clipboard, and remote hosts usually lack
+# pbpaste/xclip, so our binding would paste nothing even if it fired.
+if-shell '[ -z "$SSH_TTY" ] && [ -z "$SSH_CLIENT" ] && [ -z "$SSH_CONNECTION" ]' " \
+    unbind-key -n MouseDown3Pane; \
+    bind-key -T copy-mode-vi MouseDown3Pane run '#{DOTFILES}/scripts/tmux-paste.sh --copy-mode'; \
+    bind-key -n MouseDown3Pane run '#{DOTFILES}/scripts/tmux-paste.sh' \
 "
 
 # Sync panes (Send input to all panes in the window). When enabled, pane
