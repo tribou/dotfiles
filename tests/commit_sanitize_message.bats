@@ -19,6 +19,7 @@ setup() {
 }
 
 @test "strips surrounding backticks" {
+  # shellcheck disable=SC2016
   run _dotfiles_commit_sanitize_message '`fix the thing`'
   assert_output "fix the thing"
 }

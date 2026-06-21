@@ -129,9 +129,9 @@ function commit ()
 
   if [ -z "$generated" ]
   then
-    echo "claude unavailable, falling back to manual commit" >&2
-    c
-    return
+      echo "claude unavailable, falling back to manual commit" >&2
+      c "$@"
+      return
   fi
 
   local message
@@ -261,7 +261,7 @@ function ga ()
 function _dotfiles_prompt_git_branch_delete ()
 {
   echo
-  read -p "Run 'git branch -D $1'? (y/n): " confirm \
+  read -r -p "Run 'git branch -D $1'? (y/n): " confirm \
     && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
     || return 1
 
@@ -387,7 +387,7 @@ function wtd ()
         rm -rf "$WORKTREE_PATH" && git worktree prune || return
       else
         echo
-        read -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
+        read -r -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
           && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
           || return 1
         git worktree remove --force "$WORKTREE_PATH" || return
@@ -436,9 +436,10 @@ function histgrep ()
 
   # Pipe results from two history sources into cat
   local RESULT
+  # shellcheck disable=SC2012
   RESULT=$(cat \
     <(history | grep "$1") \
-    <(ls -d $HOME/.history/20*/* \
+    <(ls -d "$HOME"/.history/20*/* \
       | sort -r -n \
       | xargs grep -r "$1" \
       | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
@@ -772,8 +773,16 @@ EOF
   IFS=$'\t' read -r _ token proj url <<<"$line"
 
   export SUPABASE_ACCESS_TOKEN="$token"
-  [[ -n "$proj" ]] && export SUPABASE_PROJECT_REF="$proj" || unset SUPABASE_PROJECT_REF
-  [[ -n "$url"  ]] && export SUPABASE_URL="$url" || unset SUPABASE_URL
+  if [[ -n "$proj" ]]; then
+    export SUPABASE_PROJECT_REF="$proj"
+  else
+    unset SUPABASE_PROJECT_REF
+  fi
+  if [[ -n "$url" ]]; then
+    export SUPABASE_URL="$url"
+  else
+    unset SUPABASE_URL
+  fi
 
   echo "Activated Supabase profile: $name  (project: ${proj:-n/a})"
 }
@@ -893,12 +902,12 @@ function tmux-small-half ()
 function useLocalIfAvailable ()
 {
   # Use local node module if available
-  if [ -f "$(which ./node_modules/.bin/${1})" ]
+  if [ -f "$(which ./node_modules/.bin/"${1}")" ]
   then
     "./node_modules/.bin/$*"
 
   # Then check for existing global install
-  elif [ -f "$(which ${1})" ]
+  elif [ -f "$(which "${1}")" ]
   then
     "$@"
 
@@ -995,7 +1004,9 @@ alias fes='f origin staging:staging'
 alias fet='f origin test:test'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
 alias fix='git commit --amend -a --no-edit && _dotfiles_git_log_commit && _dotfiles_git_status'
+# shellcheck disable=SC2142
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
+# shellcheck disable=SC2142
 alias gall2='echo; echo; git log --oneline --all --graph --decorate --date=local --date=short --pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>" $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gbdr='git branch -d -r'
 alias gc='gcloud compute'
