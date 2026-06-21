@@ -23,6 +23,7 @@ function aws-set-current-account-id () {
 
 # If no args are passed, open the commit editor. Otherwise commit with all
 # arguments concatenated as a string
+# shellcheck disable=SC2120 # called with args interactively; bare calls below are intentional
 function c ()
 {
   if [ -f "./.git/MERGE_HEAD" ]
@@ -113,6 +114,14 @@ function _dotfiles_commit_generate_message ()
 
 function commit ()
 {
+  if [ -f "./.git/MERGE_HEAD" ]
+  then
+    # If committing a git merge, accept the default message
+    # shellcheck disable=SC2119 # commit() never forwards args to c
+    c
+    return
+  fi
+
   git add -A
 
   if git diff --cached --quiet
@@ -129,9 +138,10 @@ function commit ()
 
   if [ -z "$generated" ]
   then
-      echo "claude unavailable, falling back to manual commit" >&2
-      c "$@"
-      return
+    echo "claude unavailable, falling back to manual commit" >&2
+    # shellcheck disable=SC2119 # commit() never forwards args to c
+    c
+    return
   fi
 
   local message
