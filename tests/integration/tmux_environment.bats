@@ -5,6 +5,10 @@
 setup() {
   load '../test_helper/bats-support/load'
   load '../test_helper/bats-assert/load'
+  # Resolve DOTFILES from the test file location so worktrees and CI use the
+  # repository under test, not whatever DOTFILES happens to be in the environment.
+  DOTFILES="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+  export DOTFILES
   TMUX_CONF="$DOTFILES/tmux/tmux-conf"
 }
 
@@ -59,5 +63,15 @@ setup() {
 
 @test "256color terminal is configured" {
   run grep "256color" "$TMUX_CONF"
+  assert_success
+}
+
+@test "right-click paste binding is gated to non-SSH sessions" {
+  run grep -E "if-shell.*SSH_TTY.*SSH_CLIENT.*SSH_CONNECTION" "$TMUX_CONF"
+  assert_success
+}
+
+@test "right-click paste uses tmux-paste helper script" {
+  run grep -E "scripts/tmux-paste.sh" "$TMUX_CONF"
   assert_success
 }
