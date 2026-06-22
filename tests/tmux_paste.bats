@@ -47,7 +47,7 @@ echo "\$*" >> "$TMUX_PASTE_LOG"
 EOF
   chmod +x "$STUB_BIN/tmux"
 
-  run bash -c "export PATH='$STUB_BIN:$PATH'; '$REPO_ROOT/scripts/tmux-paste.sh'"
+  run bash -c "export PATH='$STUB_BIN:/bin'; '$REPO_ROOT/scripts/tmux-paste.sh'"
   assert_success
   run grep -c "set-buffer xclip-clipboard" "$TMUX_PASTE_LOG"
   assert_output "1"
@@ -60,7 +60,7 @@ echo "\$*" >> "$TMUX_PASTE_LOG"
 EOF
   chmod +x "$STUB_BIN/tmux"
 
-  run bash -c "export PATH='$STUB_BIN:$PATH'; '$REPO_ROOT/scripts/tmux-paste.sh'"
+  run bash -c "export PATH='$STUB_BIN:/bin'; '$REPO_ROOT/scripts/tmux-paste.sh'"
   assert_success
   run grep -c "^set-buffer \$" "$TMUX_PASTE_LOG"
   assert_output "1"
