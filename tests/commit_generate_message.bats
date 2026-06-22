@@ -20,7 +20,7 @@ setup() {
 # --- _dotfiles_commit_generate_message ---
 
 @test "generate_message: returns claude's sanitized output on success" {
-  run bash -c "
+  run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     git() { echo 'mock diff'; }
@@ -29,6 +29,7 @@ setup() {
   "
   assert_success
   assert_output "fix(bootstrap): silence brew prompt"
+  echo "$stderr" | grep -qF 'Asking Claude for a commit message...'
 }
 
 @test "generate_message: fails when claude is not found on PATH" {
@@ -46,7 +47,7 @@ setup() {
 }
 
 @test "generate_message: fails when claude exits non-zero" {
-  run bash -c "
+  run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     git() { echo 'mock diff'; }
@@ -55,10 +56,11 @@ setup() {
   "
   assert_failure
   assert_output ""
+  echo "$stderr" | grep -qF 'Asking Claude for a commit message...'
 }
 
 @test "generate_message: fails when claude returns empty output" {
-  run bash -c "
+  run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     git() { echo ''; }
@@ -67,10 +69,11 @@ setup() {
   "
   assert_failure
   assert_output ""
+  echo "$stderr" | grep -qF 'Asking Claude for a commit message...'
 }
 
 @test "generate_message: caps the diff sent to claude at 100000 bytes" {
-  run bash -c "
+  run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     git() { yes a | head -c 200000; }
@@ -79,4 +82,17 @@ setup() {
   "
   assert_success
   assert_output "100000"
+  echo "$stderr" | grep -qF 'Asking Claude for a commit message...'
+}
+
+@test "generate_message: returns 130 and emits no stdout when interrupted" {
+  run -130 --separate-stderr bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    git() { echo 'mock diff'; }
+    claude() { sleep 1; echo 'should not be seen'; }
+    ( sleep 0.2; kill -INT \$\$ ) &
+    _dotfiles_commit_generate_message ''
+  "
+  assert_output ""
 }

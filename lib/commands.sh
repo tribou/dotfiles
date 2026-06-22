@@ -86,6 +86,51 @@ function _dotfiles_commit_prompt ()
   fi
 }
 
+function _dotfiles_spinner_wait ()
+{
+  local pid="$1"
+  local label="$2"
+  local interrupted=0
+  local is_tty=0
+  local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+  local frame_index=0
+
+  trap 'interrupted=1' INT
+
+  if [ -t 2 ]
+  then
+    is_tty=1
+  else
+    printf '%s\n' "$label" >&2
+  fi
+
+  while kill -0 "$pid" 2> /dev/null
+  do
+    if [ "$interrupted" -eq 1 ]
+    then
+      kill "$pid" 2> /dev/null
+      [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
+      trap - INT
+      return 130
+    fi
+
+    if [ "$is_tty" -eq 1 ]
+    then
+      printf '\r%s %s' "${frames[frame_index]}" "$label" >&2
+      frame_index=$(( (frame_index + 1) % 10 ))
+    fi
+
+    sleep 0.1
+  done
+
+  [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
+
+  wait "$pid"
+  local status=$?
+  trap - INT
+  return "$status"
+}
+
 function _dotfiles_commit_generate_message ()
 {
   local ticket="$1"
@@ -95,11 +140,30 @@ function _dotfiles_commit_generate_message ()
     return 1
   fi
 
-  local raw
-  if ! raw=$(git diff --cached | head -c 100000 | claude -p --model haiku "$(_dotfiles_commit_prompt "$ticket")")
+  local outfile
+  outfile=$(mktemp)
+
+  git diff --cached | head -c 100000 | claude -p --model haiku "$(_dotfiles_commit_prompt "$ticket")" > "$outfile" &
+  local pid=$!
+
+  _dotfiles_spinner_wait "$pid" "Asking Claude for a commit message..."
+  local wait_status=$?
+
+  if [ "$wait_status" -eq 130 ]
   then
+    rm -f "$outfile"
+    return 130
+  fi
+
+  if [ "$wait_status" -ne 0 ]
+  then
+    rm -f "$outfile"
     return 1
   fi
+
+  local raw
+  raw=$(cat "$outfile")
+  rm -f "$outfile"
 
   local sanitized
   sanitized=$(_dotfiles_commit_sanitize_message "$raw")
@@ -135,6 +199,13 @@ function commit ()
 
   local generated
   generated=$(_dotfiles_commit_generate_message "$ticket")
+  local generate_status=$?
+
+  if [ "$generate_status" -eq 130 ]
+  then
+    echo "commit canceled" >&2
+    return 130
+  fi
 
   if [ -z "$generated" ]
   then
