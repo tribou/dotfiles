@@ -127,3 +127,23 @@ setup() {
   run grep -F "alias commit=" "$REPO_ROOT/lib/commands.sh"
   assert_failure
 }
+
+@test "commit: propagates cancellation from generate_message without falling back to c" {
+  run -130 bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    git() {
+      if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
+      if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
+      if [ \"\$1\" = \"branch\" ] && [ \"\$2\" = \"--show-current\" ]; then echo 'main'; return 0; fi
+      echo \"git_unexpected_call:\$*\"
+      return 0
+    }
+    _dotfiles_commit_generate_message() { return 130; }
+    c() { echo 'c_invoked'; }
+    commit
+  "
+  assert_output --partial "commit canceled"
+  refute_output --partial "c_invoked"
+  refute_output --partial "git_unexpected_call"
+}

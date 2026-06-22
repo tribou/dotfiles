@@ -199,6 +199,13 @@ function commit ()
 
   local generated
   generated=$(_dotfiles_commit_generate_message "$ticket")
+  local generate_status=$?
+
+  if [ "$generate_status" -eq 130 ]
+  then
+    echo "commit canceled" >&2
+    return 130
+  fi
 
   if [ -z "$generated" ]
   then
