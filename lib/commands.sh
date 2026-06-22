@@ -23,6 +23,7 @@ function aws-set-current-account-id () {
 
 # If no args are passed, open the commit editor. Otherwise commit with all
 # arguments concatenated as a string
+# shellcheck disable=SC2120 # called with args interactively; bare calls below are intentional
 function c ()
 {
   if [ -f "./.git/MERGE_HEAD" ]
@@ -66,6 +67,158 @@ function cn ()
       git commit -m "$message" --no-verify && _dotfiles_git_log_commit && _dotfiles_git_status
     fi
   fi
+}
+
+function _dotfiles_commit_sanitize_message ()
+{
+  printf '%s' "$1" | head -n1 | sed -E "s/^[\"'\`[:space:]]+//; s/[\"'\`[:space:]]+$//"
+}
+
+function _dotfiles_commit_prompt ()
+{
+  local ticket="$1"
+
+  if [ -n "$ticket" ]
+  then
+    printf '%s' 'Write a one-line git commit message summarizing the staged diff. Use plain imperative mood (e.g. "fix the thing"). Do not add a type or scope prefix like "feat:" or "fix(scope):" -- a ticket prefix will be added separately. Output a single line only, with no surrounding quotes or backticks, no Co-Authored-By line, and no other text.'
+  else
+    printf '%s' 'Write a one-line git commit message summarizing the staged diff. Use Conventional Commits style (e.g. "fix(scope): summary") when it fits, otherwise a plain imperative summary. Output a single line only, with no surrounding quotes or backticks, no Co-Authored-By line, and no other text.'
+  fi
+}
+
+function _dotfiles_spinner_wait ()
+{
+  local pid="$1"
+  local label="$2"
+  local interrupted=0
+  local is_tty=0
+  local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+  local frame_index=0
+
+  trap 'interrupted=1' INT
+
+  if [ -t 2 ]
+  then
+    is_tty=1
+  else
+    printf '%s\n' "$label" >&2
+  fi
+
+  while kill -0 "$pid" 2> /dev/null
+  do
+    if [ "$interrupted" -eq 1 ]
+    then
+      kill "$pid" 2> /dev/null
+      [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
+      trap - INT
+      return 130
+    fi
+
+    if [ "$is_tty" -eq 1 ]
+    then
+      printf '\r%s %s' "${frames[frame_index]}" "$label" >&2
+      frame_index=$(( (frame_index + 1) % 10 ))
+    fi
+
+    sleep 0.1
+  done
+
+  [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
+
+  wait "$pid"
+  local status=$?
+  trap - INT
+  return "$status"
+}
+
+function _dotfiles_commit_generate_message ()
+{
+  local ticket="$1"
+
+  if ! command -v claude > /dev/null 2>&1
+  then
+    return 1
+  fi
+
+  local outfile
+  outfile=$(mktemp)
+
+  git diff --cached | head -c 100000 | claude -p --model haiku "$(_dotfiles_commit_prompt "$ticket")" > "$outfile" &
+  local pid=$!
+
+  _dotfiles_spinner_wait "$pid" "Asking Claude for a commit message..."
+  local wait_status=$?
+
+  if [ "$wait_status" -eq 130 ]
+  then
+    rm -f "$outfile"
+    return 130
+  fi
+
+  if [ "$wait_status" -ne 0 ]
+  then
+    rm -f "$outfile"
+    return 1
+  fi
+
+  local raw
+  raw=$(cat "$outfile")
+  rm -f "$outfile"
+
+  local sanitized
+  sanitized=$(_dotfiles_commit_sanitize_message "$raw")
+
+  if [ -z "$sanitized" ]
+  then
+    return 1
+  fi
+
+  printf '%s' "$sanitized"
+}
+
+function commit ()
+{
+  if [ -f "./.git/MERGE_HEAD" ]
+  then
+    # If committing a git merge, accept the default message
+    # shellcheck disable=SC2119 # commit() never forwards args to c
+    c
+    return
+  fi
+
+  git add -A
+
+  if git diff --cached --quiet
+  then
+    echo "nothing to commit"
+    return 0
+  fi
+
+  local ticket
+  ticket=$(git branch --show-current 2> /dev/null | _dotfiles_grep_ticket_number)
+
+  local generated
+  generated=$(_dotfiles_commit_generate_message "$ticket")
+  local generate_status=$?
+
+  if [ "$generate_status" -eq 130 ]
+  then
+    echo "commit canceled" >&2
+    return 130
+  fi
+
+  if [ -z "$generated" ]
+  then
+    echo "claude unavailable, falling back to manual commit" >&2
+    # shellcheck disable=SC2119 # commit() never forwards args to c
+    c
+    return
+  fi
+
+  local message
+  message=$(_dotfiles_commit_message "$ticket" "$generated")
+
+  git commit -m "$message" && _dotfiles_git_log_commit && _dotfiles_git_status
 }
 
 function clean ()
@@ -189,7 +342,7 @@ function ga ()
 function _dotfiles_prompt_git_branch_delete ()
 {
   echo
-  read -p "Run 'git branch -D $1'? (y/n): " confirm \
+  read -r -p "Run 'git branch -D $1'? (y/n): " confirm \
     && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
     || return 1
 
@@ -315,7 +468,7 @@ function wtd ()
         rm -rf "$WORKTREE_PATH" && git worktree prune || return
       else
         echo
-        read -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
+        read -r -p "Worktree has uncommitted changes. Run 'git worktree remove --force $WORKTREE_PATH'? (y/n): " confirm \
           && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] \
           || return 1
         git worktree remove --force "$WORKTREE_PATH" || return
@@ -364,9 +517,10 @@ function histgrep ()
 
   # Pipe results from two history sources into cat
   local RESULT
+  # shellcheck disable=SC2012
   RESULT=$(cat \
     <(history | grep "$1") \
-    <(ls -d $HOME/.history/20*/* \
+    <(ls -d "$HOME"/.history/20*/* \
       | sort -r -n \
       | xargs grep -r "$1" \
       | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
@@ -700,8 +854,16 @@ EOF
   IFS=$'\t' read -r _ token proj url <<<"$line"
 
   export SUPABASE_ACCESS_TOKEN="$token"
-  [[ -n "$proj" ]] && export SUPABASE_PROJECT_REF="$proj" || unset SUPABASE_PROJECT_REF
-  [[ -n "$url"  ]] && export SUPABASE_URL="$url" || unset SUPABASE_URL
+  if [[ -n "$proj" ]]; then
+    export SUPABASE_PROJECT_REF="$proj"
+  else
+    unset SUPABASE_PROJECT_REF
+  fi
+  if [[ -n "$url" ]]; then
+    export SUPABASE_URL="$url"
+  else
+    unset SUPABASE_URL
+  fi
 
   echo "Activated Supabase profile: $name  (project: ${proj:-n/a})"
 }
@@ -821,12 +983,12 @@ function tmux-small-half ()
 function useLocalIfAvailable ()
 {
   # Use local node module if available
-  if [ -f "$(which ./node_modules/.bin/${1})" ]
+  if [ -f "$(which ./node_modules/.bin/"${1}")" ]
   then
     "./node_modules/.bin/$*"
 
   # Then check for existing global install
-  elif [ -f "$(which ${1})" ]
+  elif [ -f "$(which "${1}")" ]
   then
     "$@"
 
@@ -864,7 +1026,12 @@ function bashcheck ()
       errors=$((errors + 1))
       continue
     fi
-    bash -n "$file" || errors=$((errors + 1))
+    # bats' `@test "..." { ... }` syntax isn't valid raw bash, so bash -n
+    # always misfires on .bats files; shellcheck understands bats syntax
+    # natively, so skip bash -n for that extension and rely on shellcheck.
+    if [[ "$file" != *.bats ]]; then
+      bash -n "$file" || errors=$((errors + 1))
+    fi
     if [[ -n "$has_shellcheck" ]]; then
       shellcheck "$file" || errors=$((errors + 1))
     fi
@@ -895,7 +1062,6 @@ alias cod='co develop'
 alias cop='co prod'
 alias com='co main'
 alias cos='co staging'
-alias commit='git commit -ev' # non-signed commit
 alias convert-crlf-lf='git ls-files -z | xargs -0 dos2unix'
 alias convert-tabs-spaces="replace '	' '  '"
 alias count='sed "/^\s*$/d" | wc -l | xargs'
@@ -919,7 +1085,9 @@ alias fes='f origin staging:staging'
 alias fet='f origin test:test'
 alias filetypes="git ls-files | sed 's/.*\.//' | sort | uniq -c"
 alias fix='git commit --amend -a --no-edit && _dotfiles_git_log_commit && _dotfiles_git_status'
+# shellcheck disable=SC2142
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
+# shellcheck disable=SC2142
 alias gall2='echo; echo; git log --oneline --all --graph --decorate --date=local --date=short --pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>" $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gbdr='git branch -d -r'
 alias gc='gcloud compute'

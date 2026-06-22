@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     fzf \
     fd-find \
     bat \
+    git-delta \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install --break-system-packages pynvim \
   && ln -s /usr/bin/fdfind /usr/local/bin/fd \

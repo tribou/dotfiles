@@ -40,6 +40,8 @@ gpsu                           # git push -u origin current-branch
 
 - Commit separator configurable via `DOTFILES_COMMIT_SEPARATOR` (default: `:`)
 
+`commit` (no args) stages everything, asks Claude Haiku to draft the message, and commits — falling back to `c` (manual editor) if Haiku is unavailable or errors. A spinner shows progress while waiting; Ctrl-C cancels the commit (changes stay staged) instead of falling back to `c`.
+
 ## Package Management
 
 ```bash

@@ -24,5 +24,8 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v3
 
+      - name: Install shellcheck
+        run: brew install shellcheck
+
       - name: Run bash function tests
         run: just test-unit
