@@ -136,15 +136,13 @@ if-shell -b '[ "$(echo "$TMUX_VERSION > 2.5" | bc)" = 1 ]' ' \
   send-keys -X copy-pipe copy_to_clipboard \; \
   send-keys -X no-clear'
 
-# Paste with right click
+# Right-click pane menu with custom Paste item
 # Skip the custom binding over SSH: the terminal/SSH client's native right-click
 # paste already sends the local clipboard, and remote hosts usually lack
 # pbpaste/xclip, so our binding would paste nothing even if it fired.
-if-shell '[ -z "$SSH_TTY" ] && [ -z "$SSH_CLIENT" ] && [ -z "$SSH_CONNECTION" ]' " \
-    unbind-key -n MouseDown3Pane; \
-    bind-key -T copy-mode-vi MouseDown3Pane run '#{DOTFILES}/scripts/tmux-paste.sh --copy-mode'; \
-    bind-key -n MouseDown3Pane run '#{DOTFILES}/scripts/tmux-paste.sh' \
-"
+# Stock menu items are maintained in tmux/tmux-right-click-menu.conf; after a
+# tmux upgrade, re-run: tmux list-keys -T root MouseDown3Pane
+if-shell '[ -z "$SSH_TTY" ] && [ -z "$SSH_CLIENT" ] && [ -z "$SSH_CONNECTION" ]' "source-file '#{DOTFILES}/tmux/tmux-right-click-menu.conf'"
 
 # Sync panes (Send input to all panes in the window). When enabled, pane
 # borders become red as an indication.
