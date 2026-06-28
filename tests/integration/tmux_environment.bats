@@ -72,7 +72,7 @@ setup() {
 }
 
 @test "right-click paste uses tmux-paste helper script" {
-  run grep -E "scripts/tmux-paste.sh" "$TMUX_CONF"
+  run grep -rE "scripts/tmux-paste.sh" "$DOTFILES/tmux/"
   assert_success
 }
 
