@@ -107,6 +107,10 @@ legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
 - Prefix key: `Ctrl-f`
 - Integration with system clipboard via reattach-to-user-namespace
 - Predefined layouts via shell functions: `tmux-large`, `tmux-small`, `tmux-xl`
+- **`tmux/tmux-right-click-menu.conf`**: Right-click pane menu with custom Paste item
+  - Sourced conditionally by `tmux-conf` on non-SSH sessions only
+  - Stock menu items are hand-maintained (tmux has no "extend the default menu" hook)
+  - After a tmux upgrade, re-run `tmux list-keys -T root MouseDown3Pane` and reconcile any new/changed entries
 
 ## Test Infrastructure
 
