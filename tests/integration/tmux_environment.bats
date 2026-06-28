@@ -80,3 +80,11 @@ setup() {
   run grep -rE "MouseDown3Pane.*display-menu" "$DOTFILES/tmux/"
   assert_success
 }
+
+@test "right-click menu conf is sourced with -F so #{DOTFILES} expands" {
+  # Plain source-file does not expand #{...} formats; without -F the literal
+  # "#{DOTFILES}/tmux/tmux-right-click-menu.conf" path is used and tmux errors
+  # with "No such file or directory" at startup on a fresh machine.
+  run grep -E "source-file -F .*tmux-right-click-menu\.conf" "$TMUX_CONF"
+  assert_success
+}

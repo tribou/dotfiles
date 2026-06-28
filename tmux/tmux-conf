@@ -142,7 +142,7 @@ if-shell -b '[ "$(echo "$TMUX_VERSION > 2.5" | bc)" = 1 ]' ' \
 # pbpaste/xclip, so our binding would paste nothing even if it fired.
 # Stock menu items are maintained in tmux/tmux-right-click-menu.conf; after a
 # tmux upgrade, re-run: tmux list-keys -T root MouseDown3Pane
-if-shell '[ -z "$SSH_TTY" ] && [ -z "$SSH_CLIENT" ] && [ -z "$SSH_CONNECTION" ]' "source-file '#{DOTFILES}/tmux/tmux-right-click-menu.conf'"
+if-shell '[ -z "$SSH_TTY" ] && [ -z "$SSH_CLIENT" ] && [ -z "$SSH_CONNECTION" ]' "source-file -F '#{DOTFILES}/tmux/tmux-right-click-menu.conf'"
 
 # Sync panes (Send input to all panes in the window). When enabled, pane
 # borders become red as an indication.
