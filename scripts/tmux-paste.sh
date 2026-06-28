@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Paste the system clipboard into the current tmux pane.
-# Used by the MouseDown3Pane binding in tmux/tmux-conf.
+# Used by the MouseDown3Pane binding in tmux/tmux-right-click-menu.conf.
 #
 # Over SSH, tmux-conf does not install the custom MouseDown3Pane binding;
 # the terminal/SSH client's native right-click paste already sends the local
