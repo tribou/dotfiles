@@ -88,3 +88,11 @@ setup() {
   run grep -E "source-file -F .*tmux-right-click-menu\.conf" "$TMUX_CONF"
   assert_success
 }
+
+@test "right-click menu Copy items mirror to system clipboard via tmux-copy.sh" {
+  # set-buffer only writes tmux's internal buffer; reaching the system clipboard
+  # otherwise depends on OSC 52 (unreliable on macOS), so Copy and Paste would
+  # use different clipboards. tmux-copy.sh writes pbcopy/xclip directly.
+  run grep -E "tmux-copy\.sh" "$DOTFILES/tmux/tmux-right-click-menu.conf"
+  assert_success
+}
