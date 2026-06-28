@@ -340,6 +340,16 @@ then
   exit 0
   fi
 
+  # Fix permissions on Homebrew trust store directory before brew install.
+  # New Homebrew versions refuse to write trust.json if the directory is
+  # group/world-writable. With umask 0002 (common on Linux), mkdir creates
+  # dirs with 775, and brew only chmods to 0700 if it created the dir itself
+  # — pre-existing dirs keep insecure perms and trigger:
+  #   "Refusing to write insecure trust store: trust store directory ... is
+  #    group or world writable."
+  mkdir -p "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
+  chmod 700 "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
+
   brew install \
       bash \
       git \

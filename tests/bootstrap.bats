@@ -98,6 +98,16 @@ setup() {
   awk '/# beads issue database/,/^  fi$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'dolt remote add origin "$_beads_remote"'
 }
 
+@test "bootstrap: chmod 700 the Homebrew trust store directory before brew install (new brew refuses group-writable dirs)" {
+  # New Homebrew versions refuse to write trust.json if the trust store
+  # directory is group/world-writable. With umask 0002 (common on Linux),
+  # mkdir creates dirs with 775, and brew only chmods to 0700 if it created
+  # the dir itself — pre-existing dirs keep insecure perms and trigger:
+  #   "Refusing to write insecure trust store: trust store directory ... is
+  #    group or world writable."
+  awk '/Brew is required/,/^  brew install \\/' "$REPO_ROOT/bootstrap.sh" | grep -q 'chmod 700'
+}
+
 @test "bootstrap: installs mise using curl with -fsSL flags" {
   grep -q 'curl -fsSL https://mise.run' "$REPO_ROOT/bootstrap.sh"
 }
