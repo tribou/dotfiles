@@ -75,3 +75,8 @@ setup() {
   run grep -E "scripts/tmux-paste.sh" "$TMUX_CONF"
   assert_success
 }
+
+@test "right-click uses display-menu (not direct paste)" {
+  run grep -rE "MouseDown3Pane.*display-menu" "$DOTFILES/tmux/"
+  assert_success
+}
