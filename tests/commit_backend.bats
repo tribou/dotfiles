@@ -40,3 +40,32 @@ setup() {
   assert_success
   assert_output "opencode-go/kimi-k2.7-code"
 }
+
+# --- commit status ---
+
+@test "commit status: reports opencode backend, model, availability" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    opencode() { :; }
+    commit status
+  "
+  assert_success
+  assert_output --partial "backend:   opencode"
+  assert_output --partial "model:     opencode-go/kimi-k2.7-code"
+  assert_output --partial "available: yes"
+}
+
+@test "commit status: defaults to claude/haiku" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    unset DOTFILES_COMMIT_BACKEND
+    claude() { :; }
+    commit status
+  "
+  assert_success
+  assert_output --partial "backend:   claude"
+  assert_output --partial "model:     haiku"
+}

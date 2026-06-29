@@ -214,6 +214,17 @@ function _dotfiles_commit_generate_message ()
 
 function commit ()
 {
+  case "$1" in
+    status)
+      local b m avail=no
+      b=$(_dotfiles_commit_backend)
+      m=$(_dotfiles_commit_model "$b")
+      command -v "$b" > /dev/null 2>&1 && avail=yes
+      printf 'backend:   %s\nmodel:     %s\navailable: %s\n' "$b" "$m" "$avail"
+      return 0
+      ;;
+  esac
+
   if [ -f "./.git/MERGE_HEAD" ]
   then
     # If committing a git merge, accept the default message
