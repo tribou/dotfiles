@@ -156,7 +156,11 @@ function _dotfiles_commit_generate_message ()
 {
   local ticket="$1"
 
-  if ! command -v claude > /dev/null 2>&1
+  local backend model
+  backend=$(_dotfiles_commit_backend)
+  model=$(_dotfiles_commit_model "$backend")
+
+  if ! command -v "$backend" > /dev/null 2>&1
   then
     return 1
   fi
@@ -164,7 +168,18 @@ function _dotfiles_commit_generate_message ()
   local outfile
   outfile=$(mktemp)
 
-  git diff --cached | head -c 100000 | claude -p --model haiku "$(_dotfiles_commit_prompt "$ticket")" > "$outfile" &
+  case "$backend" in
+    opencode)
+      git diff --cached | head -c 100000 \
+        | opencode run --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
+          > "$outfile" 2> /dev/null &
+      ;;
+    *)
+      git diff --cached | head -c 100000 \
+        | claude -p --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
+          > "$outfile" &
+      ;;
+  esac
   local pid=$!
 
   _dotfiles_spinner_wait "$pid" "Asking Claude for a commit message..."

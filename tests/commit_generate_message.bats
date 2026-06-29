@@ -96,3 +96,31 @@ setup() {
   "
   assert_output ""
 }
+
+@test "generate_message: opencode backend invokes opencode run with the kimi model" {
+  run --separate-stderr bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    git() { echo 'mock diff'; }
+    opencode() { printf '%s' \"\$3\"; }
+    _dotfiles_commit_generate_message ''
+  "
+  assert_success
+  assert_output "opencode-go/kimi-k2.7-code"
+}
+
+@test "generate_message: opencode backend fails when opencode is not on PATH" {
+  local empty_path
+  empty_path="$(mktemp -d)"
+  run bash -c "
+    export PATH='$empty_path'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    _dotfiles_commit_generate_message ''
+  "
+  assert_failure
+  assert_output ""
+  rm -rf "$empty_path"
+}
