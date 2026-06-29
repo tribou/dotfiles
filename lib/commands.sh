@@ -223,6 +223,26 @@ function commit ()
       printf 'backend:   %s\nmodel:     %s\navailable: %s\n' "$b" "$m" "$avail"
       return 0
       ;;
+    backend)
+      shift
+      if [ -z "$1" ]
+      then
+        printf '%s\n' "$(_dotfiles_commit_backend)"
+        return 0
+      fi
+      case "$1" in
+        claude|opencode)
+          export DOTFILES_COMMIT_BACKEND="$1"
+          printf 'commit backend set to %s (model: %s) for this shell\n' \
+            "$1" "$(_dotfiles_commit_model "$1")"
+          return 0
+          ;;
+        *)
+          printf 'unknown backend: %s (expected claude or opencode)\n' "$1" >&2
+          return 1
+          ;;
+      esac
+      ;;
   esac
 
   if [ -f "./.git/MERGE_HEAD" ]
