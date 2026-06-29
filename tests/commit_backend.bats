@@ -69,3 +69,50 @@ setup() {
   assert_output --partial "backend:   claude"
   assert_output --partial "model:     haiku"
 }
+
+# --- commit backend (setter/getter) ---
+
+@test "commit backend opencode: exports the backend for the current shell" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    commit backend opencode > /dev/null
+    echo \"BACKEND=\$DOTFILES_COMMIT_BACKEND\"
+  "
+  assert_success
+  assert_output --partial "BACKEND=opencode"
+}
+
+@test "commit backend opencode: prints a confirmation including the model" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    commit backend opencode
+  "
+  assert_success
+  assert_output --partial "commit backend set to opencode (model: opencode-go/kimi-k2.7-code) for this shell"
+}
+
+@test "commit backend: with no value prints the current backend" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    commit backend
+  "
+  assert_success
+  assert_output "opencode"
+}
+
+@test "commit backend bogus: errors, returns 1, leaves the backend unchanged" {
+  run --separate-stderr bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=claude
+    commit backend bogus
+    echo \"RC=\$? BACKEND=\$DOTFILES_COMMIT_BACKEND\"
+  "
+  assert_success
+  assert_output --partial "RC=1 BACKEND=claude"
+  echo "$stderr" | grep -qF 'unknown backend: bogus'
+}
