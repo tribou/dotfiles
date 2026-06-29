@@ -147,3 +147,23 @@ setup() {
   refute_output --partial "c_invoked"
   refute_output --partial "git_unexpected_call"
 }
+
+@test "commit: fallback message names the active backend (opencode)" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    git() {
+      if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
+      if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
+      if [ \"\$1\" = \"branch\" ] && [ \"\$2\" = \"--show-current\" ]; then echo 'main'; return 0; fi
+      return 0
+    }
+    _dotfiles_commit_generate_message() { return 1; }
+    c() { echo 'c_invoked'; }
+    commit
+  "
+  assert_success
+  assert_output --partial "opencode unavailable, falling back to manual commit"
+  assert_output --partial "c_invoked"
+}

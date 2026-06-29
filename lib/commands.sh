@@ -245,7 +245,7 @@ function commit ()
 
   if [ -z "$generated" ]
   then
-    echo "claude unavailable, falling back to manual commit" >&2
+    echo "$(_dotfiles_commit_backend) unavailable, falling back to manual commit" >&2
     # shellcheck disable=SC2119 # commit() never forwards args to c
     c
     return
