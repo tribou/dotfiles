@@ -182,7 +182,9 @@ function _dotfiles_commit_generate_message ()
   esac
   local pid=$!
 
-  _dotfiles_spinner_wait "$pid" "Asking Claude for a commit message..."
+  local backend_label
+  backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"
+  _dotfiles_spinner_wait "$pid" "Asking ${backend_label} for a commit message..."
   local wait_status=$?
 
   if [ "$wait_status" -eq 130 ]
