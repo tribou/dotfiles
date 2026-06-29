@@ -116,3 +116,10 @@ setup() {
   assert_output --partial "RC=1 BACKEND=claude"
   echo "$stderr" | grep -qF 'unknown backend: bogus'
 }
+
+# --- durable default ---
+
+@test "bash_profile: exports a DOTFILES_COMMIT_BACKEND default" {
+  run grep -E "^export DOTFILES_COMMIT_BACKEND=" "$REPO_ROOT/bash_profile"
+  assert_success
+}

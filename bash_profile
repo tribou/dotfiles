@@ -81,6 +81,9 @@ export EDITOR='nvim'
 # Set React Native editor
 export REACT_EDITOR='vscode'
 
+# Commit AI backend: claude or opencode (opencode uses Kimi 2.7)
+export DOTFILES_COMMIT_BACKEND=claude
+
 _dotfiles_debug_timing "$LINENO"
 
 # Set GPG TTY and start agent
