@@ -9,7 +9,8 @@ Make the `commit` command's AI message generation backend configurable between
 Claude (`claude -p --model haiku`, today's behavior) and opencode
 (`opencode run`, defaulting to Kimi 2.7). The backend is driven by a single
 environment variable, surfaced through `commit`'s own subcommands rather than a
-separate command:
+separate command. Each backend's model is a fixed default defined in this repo
+(`lib/commands.sh`) — not a runtime knob:
 
 - `commit` — stage and AI-commit (unchanged default behavior).
 - `commit status` — show the active backend, model, and availability.
@@ -22,7 +23,9 @@ The durable, cross-machine default lives in this dotfiles repo's tracked
 
 The backend is currently hard-coded to `claude --model haiku`
 (`lib/commands.sh:146`). A small config surface lets the user pick the backend
-(and override the model) without editing the function. Centralizing it under
+without editing the function; each backend's model stays a fixed default in the
+repo (changing a model is a one-line edit in `lib/commands.sh`, kept in version
+control like the rest of the dotfiles). Centralizing it under
 `commit`'s own args — instead of a second top-level command — keeps one
 discoverable CLI. The persistent default lives in the committed `bash_profile`
 so it propagates to every machine; `commit backend <name>` is an ad-hoc switch
@@ -31,15 +34,15 @@ rejected: it would not sync, the opposite of what a dotfiles repo wants.
 
 ## Configuration surface
 
-Two environment variables, read at runtime with `${VAR:-default}` fallbacks
+One environment variable, read at runtime with a `${VAR:-default}` fallback
 (consistent with `DOTFILES_COMMIT_SEPARATOR` in `lib/_shared.sh:56`):
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
 | `DOTFILES_COMMIT_BACKEND` | Which backend: `claude` or `opencode` | `claude` |
-| `DOTFILES_COMMIT_MODEL` | Optional model override, applied to the active backend | unset → per-backend default |
 
-**Per-backend default model:**
+**Per-backend default model** — fixed in `_dotfiles_commit_model`
+(`lib/commands.sh`); the single place to change a backend's model:
 
 - `claude` → `haiku`
 - `opencode` → `opencode-go/kimi-k2.7-code` (the only Kimi 2.7 id opencode
@@ -84,17 +87,13 @@ function _dotfiles_commit_backend ()
 
 ### 2. `_dotfiles_commit_model` (new helper)
 
-Resolves the model: explicit override wins, else the per-backend default.
+Returns the fixed default model for a backend. This `case` is the single place
+to change a backend's model.
 
 ```bash
 function _dotfiles_commit_model ()
 {
   local backend="$1"
-  if [ -n "$DOTFILES_COMMIT_MODEL" ]
-  then
-    printf '%s' "$DOTFILES_COMMIT_MODEL"
-    return
-  fi
   case "$backend" in
     opencode) printf '%s' 'opencode-go/kimi-k2.7-code' ;;
     *)        printf '%s' 'haiku' ;;
@@ -217,32 +216,29 @@ env vars directly (no state file to manage). Cases:
    `--model haiku`.
 2. `DOTFILES_COMMIT_BACKEND=opencode` → `opencode run --model
    opencode-go/kimi-k2.7-code` invoked; message captured from stdout.
-3. `DOTFILES_COMMIT_MODEL=foo` with claude backend → claude invoked with
-   `--model foo`.
-4. `DOTFILES_COMMIT_MODEL=bar` with opencode backend → opencode invoked with
-   `--model bar`.
-5. Unknown `DOTFILES_COMMIT_BACKEND=bogus` → warns to stderr, behaves as
+3. Unknown `DOTFILES_COMMIT_BACKEND=bogus` → warns to stderr, behaves as
    `claude`.
-6. Active backend binary missing on PATH → falls back to manual `c` (existing
+4. Active backend binary missing on PATH → falls back to manual `c` (existing
    behavior, now keyed off the active backend).
-7. `commit status` → prints backend, model, and availability for both backends.
-8. `commit backend opencode` → exports `DOTFILES_COMMIT_BACKEND=opencode`
+5. `commit status` → prints backend, model, and availability for both backends.
+6. `commit backend opencode` → exports `DOTFILES_COMMIT_BACKEND=opencode`
    (assert by calling the function directly — **not** via bats `run`, which
    subshells and discards the export — then checking the variable / `commit
    status`). `commit backend claude` reverts.
-9. `commit backend` (no value) → prints the current effective backend.
-10. `commit backend bogus` → error to stderr, returns 1, leaves the variable
-    unchanged.
-11. A non-subcommand arg (e.g. `commit wip`) still runs the normal commit path.
-12. Existing claude-path tests (ticket prefix, sanitizing, empty → fallback)
+7. `commit backend` (no value) → prints the current effective backend.
+8. `commit backend bogus` → error to stderr, returns 1, leaves the variable
+   unchanged.
+9. A non-subcommand arg (e.g. `commit wip`) still runs the normal commit path.
+10. Existing claude-path tests (ticket prefix, sanitizing, empty → fallback)
     continue to pass unchanged.
 
 Run `just test-unit` then `just test` after implementation.
 
 ## Out of scope
 
-- A `commit model <id>` setter (model is set via `DOTFILES_COMMIT_MODEL` only;
-  `commit status` displays it). Could be added symmetrically later.
+- Runtime model overrides (no `DOTFILES_COMMIT_MODEL`, no `commit model`
+  setter). Each backend's model is a fixed default in `_dotfiles_commit_model`;
+  `commit status` displays it. Changing a model is a code edit.
 - Writing the durable default automatically (switching the committed default is
   a manual `bash_profile` edit; `commit backend` only affects the live shell).
 - Backends beyond `claude` and `opencode`.
