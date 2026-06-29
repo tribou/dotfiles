@@ -86,6 +86,27 @@ function _dotfiles_commit_prompt ()
   fi
 }
 
+function _dotfiles_commit_backend ()
+{
+  local backend="${DOTFILES_COMMIT_BACKEND:-claude}"
+  case "$backend" in
+    claude|opencode) printf '%s' "$backend" ;;
+    *)
+      printf 'unknown DOTFILES_COMMIT_BACKEND=%s, using claude\n' "$backend" >&2
+      printf '%s' 'claude'
+      ;;
+  esac
+}
+
+function _dotfiles_commit_model ()
+{
+  local backend="$1"
+  case "$backend" in
+    opencode) printf '%s' 'opencode-go/kimi-k2.7-code' ;;
+    *)        printf '%s' 'haiku' ;;
+  esac
+}
+
 function _dotfiles_spinner_wait ()
 {
   local pid="$1"
