@@ -73,6 +73,9 @@ if-shell -b '[ "$(echo "$TMUX_VERSION < 2.2" | bc)" = 1 ]' \
 bind-key C-v split-window -h -c '#{pane_current_path}'
 bind-key C-h split-window -v -l 20% -c '#{pane_current_path}'
 
+# New windows start in the active pane's directory
+bind-key c new-window -c '#{pane_current_path}'
+
 # Pressing Ctrl+Shift+Left (will move the current window to the left. Similarly
 # right. No need to use the modifier (C-b).
 bind-key -n C-S-Left swap-window -t -1
