@@ -112,6 +112,13 @@ linkFileToHome "default-node-packages" ".default-node-packages"
 linkFileToHome "default-gems" ".default-gems"
 linkFileToHome "default-python-packages" ".default-python-packages"
 
+# Install custom terminfo entries for tmux and xterm.
+# These carry the Tc (truecolor), setrgbf/setrgbb (direct RGB), and
+# bsu/esu (synchronized output, DEC mode 2026) capabilities. Bubble Tea-based
+# TUIs (opencode, lazygit, gh dash) detect these caps at startup; without them
+# they fall back to 256-color approximation and stream each redraw unbracketed,
+# which over SSH+tmux visibly renders "piece by piece". Do NOT strip these caps
+# when editing the .terminfo sources or opencode will jank again.
 tic -x tmux/xterm-256color-italic.terminfo || true
 tic -x tmux/tmux-256color.terminfo || true
 
