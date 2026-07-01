@@ -114,6 +114,22 @@ The neovim config auto-detects SSH sessions via `$SSH_CLIENT`/`$SSH_TTY` and
 adjusts the composer settings automatically. No manual neovim configuration is
 needed beyond running `bootstrap.sh` on the remote machine.
 
+### Stuck Mouse Reporting After a Dropped SSH Session
+
+**Symptom**: after an SSH+tmux session dies uncleanly (laptop sleep), moving the
+mouse spams the terminal with `35;133;37M...` sequences.
+
+**Cause**: `set -g mouse on` (`tmux/tmux-conf`) enables mouse tracking on the
+local alacritty; an unclean disconnect skips the "off" sequences, so alacritty
+stays in motion-reporting mode. The stuck state is local — reconnecting SSH
+doesn't clear it.
+
+**Fix** (local shell prompt, dead `ssh` exited; keep mouse still while typing,
+`Ctrl-U` to clear a garbled line):
+
+- `reset` — works, but also clears scrollback.
+- Mouse-mode only (keeps scrollback): `printf '\033[?1000l\033[?1002l\033[?1003l\033[?1006l\033[?1015l'`
+
 ## Configuration Files
 
 - **`.editorconfig`**: Consistent formatting across editors
