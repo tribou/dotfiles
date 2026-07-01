@@ -85,6 +85,7 @@ legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
   - `DEVPATH`: `~/dev`
   - `DOTFILES`: `~/dev/dotfiles`
   - `GOPATH`: `~/dev/go`
+  - `STARTPATH`: optional, user-set start directory. When set, the initial login shell (`bash_profile:337`) and new tmux windows (`prefix c`) open there instead of `DEVPATH`
   - `PRIMARY_REPO`, `SECONDARY_REPO`: Used by tmux layout functions; fuzzy matched via z
 
 - **Directory Navigation**: Uses `z` (rupa/z) for frecency-based directory jumping
@@ -107,6 +108,9 @@ legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
 - Prefix key: `Ctrl-f`
 - Integration with system clipboard via reattach-to-user-namespace
 - Predefined layouts via shell functions: `tmux-large`, `tmux-small`, `tmux-xl`
+- **Working directory of new windows vs splits** (two intentionally different rules):
+  - **New windows** (`prefix c`) open at `$STARTPATH` if set, otherwise `$DEVPATH`, via the `#{?STARTPATH,#{STARTPATH},#{DEVPATH}}` format (`tmux/tmux-conf`). Requires `STARTPATH`/`DEVPATH` to be present in tmux's global environment (inherited from the launching login shell). Mirrors the initial-shell cd logic in `bash_profile:337-343`
+  - **Splits** (`C-v` vertical, `C-h` horizontal) deliberately open in the **current pane's directory** (`#{pane_current_path}`, `tmux/tmux-conf`) so a split stays in the same project you are working in. This divergence from the new-window rule is intentional — do not "unify" the two
 - **`tmux/tmux-right-click-menu.conf`**: Right-click pane menu with custom Paste item
   - Sourced conditionally by `tmux-conf` on non-SSH sessions only
   - Stock menu items are hand-maintained (tmux has no "extend the default menu" hook)
