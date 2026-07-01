@@ -2,25 +2,24 @@
 
 See [CLAUDE.md](CLAUDE.md) for all agent instructions.
 
-<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
-## Beads Issue Tracker
+## Issue Tracking
 
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+This project uses **GitHub issues** for issue tracking.
 
 ### Quick Reference
 
 ```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work
-bd close <id>         # Complete work
+gh issue list                  # List open issues
+gh issue view <n>             # View issue details
+gh issue create               # Create a new issue
+gh issue close <n>            # Close an issue
 ```
 
 ### Rules
 
-- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- Run `bd prime` for detailed command reference and session close protocol
-- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+- Use `gh` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- When a superpowers skill is invoked for an issue, assign yourself and mark it in-progress
+- For persistent knowledge, document it in the appropriate `docs/` file — do NOT use MEMORY.md files
 
 ## Session Completion
 
@@ -34,7 +33,6 @@ bd close <id>         # Complete work
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
-   bd dolt push
    git push
    git status  # MUST show "up to date with origin"
    ```
@@ -47,4 +45,3 @@ bd close <id>         # Complete work
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
-<!-- END BEADS INTEGRATION -->

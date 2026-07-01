@@ -7,9 +7,8 @@
 3. **After making any changes, run tests**: `just test-unit` first, then `just test`
  4. **Bug fixes require TDD tests**: write a failing test first that reproduces the bug, then fix — see [docs/TESTING.md](docs/TESTING.md) for policy
 5. **Creating new skills**: use `superpowers:writing-skills` skill
-6. **BEADS issue tracking**: `dotfiles-*` keys (e.g. `dotfiles-6x9`) are BEADS issues — use `bd show <id>` to look them up; when a superpowers skill is invoked for a bead, immediately run `bd update <id> --status=in_progress`; if execution doesn't complete before agent stops, run `bd update <id> --status=ready` to reset
- 7. **BEADS sync model**: the issue DB is the embedded Dolt database, synced across machines via the Dolt remote (`refs/dolt/data` on the GitHub repo) — `.beads/issues.jsonl` is gitignored and is NOT the sync mechanism. Run `bd dolt pull` at session START; `bd dolt push` runs before `git push` at session end. Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-8. **When the user says to remember something**: record it via `bd remember` AND document it in the appropriate `docs/` file (or CLAUDE.md for agent rules) — do both, not just one
+6. **Issue tracking**: use GitHub issues via `gh` — create with `gh issue create`, view with `gh issue view <n>`, list ready work with `gh issue list`; when a superpowers skill is invoked for an issue, immediately comment `/claim` or assign yourself and edit the issue to set in-progress; if execution doesn't complete before agent stops, unassign and remove the in-progress label to reset
+7. **When the user says to remember something**: document it in the appropriate `docs/` file (or CLAUDE.md for agent rules); for actionable follow-ups, create a GitHub issue
 
 ## Key Commands
 
@@ -29,25 +28,24 @@ just test           # Full test suite in Docker
 - Custom AI skills (Claude Code + opencode) → `skills/` (see docs/DEVELOPMENT.md for authoring conventions)
 
 
-<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
-## Beads Issue Tracker
+## Issue Tracking
 
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+This project uses **GitHub issues** for issue tracking.
 
 ### Quick Reference
 
 ```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work
-bd close <id>         # Complete work
+gh issue list                  # List open issues
+gh issue view <n>             # View issue details
+gh issue create               # Create a new issue
+gh issue close <n>            # Close an issue
 ```
 
 ### Rules
 
-- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- Run `bd prime` for detailed command reference and session close protocol
-- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+- Use `gh` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- When a superpowers skill is invoked for an issue, assign yourself and mark it in-progress
+- For persistent knowledge, document it in the appropriate `docs/` file — do NOT use MEMORY.md files
 
 ## Session Completion
 
@@ -61,7 +59,6 @@ bd close <id>         # Complete work
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
-   bd dolt push
    git push
    git status  # MUST show "up to date with origin"
    ```
@@ -74,4 +71,3 @@ bd close <id>         # Complete work
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
-<!-- END BEADS INTEGRATION -->
