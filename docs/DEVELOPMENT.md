@@ -170,4 +170,6 @@ description: Use when setting up a new repository, when AI agents lack project c
 - **Claude Code**: Skills are discovered from the `skills/` directory in the project root and from the user's global skills path.
 - **opencode**: Skills are discovered from the `skills/` directory in the project root and from `~/.config/opencode/skills/`. The opencode `skill` tool loads the full `SKILL.md` content on demand.
 
+Per-tool paths (`~/.claude/skills/`, `~/.config/opencode/skills/`, `~/.gemini/config/skills/`, etc.) are populated with `npx skills add`, not by `bootstrap.sh`.
+
 When adding a new skill, ensure the frontmatter is valid YAML and the `name` matches the directory name exactly.

@@ -16,7 +16,7 @@ just build        # Rebuild Docker image (after Dockerfile changes)
 - **`tests/*.bats`**: Unit tests for shell functions — run fast with no Docker required
   - `commit_message.bats`, `grep_ticket_number.bats`: Core git workflow helpers
   - `fzf_lib.bats`, `npm_detection.bats`, `path.bats`: Utility function coverage
-  - `bootstrap_skills.bats`, `agent_setup_user.bats`: Bootstrap and agent setup
+  - `agent_setup_user.bats`: Bootstrap and agent setup
   - `clipboard.bats`, `platform_guards.bats`, `histgrep_parsing.bats`, `worktree_commands.bats`: Additional functionality
 
 - **`tests/integration/`**: Integration tests run inside Docker (included in `just test`)
