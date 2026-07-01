@@ -170,6 +170,25 @@ description: Use when setting up a new repository, when AI agents lack project c
 - **Claude Code**: Skills are discovered from the `skills/` directory in the project root and from the user's global skills path.
 - **opencode**: Skills are discovered from the `skills/` directory in the project root and from `~/.config/opencode/skills/`. The opencode `skill` tool loads the full `SKILL.md` content on demand.
 
-Per-tool paths (`~/.claude/skills/`, `~/.config/opencode/skills/`, `~/.gemini/config/skills/`, etc.) are populated with `npx skills add`, not by `bootstrap.sh`.
+Per-tool paths (`~/.claude/skills/`, `~/.config/opencode/skills/`, `~/.gemini/skills/`, etc.) are populated with `npx skills add` ([vercel-labs/skills](https://github.com/vercel-labs/skills)), not by `bootstrap.sh` — see below.
+
+### Installing Skills into Agent Tools
+
+`bootstrap.sh` no longer symlinks `skills/` into per-tool config directories. Use `npx skills add` instead:
+
+```bash
+# Install every skill in this repo, globally, to Claude Code and opencode
+npx skills add . -g -a claude-code -a opencode --skill '*' -y
+
+# Add another agent (e.g. Gemini CLI)
+npx skills add . -g -a gemini-cli --skill '*' -y
+
+# Install a single skill instead of all of them
+npx skills add . -g -a claude-code --skill organize-ai-context -y
+```
+
+- Run from the `dotfiles/` repo root so `.` resolves to this repo's `skills/` directory.
+- Drop `-g` to install into the current project instead of globally (`~/<agent>/skills/`).
+- `npx skills list` shows what's currently installed; `npx skills update` refreshes symlinked skills after pulling repo changes; `npx skills remove <skill>` uninstalls one.
 
 When adding a new skill, ensure the frontmatter is valid YAML and the `name` matches the directory name exactly.
