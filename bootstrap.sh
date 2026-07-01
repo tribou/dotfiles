@@ -357,12 +357,12 @@ then
   mkdir -p "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
   chmod 700 "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
 
-  # NOTE: tmux is intentionally pinned to 3.6b (see `brew list --pinned`).
-  # tmux 3.7/3.7a broke synchronized-output (DECSET 2026) flushing over SSH:
-  # TUIs (opencode/neovim) launch piece-by-piece / stale until a forced redraw.
-  # Fixed upstream in 3.7b. `brew pin` makes the `brew install tmux` below a
-  # no-op for tmux until we unpin. Remove the pin and this note once Homebrew
-  # ships >= 3.7b. Tracking: https://github.com/tribou/dotfiles/issues/138
+  # NOTE: tmux is pinned to a --HEAD build (see the tmux guard after this list
+  # and `brew list --pinned`). tmux 3.7/3.7a broke synchronized-output
+  # (DECSET 2026) flushing over SSH, so TUIs (opencode/neovim) launch
+  # piece-by-piece / stale until a forced redraw. Fixed upstream in 3.7b, which
+  # Homebrew doesn't ship yet. `brew pin` makes this `brew install tmux` a no-op
+  # for tmux until we unpin. Tracking: https://github.com/tribou/dotfiles/issues/138
   brew install \
       bash \
       git \
@@ -406,6 +406,19 @@ then
   if command -v delta &>/dev/null && ! delta --version &>/dev/null 2>&1; then
     echo "Reinstalling git-delta to fix shared library mismatch..."
     brew reinstall git-delta
+  fi
+
+  # tmux 3.7/3.7a synchronized-output (DECSET 2026) flush bug over SSH makes
+  # TUIs (opencode/neovim) launch piece-by-piece / stale until a forced redraw
+  # (issue #138). Fixed upstream in 3.7b, which Homebrew doesn't ship yet, so
+  # build master via --HEAD (contains the 3.7b redraw fix) and pin it. Idempotent:
+  # skips once a HEAD build is installed. Once Homebrew ships stable >= 3.7b,
+  # switch back with: brew unpin tmux && brew install tmux (and drop this block).
+  if command -v brew &>/dev/null && ! brew list --versions tmux 2>/dev/null | grep -q 'HEAD'; then
+    echo "Building tmux --HEAD (3.7b synchronized-output fix; issue #138)"
+    brew unlink tmux 2>/dev/null || true
+    brew install --HEAD tmux || true
+    brew pin tmux || true
   fi
 
   # Linux-only packages
