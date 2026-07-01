@@ -357,6 +357,12 @@ then
   mkdir -p "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
   chmod 700 "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
 
+  # NOTE: tmux is intentionally pinned to 3.6b (see `brew list --pinned`).
+  # tmux 3.7/3.7a broke synchronized-output (DECSET 2026) flushing over SSH:
+  # TUIs (opencode/neovim) launch piece-by-piece / stale until a forced redraw.
+  # Fixed upstream in 3.7b. `brew pin` makes the `brew install tmux` below a
+  # no-op for tmux until we unpin. Remove the pin and this note once Homebrew
+  # ships >= 3.7b. Tracking: https://github.com/tribou/dotfiles/issues/138
   brew install \
       bash \
       git \
