@@ -994,7 +994,7 @@ function tmux-small ()
   tmux split-window -v -b -l 75% -c "$_PRIMARY"
   tmux select-pane -t 1
   tmux send-keys -t 1 z Space "$_PRIMARY" Enter f Enter
-  tmux send-keys -t 2 v Enter
+  # tmux send-keys -t 2 v Enter
   tmux send-keys -t 3
 }
 
