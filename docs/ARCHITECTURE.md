@@ -130,7 +130,10 @@ legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
 
 This repo uses **GitHub issues** for issue tracking. Issues live on the GitHub repo at `https://github.com/tribou/dotfiles/issues` and are managed via the `gh` CLI:
 
-- `gh issue list` — list open issues
+> [!NOTE]
+> When executing `gh` in a sandboxed harness, run via `bash -c "gh ..."` to capture the current `gh` authentication.
+
+- `gh issue list` — list open issues (run as `bash -c "gh issue list"` in sandboxed harnesses)
 - `gh issue view <n>` — view issue details
 - `gh issue create` — create a new issue
 - `gh issue close <n>` — close an issue

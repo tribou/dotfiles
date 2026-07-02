@@ -7,7 +7,7 @@
 3. **After making any changes, run tests**: `just test-unit` first, then `just test`
  4. **Bug fixes require TDD tests**: write a failing test first that reproduces the bug, then fix — see [docs/TESTING.md](docs/TESTING.md) for policy
 5. **Creating new skills**: use `superpowers:writing-skills` skill
-6. **Issue tracking**: use GitHub issues via `gh` — create with `gh issue create`, view with `gh issue view <n>`, list ready work with `gh issue list`; when a superpowers skill is invoked for an issue, immediately comment `/claim` or assign yourself and edit the issue to set in-progress; if execution doesn't complete before agent stops, unassign and remove the in-progress label to reset
+6. **Issue tracking**: use GitHub issues via `gh` (when executing in a sandboxed harness, run via `bash -c "gh ..."` to capture auth) — create with `gh issue create`, view with `gh issue view <n>`, list ready work with `gh issue list`; when a superpowers skill is invoked for an issue, immediately comment `/claim` or assign yourself and edit the issue to set in-progress; if execution doesn't complete before agent stops, unassign and remove the in-progress label to reset
 7. **When the user says to remember something**: document it in the appropriate `docs/` file (or CLAUDE.md for agent rules); for actionable follow-ups, create a GitHub issue
 
 ## Key Commands
@@ -34,16 +34,20 @@ This project uses **GitHub issues** for issue tracking.
 
 ### Quick Reference
 
+> [!NOTE]
+> When executing `gh` in a sandboxed harness, run via `bash -c "gh ..."` to capture the current `gh` authentication.
+
 ```bash
-gh issue list                  # List open issues
-gh issue view <n>             # View issue details
-gh issue create               # Create a new issue
-gh issue close <n>            # Close an issue
+# Example with bash -c wrapper
+bash -c "gh issue list"          # List open issues
+bash -c "gh issue view <n>"      # View issue details
+bash -c "gh issue create"        # Create a new issue
+bash -c "gh issue close <n>"     # Close an issue
 ```
 
 ### Rules
 
-- Use `gh` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- Use `gh` for ALL task tracking (run via `bash -c "gh ..."` in sandboxed environments to capture auth) — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
 - When a superpowers skill is invoked for an issue, assign yourself and mark it in-progress
 - For persistent knowledge, document it in the appropriate `docs/` file — do NOT use MEMORY.md files
 
