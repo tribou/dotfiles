@@ -7,7 +7,7 @@
 3. **After making any changes, run tests**: `just test-unit` first, then `just test`
  4. **Bug fixes require TDD tests**: write a failing test first that reproduces the bug, then fix — see [docs/TESTING.md](docs/TESTING.md) for policy
 5. **Creating new skills**: use `superpowers:writing-skills` skill
-6. **Issue tracking**: use GitHub issues via `gh` (when executing in a sandboxed harness, run via `bash -c "gh ..."` to capture auth) — create with `gh issue create`, view with `gh issue view <n>`, list ready work with `gh issue list`; when a superpowers skill is invoked for an issue, immediately comment `/claim` or assign yourself and edit the issue to set in-progress; if execution doesn't complete before agent stops, unassign and remove the in-progress label to reset
+6. **Issue tracking**: use GitHub issues via `gh` (when executing in a sandboxed harness, run via `bash -c "gh ..."` to capture auth) — create with `gh issue create`, view with `gh issue view <n>`, list ready work with `gh issue list`; when a superpowers skill is invoked for an issue, immediately add the `in-progress` label to the issue; if execution doesn't complete before agent stops, remove the `in-progress` label to reset
 7. **When the user says to remember something**: document it in the appropriate `docs/` file (or CLAUDE.md for agent rules); for actionable follow-ups, create a GitHub issue
 
 ## Key Commands
@@ -48,7 +48,7 @@ bash -c "gh issue close <n>"     # Close an issue
 ### Rules
 
 - Use `gh` for ALL task tracking (run via `bash -c "gh ..."` in sandboxed environments to capture auth) — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- When a superpowers skill is invoked for an issue, assign yourself and mark it in-progress
+- When a superpowers skill is invoked for an issue, add the `in-progress` label to the issue
 - For persistent knowledge, document it in the appropriate `docs/` file — do NOT use MEMORY.md files
 
 ## Session Completion

@@ -48,7 +48,7 @@ digraph entry {
 Before generating the plan, bind to the real tracker item (this is where ad-hoc runs drift):
 
 1. `gh issue view <N>` — confirm it is the finalized spec and carries no `[DRAFT]` prefix. If it does, stop and route to `brainstorming-to-issue`.
-2. Claim it per this repo's rule: comment `/claim` (or self-assign) and mark it in-progress.
+2. Claim it per this repo's rule: add the `in-progress` label.
 3. Record `Closes #<N>` — it goes in the PR body at the end.
 
 Exact commands: `plan-and-dispatch.md`.
@@ -90,7 +90,7 @@ So do NOT surface that menu. Auto-select **"Push and create a Pull Request"** an
 | Re-deriving task decomposition by hand | Delegate generation entirely to `writing-plans` — don't reinvent it |
 | Planning a trivial one-file change | Apply the entry gate — trivial ⇒ inline TDD, no plan, no SDD |
 | Building a `[DRAFT]` issue | Not finalized — route back to `brainstorming-to-issue` |
-| Never claiming / linking the real issue | `gh issue view <N>`, claim + in-progress, carry `Closes #<N>` to the PR |
+| Never claiming / linking the real issue | `gh issue view <N>`, add `in-progress` label, carry `Closes #<N>` to the PR |
 | Plan ends up nowhere durable (only in lost context) | Mirror it into the PR description via the finishing step |
 
 ## Red Flags — STOP

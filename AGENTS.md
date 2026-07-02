@@ -18,7 +18,7 @@ gh issue close <n>            # Close an issue
 ### Rules
 
 - Use `gh` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- When a superpowers skill is invoked for an issue, assign yourself and mark it in-progress
+- When a superpowers skill is invoked for an issue, add the `in-progress` label to the issue
 - For persistent knowledge, document it in the appropriate `docs/` file — do NOT use MEMORY.md files
 
 ## Session Completion

@@ -9,11 +9,10 @@ gh issue view <N> --json number,title,body,state
 ```
 
 - If `title` starts with `[DRAFT]`, STOP — route to `brainstorming-to-issue`; the spec isn't finalized.
-- Otherwise claim it and mark it in-progress (use whatever this repo's convention is — a `/claim` comment, self-assign, or an in-progress label):
+- Otherwise claim it and mark it in-progress by adding the `in-progress` label:
 
 ```bash
-gh issue comment <N> --body "/claim"
-# or: gh issue edit <N> --add-assignee @me
+gh issue edit <N> --add-label "in-progress"
 ```
 
 Keep the number — the PR body ends with `Closes #<N>`.
