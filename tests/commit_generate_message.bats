@@ -124,3 +124,31 @@ setup() {
   assert_output ""
   rm -rf "$empty_path"
 }
+
+@test "generate_message: agy backend invokes agy --print with the gemini model" {
+  run --separate-stderr bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=agy
+    git() { echo 'mock diff'; }
+    agy() { printf '%s' \"\$2\"; }
+    _dotfiles_commit_generate_message ''
+  "
+  assert_success
+  assert_output "Gemini 3.5 Flash (Low)"
+}
+
+@test "generate_message: agy backend fails when agy is not on PATH" {
+  local empty_path
+  empty_path="$(mktemp -d)"
+  run bash -c "
+    export PATH='$empty_path'
+    export DOTFILES_COMMIT_BACKEND=agy
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    _dotfiles_commit_generate_message ''
+  "
+  assert_failure
+  assert_output ""
+  rm -rf "$empty_path"
+}

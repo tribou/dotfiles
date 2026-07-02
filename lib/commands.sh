@@ -175,6 +175,11 @@ function _dotfiles_commit_generate_message ()
         | opencode run --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
           > "$outfile" 2> /dev/null &
       ;;
+    agy)
+      git diff --cached | head -c 100000 \
+        | agy --model "$model" --print "$(_dotfiles_commit_prompt "$ticket")" \
+          > "$outfile" &
+      ;;
     *)
       git diff --cached | head -c 100000 \
         | claude -p --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
