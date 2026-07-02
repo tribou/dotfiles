@@ -86,3 +86,94 @@ setup() {
   assert_success
   assert_output "exited_ok"
 }
+
+@test "_dotfiles_ghv_show is defined after sourcing fzf.sh" {
+  run bash -c "
+    unalias z 2>/dev/null || true
+    DOTFILES='$REPO_ROOT'
+    . '$REPO_ROOT/lib/fzf.sh'
+    declare -f _dotfiles_ghv_show > /dev/null && echo 'defined'
+  "
+  assert_success
+  assert_output --partial "defined"
+}
+
+@test "ghv alias is defined after sourcing fzf.sh" {
+  run bash -c "
+    unalias z 2>/dev/null || true
+    DOTFILES='$REPO_ROOT'
+    . '$REPO_ROOT/lib/fzf.sh'
+    alias ghv 2>/dev/null && echo 'defined'
+  "
+  assert_success
+  assert_output --partial "defined"
+}
+
+@test "_dotfiles_ghv_show calls gh issue view with the selected issue ID" {
+  run bash -c "
+    unalias z 2>/dev/null || true
+    DOTFILES='$REPO_ROOT'
+    . '$REPO_ROOT/lib/fzf.sh'
+    gh() {
+      if [[ \"\$1\" == 'issue' && \"\$2\" == 'list' ]]; then
+        echo '[{\"number\":141,\"title\":\"Create a ghv command\",\"labels\":[]}]'
+      elif [[ \"\$1\" == 'pr' && \"\$2\" == 'list' ]]; then
+        echo '[]'
+      elif [[ \"\$1\" == 'issue' && \"\$2\" == 'view' ]]; then
+        echo \"showing issue: \$3\"
+      fi
+    }
+    fzf() {
+      echo \"issue  #141  Create a ghv command\"
+    }
+    _dotfiles_ghv_show
+  "
+  assert_success
+  assert_output --partial "showing issue: 141"
+}
+
+@test "_dotfiles_ghv_show calls gh pr view with the selected PR ID" {
+  run bash -c "
+    unalias z 2>/dev/null || true
+    DOTFILES='$REPO_ROOT'
+    . '$REPO_ROOT/lib/fzf.sh'
+    gh() {
+      if [[ \"\$1\" == 'issue' && \"\$2\" == 'list' ]]; then
+        echo '[]'
+      elif [[ \"\$1\" == 'pr' && \"\$2\" == 'list' ]]; then
+        echo '[{\"number\":142,\"title\":\"Implement PR feature\",\"labels\":[]}]'
+      elif [[ \"\$1\" == 'pr' && \"\$2\" == 'view' ]]; then
+        echo \"showing pr: \$3\"
+      fi
+    }
+    fzf() {
+      echo \"pr     #142  Implement PR feature\"
+    }
+    _dotfiles_ghv_show
+  "
+  assert_success
+  assert_output --partial "showing pr: 142"
+}
+
+@test "_dotfiles_ghv_show exits silently when fzf returns no selection" {
+  run bash -c "
+    unalias z 2>/dev/null || true
+    DOTFILES='$REPO_ROOT'
+    . '$REPO_ROOT/lib/fzf.sh'
+    gh() {
+      if [[ \"\$1\" == 'issue' && \"\$2\" == 'list' ]]; then
+        echo '[{\"number\":141,\"title\":\"Create a ghv command\",\"labels\":[]}]'
+      elif [[ \"\$1\" == 'pr' && \"\$2\" == 'list' ]]; then
+        echo '[]'
+      else
+        echo \"Unexpected gh call: \$*\" >&2
+        return 1
+      fi
+    }
+    fzf() { return 1; }
+    _dotfiles_ghv_show
+    echo 'exited_ok'
+  "
+  assert_success
+  assert_output "exited_ok"
+}
