@@ -88,12 +88,12 @@ function _dotfiles_commit_prompt ()
 
 function _dotfiles_commit_backend ()
 {
-  local backend="${DOTFILES_COMMIT_BACKEND:-claude}"
+  local backend="${DOTFILES_COMMIT_BACKEND:-opencode}"
   case "$backend" in
-    claude|opencode) printf '%s' "$backend" ;;
+    claude|opencode|agy) printf '%s' "$backend" ;;
     *)
-      printf 'unknown DOTFILES_COMMIT_BACKEND=%s, using claude\n' "$backend" >&2
-      printf '%s' 'claude'
+      printf 'unknown DOTFILES_COMMIT_BACKEND=%s, using opencode\n' "$backend" >&2
+      printf '%s' 'opencode'
       ;;
   esac
 }
@@ -103,6 +103,7 @@ function _dotfiles_commit_model ()
   local backend="$1"
   case "$backend" in
     opencode) printf '%s' 'opencode-go/kimi-k2.7-code' ;;
+    agy)      printf '%s' 'Gemini 3.5 Flash (Low)' ;;
     *)        printf '%s' 'haiku' ;;
   esac
 }
@@ -174,6 +175,11 @@ function _dotfiles_commit_generate_message ()
         | opencode run --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
           > "$outfile" 2> /dev/null &
       ;;
+    agy)
+      git diff --cached | head -c 100000 \
+        | agy --model "$model" --print "$(_dotfiles_commit_prompt "$ticket")" \
+          > "$outfile" &
+      ;;
     *)
       git diff --cached | head -c 100000 \
         | claude -p --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
@@ -233,14 +239,14 @@ function commit ()
         return 0
       fi
       case "$1" in
-        claude|opencode)
+        claude|opencode|agy)
           export DOTFILES_COMMIT_BACKEND="$1"
           printf 'commit backend set to %s (model: %s) for this shell\n' \
             "$1" "$(_dotfiles_commit_model "$1")"
           return 0
           ;;
         *)
-          printf 'unknown backend: %s (expected claude or opencode)\n' "$1" >&2
+          printf 'unknown backend: %s (expected claude, opencode, or agy)\n' "$1" >&2
           return 1
           ;;
       esac

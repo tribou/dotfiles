@@ -82,7 +82,7 @@ export EDITOR='nvim'
 export REACT_EDITOR='vscode'
 
 # Commit AI backend: claude or opencode (opencode uses Kimi 2.7)
-export DOTFILES_COMMIT_BACKEND=claude
+export DOTFILES_COMMIT_BACKEND=opencode
 
 _dotfiles_debug_timing "$LINENO"
 
