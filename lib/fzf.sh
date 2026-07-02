@@ -104,9 +104,9 @@ function _dotfiles_ghv_show() {
   local selection
   selection=$(printf '%s\n' "$combined" | fzf --ansi --reverse \
     --preview '
-      clean_line=$(printf '\''%s\n'\'' "{}" | sed -E "s/$(printf '\''\033'\'')\[[0-9;]*m//g")
-      type=$(printf '\''%s\n'\'' "$clean_line" | awk "{print \$1}")
-      num=$(printf '\''%s\n'\'' "$clean_line" | awk "{print \$2}" | tr -d "#")
+      type={1}
+      num={2}
+      num=${num#\#}
       if [ -n "$num" ]; then
         if [ "$type" = "pr" ]; then
           gh pr view "$num"
@@ -121,8 +121,8 @@ function _dotfiles_ghv_show() {
 
   local clean_line type num
   clean_line=$(printf '%s\n' "$selection" | sed -E "s/$(printf '\033')\[[0-9;]*m//g")
-  type=$(printf '%s\n' "$clean_line" | awk '{print $1}')
-  num=$(printf '%s\n' "$clean_line" | awk '{print $2}' | tr -d '#')
+  read -r type num _ <<< "$clean_line"
+  num=${num#\#}
 
   if [[ "$type" == "pr" ]]; then
     gh pr view "$num" "$@"
