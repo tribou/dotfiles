@@ -1,6 +1,30 @@
 {
   "version": 1,
   "skills": {
+    "brainstorming-to-issue": {
+      "source": "tribou/dotfiles",
+      "sourceType": "github",
+      "skillPath": "skills/brainstorming-to-issue/SKILL.md",
+      "computedHash": "88dbb0ab364767bd2ce87cc095ae6a0fe8d35c6012fe8400e78530da61561273"
+    },
+    "issue-to-implementation": {
+      "source": "tribou/dotfiles",
+      "sourceType": "github",
+      "skillPath": "skills/issue-to-implementation/SKILL.md",
+      "computedHash": "31edb6bfd83878db903d9be6dbb4c1f34feb390b4fc325e1f73170c679e6417a"
+    },
+    "organize-ai-context": {
+      "source": "tribou/dotfiles",
+      "sourceType": "github",
+      "skillPath": "skills/organize-ai-context/SKILL.md",
+      "computedHash": "5107e5409c8b6fa15ba8929ed4eda977a03d2686564be486d3a8b5fd44e0f1d7"
+    },
+    "prd": {
+      "source": "tribou/dotfiles",
+      "sourceType": "github",
+      "skillPath": "skills/prd/SKILL.md",
+      "computedHash": "ab7d861425cd85521dd8f5f45f323397f8dbee92fdff5889010e711dd875f7fc"
+    },
     "security-review": {
       "source": "github/awesome-copilot",
       "sourceType": "github",

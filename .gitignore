@@ -2,7 +2,7 @@
 private
 .DS_Store
 *.log
-.claude/
+.claude/settings.json
 .worktrees/
 tests/.perf_log.jsonl
 

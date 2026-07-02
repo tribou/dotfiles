@@ -191,4 +191,17 @@ npx skills add . -g -a claude-code --skill organize-ai-context -y
 - Drop `-g` to install into the current project instead of globally (`~/<agent>/skills/`).
 - `npx skills list` shows what's currently installed; `npx skills update` refreshes symlinked skills after pulling repo changes; `npx skills remove <skill>` uninstalls one.
 
+### Local Development via Symlinks
+
+To avoid copying or having to manually update skills during local development, use relative symlinks. This ensures edits in `skills/` instantly propagate to your agent's active workspace:
+
+1. **Link repo skills to `.agents/skills/`**:
+   ```bash
+   ln -s ../../skills/<skill-name> .agents/skills/<skill-name>
+   ```
+2. **Link `.agents/skills/` to `.claude/skills/`**:
+   ```bash
+   ln -s ../../.agents/skills/<skill-name> .claude/skills/<skill-name>
+   ```
+
 When adding a new skill, ensure the frontmatter is valid YAML and the `name` matches the directory name exactly.
