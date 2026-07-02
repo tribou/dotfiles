@@ -30,3 +30,10 @@ doctor:
 # Show interactive performance history report
 perf:
     @bash ./scripts/perf_report.sh
+
+# Clean up stale worktrees
+cleanup-worktrees:
+    git worktree prune
+    @echo "Pruned stale worktrees. Remaining:"
+    git worktree list
+
