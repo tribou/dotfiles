@@ -72,3 +72,4 @@ The plan lives in exactly two temporary/durable places: `.superpowers/sdd/plan.m
 - Never `git add`/`commit` the plan file or `.superpowers/`.
 - Never write the plan under `docs/superpowers/plans/`.
 - No human "which execution approach?" prompt — auto-select subagent-driven-development.
+- No human "what would you like to do?" prompt at the finish — auto-select "Push and create a Pull Request" (option 2 in a normal repo, option 1 on detached HEAD).

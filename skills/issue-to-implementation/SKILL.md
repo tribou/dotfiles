@@ -9,7 +9,7 @@ description: Use when implementing a finalized (non-[DRAFT]) GitHub issue that a
 
 Take a finalized GitHub issue (the durable **what/why** spec produced by `brainstorming-to-issue`) and drive it to merged code — **without** a committed plan document and **without** a human approval gate on the plan. Plan *generation* is delegated wholesale to `superpowers:writing-plans`; only its **persistence** (where the plan lives) and its **handoff** (who decides how to execute) are overridden.
 
-**Core principle:** the issue is the durable spec; the plan is ephemeral **how**. So the plan lives in per-run scratch and is mirrored into the PR description at the end — never committed under `docs/`. Execution auto-hands to `superpowers:subagent-driven-development`; there is no "which approach?" question.
+**Core principle:** the issue is the durable spec; the plan is ephemeral **how**. So the plan lives in per-run scratch and is mirrored into the PR description at the end — never committed under `docs/`. Execution auto-hands to `superpowers:subagent-driven-development`; there is no "which approach?" question. And when the branch finishes, the outcome is pre-decided too: always push and open the PR — there is no "what would you like to do?" question either.
 
 This is the exact inverse of `brainstorming-to-issue`: that skill reuses brainstorming's dialogue but diverts its *docs/ + writing-plans* tail into an issue; **this** skill reuses writing-plans' *generation* but diverts its *docs/ + human-choice* tail into scratch + auto-SDD.
 
@@ -73,6 +73,12 @@ The issue is the durable *what*; this scratch plan is the ephemeral *how*.
 
 SDD ends via `superpowers:finishing-a-development-branch`, which opens the PR. **The PR description MUST contain the plan (the ephemeral how) and `Closes #<N>`** — that is where the plan becomes durable. It never returns to `docs/` and never lands on the issue.
 
+<HARD-OVERRIDE>
+`superpowers:finishing-a-development-branch` is built to **present a completion menu** ("Implementation complete. What would you like to do? 1. Merge locally / 2. Push and create a Pull Request / 3. Keep as-is / 4. Discard") and to treat asking the human as the correct behavior. When reached through THIS skill, that choice is already made — the human approved at issue finalization, and this skill's whole contract is that the PR is the plan's durable home.
+
+So do NOT surface that menu. Auto-select **"Push and create a Pull Request"** and proceed straight to pushing the branch and opening the PR. Select it by its label, not its number: it is option **2 in a normal repo** but option **1 on a detached HEAD**. Run every other finishing step (verify tests, detect environment, keep the worktree) exactly as that skill describes — only the human choice at its option menu is overridden.
+</HARD-OVERRIDE>
+
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -80,6 +86,7 @@ SDD ends via `superpowers:finishing-a-development-branch`, which opens the PR. *
 | Saving the plan to `docs/superpowers/plans/` (writing-plans' default) | Divert to `.superpowers/sdd/plan.md` per HARD-OVERRIDE |
 | Committing the plan file | Never commit it — it's scratch; it goes in the PR body at the end |
 | Asking the human "which execution approach?" | No plan gate — auto-hand to subagent-driven-development |
+| Surfacing finishing-a-development-branch's "what would you like to do?" menu | No finishing gate — auto-select "Push and create a Pull Request" |
 | Re-deriving task decomposition by hand | Delegate generation entirely to `writing-plans` — don't reinvent it |
 | Planning a trivial one-file change | Apply the entry gate — trivial ⇒ inline TDD, no plan, no SDD |
 | Building a `[DRAFT]` issue | Not finalized — route back to `brainstorming-to-issue` |
@@ -90,9 +97,10 @@ SDD ends via `superpowers:finishing-a-development-branch`, which opens the PR. *
 
 - About to write the plan under `docs/` or `git commit` it
 - About to ask the human to pick an execution mode
+- About to show finishing-a-development-branch's completion menu instead of auto-selecting the PR option
 - About to hand SDD an issue with no plan file, or re-derive tasks yourself
 - Running full plan + SDD on a change that's one file and one behavior
 - The issue title still says `[DRAFT]`
 - The plan exists only in conversation with no `.superpowers/sdd/plan.md` on disk
 
-All of these mean: divert the plan to scratch, keep the human out of the plan gate, and let the issue (durable what) and PR (durable how) be the only persisted artifacts.
+All of these mean: divert the plan to scratch, keep the human out of both gates (execution approach and branch finishing — always PR), and let the issue (durable what) and PR (durable how) be the only persisted artifacts.
