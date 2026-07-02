@@ -33,10 +33,13 @@ setup() {
     . '$REPO_ROOT/lib/commands.sh'
     sleep 5 &
     pid=\$!
-    ( sleep 0.2; kill -INT \$\$ ) &
+    sleep() {
+      unset -f sleep
+      kill -INT \$\$
+    }
     _dotfiles_spinner_wait \"\$pid\" 'Asking Claude for a commit message...'
     status=\$?
-    sleep 0.2
+    command sleep 0.2
     if kill -0 \"\$pid\" 2>/dev/null; then
       echo 'pid_still_alive' >&2
     else
