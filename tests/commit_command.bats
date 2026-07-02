@@ -65,6 +65,7 @@ setup() {
 
 @test "commit: falls back to c when message generation fails" {
   run bash -c "
+    export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     git() {
