@@ -5,11 +5,11 @@ setup() {
 
 # --- _dotfiles_commit_backend ---
 
-@test "commit_backend: defaults to claude when unset" {
+@test "commit_backend: defaults to opencode when unset" {
   unset DOTFILES_COMMIT_BACKEND
   run _dotfiles_commit_backend
   assert_success
-  assert_output "claude"
+  assert_output "opencode"
 }
 
 @test "commit_backend: honors opencode" {
@@ -19,12 +19,12 @@ setup() {
   assert_output "opencode"
 }
 
-@test "commit_backend: unknown value warns to stderr and falls back to claude" {
+@test "commit_backend: unknown value warns to stderr and falls back to opencode" {
   export DOTFILES_COMMIT_BACKEND=bogus
   run --separate-stderr _dotfiles_commit_backend
   assert_success
-  assert_output "claude"
-  echo "$stderr" | grep -qF 'unknown DOTFILES_COMMIT_BACKEND=bogus'
+  assert_output "opencode"
+  echo "$stderr" | grep -qF 'unknown DOTFILES_COMMIT_BACKEND=bogus, using opencode'
 }
 
 # --- _dotfiles_commit_model ---
@@ -57,17 +57,17 @@ setup() {
   assert_output --partial "available: yes"
 }
 
-@test "commit status: defaults to claude/haiku" {
+@test "commit status: defaults to opencode/kimi 2.7" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
     unset DOTFILES_COMMIT_BACKEND
-    claude() { :; }
+    opencode() { :; }
     commit status
   "
   assert_success
-  assert_output --partial "backend:   claude"
-  assert_output --partial "model:     haiku"
+  assert_output --partial "backend:   opencode"
+  assert_output --partial "model:     opencode-go/kimi-k2.7-code"
 }
 
 # --- commit backend (setter/getter) ---
@@ -120,6 +120,6 @@ setup() {
 # --- durable default ---
 
 @test "bash_profile: exports a DOTFILES_COMMIT_BACKEND default" {
-  run grep -E "^export DOTFILES_COMMIT_BACKEND=" "$REPO_ROOT/bash_profile"
+  run grep -E "^export DOTFILES_COMMIT_BACKEND=opencode" "$REPO_ROOT/bash_profile"
   assert_success
 }

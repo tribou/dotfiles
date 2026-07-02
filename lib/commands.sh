@@ -88,12 +88,12 @@ function _dotfiles_commit_prompt ()
 
 function _dotfiles_commit_backend ()
 {
-  local backend="${DOTFILES_COMMIT_BACKEND:-claude}"
+  local backend="${DOTFILES_COMMIT_BACKEND:-opencode}"
   case "$backend" in
     claude|opencode) printf '%s' "$backend" ;;
     *)
-      printf 'unknown DOTFILES_COMMIT_BACKEND=%s, using claude\n' "$backend" >&2
-      printf '%s' 'claude'
+      printf 'unknown DOTFILES_COMMIT_BACKEND=%s, using opencode\n' "$backend" >&2
+      printf '%s' 'opencode'
       ;;
   esac
 }
