@@ -54,6 +54,27 @@ setup() {
   assert_output "Gemini 3.5 Flash (Low)"
 }
 
+@test "commit_model: DOTFILES_COMMIT_MODEL overrides the opencode default" {
+  export DOTFILES_COMMIT_MODEL="my/custom-model"
+  run _dotfiles_commit_model opencode
+  assert_success
+  assert_output "my/custom-model"
+}
+
+@test "commit_model: DOTFILES_COMMIT_MODEL overrides the claude default" {
+  export DOTFILES_COMMIT_MODEL="sonnet"
+  run _dotfiles_commit_model claude
+  assert_success
+  assert_output "sonnet"
+}
+
+@test "commit_model: empty DOTFILES_COMMIT_MODEL falls back to the backend default" {
+  export DOTFILES_COMMIT_MODEL=""
+  run _dotfiles_commit_model opencode
+  assert_success
+  assert_output "opencode-go/kimi-k2.7-code"
+}
+
 # --- commit status ---
 
 @test "commit status: reports opencode backend, model, availability" {
@@ -82,6 +103,20 @@ setup() {
   assert_output --partial "backend:   agy"
   assert_output --partial "model:     Gemini 3.5 Flash (Low)"
   assert_output --partial "available: yes"
+}
+
+@test "commit status: reflects a DOTFILES_COMMIT_MODEL override" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    export DOTFILES_COMMIT_MODEL='my/custom-model'
+    opencode() { :; }
+    commit status
+  "
+  assert_success
+  assert_output --partial "backend:   opencode"
+  assert_output --partial "model:     my/custom-model"
 }
 
 @test "commit status: defaults to opencode/kimi 2.7" {
