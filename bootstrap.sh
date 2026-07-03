@@ -193,6 +193,23 @@ fi
 if   command -v curl &>/dev/null
 then
 
+  # Install OS prerequisites on Linux early — before anything compiles from
+  # source. mise's ruby source-compile fallback needs both a C toolchain
+  # (build-essential) AND zlib dev headers: ruby-build auto-detects Homebrew
+  # openssl/libyaml/gmp but NOT zlib and passes no --with-zlib-dir, so without
+  # zlib1g-dev the zlib extension is silently skipped and a later 'gem install'
+  # dies with "cannot load such file -- zlib (LoadError)" (issue #149). These
+  # are also the prerequisites brew needs before it can install.
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    if command -v apt-get &>/dev/null; then
+      sudo apt-get update
+      sudo apt-get upgrade -y
+      sudo apt-get install -y curl git build-essential zlib1g-dev xdg-utils bash-completion
+    elif command -v pacman &>/dev/null; then
+      sudo pacman -Syu --noconfirm curl git base-devel zlib bash-completion
+    fi
+  fi
+
   if   ! command -v cargo &>/dev/null
     then
       _BOOTSTRAP_INSTALL="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
@@ -247,7 +264,9 @@ then
       mise install node go bun
       hash -r
       corepack enable
-      # Try precompiled ruby first (fast), fall back to source compilation
+      # Try precompiled ruby first (fast), fall back to source compilation.
+      # The source path needs a C toolchain + zlib dev headers, installed up
+      # front in the Linux prerequisites block above (issue #149).
       if ! MISE_RUBY_COMPILE=0 mise install ruby 2>/dev/null; then
         echo "No precompiled ruby available for this platform, compiling from source..."
         mise install ruby
@@ -268,17 +287,6 @@ then
   fi
 
   # Sourcing z.sh is obsolete
-
-  # Install brew prerequisites on Linux (needed before brew can install)
-  if [[ "$OSTYPE" != "darwin"* ]]; then
-    if command -v apt-get &>/dev/null; then
-      sudo apt-get update
-      sudo apt-get upgrade -y
-      sudo apt-get install -y curl git build-essential xdg-utils bash-completion
-    elif command -v pacman &>/dev/null; then
-      sudo pacman -Syu --noconfirm curl git base-devel bash-completion
-    fi
-  fi
 
   # Install brew if not present (macOS and Linux)
   if ! command -v brew &>/dev/null; then
