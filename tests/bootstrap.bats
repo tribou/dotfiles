@@ -61,13 +61,24 @@ setup() {
   [ "$status" -eq 1 ]
 }
 
-@test "bootstrap: ruby source-compile fallback installs zlib dev headers so the zlib extension builds (issue #149)" {
+@test "bootstrap: installs zlib dev headers in the Linux prerequisites block so ruby's source-compile fallback can build the zlib extension (issue #149)" {
   # ruby-build auto-detects Homebrew openssl/libyaml/gmp but NOT zlib, and the
   # mise ruby source build passes no --with-zlib-dir. Without zlib dev headers
   # the zlib extension is silently skipped and later 'gem install' fails with
-  # "cannot load such file -- zlib (LoadError)". The source-compile fallback
-  # must ensure zlib dev headers before compiling.
-  awk '/compiling from source/,/mise install ruby$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'zlib1g-dev'
+  # "cannot load such file -- zlib (LoadError)".
+  grep -q 'apt-get install -y curl git build-essential zlib1g-dev' "$REPO_ROOT/bootstrap.sh"
+  grep -q 'base-devel zlib bash-completion' "$REPO_ROOT/bootstrap.sh"
+}
+
+@test "bootstrap: Linux prerequisites (build-essential + zlib dev headers) install before ruby source compile (issue #149)" {
+  # The prerequisites block must run BEFORE 'mise install ruby' or the headers
+  # arrive too late to help a first-run source compile.
+  local prereq_line ruby_line
+  prereq_line=$(grep -n 'build-essential zlib1g-dev' "$REPO_ROOT/bootstrap.sh" | head -1 | cut -d: -f1)
+  ruby_line=$(grep -n 'MISE_RUBY_COMPILE=0 mise install ruby' "$REPO_ROOT/bootstrap.sh" | head -1 | cut -d: -f1)
+  [ -n "$prereq_line" ]
+  [ -n "$ruby_line" ]
+  [ "$prereq_line" -lt "$ruby_line" ]
 }
 
 @test "bootstrap: installs gcc via brew on Linux only" {
