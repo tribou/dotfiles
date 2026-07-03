@@ -103,6 +103,20 @@ setup() {
   assert_output ""
 }
 
+@test "generate_message: returns 124 and emits no stdout when the backend exceeds the timeout" {
+  run -124 --separate-stderr bash -c "
+    export DOTFILES_COMMIT_BACKEND=claude
+    export DOTFILES_COMMIT_TIMEOUT=1
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    git() { echo 'mock diff'; }
+    claude() { command sleep 10; echo 'too late'; }
+    _dotfiles_commit_generate_message ''
+  "
+  assert_output ""
+  echo "$stderr" | grep -qF 'Asking Claude for a commit message...'
+}
+
 @test "generate_message: opencode backend invokes opencode run with the kimi model" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'

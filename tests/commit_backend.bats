@@ -75,6 +75,36 @@ setup() {
   assert_output "opencode-go/kimi-k2.7-code"
 }
 
+# --- _dotfiles_commit_timeout ---
+
+@test "commit_timeout: defaults to 15 when unset" {
+  unset DOTFILES_COMMIT_TIMEOUT
+  run _dotfiles_commit_timeout
+  assert_success
+  assert_output "15"
+}
+
+@test "commit_timeout: honors a numeric value" {
+  export DOTFILES_COMMIT_TIMEOUT=42
+  run _dotfiles_commit_timeout
+  assert_success
+  assert_output "42"
+}
+
+@test "commit_timeout: falls back to 15 for a non-numeric value" {
+  export DOTFILES_COMMIT_TIMEOUT=bogus
+  run _dotfiles_commit_timeout
+  assert_success
+  assert_output "15"
+}
+
+@test "commit_timeout: falls back to 15 for an empty value" {
+  export DOTFILES_COMMIT_TIMEOUT=""
+  run _dotfiles_commit_timeout
+  assert_success
+  assert_output "15"
+}
+
 # --- commit status ---
 
 @test "commit status: reports opencode backend, model, availability" {
@@ -130,6 +160,32 @@ setup() {
   assert_success
   assert_output --partial "backend:   opencode"
   assert_output --partial "model:     opencode-go/kimi-k2.7-code"
+}
+
+@test "commit status: reports the configured timeout" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    export DOTFILES_COMMIT_TIMEOUT=42
+    opencode() { :; }
+    commit status
+  "
+  assert_success
+  assert_output --partial "timeout:   42s"
+}
+
+@test "commit status: defaults the timeout to 15s when unset" {
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    export DOTFILES_COMMIT_BACKEND=opencode
+    unset DOTFILES_COMMIT_TIMEOUT
+    opencode() { :; }
+    commit status
+  "
+  assert_success
+  assert_output --partial "timeout:   15s"
 }
 
 # --- commit backend (setter/getter) ---
@@ -194,5 +250,10 @@ setup() {
 
 @test "bash_profile: exports a DOTFILES_COMMIT_BACKEND default" {
   run grep -E "^export DOTFILES_COMMIT_BACKEND=opencode" "$REPO_ROOT/bash_profile"
+  assert_success
+}
+
+@test "bash_profile: exports a DOTFILES_COMMIT_TIMEOUT default" {
+  run grep -E "^export DOTFILES_COMMIT_TIMEOUT=15" "$REPO_ROOT/bash_profile"
   assert_success
 }

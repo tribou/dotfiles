@@ -41,7 +41,9 @@ gpsu                           # git push -u origin current-branch
 - Commit separator configurable via `DOTFILES_COMMIT_SEPARATOR` (default: `:`)
 - Commit model override via `DOTFILES_COMMIT_MODEL` — set it to force a specific model for the active backend, overriding the per-backend default (visible in `commit status`)
 
-`commit` (no args) stages everything, asks Claude Haiku to draft the message, and commits — falling back to `c` (manual editor) if Haiku is unavailable or errors. A spinner shows progress while waiting; Ctrl-C cancels the commit (changes stay staged) instead of falling back to `c`.
+`commit` (no args) stages everything, asks the configured backend to draft the message, and commits — falling back to `c` (manual editor) if the backend is unavailable, errors, or times out. A spinner shows progress while waiting; Ctrl-C cancels the commit (changes stay staged) instead of falling back to `c`.
+
+- Commit backend timeout configurable via `DOTFILES_COMMIT_TIMEOUT` (seconds, default: `15`) — if the backend takes longer (hangs, or is stalled on a usage limit) it is killed and `commit` falls back to the manual `c` editor. Shown in `commit status`.
 
 ## Package Management
 
