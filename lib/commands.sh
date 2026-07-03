@@ -101,6 +101,11 @@ function _dotfiles_commit_backend ()
 function _dotfiles_commit_model ()
 {
   local backend="$1"
+  if [ -n "${DOTFILES_COMMIT_MODEL:-}" ]
+  then
+    printf '%s' "$DOTFILES_COMMIT_MODEL"
+    return 0
+  fi
   case "$backend" in
     opencode) printf '%s' 'opencode-go/kimi-k2.7-code' ;;
     agy)      printf '%s' 'Gemini 3.5 Flash (Low)' ;;
