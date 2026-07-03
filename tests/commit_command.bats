@@ -149,6 +149,50 @@ setup() {
   refute_output --partial "git_unexpected_call"
 }
 
+@test "commit: falls back to c with a timeout notice when generation times out" {
+  run bash -c "
+    export DOTFILES_COMMIT_BACKEND=claude
+    export DOTFILES_COMMIT_TIMEOUT=1
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    git() {
+      if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
+      if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
+      if [ \"\$1\" = \"branch\" ] && [ \"\$2\" = \"--show-current\" ]; then echo 'main'; return 0; fi
+      echo \"git_commit_message:unexpected\"
+      return 0
+    }
+    _dotfiles_commit_generate_message() { return 124; }
+    c() { echo 'c_invoked'; }
+    commit
+  "
+  assert_success
+  assert_output --partial "claude timed out after 1s, falling back to manual commit"
+  assert_output --partial "c_invoked"
+  refute_output --partial "git_commit_message"
+}
+
+@test "commit: timeout notice shows the sanitized timeout for a non-numeric value" {
+  run bash -c "
+    export DOTFILES_COMMIT_BACKEND=claude
+    export DOTFILES_COMMIT_TIMEOUT=bogus
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    git() {
+      if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
+      if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
+      if [ \"\$1\" = \"branch\" ] && [ \"\$2\" = \"--show-current\" ]; then echo 'main'; return 0; fi
+      return 0
+    }
+    _dotfiles_commit_generate_message() { return 124; }
+    c() { echo 'c_invoked'; }
+    commit
+  "
+  assert_success
+  assert_output --partial "claude timed out after 15s, falling back to manual commit"
+  assert_output --partial "c_invoked"
+}
+
 @test "commit: fallback message names the active backend (opencode)" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'

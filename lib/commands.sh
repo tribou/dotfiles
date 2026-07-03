@@ -113,14 +113,32 @@ function _dotfiles_commit_model ()
   esac
 }
 
+function _dotfiles_commit_timeout ()
+{
+  local timeout_secs="${DOTFILES_COMMIT_TIMEOUT:-15}"
+  case "$timeout_secs" in
+    ''|*[!0-9]*) timeout_secs=15 ;;
+  esac
+  printf '%s' "$timeout_secs"
+}
+
 function _dotfiles_spinner_wait ()
 {
   local pid="$1"
   local label="$2"
+  local timeout_secs="${3:-0}"
   local interrupted=0
   local is_tty=0
   local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
   local frame_index=0
+
+  # Enable a timeout only for a positive integer; anything else means "wait forever".
+  local max_iterations=0
+  if [ "$timeout_secs" -gt 0 ] 2> /dev/null
+  then
+    max_iterations=$(( timeout_secs * 10 ))
+  fi
+  local iterations=0
 
   trap 'interrupted=1' INT
 
@@ -141,6 +159,14 @@ function _dotfiles_spinner_wait ()
       return 130
     fi
 
+    if [ "$max_iterations" -gt 0 ] && [ "$iterations" -ge "$max_iterations" ]
+    then
+      kill "$pid" 2> /dev/null
+      [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
+      trap - INT
+      return 124
+    fi
+
     if [ "$is_tty" -eq 1 ]
     then
       printf '\r%s %s' "${frames[frame_index]}" "$label" >&2
@@ -148,6 +174,7 @@ function _dotfiles_spinner_wait ()
     fi
 
     sleep 0.1
+    iterations=$(( iterations + 1 ))
   done
 
   [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
@@ -162,9 +189,10 @@ function _dotfiles_commit_generate_message ()
 {
   local ticket="$1"
 
-  local backend model
+  local backend model timeout_secs
   backend=$(_dotfiles_commit_backend)
   model=$(_dotfiles_commit_model "$backend")
+  timeout_secs=$(_dotfiles_commit_timeout)
 
   if ! command -v "$backend" > /dev/null 2>&1
   then
@@ -195,13 +223,19 @@ function _dotfiles_commit_generate_message ()
 
   local backend_label
   backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"
-  _dotfiles_spinner_wait "$pid" "Asking ${backend_label} for a commit message..."
+  _dotfiles_spinner_wait "$pid" "Asking ${backend_label} for a commit message..." "$timeout_secs"
   local wait_status=$?
 
   if [ "$wait_status" -eq 130 ]
   then
     rm -f "$outfile"
     return 130
+  fi
+
+  if [ "$wait_status" -eq 124 ]
+  then
+    rm -f "$outfile"
+    return 124
   fi
 
   if [ "$wait_status" -ne 0 ]
@@ -229,11 +263,12 @@ function commit ()
 {
   case "$1" in
     status)
-      local b m avail=no
+      local b m t avail=no
       b=$(_dotfiles_commit_backend)
       m=$(_dotfiles_commit_model "$b")
+      t=$(_dotfiles_commit_timeout)
       command -v "$b" > /dev/null 2>&1 && avail=yes
-      printf 'backend:   %s\nmodel:     %s\navailable: %s\n' "$b" "$m" "$avail"
+      printf 'backend:   %s\nmodel:     %s\ntimeout:   %ss\navailable: %s\n' "$b" "$m" "$t" "$avail"
       return 0
       ;;
     backend)
@@ -285,6 +320,14 @@ function commit ()
   then
     echo "commit canceled" >&2
     return 130
+  fi
+
+  if [ "$generate_status" -eq 124 ]
+  then
+    echo "$(_dotfiles_commit_backend) timed out after $(_dotfiles_commit_timeout)s, falling back to manual commit" >&2
+    # shellcheck disable=SC2119 # commit() never forwards args to c
+    c
+    return
   fi
 
   if [ -z "$generated" ]
