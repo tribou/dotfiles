@@ -250,6 +250,19 @@ then
       # Try precompiled ruby first (fast), fall back to source compilation
       if ! MISE_RUBY_COMPILE=0 mise install ruby 2>/dev/null; then
         echo "No precompiled ruby available for this platform, compiling from source..."
+        # ruby-build auto-detects Homebrew openssl/libyaml/gmp but NOT zlib, and
+        # passes no --with-zlib-dir. On a Linux host with only the runtime
+        # libz.so.1 (no dev headers) the zlib extension is silently skipped, so
+        # a later 'gem install' dies with "cannot load such file -- zlib
+        # (LoadError)". Install zlib dev headers first so the extension builds.
+        # (issue #149)
+        if [[ "$OSTYPE" != "darwin"* ]]; then
+          if command -v apt-get &>/dev/null; then
+            sudo apt-get install -y zlib1g-dev
+          elif command -v pacman &>/dev/null; then
+            sudo pacman -S --noconfirm --needed zlib
+          fi
+        fi
         mise install ruby
       fi
       echo

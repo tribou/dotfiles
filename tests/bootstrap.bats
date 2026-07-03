@@ -61,6 +61,15 @@ setup() {
   [ "$status" -eq 1 ]
 }
 
+@test "bootstrap: ruby source-compile fallback installs zlib dev headers so the zlib extension builds (issue #149)" {
+  # ruby-build auto-detects Homebrew openssl/libyaml/gmp but NOT zlib, and the
+  # mise ruby source build passes no --with-zlib-dir. Without zlib dev headers
+  # the zlib extension is silently skipped and later 'gem install' fails with
+  # "cannot load such file -- zlib (LoadError)". The source-compile fallback
+  # must ensure zlib dev headers before compiling.
+  awk '/compiling from source/,/mise install ruby$/' "$REPO_ROOT/bootstrap.sh" | grep -q 'zlib1g-dev'
+}
+
 @test "bootstrap: installs gcc via brew on Linux only" {
   grep -q 'brew install gcc' "$REPO_ROOT/bootstrap.sh"
   awk '/\!\= .*darwin/{inblock=1} inblock && /brew install gcc/{found=1} inblock && /^  fi/{inblock=0} END{exit !found}' "$REPO_ROOT/bootstrap.sh"
