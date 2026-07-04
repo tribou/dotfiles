@@ -19,7 +19,7 @@ build-clean:
     docker compose build --no-cache
 
 # Run bash unit tests with bats-core
-test-unit *args="tests/*.bats":
+test-unit *args="":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ -n "${BATS_JOBS:-}" ]; then
@@ -31,7 +31,25 @@ test-unit *args="tests/*.bats":
     else
       jobs=1
     fi
-    ./tests/test_helper/bats-core/bin/bats --jobs "$jobs" {{args}}
+    if [ -n "{{args}}" ]; then
+      # Explicit args: run exactly what was requested
+      ./tests/test_helper/bats-core/bin/bats --jobs "$jobs" {{args}}
+    else
+      # Default: run perf tests serially first (timing-sensitive under CPU contention)
+      ./tests/test_helper/bats-core/bin/bats tests/prompt_performance.bats tests/startup_performance.bats
+      # Then run all other tests in parallel
+      shopt -s nullglob
+      other_tests=()
+      for f in tests/*.bats; do
+        case "$(basename "$f")" in
+          prompt_performance.bats|startup_performance.bats) ;;
+          *) other_tests+=("$f") ;;
+        esac
+      done
+      if [ ${#other_tests[@]} -gt 0 ]; then
+        ./tests/test_helper/bats-core/bin/bats --jobs "$jobs" "${other_tests[@]}"
+      fi
+    fi
 
 
 # Run local health checks (symlinks, tools)
