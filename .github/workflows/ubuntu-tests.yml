@@ -13,7 +13,7 @@ jobs:
   test:
     name: Run bash function tests
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -24,8 +24,39 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v3
 
+      - name: Install GNU parallel
+        run: |
+          sudo apt-get update && sudo apt-get install -y parallel
+          mkdir -p ~/.parallel && touch ~/.parallel/will-cite
+
       - name: Run bash function tests
         run: just test-unit
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker image
+        run: |
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            --load \
+            -t dotfiles-ci .
+
       - name: Run Docker environment tests
-        run: just test
+        run: |
+          docker compose run --rm -T ci
+
+      - name: Move cache
+        if: always()
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

@@ -12,7 +12,8 @@ services:
       bash -c "
         . scripts/bootstrap-test.sh &&
         goss validate --format tap &&
-        ./tests/test_helper/bats-core/bin/bats tests/integration/
+        jobs=\"$${BATS_JOBS:-$$(nproc)}\" &&
+        ./tests/test_helper/bats-core/bin/bats --jobs \"$$jobs\" tests/integration/
       "
 
   dev:

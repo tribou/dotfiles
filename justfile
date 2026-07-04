@@ -20,7 +20,18 @@ build-clean:
 
 # Run bash unit tests with bats-core
 test-unit *args="tests/*.bats":
-    ./tests/test_helper/bats-core/bin/bats {{args}}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -n "${BATS_JOBS:-}" ]; then
+      jobs="$BATS_JOBS"
+    elif command -v nproc &>/dev/null; then
+      jobs="$(nproc)"
+    elif command -v sysctl &>/dev/null; then
+      jobs="$(sysctl -n hw.ncpu)"
+    else
+      jobs=1
+    fi
+    ./tests/test_helper/bats-core/bin/bats --jobs "$jobs" {{args}}
 
 
 # Run local health checks (symlinks, tools)

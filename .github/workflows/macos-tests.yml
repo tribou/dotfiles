@@ -27,5 +27,10 @@ jobs:
       - name: Install shellcheck
         run: brew install shellcheck
 
+      - name: Install GNU parallel
+        run: |
+          brew install parallel
+          mkdir -p ~/.parallel && touch ~/.parallel/will-cite
+
       - name: Run bash function tests
         run: just test-unit
