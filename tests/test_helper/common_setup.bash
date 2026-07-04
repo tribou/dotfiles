@@ -3,6 +3,9 @@ _helper_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 load "${_helper_dir}/bats-support/load"
 load "${_helper_dir}/bats-assert/load"
 
+# Declare minimum bats version to suppress BW02 warnings in parallel mode
+bats_require_minimum_version 1.5.0
+
 # Resolve the repo root relative to this helper file
 REPO_ROOT="$(cd "${_helper_dir}/../.." && pwd)"
 
