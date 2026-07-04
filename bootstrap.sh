@@ -314,12 +314,6 @@ then
   mkdir -p "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
   chmod 700 "${HOMEBREW_USER_CONFIG_HOME:-$HOME/.homebrew}"
 
-  # NOTE: tmux is pinned to a --HEAD build (see the tmux guard after this list
-  # and `brew list --pinned`). tmux 3.7/3.7a broke synchronized-output
-  # (DECSET 2026) flushing over SSH, so TUIs (opencode/neovim) launch
-  # piece-by-piece / stale until a forced redraw. Fixed upstream in 3.7b, which
-  # Homebrew doesn't ship yet. `brew pin` makes this `brew install tmux` a no-op
-  # for tmux until we unpin. Tracking: https://github.com/tribou/dotfiles/issues/138
   brew install \
       bash \
       git \
@@ -357,6 +351,7 @@ then
       gh \
       glow \
       beads \
+      parallel \
       zoxide
 
   # Reinstall delta if shared libraries are mismatched (brew upgrade cleanup)
