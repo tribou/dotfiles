@@ -718,6 +718,20 @@ function mkrepo()
   # --push automatically pushes the initial commit
   gh repo create "tribou/$1" --private --source=. --remote=origin --push
 
+  # 5. Install AI agent skills (all obra/superpowers + most tribou/dotfiles)
+  if npx --yes skills@latest add obra/superpowers \
+        --skill '*' --agent opencode --agent claude-code -y \
+     && npx --yes skills@latest add tribou/dotfiles \
+        --skill brainstorming-to-issue --skill issue-to-plan \
+        --skill organize-ai-context --skill plan-to-implementation \
+        --skill prd --agent opencode --agent claude-code -y; then
+    git add -A
+    git commit -m "Add AI agent skills"
+    git push
+  else
+    echo "⚠️  Skill installation failed. Install manually with 'npx skills@latest add obra/superpowers'."
+  fi
+
   echo "✅ Created https://github.com/tribou/$1 and synced locally."
 }
 
