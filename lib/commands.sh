@@ -705,12 +705,51 @@ function mkrepo()
   mkdir -p "$1"
   cd "$1" || return
 
-  # 2. Initialize git and create a basic README
+  # 2. Initialize git, create README and .gitignore
   git init -b main
   echo "# $1" > README.md
+  cat > .gitignore <<'EOF'
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+
+# Secrets
+private
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Build artifacts
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# AI / agent local state
+.claude/settings.json
+.opencode/local/
+.opencode/local.json
+.aider*
+
+# Git worktrees
+.worktrees/
+
+# Local mise configs (mise.toml is committed; these are personal overrides)
+mise.local.toml
+mise.local.lock
+.mise.local.toml
+EOF
 
   # 3. Initial commit
-  git add README.md
+  git add README.md .gitignore
   git commit -m "Initial commit"
 
   # 4. Create the repo under the 'tribou' owner

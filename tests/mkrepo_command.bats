@@ -66,3 +66,31 @@ setup() {
   assert_output --partial "Skill installation failed"
   refute_output --partial "git commit -m Add AI agent skills"
 }
+
+@test "mkrepo: creates .gitignore and stages it in the initial commit" {
+  tmp="$(mktemp -d)"
+  run bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    git() { echo \"git \$*\"; }
+    gh() { echo \"gh \$*\"; }
+    npx() { :; }
+    mkrepo '$tmp/myrepo'
+  "
+  assert_success
+  # staged alongside README in the initial commit
+  assert_line --partial 'git add README.md .gitignore'
+  assert_line --partial 'git commit -m Initial commit'
+  # file exists with representative entries from each category
+  local ignore="$tmp/myrepo/.gitignore"
+  assert [ -f "$ignore" ]
+  assert grep -qFx 'node_modules/' "$ignore"
+  assert grep -qFx 'coverage/' "$ignore"
+  assert grep -qFx 'mise.local.toml' "$ignore"
+  assert grep -qFx '.env' "$ignore"
+  assert grep -qFx '.env.local' "$ignore"
+  assert grep -qFx '*.swp' "$ignore"
+  assert grep -qFx '.DS_Store' "$ignore"
+  assert grep -qFx '.opencode/local/' "$ignore"
+  assert grep -qFx '.worktrees/' "$ignore"
+}
