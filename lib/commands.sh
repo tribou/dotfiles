@@ -718,6 +718,9 @@ function mkrepo()
   # --push automatically pushes the initial commit
   gh repo create "tribou/$1" --private --source=. --remote=origin --push
 
+  # Handle bug where claude skills don't install without the directory
+  mkdir -p .claude/skills
+
   # 5. Install AI agent skills (all obra/superpowers + most tribou/dotfiles)
   if npx --yes skills@latest add obra/superpowers \
         --skill '*' --agent opencode --agent claude-code -y \
