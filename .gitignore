@@ -13,3 +13,4 @@ tests/.perf_log.jsonl
 .dolt/
 *.db
 .agent/
+.claude/worktrees/
