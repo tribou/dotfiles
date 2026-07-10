@@ -1,2 +1,47 @@
 ---
-[]
+- name: Detect beads CLI
+  ansible.builtin.command: "command -v bd"
+  register: bd_bin
+  changed_when: false
+  failed_when: false
+
+- name: Read beads sync remote from config
+  ansible.builtin.shell:
+    cmd: "awk -F'\"' '/^sync\\.remote:/ {print $2; exit}' {{ dotfiles_repo_root }}/.beads/config.yaml"
+    executable: /bin/bash
+  register: beads_remote
+  changed_when: false
+  failed_when: false
+  when: bd_bin.rc == 0
+
+- name: Check for an existing embedded Dolt DB
+  ansible.builtin.stat:
+    path: "{{ dotfiles_repo_root }}/.beads/embeddeddolt"
+  register: beads_db
+  when: bd_bin.rc == 0
+
+- name: Hydrate beads DB on a fresh clone
+  ansible.builtin.command:
+    cmd: "bd -C {{ dotfiles_repo_root }} bootstrap --yes"
+  register: beads_bootstrap
+  changed_when: beads_bootstrap.rc == 0
+  failed_when: false
+  when:
+    - bd_bin.rc == 0
+    - (beads_remote.stdout | default('')) | length > 0
+    - not (beads_db.stat.exists | default(false))
+
+- name: Register the beads Dolt remote on existing machines
+  ansible.builtin.shell:
+    cmd: >
+      bd -C {{ dotfiles_repo_root }} dolt remote list 2>/dev/null | grep -qF "{{ beads_remote.stdout }}"
+      || { bd -C {{ dotfiles_repo_root }} dolt remote remove origin >/dev/null 2>&1 || true;
+           bd -C {{ dotfiles_repo_root }} dolt remote add origin "{{ beads_remote.stdout }}"; }
+    executable: /bin/bash
+  register: beads_register
+  changed_when: "'Added' in (beads_register.stdout | default('')) or 'add origin' in (beads_register.stdout | default(''))"
+  failed_when: false
+  when:
+    - bd_bin.rc == 0
+    - (beads_remote.stdout | default('')) | length > 0
+    - beads_db.stat.exists | default(false)
