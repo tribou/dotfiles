@@ -1,2 +1,57 @@
 ---
-[]
+- name: Define symlink mappings
+  ansible.builtin.set_fact:
+    dotfiles_links:
+      - src: bash_profile
+        dest: .bash_profile
+      - src: init.vim
+        dest: .vimrc
+      - src: gitconfig
+        dest: .gitconfig
+      - src: zshrc
+        dest: .zshrc
+      - src: tmux/tmux-conf
+        dest: .tmux.conf
+      - src: default-node-packages
+        dest: .default-node-packages
+      - src: default-gems
+        dest: .default-gems
+      - src: default-python-packages
+        dest: .default-python-packages
+      - src: gpg-agent-conf
+        dest: .gnupg/gpg-agent.conf
+      - src: init.vim
+        dest: .config/nvim/init.vim
+      - src: coc-settings.json
+        dest: .config/nvim/coc-settings.json
+      - src: alacritty.toml
+        dest: .config/alacritty/alacritty.toml
+      - src: mise-config.toml
+        dest: .config/mise/config.toml
+      - src: scripts/dotfiles_remote_browser_open.sh
+        dest: .local/bin/dotfiles_remote_browser_open.sh
+      - src: scripts/dotfiles_local_browser_helper.sh
+        dest: .local/bin/dotfiles_local_browser_helper.sh
+
+- name: Stat symlink destinations to detect pre-existing files
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/{{ item.dest }}"
+  loop: "{{ dotfiles_links }}"
+  register: dotfiles_link_stats
+
+- name: Back up pre-existing non-symlink files to .backup suffix
+  ansible.builtin.shell:
+    cmd: "mv '{{ dotfiles_home }}/{{ item.item.dest }}' '{{ dotfiles_home }}/{{ item.item.dest }}.backup'"
+  loop: "{{ dotfiles_link_stats.results }}"
+  when: item.stat.exists and not item.stat.islnk
+  loop_control:
+    label: "{{ item.item.dest }} → {{ item.item.dest }}.backup"
+
+- name: Create symlinks
+  ansible.builtin.file:
+    src: "{{ dotfiles_repo_root }}/{{ item.src }}"
+    dest: "{{ dotfiles_home }}/{{ item.dest }}"
+    state: link
+    force: true
+    follow: false
+  loop: "{{ dotfiles_links }}"
