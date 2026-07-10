@@ -19,8 +19,10 @@ provisioner:
         dotfiles_home: /root
         dotfiles_repo_root: /dotfiles
   config_options:
+    callback_default:
+      result_format: yaml
     defaults:
-      stdout_callback: yaml
+      stdout_callback: default
 verifier:
   name: ansible
 scenario:
