@@ -22,6 +22,13 @@ build-clean:
 test-unit *args="tests/*.bats":
     ./tests/test_helper/bats-core/bin/bats {{args}}
 
+# Install/repair dotfiles on an already-bootstrapped machine (default: present)
+install *args:
+    ansible-playbook playbook.yml {{args}}
+
+# Upgrade everything (dotfiles_state=latest, upgrade-tagged tasks)
+upgrade *args:
+    ansible-playbook playbook.yml -e dotfiles_state=latest --tags upgrade {{args}}
 
 # Run local health checks (symlinks, tools)
 doctor:

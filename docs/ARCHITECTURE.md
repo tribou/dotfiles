@@ -4,11 +4,59 @@
 
 ## Entry Points
 
-- **`bootstrap.sh`**: Main installation script
-  - Creates symlinks from dotfiles to home directory (~/.bash_profile, ~/.vimrc, ~/.gitconfig, etc.)
-  - Sets up directory structure (~/dev, ~/dev/go, etc.)
-  - Installs dependencies automatically (Homebrew, mise, rustup, npm globals, etc.)
-  - Configures SSH keys, GPG agent, tmux plugins
+- **`bootstrap.sh`**: Thin bootstrapper that solves the chicken-and-egg problem of installing Homebrew + Ansible, then hands off to the Ansible role. Accepts `curl | bash` for zero-clone installs.
+  - Self-locates or self-clones the repo into `$HOME/dev/dotfiles`
+  - Installs brew (if missing) and ansible (if missing)
+  - Runs `ansible-playbook playbook.yml` — all actual provisioning lives in the role
+
+- **`playbook.yml`**: Top-level Ansible playbook that applies the `dotfiles` role to `localhost`
+- **`ansible.cfg`**: Configures `roles_path = roles`, disables retry files, sets YAML output format
+- **`roles/dotfiles/`**: The single Ansible role containing all provisioning logic
+
+### roles/dotfiles Layout
+
+```
+roles/dotfiles/
+├── defaults/main.yml    # All variables and their defaults
+├── handlers/main.yml    # Handlers (restart services, etc.)
+├── meta/main.yml        # Role metadata, dependencies, collections
+├── molecule/            # Molecule test scenarios
+│   └── default/
+│       ├── converge.yml
+│       ├── molecule.yml
+│       └── verify.yml
+└── tasks/
+    ├── main.yml         # Role entry point — includes all task files
+    ├── prereqs.yml      # Pre-requisite packages
+    ├── brew.yml         # Homebrew formulae (core)
+    ├── brew_casks.yml   # Homebrew casks (macOS)
+    ├── links.yml        # Symlink management
+    ├── dirs.yml         # Directory structure
+    ├── ssh.yml          # SSH key generation
+    ├── gpg.yml          # GPG agent config
+    ├── mise.yml         # Version-managed runtimes
+    ├── npm.yml          # Global npm packages
+    ├── rust.yml         # Rust toolchain
+    ├── nvim.yml         # Neovim plugin management
+    ├── tpm.yml          # Tmux plugin manager
+    ├── zoxide.yml       # zoxide init
+    ├── terminfo.yml     # Terminal info DB
+    ├── tools_cli.yml    # Additional CLI tools
+    ├── beads.yml        # Beads issue tracking
+    ├── upgrade.yml      # Upgrade-only tasks (brew upgrade, mise upgrade, npm update)
+    └── config files in the repo root
+  ```
+
+### dotfiles_state
+
+The `dotfiles_state` variable (defined in `roles/dotfiles/defaults/main.yml`) controls install vs upgrade mode:
+
+| Value | Behavior |
+|-------|----------|
+| `present` (default) | Ensures tools/config are present but does not force the latest versions |
+| `latest` | Upgrades formulae, runtimes, and packages to their latest versions |
+
+Use `just upgrade` to run with `dotfiles_state=latest` and the `upgrade` tag (selectively targets only upgrade tasks).
 
 - **`bash_profile`**: Main bash configuration loaded on shell startup
   - Sources all lib scripts via `lib/index.sh`
@@ -53,7 +101,6 @@ The `agent/` directory contains the isolated LLM agent-user subsystem:
 The `scripts/` directory contains standalone utility scripts (not sourced; run directly):
 
 - **`battery.sh`**: Battery level reporting for terminal prompt or notifications
-- **`bootstrap-test.sh`**: Smoke test helper for bootstrap validation
 - **`install.sh`**: Dependency installer (called by bootstrap.sh with `-i` flag)
 - **`internet.sh`**: Internet connectivity check
 
