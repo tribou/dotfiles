@@ -45,6 +45,6 @@ setup() {
   grep -q "dotfiles_state == 'latest'" "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
 }
 
-@test "role: core brew list excludes tmux (installed via --HEAD pin; issue #138)" {
-  ! awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml" | grep -qE '^\s*-\s*tmux\s*$'
+@test "role: core brew list includes tmux (installed via homebrew)" {
+  awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml" | grep -qE '^\s*-\s*tmux\s*$'
 }

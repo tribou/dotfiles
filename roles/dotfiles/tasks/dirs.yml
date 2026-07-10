@@ -8,8 +8,6 @@
     - dev/bin
     - dev/go/pkg
     - dev/go/src/github.com/tribou
-    - dev/go/src/bitbucket.org
-    - dev/go/src/github.com/rocksauce
     - .config/nvim
     - .config/alacritty
     - .config/mise

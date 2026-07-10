@@ -47,7 +47,7 @@ dotfiles_brew_core:
   - glow
   - beads
   - zoxide
-# tmux excluded — installed via the --HEAD/pin command task in brew.yml (#138).
+  - tmux
 
 dotfiles_brew_taps:
   - hashicorp/tap
