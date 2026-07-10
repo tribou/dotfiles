@@ -1,2 +1,41 @@
 ---
-[]
+- name: Generate RSA 4096 key (no passphrase)
+  community.crypto.openssh_keypair:
+    path: "{{ dotfiles_home }}/.ssh/id_rsa"
+    type: rsa
+    size: 4096
+    comment: "{{ dotfiles_ssh_key_email }}"
+    regenerate: never
+    mode: "0600"
+
+- name: Generate ed25519 key (no passphrase)
+  community.crypto.openssh_keypair:
+    path: "{{ dotfiles_home }}/.ssh/id_ed25519"
+    type: ed25519
+    comment: "{{ dotfiles_ssh_key_email }}"
+    regenerate: never
+    mode: "0600"
+
+- name: Configure macOS keychain SSH block (fixes #45)
+  ansible.builtin.blockinfile:
+    path: "{{ dotfiles_home }}/.ssh/config"
+    create: true
+    mode: "0600"
+    marker: "# {mark} dotfiles"
+    block: |
+      Host *
+        AddKeysToAgent yes
+        UseKeychain yes
+        IdentityFile ~/.ssh/id_ed25519
+  when: ansible_system == 'Darwin'
+
+- name: Pre-load keys into the macOS keychain
+  ansible.builtin.command:
+    cmd: "ssh-add --apple-use-keychain {{ dotfiles_home }}/.ssh/{{ item }}"
+  loop:
+    - id_rsa
+    - id_ed25519
+  register: ssh_add_result
+  changed_when: false
+  failed_when: false
+  when: ansible_system == 'Darwin'

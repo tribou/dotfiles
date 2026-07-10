@@ -1,2 +1,8 @@
 ---
-[]
+- name: Install rustup + stable toolchain
+  ansible.builtin.shell:
+    cmd: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+    creates: "{{ dotfiles_home }}/.cargo/bin/cargo"
+  environment:
+    RUSTUP_HOME: "{{ dotfiles_home }}/.rustup"
+    CARGO_HOME: "{{ dotfiles_home }}/.cargo"
