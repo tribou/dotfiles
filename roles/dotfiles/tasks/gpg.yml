@@ -1,2 +1,23 @@
 ---
-[]
+- name: Ensure ~/.gnupg is owned by the user and 0700
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.gnupg"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    mode: "0700"
+
+- name: Enumerate real files inside ~/.gnupg
+  ansible.builtin.find:
+    paths: "{{ dotfiles_home }}/.gnupg"
+    file_type: file
+    follow: false
+  register: gnupg_files
+
+- name: Ensure ~/.gnupg files are 0600 (skip symlinks)
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: "0600"
+  loop: "{{ gnupg_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when: not item.islnk | default(false)
