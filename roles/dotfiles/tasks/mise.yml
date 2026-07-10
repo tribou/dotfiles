@@ -1,2 +1,41 @@
 ---
-[]
+- name: Install mise version manager
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://mise.run | sh
+    creates: "{{ dotfiles_home }}/.local/bin/mise"
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  tags: [mise]
+
+- name: Install mise-managed runtimes (node, go, bun)
+  ansible.builtin.shell:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise install {{ item }}"
+    creates: "{{ dotfiles_home }}/.local/share/mise/installs/{{ item }}/"
+  loop: "{{ dotfiles_mise_tools | reject('eq', 'ruby') | list }}"
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  tags: [mise]
+
+- name: Install ruby via mise with precompiled binary (falls back to source)
+  ansible.builtin.shell:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise install ruby"
+    creates: "{{ dotfiles_home }}/.local/share/mise/installs/ruby/"
+  environment:
+    MISE_RUBY_COMPILE: "0"
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  tags: [mise]
+
+- name: Activate mise shims and enable corepack
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ dotfiles_home }}/.local/share/mise/shims:$PATH"
+      corepack enable
+      touch "{{ dotfiles_home }}/.local/share/mise/corepack-enabled"
+    creates: "{{ dotfiles_home }}/.local/share/mise/corepack-enabled"
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  tags: [mise]
