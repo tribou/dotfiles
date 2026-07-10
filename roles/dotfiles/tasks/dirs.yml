@@ -1,2 +1,29 @@
 ---
-[]
+- name: Create developer and Go directories
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - dev/bin
+    - dev/go/pkg
+    - dev/go/src/github.com/tribou
+    - dev/go/src/bitbucket.org
+    - dev/go/src/github.com/rocksauce
+    - .config/nvim
+    - .config/alacritty
+    - .config/mise
+    - .local/bin
+    - .tmux
+
+- name: Create ~/.gnupg with strict perms
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.gnupg"
+    state: directory
+    mode: "0700"
+
+- name: Create ~/.ssh with strict perms
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.ssh"
+    state: directory
+    mode: "0700"
