@@ -1,2 +1,93 @@
 ---
-[]
+- name: Detect Homebrew
+  ansible.builtin.command: which brew
+  register: dotfiles_brew_which
+  changed_when: false
+  failed_when: false
+
+- name: Install Homebrew
+  ansible.builtin.shell:
+    cmd: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  environment:
+    NONINTERACTIVE: "1"
+  when: dotfiles_brew_which.rc != 0
+
+- name: Re-detect Homebrew after install
+  ansible.builtin.command: which brew
+  register: dotfiles_brew_which
+  changed_when: false
+  when: dotfiles_brew_which.rc != 0
+
+- name: Set brew binary fact
+  ansible.builtin.set_fact:
+    dotfiles_brew_bin: "{{ dotfiles_brew_which.stdout }}"
+
+- name: Resolve brew prefix
+  ansible.builtin.command: "{{ dotfiles_brew_bin }} --prefix"
+  register: dotfiles_brew_prefix_cmd
+  changed_when: false
+
+- name: Set brew prefix fact
+  ansible.builtin.set_fact:
+    dotfiles_brew_prefix: "{{ dotfiles_brew_prefix_cmd.stdout }}"
+
+- name: Secure Homebrew trust store directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_brew_prefix }}/etc/brew/trust"
+    state: directory
+    mode: "0700"
+  failed_when: false
+
+- name: Tap Homebrew taps
+  community.general.homebrew_tap:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ dotfiles_brew_taps }}"
+
+- name: Install Homebrew core formulae
+  community.general.homebrew:
+    name: "{{ dotfiles_brew_core }}"
+    state: present
+
+- name: Install Linux-only formulae
+  community.general.homebrew:
+    name: "{{ dotfiles_brew_linux }}"
+    state: present
+  when: ansible_system != 'Darwin'
+
+- name: Check if tmux HEAD is installed
+  ansible.builtin.command: "{{ dotfiles_brew_bin }} list --versions tmux"
+  register: dotfiles_tmux_list
+  changed_when: false
+  failed_when: false
+
+- name: Build and pin tmux --HEAD for synchronized-output fix (issue #138)
+  when: >
+    dotfiles_tmux_list.rc != 0
+    or (dotfiles_tmux_list.rc == 0 and 'HEAD' not in dotfiles_tmux_list.stdout)
+  block:
+    - name: Unlink stable tmux before HEAD build
+      ansible.builtin.command: "{{ dotfiles_brew_bin }} unlink tmux"
+      failed_when: false
+      changed_when: false
+
+    - name: Build tmux from HEAD
+      ansible.builtin.command: "{{ dotfiles_brew_bin }} install --HEAD tmux"
+      failed_when: false
+      register: dotfiles_tmux_install
+      changed_when: dotfiles_tmux_install.rc == 0
+
+    - name: Pin tmux to prevent accidental upgrade
+      ansible.builtin.command: "{{ dotfiles_brew_bin }} pin tmux"
+      failed_when: false
+      changed_when: false
+
+- name: Check git-delta binary integrity
+  ansible.builtin.command: delta --version
+  register: dotfiles_delta_check
+  changed_when: false
+  failed_when: false
+
+- name: Reinstall git-delta on shared library mismatch
+  ansible.builtin.command: "{{ dotfiles_brew_bin }} reinstall git-delta"
+  when: dotfiles_delta_check.rc != 0
