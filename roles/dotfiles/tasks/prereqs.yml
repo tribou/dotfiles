@@ -1,2 +1,27 @@
 ---
-[]
+- name: Update apt cache and install developer prerequisites (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - build-essential
+      - zlib1g-dev
+      - xdg-utils
+      - bash-completion
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_os_family == 'Debian'
+
+- name: Install developer prerequisites (Arch)
+  community.general.pacman:
+    name:
+      - curl
+      - git
+      - base-devel
+      - zlib
+      - bash-completion
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_os_family == 'Archlinux'
