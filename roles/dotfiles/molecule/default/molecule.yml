@@ -1,0 +1,33 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: dotfiles-ubuntu
+    image: ubuntu:24.04
+    pre_build_image: false
+    command: /lib/systemd/systemd
+    privileged: false
+    volumes:
+      - "${MOLECULE_PROJECT_DIRECTORY}/../..:/dotfiles:ro"
+    env:
+      DOTFILES: /dotfiles
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      dotfiles-ubuntu:
+        dotfiles_home: /root
+        dotfiles_repo_root: /dotfiles
+  config_options:
+    defaults:
+      stdout_callback: yaml
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - dependency
+    - create
+    - converge
+    - idempotence
+    - verify
+    - destroy

@@ -1,0 +1,69 @@
+---
+- name: Include directory creation
+  ansible.builtin.import_tasks: dirs.yml
+  tags: [dirs]
+
+- name: Include symlink setup
+  ansible.builtin.import_tasks: links.yml
+  tags: [links]
+
+- name: Include terminfo compilation
+  ansible.builtin.import_tasks: terminfo.yml
+  tags: [terminfo]
+
+- name: Include GPG config
+  ansible.builtin.import_tasks: gpg.yml
+  tags: [gpg]
+
+- name: Include SSH keys and config
+  ansible.builtin.import_tasks: ssh.yml
+  tags: [ssh]
+
+- name: Include Linux/OS prerequisites
+  ansible.builtin.import_tasks: prereqs.yml
+  tags: [prereqs]
+
+- name: Include Rust toolchain
+  ansible.builtin.import_tasks: rust.yml
+  tags: [rust]
+
+- name: Include mise runtimes
+  ansible.builtin.import_tasks: mise.yml
+  tags: [mise]
+
+- name: Include Homebrew formulae
+  ansible.builtin.import_tasks: brew.yml
+  tags: [brew]
+
+- name: Include macOS formulae and casks
+  ansible.builtin.import_tasks: brew_casks.yml
+  tags: [brew_casks]
+
+- name: Include CLI agent tools
+  ansible.builtin.import_tasks: tools_cli.yml
+  tags: [claude_opencode]
+
+- name: Include global npm modules
+  ansible.builtin.import_tasks: npm.yml
+  tags: [npm]
+
+- name: Include Neovim plugins and providers
+  ansible.builtin.import_tasks: nvim.yml
+  tags: [nvim]
+
+- name: Include TPM and tmux plugins
+  ansible.builtin.import_tasks: tpm.yml
+  tags: [tpm]
+
+- name: Include zoxide migration
+  ansible.builtin.import_tasks: zoxide.yml
+  tags: [zoxide]
+
+- name: Include beads hydration
+  ansible.builtin.import_tasks: beads.yml
+  tags: [beads]
+
+- name: Include upgrade tasks
+  ansible.builtin.import_tasks: upgrade.yml
+  when: dotfiles_state == 'latest'
+  tags: [upgrade]

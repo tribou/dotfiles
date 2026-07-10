@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Run the dotfiles role
+      ansible.builtin.include_role:
+        name: dotfiles
+        apply:
+          tags: "{{ (lookup('env', 'MOLECULE_TAGS') | default('all', true)) | split(',') }}"
+      tags: always

@@ -1,0 +1,106 @@
+---
+# Install-only (present) vs also-upgrade (latest)
+dotfiles_state: present
+
+# Home dir and checkout root (both overridable for container testing)
+dotfiles_home: "{{ ansible_env.HOME }}"
+dotfiles_repo_root: "{{ (role_path ~ '/../..') | realpath }}"
+
+# SSH identity
+dotfiles_ssh_key_email: "tribou@users.noreply.github.com"
+
+# Homebrew formulae installed on every platform
+dotfiles_brew_core:
+  - bash
+  - git
+  - neovim
+  - python
+  - zlib
+  - hashicorp/tap/terraform-ls
+  - nmap
+  - ansible
+  - htop
+  - gpg
+  - editorconfig
+  - watchman
+  - tree
+  - awscli
+  - ssh-copy-id
+  - git-extras
+  - jq
+  - dos2unix
+  - tidy-html5
+  - fd
+  - ripgrep
+  - bat
+  - navi
+  - shellcheck
+  - tlrc
+  - lazydocker
+  - lazygit
+  - just
+  - lynx
+  - tree-sitter-cli
+  - fzf
+  - git-delta
+  - gh
+  - glow
+  - beads
+  - zoxide
+# tmux excluded — installed via the --HEAD/pin command task in brew.yml (#138).
+
+dotfiles_brew_taps:
+  - hashicorp/tap
+
+# Linux-only brew formulae
+dotfiles_brew_linux:
+  - gcc
+
+# macOS-only brew formulae
+dotfiles_brew_macos_formulae:
+  - bash-completion
+  - rename
+  - alacritty
+  - ngrok/ngrok/ngrok
+  - reattach-to-user-namespace
+  - tfenv
+  - tor
+  - vimpager
+  - renameutils
+  - tmux-mem-cpu-load
+
+# macOS-only casks
+dotfiles_brew_macos_casks:
+  - cmake
+  - appcleaner
+  - balenaetcher
+  - bruno
+  - firefox
+  - imageoptim
+  - orbstack
+  - font-fira-code-nerd-font
+  - font-hack-nerd-font
+  - font-fontawesome
+
+# mise-managed runtimes
+dotfiles_mise_tools:
+  - node
+  - go
+  - bun
+  - ruby
+
+# Global npm modules
+dotfiles_npm_globals:
+  - neovim
+  - eslint_d
+  - editorconfig
+
+# TPM plugins (name -> repo) for direct-clone install in headless contexts
+dotfiles_tmux_plugins:
+  - { name: tmux-sensible, repo: tmux-plugins/tmux-sensible }
+  - { name: tmux-resurrect, repo: tmux-plugins/tmux-resurrect }
+  - { name: tmux-mem-cpu-load, repo: thewtex/tmux-mem-cpu-load }
+  - { name: tmux-copycat, repo: tmux-plugins/tmux-copycat }
+  - { name: tmux-open, repo: tmux-plugins/tmux-open }
+  - { name: tmux-yank, repo: tmux-plugins/tmux-yank }
+  - { name: tmux-prefix-highlight, repo: tmux-plugins/tmux-prefix-highlight }

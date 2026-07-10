@@ -1,0 +1,17 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Copy goss.yaml into the container
+      ansible.builtin.copy:
+        src: /dotfiles/goss.yaml
+        dest: /tmp/goss.yaml
+        remote_src: true
+    - name: Run goss validation
+      ansible.builtin.command: goss -g /tmp/goss.yaml validate --format tap
+      register: goss_out
+      changed_when: false
+    - name: Show goss output
+      ansible.builtin.debug:
+        var: goss_out.stdout_lines
