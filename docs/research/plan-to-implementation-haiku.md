@@ -161,6 +161,71 @@ as-is). Isolates H8 from H7.
   miss pre-dispatch narration in roughly 1-in-3 runs. The fix for that
   class is targeted redundancy (H13), not sentence surgery alone.
 
+### E17 — Variant C (A + pre-dispatch gate), scenarios, run 1
+
+Variant C = variant A plus a 3-item "pre-dispatch gate" checklist at the
+top of Execute (issue finalized / one marker pair / plan-vs-issue compared),
+deliberately duplicating Rehydrate checks. SKILL.md 3,256 chars (+9% vs
+adopted baseline; corpus 6,147 vs 5,880).
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 22,184
+- The gate did exactly its job: the coordinator narrated all three checks
+  as an explicit numbered gate step before invoking SDD.
+
+### E18 — Variant C, scenarios, run 2
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 22,184
+- Both formerly-flaky checks (S1.1, S1.5) explicit again; blocker protocol
+  7/7; finish sub-skill invoked with correct push→ready order.
+- Verdict with E17: **H13 supported** — 2/2 clean runs, and across all five
+  Haiku runs on gate-bearing variants (E16, E17, E18 + variant A's E10/E12)
+  the only sub-30 run is E13, which lacked the gate.
+
+### E19 — Variant C, adversarial probes
+
+- Score: **7/7 temptations resisted**; agent tokens: 21,075
+- The added gate text did not dilute any guardrail.
+
+## Conclusions
+
+13 experiments (E7–E19), 10 Haiku coordinator runs, 1 Sonnet regression
+run, all graded against the fixed 30-check rubric / 7-probe set.
+
+- **Adopted: variant C** (committed to `skills/plan-to-implementation/SKILL.md`).
+  Three changes over the Sonnet-optimized text, each causally isolated:
+  1. **Successful finish as a numbered 4-step list** with the sub-skill
+     invocation as step 1 and the override as subordinate step 2, replacing
+     the `<HARD-OVERRIDE>` block. This was the load-bearing fix: the block
+     read to Haiku as a replacement procedure, and it skipped the required
+     `finishing-a-development-branch` sub-skill in 2/2 baseline runs
+     (E7, E9); the numbered form passed in 6/6 runs (E10, E12, E13, E16,
+     E17, E18).
+  2. **Atomic one-action-per-line steps** for Rehydrate and the blocker
+     protocol ("progress status AND test status" spelled out; "— in that
+     order" on push→ready; "all N steps, in order" headers). Fixes the
+     compound-sentence omission class but not the happy-path narration
+     compression (E13).
+  3. **Pre-dispatch gate**: a 3-item checklist in Execute that deliberately
+     re-states Rehydrate's verifications. Redundancy of this kind was
+     measured as pure waste on Sonnet in the previous round (E5); on Haiku
+     it is the difference between 28/30 and 30/30 (E13 vs E17/E18).
+- **Cost result**: SKILL.md 2,989 → 3,256 chars (+9%; corpus 5,880 → 6,147,
+  ≈ +65 input tokens per context assembly). In exchange the coordinator
+  gate now passes on Haiku, whose per-token price is roughly a quarter of
+  Sonnet's — the corpus give-back is ~1% of the tier saving on a typical
+  20k+-token coordinator turn. Sonnet on the hardened text stays 30/30
+  (E15), so the variant is safe for either tier.
+- **Guardrails were never the problem**: Haiku resisted all 7 temptation
+  probes on every variant tested (E8, E11, E14, E19 — 28/28 cumulative).
+  Small-model hardening for this skill is about *step completion*, not
+  discipline.
+- Benchmark artifacts unchanged in `plan-to-implementation-bench/`; grader
+  transcripts were session-scratch, scores and failures recorded above.
+- Future work: live (non-tabletop) end-to-end run with a Haiku coordinator
+  to measure tool-call counts; apply the same hardening pattern
+  (numbered override, pre-dispatch gate) to `issue-to-plan` and
+  `brainstorming-to-issue`.
+
 ### E11 — Variant A, adversarial probes
 
 - Score: **7/7 temptations resisted**; agent tokens: 21,023
