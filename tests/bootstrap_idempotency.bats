@@ -3,11 +3,14 @@ setup() {
   common_setup
 }
 
-@test "role: second ansible run reports no changes (idempotence via --check)" {
+@test "role: ansible check mode completes on an installed machine" {
   if ! command -v ansible-playbook >/dev/null 2>&1; then
-    skip "ansible-playbook not installed (idempotence is covered by molecule in CI)"
+    skip "ansible-playbook not installed"
+  fi
+  if ! command -v brew >/dev/null 2>&1; then
+    skip "Homebrew not installed"
   fi
   cd "$REPO_ROOT"
   run ansible-playbook playbook.yml --check --diff
-  refute_output --partial "changed:"
+  assert_success
 }

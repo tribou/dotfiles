@@ -1,22 +1,23 @@
 ---
 - name: Detect Homebrew
   ansible.builtin.command: which brew
-  register: dotfiles_brew_which
+  register: dotfiles_brew_check
   changed_when: false
   failed_when: false
+  check_mode: false
 
 - name: Install Homebrew
   ansible.builtin.shell:
     cmd: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   environment:
     NONINTERACTIVE: "1"
-  when: dotfiles_brew_which.rc != 0
+  when: dotfiles_brew_check.rc != 0
 
 - name: Re-detect Homebrew after install
   ansible.builtin.command: which brew
   register: dotfiles_brew_which
   changed_when: false
-  when: dotfiles_brew_which.rc != 0
+  check_mode: false
 
 - name: Set brew binary fact
   ansible.builtin.set_fact:
