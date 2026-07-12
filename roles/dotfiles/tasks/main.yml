@@ -43,10 +43,6 @@
   ansible.builtin.import_tasks: tools_cli.yml
   tags: [claude_opencode]
 
-- name: Include global npm modules
-  ansible.builtin.import_tasks: npm.yml
-  tags: [npm]
-
 - name: Include Neovim plugins and providers
   ansible.builtin.import_tasks: nvim.yml
   tags: [nvim]

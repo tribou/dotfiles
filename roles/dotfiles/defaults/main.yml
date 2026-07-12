@@ -89,12 +89,6 @@ dotfiles_mise_tools:
   - bun
   - ruby
 
-# Global npm modules
-dotfiles_npm_globals:
-  - neovim
-  - eslint_d
-  - editorconfig
-
 # TPM plugins (name -> repo) for direct-clone install in headless contexts
 dotfiles_tmux_plugins:
   - { name: tmux-sensible, repo: tmux-plugins/tmux-sensible }

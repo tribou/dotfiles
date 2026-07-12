@@ -36,9 +36,15 @@ setup() {
 }
 
 @test "role: tasks/main.yml includes all concern files" {
-  for f in dirs links terminfo gpg ssh prereqs rust mise brew brew_casks tools_cli npm nvim tpm zoxide beads upgrade; do
+  for f in dirs links terminfo gpg ssh prereqs rust mise brew brew_casks tools_cli nvim tpm zoxide beads upgrade; do
     grep -q "$f.yml" "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
   done
+}
+
+@test "role: mise default-node-packages is the sole global npm package source" {
+  [ ! -e "$REPO_ROOT/roles/dotfiles/tasks/npm.yml" ]
+  ! grep -q 'npm.yml' "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
+  ! grep -q 'dotfiles_npm_globals' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"
 }
 
 @test "role: upgrade tasks are gated on dotfiles_state == latest" {

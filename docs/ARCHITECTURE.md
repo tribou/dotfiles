@@ -35,7 +35,6 @@ roles/dotfiles/
     ├── ssh.yml          # SSH key generation
     ├── gpg.yml          # GPG agent config
     ├── mise.yml         # Version-managed runtimes
-    ├── npm.yml          # Global npm packages
     ├── rust.yml         # Rust toolchain
     ├── nvim.yml         # Neovim plugin management
     ├── tpm.yml          # Tmux plugin manager
