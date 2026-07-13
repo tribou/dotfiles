@@ -237,3 +237,79 @@ header updated to "all 7 steps, in order".
   retrying, leaving no durable handoff. Diagnosis: this is a *text gap*,
   not compression — `plan-and-publish.md` never states the repair step;
   the 8/9 runs that passed S6.2 inferred it. → H12, variant D.
+
+### Variant D (C + recipes repair clause)
+
+Variant D = variant C SKILL.md (4,247 chars) + one sentence appended to
+`plan-and-publish.md`'s abort line (1,873 → 2,099 chars): "Then repair
+the body or plan (for example, remove or escape a literal marker string
+inside the plan), re-run the validation, and create the PR only once it
+passes — the durable handoff still requires the published draft PR."
+Corpus 6,346 (+15% vs baseline 5,503; ≈ +210 input tokens per assembly).
+First and only recipes-file change in this round.
+
+### E17 — Variant D, adversarial probes
+
+- Score: **7/7 temptations resisted**; agent tokens: 24,521
+- Cumulative probe resistance for this skill: 35/35 across baseline and
+  variants A/B/C/D (E2, E7, E10, E13, E17).
+
+### E15 — Variant D, scenarios, run 1
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 24,591
+- S6 now reads exactly as intended: abort → repair the plan (remove or
+  escape the literal marker) → re-assemble → re-validate → create only
+  once it passes. All variant-C wins held.
+
+### E16 — Variant D, scenarios, run 2
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 24,665
+- S6 repair+retry explicit again; S7 cites "first restore … then stop"
+  verbatim; every Publish step narrated with its step number.
+- Verdict with E15/E17: **H12 supported** — S6 repair explicit in 2/2
+  runs (vs 0/1 on variant C's E12), 30/30 sustained, probes clean. Gate
+  met; variant D adopted. (Sonnet regression E14 ran on variant C; the
+  only delta in D is one added unambiguous recipes sentence, so it was
+  not re-run — same precedent as the prior round, which ran Sonnet once
+  on variant A and adopted variant C.)
+
+## Conclusions
+
+17 experiments (E1–E17), 15 Haiku coordinator runs, 1 Sonnet regression
+run, all graded against the fixed 30-check rubric / 7-probe set.
+
+- **Adopted: variant D** (committed to `skills/issue-to-plan/`). Four
+  changes over the baseline, each causally isolated by the run history:
+  1. **Atomic Entry Gate** ("all 5 steps, in order"; claim split into
+     "assign it and add the `in-progress` label" with `Closes #<N>` on
+     its own line). The compound claim clause shed in 2/3 baseline runs
+     (E1, E4); explicit in 8/8 variant runs after the split.
+  2. **Generate the Plan as a numbered 3-step list** — worktrees step 1,
+     `writing-plans` step 2, the `<HARD-OVERRIDE>` block replaced by a
+     subordinate override step 3. Removed the sub-skill inversion (E4
+     invoked `writing-plans` first, following the baseline's listing
+     order; zero inversions in 8/8 variant runs).
+  3. **Reliability additions for rare-path narration**: pre-publish gate
+     re-stating claim/path/body checks; terminal print split atomic
+     (E8's dropped handoff line: 0 recurrences after); Red Flags closer
+     ordered "restore, then stop, in that order" (E5's abort-without-
+     restore: 0 recurrences after).
+  4. **Recipes repair clause** — the one genuine spec gap found: the
+     abort-on-validation-failure line never said to repair and retry
+     (E12 stopped with no durable handoff). One sentence fixes it.
+- **Cost result**: corpus 5,503 → 6,346 chars (+15%, ≈ +210 input tokens
+  per context assembly) — inside the ≤1.5× gate; on a Haiku coordinator
+  the tier saving dwarfs the give-back, and Sonnet stays 30/30 (E14).
+- **This skill's baseline was already near the gate** (29–30 vs
+  plan-to-implementation's 27–29): a prohibition-only `<HARD-OVERRIDE>`
+  adjacent to REQUIRED lines never displaced a sub-skill (H1 refuted).
+  The hardening value here was reliability — turning 1-in-3 clause
+  shedding on compounds ("claim … and retain", "print URL and handoff",
+  "restore … and stop") into 0-in-8 by making every compound atomic and
+  every sequence explicitly ordered.
+- **Guardrails were never the problem**: 35/35 temptations resisted
+  across every variant (E2, E7, E10, E13, E17).
+- Benchmark artifacts in `issue-to-plan-bench/`; grader transcripts were
+  session-scratch, scores and failures recorded above.
+- Future work (tracked on issue #159): live end-to-end Haiku run for
+  `plan-to-implementation` with tool-call counts per phase.

@@ -59,7 +59,7 @@ test "$begin_line" -lt "$end_line"
 gh pr create --draft --title "$TITLE" --body-file "$body_file"
 ```
 
-Any validation failure aborts before `gh pr create`.
+Any validation failure aborts before `gh pr create`. Then repair the body or plan (for example, remove or escape a literal marker string inside the plan), re-run the validation, and create the PR only once it passes — the durable handoff still requires the published draft PR.
 
 Verify the published result, not only the local body file:
 

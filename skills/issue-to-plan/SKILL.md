@@ -11,37 +11,40 @@ Turn a finalized issue into a draft PR that carries a machine-recoverable implem
 
 **Core principle:** planning and execution happen in separate contexts. This skill never runs SDD or dispatches Task 1.
 
-## Entry Gate
+## Entry Gate (all 5 steps, in order)
 
 1. Run `gh issue view <N> --json number,title,body,state`.
 2. If the title starts with `[DRAFT]`, stop and route to `brainstorming-to-issue`.
 3. If the entire change is one file, one behavior, and one red-green-commit review pass, use `superpowers:test-driven-development` directly. Uncertainty means it is not trivial.
-4. Claim the issue per repository rules and retain `Closes #<N>` for the PR body.
+4. Claim the issue per repository rules: assign it and add the `in-progress` label.
+5. Retain `Closes #<N>` for the PR body.
 
-## Generate the Plan
+## Generate the Plan (all 3 steps, in order)
 
-**REQUIRED SUB-SKILL:** Use `superpowers:writing-plans`, including its Self-Review, File Structure, Global Constraints, per-task Interfaces, and bite-sized TDD steps.
+1. **REQUIRED SUB-SKILL:** `superpowers:using-git-worktrees` — create the execution worktree and branch first, before any plan is written.
+2. **REQUIRED SUB-SKILL:** `superpowers:writing-plans` — including its Self-Review, File Structure, Global Constraints, per-task Interfaces, and bite-sized TDD steps.
+3. Override inside `writing-plans` — its persistence and handoff only:
+   - Write the plan to `.superpowers/sdd/plan.md` in the execution worktree, protected by the nested scratch `.gitignore` convention.
+   - Never write it under `docs/` and never commit it.
+   - Never offer execution approaches and never start implementation.
 
-**REQUIRED SUB-SKILL:** Use `superpowers:using-git-worktrees` to create the execution worktree and branch before writing the plan.
+## Publish the Durable Handoff (all 7 steps, in order)
 
-<HARD-OVERRIDE>
-Override only `writing-plans` persistence and handoff:
+Pre-publish gate — before `gh pr create`, confirm each check aloud:
 
-- Write the plan to `.superpowers/sdd/plan.md` in the execution worktree, protected by the nested scratch `.gitignore` convention.
-- Never write it under `docs/` or commit it.
-- Never offer execution approaches or start implementation.
-</HARD-OVERRIDE>
+1. Source issue is finalized (no `[DRAFT]`), assigned, and labeled `in-progress`.
+2. The plan is at `.superpowers/sdd/plan.md`, untracked and unstaged.
+3. The body file contains `Closes #<N>` and exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair.
 
-## Publish the Durable Handoff
-
-Use the exact commands and body shape in `plan-and-publish.md`:
+Then, with the exact commands and body shape in `plan-and-publish.md`:
 
 1. Create an empty seed commit to anchor the branch.
 2. Push the branch.
 3. Open a **draft** PR whose body contains `Closes #N` and the complete plan between `<!-- BEGIN PLAN -->` and `<!-- END PLAN -->`.
-4. Verify the PR is open and draft and that both markers are present.
-5. Print the PR URL and: `Run plan-to-implementation for PR #M in a fresh session.`
-6. **STOP.**
+4. Verify the published PR: state OPEN, `isDraft` true, exactly one ordered marker pair.
+5. Print the PR URL.
+6. Print exactly: `Run plan-to-implementation for PR #M in a fresh session.`
+7. **STOP.**
 
 The plan remains untracked scratch locally; its durable copy is the draft PR body. The empty seed commit contains no plan and disappears under squash merge.
 
@@ -74,4 +77,4 @@ The plan remains untracked scratch locally; its durable copy is the draft PR bod
 - The PR is ready for review instead of draft.
 - Planning and execution are still happening in one session.
 
-Any red flag means restore the durable draft-PR handoff and stop without implementation.
+Any red flag means: first restore the durable draft-PR handoff (for a non-draft PR, convert it back to draft or re-publish it as draft), then stop without implementation — restore, then stop, in that order.

@@ -147,3 +147,57 @@ deliberately re-states earlier obligations; Common Mistakes gains a
 - Verdict: **H6 supported** — the hardening is safe for either tier.
   Variant A's evidence set is complete: scenarios 30/30 in 2/2 Haiku runs
   + 1 Sonnet run, probes 7/7, zero forbidden-action failures anywhere.
+
+## Conclusions
+
+8 experiments (E1–E8), 7 Haiku coordinator runs, 1 Sonnet regression
+run, all graded against the fixed 30-check rubric / 7-probe set.
+
+- **Adopted: variant A** (committed to
+  `skills/brainstorming-to-issue/SKILL.md`; `issue-lifecycle.md`
+  unchanged). Three changes over the baseline:
+  1. **Core loop as a numbered 4-step list** with the REQUIRED
+     `superpowers:brainstorming` invocation as step 1 and the
+     `<HARD-OVERRIDE>` replaced by a subordinate override step ending in
+     an explicit continuation ("when the dialogue completes, continue
+     with THIS skill's Finalize → Ready below"). This fixed the round's
+     headline finding: a *prohibition-only* override block never caused a
+     forbidden action (guardrails held 3/3 baseline runs) but was read as
+     **terminal** in E3 — "do NONE of that" became "stop here", and the
+     skill's own finalize sequence was skipped. This is the mirror image
+     of the prior round's HARD-OVERRIDE failure (there the override
+     displaced a required sub-skill; here it displaced the rest of the
+     parent skill). S6 passed 3/3 variant runs (incl. Sonnet) after the
+     continuation line, with T4 probing the same pull and holding.
+  2. **Atomic dedupe** — the two entry searches (keyword,
+     `[DRAFT] in:title`) as a numbered sub-list; the shed second search
+     (E4) did not recur.
+  3. **Pre-finalize gate + "all N steps" headers** — 3-item gate
+     (approval / body current / no docs file or `writing-plans`)
+     re-stating earlier obligations before the 5-step finalize; both
+     variant runs narrated it aloud.
+- **Cost result**: corpus 12,317 → 12,902 chars (+4.7%; SKILL.md +7%,
+  slightly above the pre-registered ≤5% but well inside the 1.5× gate).
+- **Guardrails were never the problem**: 14/14 temptations resisted
+  (E2, E7).
+- Benchmark artifacts in `brainstorming-to-issue-bench/`; grader
+  transcripts were session-scratch, scores and failures recorded above.
+
+### Cross-skill takeaways for future skill authoring
+
+Combined with the prior round (`plan-to-implementation-haiku.md`) and the
+companion log (`issue-to-plan-haiku.md`):
+
+- Override blocks fail small models two ways: *procedural* override
+  content displaces required sub-skills (prior round), and
+  *prohibition-only* override content displaces the parent skill's
+  continuation (this round). Both are fixed by the same shape: numbered
+  list, required invocation first, override subordinate, continuation
+  explicit.
+- "X and Y" compounds shed a clause roughly 1-in-3 runs on Haiku; "X and
+  stop"/"abort" compounds resolve toward stopping. Atomic steps plus
+  explicit ordering ("first …, then …, in that order") eliminated every
+  observed instance.
+- Tabletop benches also surface genuine spec gaps (the missing
+  repair-and-retry in `plan-and-publish.md`) that stronger models paper
+  over by inference.
