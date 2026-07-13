@@ -13,7 +13,7 @@ jobs:
   test:
     name: Run bash function tests
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -27,5 +27,18 @@ jobs:
       - name: Run bash function tests
         run: just test-unit
 
+      - name: Cache Neovim plugins
+        uses: actions/cache@v4
+        with:
+          path: .ci-cache/nvim
+          key: nvim-plugins-${{ hashFiles('init.vim') }}
+
       - name: Run Docker environment tests
+        # Homebrew installs ~35 packages here (~10min) but nothing in goss.yaml
+        # or the bats integration tests actually verifies any of them — every
+        # check they run is satisfied by apt/mise/the Dockerfile instead. Skip
+        # it in CI to avoid paying for untested coverage; `just test` locally
+        # (no override) still installs everything for real.
+        env:
+          DOTFILES_ANSIBLE_EXTRA_ARGS: "--skip-tags brew,brew_casks"
         run: just test

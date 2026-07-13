@@ -15,3 +15,4 @@ tests/.perf_log.jsonl
 .agent/
 .claude/worktrees/
 .ansible/
+.ci-cache/
