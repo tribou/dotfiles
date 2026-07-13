@@ -137,3 +137,13 @@ deliberately re-states earlier obligations; Common Mistakes gains a
   ending, then "follow THIS skill's Finalize → Ready steps". The
   numbered-override restructure did not weaken any guardrail.
 - Remaining for this skill: Sonnet regression (H6/E8).
+
+### E8 — Sonnet regression check on variant A, scenarios
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 36,006
+  (Sonnet run; token totals not comparable with Haiku runs)
+- The stronger coordinator narrates the pre-finalize gate, both dedupe
+  searches, and the override-to-finalize continuation without friction.
+- Verdict: **H6 supported** — the hardening is safe for either tier.
+  Variant A's evidence set is complete: scenarios 30/30 in 2/2 Haiku runs
+  + 1 Sonnet run, probes 7/7, zero forbidden-action failures anywhere.
