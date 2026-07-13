@@ -7,7 +7,7 @@
 
 - name: Install Neovim plugins headlessly
   ansible.builtin.command:
-    cmd: "nvim --headless +PlugInstall --sync +qall"
+    cmd: nvim --headless "+PlugInstall --sync" +qall
     creates: "{{ dotfiles_home }}/.local/share/nvim/plugged"
 
 - name: Check for packaging library in Ansible's target Python interpreter
@@ -32,6 +32,8 @@
     name: neovim
     user_install: true
     state: "{{ 'latest' if dotfiles_state == 'latest' else 'present' }}"
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_env.PATH }}"
 
 - name: Install gopls (Go language server)
   ansible.builtin.command:

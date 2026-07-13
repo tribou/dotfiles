@@ -14,7 +14,19 @@
   when: dotfiles_brew_check.rc != 0
 
 - name: Re-detect Homebrew after install
-  ansible.builtin.command: which brew
+  # `which brew` can't see the freshly-installed binary here: the Homebrew
+  # installer never updates the current process's PATH (it only prints
+  # instructions for the user's shell rc), so we check its known install
+  # locations directly instead, same as bash_profile's brew shellenv guards.
+  ansible.builtin.shell:
+    cmd: |
+      for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+        if [ -x "$candidate" ]; then
+          echo "$candidate"
+          exit 0
+        fi
+      done
+      exit 1
   register: dotfiles_brew_which
   changed_when: false
   check_mode: false

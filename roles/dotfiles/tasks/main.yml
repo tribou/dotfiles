@@ -63,3 +63,9 @@
   ansible.builtin.import_tasks: upgrade.yml
   when: dotfiles_state == 'latest'
   tags: [upgrade]
+
+- name: Mark bootstrap complete
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.dotfiles-bootstrap-done"
+    state: touch
+    mode: "0644"

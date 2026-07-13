@@ -12,6 +12,7 @@
     - .config/alacritty
     - .config/mise
     - .local/bin
+    - .local/share/nvim/site/autoload
     - .tmux
 
 - name: Create ~/.gnupg with strict perms

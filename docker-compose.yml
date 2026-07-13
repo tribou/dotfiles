@@ -10,8 +10,8 @@ services:
     init: true
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml
-          -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles &&
+        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles &&
+        source ~/.bash_profile &&
         DOTFILES=/dotfiles goss validate --format tap &&
         ./tests/test_helper/bats-core/bin/bats tests/integration/
       "
@@ -23,6 +23,5 @@ services:
     tty: true
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml
-          -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles && bash
+        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles && bash
       "
