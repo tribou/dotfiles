@@ -16,7 +16,7 @@
       tmux kill-session -t _bootstrap_tpm 2>/dev/null || true
     executable: /bin/bash
     creates: "{{ dotfiles_home }}/.tmux/plugins/tmux-sensible"
-  when: "'TMUX' not in ansible_env"
+  when: "'TMUX' not in ansible_facts.env"
 
 - name: Install tmux plugins via TPM (inside existing tmux server)
   ansible.builtin.shell:
@@ -25,4 +25,4 @@
       "{{ dotfiles_home }}/.tmux/plugins/tpm/bin/install_plugins"
     executable: /bin/bash
     creates: "{{ dotfiles_home }}/.tmux/plugins/tmux-sensible"
-  when: "'TMUX' in ansible_env"
+  when: "'TMUX' in ansible_facts.env"

@@ -11,14 +11,14 @@
     creates: "{{ dotfiles_home }}/.local/share/nvim/plugged"
 
 - name: Check for packaging library in Ansible's target Python interpreter
-  ansible.builtin.command: "{{ ansible_python.executable }} -c 'import packaging'"
+  ansible.builtin.command: "{{ ansible_facts.python.executable }} -c 'import packaging'"
   register: dotfiles_python_packaging_check
   changed_when: false
   failed_when: false
   check_mode: false
 
 - name: Install packaging library (required by ansible.builtin.pip)
-  ansible.builtin.command: "{{ ansible_python.executable }} -m pip install --user --break-system-packages packaging"
+  ansible.builtin.command: "{{ ansible_facts.python.executable }} -m pip install --user --break-system-packages packaging"
   when: dotfiles_python_packaging_check.rc != 0
 
 - name: Install pynvim (Python provider)
@@ -33,7 +33,7 @@
     user_install: true
     state: "{{ 'latest' if dotfiles_state == 'latest' else 'present' }}"
   environment:
-    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_env.PATH }}"
+    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"
 
 - name: Install gopls (Go language server)
   ansible.builtin.command:
@@ -41,4 +41,4 @@
     creates: "{{ dotfiles_home }}/dev/go/bin/gopls"
   environment:
     GOPATH: "{{ dotfiles_home }}/dev/go"
-    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_env.PATH }}"
+    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"

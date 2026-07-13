@@ -27,7 +27,7 @@
         AddKeysToAgent yes
         UseKeychain yes
         IdentityFile ~/.ssh/id_ed25519
-  when: ansible_system == 'Darwin'
+  when: ansible_facts.system == 'Darwin'
 
 - name: Pre-load keys into the macOS keychain
   ansible.builtin.command:
@@ -38,4 +38,4 @@
   register: ssh_add_result
   changed_when: false
   failed_when: false
-  when: ansible_system == 'Darwin'
+  when: ansible_facts.system == 'Darwin'

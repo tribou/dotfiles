@@ -3,7 +3,7 @@
 dotfiles_state: present
 
 # Home dir and checkout root (both overridable for container testing)
-dotfiles_home: "{{ ansible_env.HOME }}"
+dotfiles_home: "{{ ansible_facts.env.HOME }}"
 dotfiles_repo_root: "{{ (role_path ~ '/../..') | realpath }}"
 
 # SSH identity

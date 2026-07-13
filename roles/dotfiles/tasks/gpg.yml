@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ dotfiles_home }}/.gnupg"
     state: directory
-    owner: "{{ ansible_user_id }}"
+    owner: "{{ ansible_facts.user_id }}"
     mode: "0700"
 
 - name: Enumerate real files inside ~/.gnupg

@@ -66,7 +66,7 @@
   community.general.homebrew:
     name: "{{ dotfiles_brew_linux }}"
     state: present
-  when: ansible_system != 'Darwin'
+  when: ansible_facts.system != 'Darwin'
 
 - name: Check git-delta binary integrity
   ansible.builtin.command: delta --version

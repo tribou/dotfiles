@@ -11,7 +11,7 @@
     state: present
     update_cache: true
   become: true
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts.os_family == 'Debian'
 
 - name: Install developer prerequisites (Arch)
   community.general.pacman:
@@ -24,4 +24,4 @@
     state: present
     update_cache: true
   become: true
-  when: ansible_os_family == 'Archlinux'
+  when: ansible_facts.os_family == 'Archlinux'

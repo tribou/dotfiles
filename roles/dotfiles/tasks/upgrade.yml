@@ -4,14 +4,14 @@
     upgrade: true
     update_cache: true
   become: true
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts.os_family == 'Debian'
 
 - name: Upgrade pacman packages (Arch)
   community.general.pacman:
     upgrade: true
     update_cache: true
   become: true
-  when: ansible_os_family == 'Archlinux'
+  when: ansible_facts.os_family == 'Archlinux'
 
 - name: Upgrade all Homebrew formulae
   community.general.homebrew:
@@ -23,7 +23,7 @@
   community.general.homebrew_cask:
     upgrade_all: true
     path: "{{ (dotfiles_brew_bin | default('')) | dirname }}"
-  when: ansible_system == 'Darwin'
+  when: ansible_facts.system == 'Darwin'
 
 - name: Upgrade mise-managed runtimes
   ansible.builtin.command:
@@ -38,7 +38,7 @@
   environment:
     CARGO_HOME: "{{ dotfiles_home }}/.cargo"
     RUSTUP_HOME: "{{ dotfiles_home }}/.rustup"
-    PATH: "{{ dotfiles_home }}/.cargo/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ dotfiles_home }}/.cargo/bin:{{ ansible_facts.env.PATH }}"
   register: rustup_update
   changed_when: "'unchanged' not in (rustup_update.stdout | default(''))"
 
