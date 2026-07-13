@@ -23,7 +23,7 @@
     cmd: "{{ dotfiles_home }}/.local/bin/mise install ruby"
     creates: "{{ dotfiles_home }}/.local/share/mise/installs/ruby/"
   environment:
-    MISE_RUBY_COMPILE: "0"
+    MISE_RUBY_COMPILE: "false"
     MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
     MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
   tags: [mise]

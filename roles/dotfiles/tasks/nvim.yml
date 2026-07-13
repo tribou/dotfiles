@@ -10,6 +10,15 @@
     cmd: nvim --headless "+PlugInstall --sync" +qall
     creates: "{{ dotfiles_home }}/.local/share/nvim/plugged"
 
+- name: Install CoC extensions headlessly
+  # :CocInstall requires explicit extension names — it won't read
+  # g:coc_global_extensions itself (that list only auto-installs
+  # asynchronously after CoC's own init, too late for a headless run to
+  # wait on) — so pull the names from g:coc_global_extensions here instead.
+  ansible.builtin.command:
+    cmd: nvim --headless -c "execute 'CocInstall -sync ' . join(g:coc_global_extensions)" -c "qall"
+    creates: "{{ dotfiles_home }}/.config/coc/extensions/node_modules"
+
 - name: Check for packaging library in Ansible's target Python interpreter
   ansible.builtin.command: "{{ ansible_facts.python.executable }} -c 'import packaging'"
   register: dotfiles_python_packaging_check
