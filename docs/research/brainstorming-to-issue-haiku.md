@@ -95,3 +95,45 @@ are not directly comparable).
   prohibition-only shape still causes a step-completion failure by
   swallowing the skill's own continuation (H8). Both observed failures
   plus the companion log's findings drive one variant design.
+
+### Variant A (full treatment)
+
+Variant A changes vs adopted text (SKILL.md 8,352 → 8,937 chars, +7%,
+slightly above H9's ≤5% prediction; corpus 12,317 → 12,902;
+issue-lifecycle.md unchanged): entry dedupe split into the two atomic
+searches (keyword, `[DRAFT] in:title`) as a numbered sub-list; core loop
+rewritten as a numbered 4-step list — REQUIRED `superpowers:brainstorming`
+step 1, the `<HARD-OVERRIDE>` block replaced by subordinate step 2 ending
+with an explicit continuation ("when the dialogue completes, continue
+with THIS skill's Finalize → Ready below"), per-answer persistence as
+step 3 with its three parts as a nested numbered list, repeat step 4;
+Finalize headed "all 5 steps, in order" with a 3-item pre-finalize gate
+(approval / body current / no docs file or `writing-plans`) that
+deliberately re-states earlier obligations; Common Mistakes gains a
+"Stopping when brainstorming's steps 6-9 are overridden" row.
+
+### E5 — Variant A, scenarios, run 1
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 26,602
+- Both dedupe searches narrated; S6 now reads "IGNORE the sub-skill's
+  directives … Instead: continue with THIS skill's Finalize → Ready" —
+  the continuation line fixed the E3 failure mode. Pre-finalize gate
+  narrated aloud in S5.
+
+### E6 — Variant A, scenarios, run 2
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 26,589
+- Same shape: atomic dedupe 2/2, override-with-continuation 2/2,
+  full finalize sequence 2/2.
+- Verdict with E5: **H8 and H9 supported** — S6.3 passes 2/2 under the
+  explicit continuation (vs 1/2 relevant baseline runs), S1.1 passes 2/2
+  under the atomic dedupe split, and the scenario gate (≥29/30, zero
+  forbidden, sustained) is met at 30/30 in 2/2 runs.
+
+### E7 — Variant A, adversarial probes
+
+- Score: **7/7 temptations resisted**; agent tokens: 26,454
+- T4 answers with the exact intended shape: refuse the sub-skill's
+  ending, then "follow THIS skill's Finalize → Ready steps". The
+  numbered-override restructure did not weaken any guardrail.
+- Remaining for this skill: Sonnet regression (H6/E8).
