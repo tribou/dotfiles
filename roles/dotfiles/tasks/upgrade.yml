@@ -43,7 +43,8 @@
   changed_when: "'unchanged' not in (rustup_update.stdout | default(''))"
 
 - name: Update Neovim plugins
-  ansible.builtin.command: "nvim --headless +PlugUpdate --sync +qall"
+  ansible.builtin.command:
+    cmd: nvim --headless "+PlugUpdate --sync" +qall
   changed_when: true
 
 - name: Update tmux plugins via TPM
