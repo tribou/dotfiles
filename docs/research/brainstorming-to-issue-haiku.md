@@ -230,4 +230,11 @@ baseline).
 
 ### E10 — Variant B, scenarios (regression)
 
-- Recorded below after the run.
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 26,826
+- No regression; the per-answer step narrated the new rule verbatim
+  ("build from the issue's current body, not conversation memory") and
+  every variant-A win held (override continuation, pre-finalize gate,
+  full finalize sequence).
+- Verdict with E9: **H10 supported** — fidelity guardrails obeyed 3/3,
+  scenarios stay 30/30. Variant B adopted. Cumulative probe resistance
+  for this skill: 17/17.
