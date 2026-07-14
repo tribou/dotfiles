@@ -55,11 +55,15 @@ end_line=$(grep -nF '<!-- END PLAN -->' "$body_file" | cut -d: -f1)
 test "$(grep -Fc '<!-- BEGIN PLAN -->' "$body_file")" -eq 1
 test "$(grep -Fc '<!-- END PLAN -->' "$body_file")" -eq 1
 test "$begin_line" -lt "$end_line"
+test "$(wc -c < "$body_file")" -le 65536
+test "$(sed -n "$((begin_line+1)),$((end_line-1))p" "$body_file")" = "$(cat .superpowers/sdd/plan.md)"
 
 gh pr create --draft --title "$TITLE" --body-file "$body_file"
 ```
 
 Any validation failure aborts before `gh pr create`. Then repair the body or plan (for example, remove or escape a literal marker string inside the plan), re-run the validation, and create the PR only once it passes — the durable handoff still requires the published draft PR.
+
+Two of the checks are fidelity gates with a different repair rule: the last `test` requires the text between the markers to be byte-identical to `.superpowers/sdd/plan.md` (trailing newlines aside), and the `wc -c` test enforces GitHub's 65,536-character body limit. If the body is over that limit, never summarize, trim, or paraphrase the plan to fit — verbatim fidelity is the point of the handoff. Stop and report the size; the fix is splitting the source issue into smaller issues, not compressing the plan.
 
 Verify the published result, not only the local body file:
 

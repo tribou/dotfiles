@@ -35,6 +35,7 @@ Pre-publish gate — before `gh pr create`, confirm each check aloud:
 1. Source issue is finalized (no `[DRAFT]`), assigned, and labeled `in-progress`.
 2. The plan is at `.superpowers/sdd/plan.md`, untracked and unstaged.
 3. The body file contains `Closes #<N>` and exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair.
+4. The plan between the markers is the verbatim contents of `.superpowers/sdd/plan.md` — never a summary — and the body file is within GitHub's 65,536-character body limit.
 
 Then, with the exact commands and body shape in `plan-and-publish.md`:
 
@@ -68,6 +69,7 @@ The plan remains untracked scratch locally; its durable copy is the draft PR bod
 | Committing the plan | Commit only an empty seed; keep the plan untracked |
 | Saving under `docs/superpowers/plans/` | Divert `writing-plans` output to `.superpowers/sdd/plan.md` |
 | Asking which execution approach to use | There is no execution in this skill |
+| Summarizing or trimming the plan to fit GitHub's 65k body limit | Never compress the plan; stop, report the size, and split the source issue instead |
 
 ## Red Flags — STOP
 
@@ -75,6 +77,7 @@ The plan remains untracked scratch locally; its durable copy is the draft PR bod
 - No open draft PR contains the complete marked plan.
 - The plan or `.superpowers/` is staged.
 - The PR is ready for review instead of draft.
+- The plan in the PR body is a summary or paraphrase instead of the verbatim `.superpowers/sdd/plan.md` contents.
 - Planning and execution are still happening in one session.
 
 Any red flag means: first restore the durable draft-PR handoff (for a non-draft PR, convert it back to draft or re-publish it as draft), then stop without implementation — restore, then stop, in that order.

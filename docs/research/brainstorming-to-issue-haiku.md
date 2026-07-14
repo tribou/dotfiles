@@ -43,6 +43,7 @@ runs.)
 | H7 | (After E1/E2) The clean first run overstates reliability: repeats will shed clauses from the multi-clause steps (per-answer update = fold AND check off AND set next; finalize = 5 steps) in roughly 1-in-3 runs, while entry routing, the persistence override, and forbidden actions stay clean | ≥1 of 2 repeat runs misses a finalize or per-answer sub-step; zero forbidden-action failures |
 | H8 | (After E3/E4) E3's S6.3 failure is the override-as-terminal misread: a prohibition-only `<HARD-OVERRIDE>` with no explicit continuation reads to a small model as "the procedure ends here", so it stops instead of running THIS skill's finalize. Restructuring the core loop as a numbered list — sub-skill invocation step 1, override subordinate step 2 ending with an explicit "then continue to Finalize → Ready" — fixes S6.3 systematically. This is the same defect family as the prior round's H8 (override displaced a required continuation), in its mirror form (override displaced the *rest of the parent skill*) | No variant-A run stops at the override; S6.3 passes in every run |
 | H9 | The full treatment — numbered core loop with subordinate override + explicit continuation, atomic dedupe split (keyword search and `[DRAFT] in:title` search as separate lines), "all N steps, in order" finalize header, pre-finalize gate — clears the gate reliably at ≤ +5% corpus | Variant A: 30/30 in 2/2 scenario runs, 7/7 probes |
+| H10 | (Post-adoption follow-up requirement, 2026-07-14: GitHub caps issue bodies at 65,536 chars; this skill's per-answer full-body rewrite makes the model the writer every round, so it can silently compress earlier answers — especially near the cap.) An edit-don't-regenerate rule (build each update from the issue's current body, never conversation memory) plus a never-compress/ask-to-split guardrail are obeyed without scenario regression | Variant B (= A + fidelity rules): 3/3 fidelity probes refused, scenarios stay 30/30 |
 
 ## Experiments
 
@@ -201,3 +202,32 @@ companion log (`issue-to-plan-haiku.md`):
 - Tabletop benches also surface genuine spec gaps (the missing
   repair-and-retry in `plan-and-publish.md`) that stronger models paper
   over by inference.
+
+## Addendum — 2026-07-14 fidelity round (65k body limit)
+
+Post-adoption requirement (H10): this skill's per-answer full-body
+rewrite makes the model the writer every round, so it can silently
+compress earlier answers — especially near GitHub's 65,536-char body
+cap. Guardrail half handled here (variant B = adopted A + fidelity
+rules); overflow *mechanism* design split to issue #163.
+
+Variant B changes: core-loop step 3 gains "build each update from the
+issue's *current* body — never regenerate it from conversation memory,
+and never drop, shorten, or paraphrase earlier answers";
+`issue-lifecycle.md`'s Per-Answer Update repeats the
+fetch-current-body-first rule; Common Mistakes row + Red Flag for
+compressing recorded decisions (nearing 65k ⇒ surface and ask the user
+to split the spec). Corpus 12,902 → 13,625 chars (+10.6% vs original
+baseline).
+
+### E9 — Variant B, fidelity probes (new 3-probe set)
+
+- Score: **3/3 refused**; agent tokens: 26,405
+- F1 refuses to merge/condense recorded Q&A ("fidelity first"); F2
+  fetches the current body instead of composing from conversation
+  memory; F3 surfaces the near-limit state and asks the user to split
+  the spec rather than summarizing early decisions.
+
+### E10 — Variant B, scenarios (regression)
+
+- Recorded below after the run.

@@ -77,7 +77,7 @@ digraph entry {
    2. Check off the answered log item.
    3. Set the next `[ ]` question.
 
-   Not batched, not deferred to the end: a hard interruption after any answer must leave the issue current.
+   Not batched, not deferred to the end: a hard interruption after any answer must leave the issue current. Build each update from the issue's *current* body — never regenerate it from conversation memory, and never drop, shorten, or paraphrase earlier answers.
 4. Repeat until the design is presented and approved.
 
 The body is the living spec; a `## Brainstorm log` section (visible while draft) carries the checkboxed Q&A + the next open question, which IS the resume state.
@@ -123,11 +123,13 @@ Implementation happens later. When it does, any implementation **plan is optiona
 | Self-answering all clarifying questions in one pass | Run the real one-question-at-a-time dialogue with the user |
 | Ad-hoc issue structure that differs every run | Use the template in `issue-lifecycle.md` |
 | Hardcoding `--repo owner/name` | Run from the repo; let `gh` infer from the remote |
+| Compressing or summarizing recorded decisions as the body grows | Never — fidelity first; if the body nears GitHub's 65,536-character limit, surface it and ask the user to split the spec into multiple issues |
 
 ## Red Flags — STOP
 
 - About to ask questions before the `[DRAFT]` issue exists (or is adopted)
 - Answers accumulating in the conversation but not on the issue
+- About to shorten or summarize recorded spec content (for any reason, including GitHub's 65k body limit) instead of asking the user to split the spec
 - About to reuse a found issue without asking
 - Finalizing with the `[DRAFT]` prefix still in the title
 - About to write anything under `docs/superpowers/specs/`

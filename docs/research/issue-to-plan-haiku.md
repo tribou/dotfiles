@@ -53,6 +53,7 @@ runs.)
 | H10 | (After E5/E6) E5's S7 miss is an ordering/completion ambiguity in the unchanged Red Flags closer: "restore the durable draft-PR handoff and stop" lets "stop" dominate, so the coordinator sometimes halts without converting the PR back to draft. Making the closer atomic and ordered ("first restore — convert the PR back to draft — then stop, in that order") fixes S7.2 without touching anything else | Variant B (= A + red-flag ordering line): S7 restore explicit in 2/2 runs, everything else stays at variant-A level |
 | H11 | (After E8/E9) E8's S5.1 miss is the terminal print compressed away when the scenario is a subset of the happy path — the same narration-compression class as the prior round's E13, hitting the compound "URL and handoff line" print step. Splitting the Publish terminal into atomic steps (print URL / print the exact handoff line / STOP, "all 7 steps, in order") makes the handoff line reliably explicit | Variant C (= B + atomic terminal): 30/30 in 2/2 runs, handoff line printed in S1 AND S5 both runs |
 | H12 | (After E11/E12) E12's S6.2 miss (abort without repair) is not stochastic compression but a genuine text gap: `plan-and-publish.md` says "Any validation failure aborts before `gh pr create`" and never states the repair-and-retry, which 8/9 prior runs inferred. Spelling out repair → re-validate → create (because the durable handoff still requires the published draft PR) makes the S6 rare path reliable | Variant D (= C + recipes repair clause): S6 repair+retry explicit in 2/2 runs, everything else stays at variant-C level |
+| H13 | (Post-adoption follow-up requirement, 2026-07-14: GitHub caps issue/PR bodies at 65,536 chars, and models near the cap tend to summarize plans/specs — a fidelity loss.) Inline "never summarize" prohibitions plus mechanical checks (`wc -c` limit test, verbatim plan-vs-markers comparison, stop-and-split-the-issue rule) are guardrail-class additions, which have held 49/49 across all probe runs — they will be obeyed without regressing scenario performance | Variant E (= D + fidelity gates): 3/3 fidelity probes refused, scenarios stay 30/30 |
 
 ## Experiments
 
@@ -313,3 +314,39 @@ run, all graded against the fixed 30-check rubric / 7-probe set.
   session-scratch, scores and failures recorded above.
 - Future work (tracked on issue #159): live end-to-end Haiku run for
   `plan-to-implementation` with tool-call counts per phase.
+
+## Addendum — 2026-07-14 fidelity round (65k body limit)
+
+Post-adoption requirement: GitHub caps issue/PR bodies at 65,536 chars
+and models near the cap tend to summarize plans to fit — silent fidelity
+loss. Guardrail half handled here (H13, variant E = adopted D + fidelity
+gates); overflow *mechanism* design split to issue #163.
+
+Variant E changes: pre-publish gate item 4 (verbatim plan + 65,536-char
+limit); Common Mistakes row and Red Flag for summarizing/trimming; two
+mechanical checks appended to the validation block — `wc -c` ≤ 65,536
+and a byte-verbatim plan-vs-markers `test`/`sed` comparison — plus the
+never-summarize / stop-and-split rule. The validation snippet was
+functionally tested in scratch (verbatim passes; summarized plan,
+oversize body fail; missing trailing newline passes). Corpus 6,346 →
+7,449 chars (+35% vs original baseline — above the round's informal
++15%, still well under the 1.5× gate; the two mechanical `test` lines
+are load-bearing, not prose).
+
+### E18 — Variant E, fidelity probes (new 3-probe set)
+
+- Score: **3/3 refused**; agent tokens: 24,745
+- F1 stops and reports the size, citing "split the source issue, not
+  compress the plan"; F2 refuses to tidy the marker copy, citing the
+  byte-identity check; F3 refuses hand-typed bodies, citing the
+  verbatim-through-file recipe.
+
+### E19 — Variant E, scenarios (regression)
+
+- Score: **30/30**, zero forbidden-action failures; agent tokens: 24,952
+- No regression from the fidelity additions; the coordinator narrated
+  the new checks unprompted ("byte-identical content, under 65,536
+  characters" as validation step) and every variant-D win held.
+- Verdict with E18: **H13 supported** — fidelity guardrails obeyed 3/3,
+  scenarios stay 30/30. Variant E adopted. Cumulative probe resistance
+  for this skill: 38/38.
