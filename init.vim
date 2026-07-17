@@ -333,6 +333,11 @@ inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 " colorizer
 lua pcall(function() require'colorizer'.setup() end)
 
+" copilot
+let g:copilot_filetypes = {
+  \ 'gitcommit': v:true,
+  \ }
+
 " deoplete
 let g:deoplete#enable_at_startup = 1
 
