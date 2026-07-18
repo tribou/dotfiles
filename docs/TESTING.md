@@ -11,6 +11,21 @@ just dev          # Interactive Docker dev environment
 just build        # Rebuild Docker image (after Dockerfile changes)
 ```
 
+## Quality Gate Selection
+
+Choose validation from the complete changed-file set:
+
+| Change scope | Required validation |
+|---|---|
+| Only non-executable skill documentation or reference files under `.agents/skills/**` or `skills/**` | Follow `writing-skills` RED/GREEN scenarios and run `git diff --check`; skip `just test-unit` and `just test` |
+| Executable or runtime-consumed skill supporting files | Run targeted validation, then `just test-unit` and `just test` |
+| Mixed skill and non-skill changes | Run targeted validation as applicable, then `just test-unit` and `just test` |
+| Uncertain classification | Run targeted validation as applicable, then `just test-unit` and `just test` |
+
+“Documentation or reference” means prose or reference assets that agents read
+but no script, test, application, or configuration parser executes. File
+location or extension alone does not make a file non-executable.
+
 ## Test Structure
 
 - **`tests/*.bats`**: Unit tests for shell functions — run fast with no Docker required
