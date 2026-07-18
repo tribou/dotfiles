@@ -57,7 +57,7 @@
 
 - name: Include beads hydration
   ansible.builtin.import_tasks: beads.yml
-  tags: [beads]
+  tags: [beads, upgrade]
 
 - name: Include upgrade tasks
   ansible.builtin.import_tasks: upgrade.yml
