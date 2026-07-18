@@ -16,7 +16,6 @@ dotfiles_brew_core:
   - neovim
   - python
   - zlib
-  - hashicorp/tap/terraform-ls
   - nmap
   - ansible
   - htop
@@ -49,8 +48,7 @@ dotfiles_brew_core:
   - zoxide
   - tmux
 
-dotfiles_brew_taps:
-  - hashicorp/tap
+dotfiles_brew_taps: []
 
 # Linux-only brew formulae
 dotfiles_brew_linux:
