@@ -66,7 +66,7 @@ ansible-playbook playbook.yml --check --diff
 ansible-playbook playbook.yml --check --diff --tags ssh,links
 ```
 
-Available tags: `brew`, `brew_casks`, `links`, `dirs`, `ssh`, `gpg`, `mise`, `npm`, `rust`, `nvim`, `tpm`, `zoxide`, `terminfo`, `tools_cli`, `beads`, `upgrade`. Use `ansible-playbook playbook.yml --list-tags` for the full list.
+Available tags: `beads`, `brew`, `brew_casks`, `claude_opencode`, `dirs`, `gpg`, `links`, `mise`, `nvim`, `prereqs`, `rust`, `ssh`, `terminfo`, `tpm`, `upgrade`, `zoxide`. Use `ansible-playbook playbook.yml --list-tags` for the full list.
 
 ## Git Workflow with Ticket Numbers
 

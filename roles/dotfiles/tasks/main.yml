@@ -41,7 +41,7 @@
 
 - name: Include CLI agent tools
   ansible.builtin.import_tasks: tools_cli.yml
-  tags: [claude_opencode]
+  tags: [claude_opencode, upgrade]
 
 - name: Include Neovim plugins and providers
   ansible.builtin.import_tasks: nvim.yml

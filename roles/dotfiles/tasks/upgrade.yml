@@ -63,4 +63,4 @@
   register: beads_pull
   changed_when: "'Everything up-to-date' not in (beads_pull.stdout | default(''))"
   failed_when: false
-  when: "'bd' in (ansible_facts.packages | default({})) or true"
+  when: bd_bin.rc == 0
