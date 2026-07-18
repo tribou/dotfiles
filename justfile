@@ -27,8 +27,29 @@ install *args:
     ansible-playbook playbook.yml {{args}}
 
 # Upgrade everything (dotfiles_state=latest, upgrade-tagged tasks)
+# Ansible and its Python runtime are brew-managed, so the play's `brew upgrade`
+# would replace the running interpreter mid-run. Ansible lazily imports its
+# module-result deserialization profile after a module completes, so that swap
+# crashes with "Unknown profile name 'module_legacy_m2c'". Pin ansible + its
+# python (derived from `brew deps ansible`) for the play, then upgrade them
+# afterward in a separate process where self-replacement is harmless.
+alias update := upgrade
+
 upgrade *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if command -v brew >/dev/null && brew list ansible >/dev/null 2>&1; then
+        mapfile -t py_pkgs < <(brew deps ansible | grep '^python@' || true)
+        self_pkgs=(ansible "${py_pkgs[@]}")
+        brew pin "${self_pkgs[@]}"
+        trap 'brew unpin "${self_pkgs[@]}" >/dev/null 2>&1 || true' EXIT
+    fi
     ansible-playbook playbook.yml -e dotfiles_state=latest --tags upgrade {{args}}
+    if [[ -n "${self_pkgs[*]:-}" ]]; then
+        brew unpin "${self_pkgs[@]}"
+        trap - EXIT
+        brew upgrade "${self_pkgs[@]}"
+    fi
 
 # Run local health checks (symlinks, tools)
 doctor:
