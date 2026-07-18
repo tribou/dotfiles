@@ -8,7 +8,11 @@ setup() {
     skip "ansible-inventory not installed"
   fi
 
-  run bash -c "cd '$REPO_ROOT' && ansible-inventory --list --yaml 2>&1"
+  # Pin ANSIBLE_CONFIG to this repo's config, exactly as bootstrap.sh and the
+  # justfile do, so a stale/unrelated ANSIBLE_CONFIG leaked into the shell
+  # (highest precedence in Ansible) can't shadow this repo's inventory and make
+  # the test fail spuriously with "only implicit localhost is available".
+  run bash -c "cd '$REPO_ROOT' && ANSIBLE_CONFIG='$REPO_ROOT/ansible.cfg' ansible-inventory --list --yaml 2>&1"
 
   assert_success
   assert_output --partial 'localhost:'
