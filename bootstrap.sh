@@ -43,7 +43,10 @@ fi
 command -v ansible-playbook >/dev/null 2>&1 || brew install ansible
 
 echo "==> Handing off to Ansible (ansible-playbook playbook.yml)"
-ansible-playbook playbook.yml "$@"
+# Pin ANSIBLE_CONFIG to this repo's own config so a stale/unrelated
+# ANSIBLE_CONFIG in the invoking shell (highest precedence in Ansible's
+# config search order) can't shadow this repo's inventory.
+ANSIBLE_CONFIG="$PWD/ansible.cfg" ansible-playbook playbook.yml "$@"
 
 cat <<'EOF'
 

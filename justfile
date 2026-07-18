@@ -23,8 +23,11 @@ test-unit *args="tests/*.bats":
     ./tests/test_helper/bats-core/bin/bats {{args}}
 
 # Install/repair dotfiles on an already-bootstrapped machine (default: present)
+# ANSIBLE_CONFIG is pinned to this repo's ansible.cfg so a stale/unrelated
+# ANSIBLE_CONFIG in the user's shell env (it has the highest precedence in
+# Ansible's config search order) can't shadow this repo's inventory.
 install *args:
-    ansible-playbook playbook.yml {{args}}
+    ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ansible-playbook playbook.yml {{args}}
 
 # Upgrade everything (dotfiles_state=latest, upgrade-tagged tasks)
 # Ansible and its Python runtime are brew-managed, so the play's `brew upgrade`
@@ -44,7 +47,7 @@ upgrade *args:
         brew pin "${self_pkgs[@]}"
         trap 'brew unpin "${self_pkgs[@]}" >/dev/null 2>&1 || true' EXIT
     fi
-    ansible-playbook playbook.yml -e dotfiles_state=latest --tags upgrade {{args}}
+    ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ansible-playbook playbook.yml -e dotfiles_state=latest --tags upgrade {{args}}
     if [[ -n "${self_pkgs[*]:-}" ]]; then
         brew unpin "${self_pkgs[@]}"
         trap - EXIT

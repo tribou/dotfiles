@@ -25,6 +25,14 @@ setup() {
   grep -q 'ansible-playbook playbook.yml' "$REPO_ROOT/bootstrap.sh"
 }
 
+# Regression: a leaked ANSIBLE_CONFIG in the invoking shell (highest precedence
+# in Ansible's config search order) would shadow this repo's own ansible.cfg,
+# same root cause as the justfile install/upgrade fix (see
+# tests/ansible_config_isolation.bats).
+@test "bootstrap: pins ANSIBLE_CONFIG to this repo's ansible.cfg before handing off" {
+  grep -qE 'ANSIBLE_CONFIG=.*ansible\.cfg.*ansible-playbook playbook\.yml' "$REPO_ROOT/bootstrap.sh"
+}
+
 @test "bootstrap: is thin (fewer than 60 lines)" {
   run bash -c "grep -vcE '^\\s*(#|$)' '$REPO_ROOT/bootstrap.sh'"
   [ "$output" -lt 60 ]
