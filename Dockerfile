@@ -35,6 +35,10 @@ RUN ARCH=$(uname -m | sed 's/aarch64/arm64/') \
 RUN bash -o pipefail -c "curl -fsSL https://mise.run | sh" \
   && ln -sf /root/.local/bin/mise /usr/local/bin/mise
 
+# Install ansible-core so the role can provision the container in CI
+RUN pip3 install --break-system-packages ansible-core \
+  && ansible-galaxy collection install community.general community.crypto ansible.posix
+
 # Install goss for infrastructure assertions
 RUN curl -fsSL https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 \
     -o /usr/local/bin/goss \

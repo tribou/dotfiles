@@ -1,0 +1,15 @@
+---
+# bsu/esu (synchronized output, DEC mode 2026) capabilities. Bubble Tea-based
+# TUIs (opencode, lazygit, gh dash) detect these caps at startup; without them
+# they fall back to 256-color approximation and stream each redraw unbracketed,
+# which over SSH+tmux visibly renders "piece by piece". Do NOT strip these caps
+# when editing the .terminfo sources or opencode will jank again.
+- name: Compile custom terminfo entries
+  ansible.builtin.command:
+    cmd: "tic -x {{ dotfiles_repo_root }}/tmux/{{ item }}"
+  loop:
+    - xterm-256color-italic.terminfo
+    - tmux-256color.terminfo
+  register: tic_result
+  changed_when: false
+  failed_when: tic_result.rc != 0 and 'already' not in (tic_result.stderr | default(''))

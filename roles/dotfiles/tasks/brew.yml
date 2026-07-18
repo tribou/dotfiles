@@ -1,0 +1,79 @@
+---
+- name: Detect Homebrew
+  ansible.builtin.command: which brew
+  register: dotfiles_brew_check
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Install Homebrew
+  ansible.builtin.shell:
+    cmd: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  environment:
+    NONINTERACTIVE: "1"
+  when: dotfiles_brew_check.rc != 0
+
+- name: Re-detect Homebrew after install
+  # `which brew` can't see the freshly-installed binary here: the Homebrew
+  # installer never updates the current process's PATH (it only prints
+  # instructions for the user's shell rc), so we check its known install
+  # locations directly instead, same as bash_profile's brew shellenv guards.
+  ansible.builtin.shell:
+    cmd: |
+      for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+        if [ -x "$candidate" ]; then
+          echo "$candidate"
+          exit 0
+        fi
+      done
+      exit 1
+  register: dotfiles_brew_which
+  changed_when: false
+  check_mode: false
+
+- name: Set brew binary fact
+  ansible.builtin.set_fact:
+    dotfiles_brew_bin: "{{ dotfiles_brew_which.stdout }}"
+
+- name: Resolve brew prefix
+  ansible.builtin.command: "{{ dotfiles_brew_bin }} --prefix"
+  register: dotfiles_brew_prefix_cmd
+  changed_when: false
+
+- name: Set brew prefix fact
+  ansible.builtin.set_fact:
+    dotfiles_brew_prefix: "{{ dotfiles_brew_prefix_cmd.stdout }}"
+
+- name: Secure Homebrew trust store directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_brew_prefix }}/etc/brew/trust"
+    state: directory
+    mode: "0700"
+  failed_when: false
+
+- name: Tap Homebrew taps
+  community.general.homebrew_tap:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ dotfiles_brew_taps }}"
+
+- name: Install Homebrew core formulae
+  community.general.homebrew:
+    name: "{{ dotfiles_brew_core }}"
+    state: present
+
+- name: Install Linux-only formulae
+  community.general.homebrew:
+    name: "{{ dotfiles_brew_linux }}"
+    state: present
+  when: ansible_facts.system != 'Darwin'
+
+- name: Check git-delta binary integrity
+  ansible.builtin.command: delta --version
+  register: dotfiles_delta_check
+  changed_when: false
+  failed_when: false
+
+- name: Reinstall git-delta on shared library mismatch
+  ansible.builtin.command: "{{ dotfiles_brew_bin }} reinstall git-delta"
+  when: dotfiles_delta_check.rc != 0

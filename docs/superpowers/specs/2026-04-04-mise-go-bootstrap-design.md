@@ -85,8 +85,6 @@ Keep the current GOPATH setup unchanged:
 
 - `~/dev/go/pkg`
 - `~/dev/go/src/github.com/tribou`
-- `~/dev/go/src/bitbucket.org`
-- `~/dev/go/src/github.com/rocksauce`
 - `export GOPATH=~/dev/go`
 
 Keep the current `bash_profile` exports unchanged as well so `GOPATH/bin` remains on `PATH`.

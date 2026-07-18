@@ -1,0 +1,26 @@
+---
+- name: Detect claude CLI
+  ansible.builtin.command: "command -v claude"
+  register: claude_bin
+  changed_when: false
+  failed_when: false
+
+- name: Upgrade claude CLI
+  ansible.builtin.command: "claude upgrade"
+  register: claude_upgrade
+  changed_when: "'up to date' not in claude_upgrade.stdout"
+  failed_when: false
+  when: claude_bin.rc == 0
+
+- name: Detect opencode CLI
+  ansible.builtin.command: "command -v opencode"
+  register: opencode_bin
+  changed_when: false
+  failed_when: false
+
+- name: Upgrade opencode CLI
+  ansible.builtin.command: "opencode upgrade"
+  register: opencode_upgrade
+  changed_when: "'up to date' not in opencode_upgrade.stdout"
+  failed_when: false
+  when: opencode_bin.rc == 0

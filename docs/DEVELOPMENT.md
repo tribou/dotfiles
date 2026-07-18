@@ -9,6 +9,8 @@
 - **goss**: Infrastructure/environment assertion testing
 - **just**: Command runner (`justfile`)
 - **mise**: Version manager (replaces nvm/rbenv/pyenv per-project)
+- **Ansible**: Declarative provisioning via the `dotfiles` role
+- **Molecule**: Ansible role testing framework (idempotence, multi-scenario)
 
 ## Design Principles
 - Keep scripts modular by breaking them into `lib/` files
@@ -25,6 +27,46 @@
 - Include bats tests for new functions in `tests/*.bats`
 - GPG signing required for commits — set `GIT_SIGNING_KEY` in `~/.ssh/api_keys`
 - New infrastructure dependencies (binaries, env vars) should have a `goss.yaml` assertion
+
+## Ansible Role Development
+
+### Molecule Dev Loop
+
+The `dotfiles` Ansible role uses Molecule for testing. The default scenario runs in a Docker container:
+
+```bash
+# Converge (apply the role inside the test container)
+molecule converge
+
+# Idempotence check (re-run and verify no changed tasks)
+molecule converge
+
+# Full test sequence: create → converge → idempotence → verify → destroy
+molecule test
+
+# Verify-only (goss assertions and custom verify.yml checks)
+molecule verify
+
+# Destroy the test container
+molecule destroy
+```
+
+### Running Tag Subsets
+
+The role's tasks are tagged for targeted runs. Common subsets:
+
+```bash
+# Just symlinks and SSH, skipping brew/npm/mise upgrades
+ansible-playbook playbook.yml --tags ssh,links
+
+# Dry-run with diff to preview changes without applying them
+ansible-playbook playbook.yml --check --diff
+
+# Combine both: preview what linking and SSH tasks would change
+ansible-playbook playbook.yml --check --diff --tags ssh,links
+```
+
+Available tags: `beads`, `brew`, `brew_casks`, `claude_opencode`, `dirs`, `gpg`, `links`, `mise`, `nvim`, `prereqs`, `rust`, `ssh`, `terminfo`, `tpm`, `upgrade`, `zoxide`. Use `ansible-playbook playbook.yml --list-tags` for the full list.
 
 ## Git Workflow with Ticket Numbers
 

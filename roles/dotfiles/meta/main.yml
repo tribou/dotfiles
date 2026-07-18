@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  role_name: dotfiles
+  namespace: tribou
+  author: Aaron Tribou
+  description: Idempotent developer-environment bootstrap (dotfiles, tools, editors)
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions: [jammy, noble]
+    - name: MacOSX
+      versions: [all]
+    - name: Archlinux
+      versions: [all]
+  galaxy_tags: [dotfiles, development, homebrew, mise, neovim]
+dependencies: []

@@ -1,0 +1,31 @@
+---
+- name: Stat legacy z history file
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.z"
+  register: legacy_z
+
+- name: Detect zoxide binary
+  ansible.builtin.command:
+    cmd: "command -v zoxide"
+  register: zoxide_bin
+  changed_when: false
+  failed_when: false
+
+- name: Import legacy rupa/z history into zoxide
+  ansible.builtin.command:
+    cmd: "zoxide import --from z {{ dotfiles_home }}/.z --merge"
+  register: zoxide_import
+  changed_when: zoxide_import.rc == 0
+  failed_when: false
+  when:
+    - zoxide_bin.rc == 0
+    - legacy_z.stat.exists
+
+- name: Rename migrated .z to .z.migrated
+  ansible.builtin.command:
+    cmd: "mv {{ dotfiles_home }}/.z {{ dotfiles_home }}/.z.migrated"
+    removes: "{{ dotfiles_home }}/.z"
+  when:
+    - zoxide_bin.rc == 0
+    - legacy_z.stat.exists
+    - zoxide_import.rc == 0

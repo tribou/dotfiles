@@ -192,20 +192,6 @@ _dotfiles_debug_timing "$LINENO"
 
 _dotfiles_debug_timing "$LINENO"
 
-# ansible scripts
-if [ -s "$HOME/sys/ansible/hacking/env-setup" ]
-then
-  . "$HOME/sys/ansible/hacking/env-setup"
-fi
-if [ -s "$DEVPATH/sys/ansible/ansible-hosts" ]
-then
-  export ANSIBLE_HOSTS="$DEVPATH/sys/ansible/ansible-hosts"
-fi
-if [ -s "$DEVPATH/sys/ansible/ansible.cfg" ]
-then
-  export ANSIBLE_CONFIG="$DEVPATH/sys/ansible/ansible.cfg"
-fi
-
 # bat
 export BAT_THEME=TwoDark
 

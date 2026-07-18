@@ -1,0 +1,53 @@
+---
+- name: Install vim-plug
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    dest: "{{ dotfiles_home }}/.local/share/nvim/site/autoload/plug.vim"
+    mode: "0644"
+
+- name: Install Neovim plugins headlessly
+  ansible.builtin.command:
+    cmd: nvim --headless "+PlugInstall --sync" +qall
+    creates: "{{ dotfiles_home }}/.local/share/nvim/plugged"
+
+- name: Install CoC extensions headlessly
+  # :CocInstall requires explicit extension names — it won't read
+  # g:coc_global_extensions itself (that list only auto-installs
+  # asynchronously after CoC's own init, too late for a headless run to
+  # wait on) — so pull the names from g:coc_global_extensions here instead.
+  ansible.builtin.command:
+    cmd: nvim --headless -c "execute 'CocInstall -sync ' . join(g:coc_global_extensions)" -c "qall"
+    creates: "{{ dotfiles_home }}/.config/coc/extensions/node_modules"
+
+- name: Check for packaging library in Ansible's target Python interpreter
+  ansible.builtin.command: "{{ ansible_facts.python.executable }} -c 'import packaging'"
+  register: dotfiles_python_packaging_check
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Install packaging library (required by ansible.builtin.pip)
+  ansible.builtin.command: "{{ ansible_facts.python.executable }} -m pip install --user --break-system-packages packaging"
+  when: dotfiles_python_packaging_check.rc != 0
+
+- name: Install pynvim (Python provider)
+  ansible.builtin.pip:
+    name: pynvim
+    extra_args: "--user --break-system-packages"
+    state: "{{ 'latest' if dotfiles_state == 'latest' else 'present' }}"
+
+- name: Install neovim gem (Ruby provider)
+  community.general.gem:
+    name: neovim
+    user_install: true
+    state: "{{ 'latest' if dotfiles_state == 'latest' else 'present' }}"
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"
+
+- name: Install gopls (Go language server)
+  ansible.builtin.command:
+    cmd: "go install golang.org/x/tools/gopls@latest"
+    creates: "{{ dotfiles_home }}/dev/go/bin/gopls"
+  environment:
+    GOPATH: "{{ dotfiles_home }}/dev/go"
+    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"

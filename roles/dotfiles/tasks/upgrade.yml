@@ -1,0 +1,89 @@
+---
+- name: Upgrade apt packages (Debian/Ubuntu)
+  ansible.builtin.apt:
+    upgrade: true
+    update_cache: true
+  become: true
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Upgrade pacman packages (Arch)
+  community.general.pacman:
+    upgrade: true
+    update_cache: true
+  become: true
+  when: ansible_facts.os_family == 'Archlinux'
+
+# `brew upgrade` upgrades BOTH formulae and casks in one shot, so this single
+# task covers everything (a separate homebrew_cask task would be redundant).
+# Some casks can only fail in a non-interactive run -- they need sudo (no TTY
+# under `just upgrade`), collide with an app already in /Applications, or (like
+# docker-desktop) need a forced reinstall. `failed_when: false` keeps one bad
+# cask from aborting the whole play so the mise/rustup/nvim/tmux/beads upgrades
+# below still run; the problems are surfaced for manual remediation just after.
+- name: Upgrade Homebrew packages (formulae and casks)
+  community.general.homebrew:
+    update_homebrew: true
+    upgrade_all: true
+    path: "{{ (dotfiles_brew_bin | default('')) | dirname }}"
+  register: brew_upgrade
+  failed_when: false
+
+# regex_findall keeps the line extraction inside the regex engine, where `\n` is
+# a real metacharacter -- a `.split('\n')` here would break, because a folded YAML
+# scalar hands Jinja a literal backslash-n it does not expand. `(?m)^.*<kw>.*$`
+# returns each whole line that mentions an actionable problem.
+- name: Collect Homebrew problems needing manual remediation
+  ansible.builtin.set_fact:
+    brew_manual_problems: >-
+      {{
+        (brew_upgrade.msg | default(''))
+        | regex_findall('(?m)^.*(?:It seems there is already|cannot be upgraded as-is|password is required|terminal is required|are not trusted|has been deprecated|Failure while executing).*$')
+        | map('trim')
+        | reject('equalto', '')
+        | list
+      }}
+
+- name: Surface Homebrew problems needing manual remediation
+  ansible.builtin.debug:
+    msg: "{{ ['⚠ Homebrew upgrade finished with issues that need YOUR manual attention:'] + brew_manual_problems }}"
+  when: brew_manual_problems | length > 0
+
+- name: Upgrade mise-managed runtimes
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise upgrade --yes"
+  register: mise_upgrade
+  changed_when: "'Installing' in mise_upgrade.stdout or 'Updating' in mise_upgrade.stdout"
+
+- name: Update rustup and toolchains
+  ansible.builtin.shell:
+    cmd: "rustup self update && rustup update"
+    executable: /bin/bash
+  environment:
+    CARGO_HOME: "{{ dotfiles_home }}/.cargo"
+    RUSTUP_HOME: "{{ dotfiles_home }}/.rustup"
+    PATH: "{{ dotfiles_home }}/.cargo/bin:{{ ansible_facts.env.PATH }}"
+  register: rustup_update
+  changed_when: "'unchanged' not in (rustup_update.stdout | default(''))"
+
+- name: Update Neovim plugins
+  ansible.builtin.command:
+    cmd: nvim --headless "+PlugUpdate --sync" +qall
+  changed_when: true
+
+- name: Update tmux plugins via TPM
+  ansible.builtin.shell:
+    cmd: >
+      tmux new-session -d -s _upgrade_tpm;
+      tmux set-environment -t _upgrade_tpm -g TMUX_PLUGIN_MANAGER_PATH "{{ dotfiles_home }}/.tmux/plugins/";
+      "{{ dotfiles_home }}/.tmux/plugins/tpm/bin/update_plugins" all;
+      tmux kill-session -t _upgrade_tpm 2>/dev/null || true
+    executable: /bin/bash
+  changed_when: true
+
+- name: Pull latest beads issues
+  ansible.builtin.command:
+    cmd: "bd -C {{ dotfiles_repo_root }} dolt pull"
+  register: beads_pull
+  changed_when: "'Everything up-to-date' not in (beads_pull.stdout | default(''))"
+  failed_when: false
+  when: bd_bin.rc == 0

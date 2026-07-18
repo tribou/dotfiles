@@ -1,0 +1,28 @@
+---
+- name: Install macOS-only Homebrew formulae
+  community.general.homebrew:
+    name: "{{ dotfiles_brew_macos_formulae }}"
+    state: present
+  when: ansible_facts.system == 'Darwin'
+
+- name: Install macOS-only Homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+    state: present
+    accept_external_apps: true
+  loop: "{{ dotfiles_brew_macos_casks }}"
+  when: ansible_facts.system == 'Darwin'
+  ignore_errors: true
+
+- name: Stat global Brewfile
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.Brewfile"
+  register: brewfile_stat
+  when: ansible_facts.system == 'Darwin'
+
+- name: Apply global Brewfile hook
+  ansible.builtin.command:
+    cmd: brew bundle --global
+  when:
+    - ansible_facts.system == 'Darwin'
+    - brewfile_stat.stat.exists

@@ -8,10 +8,13 @@ services:
     extends:
       service: base
     init: true
+    volumes:
+      - ./.ci-cache/nvim:/root/.local/share/nvim
     command: >
       bash -c "
-        . scripts/bootstrap-test.sh &&
-        goss validate --format tap &&
+        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS:-} &&
+        source ~/.bash_profile &&
+        DOTFILES=/dotfiles goss validate --format tap &&
         ./tests/test_helper/bats-core/bin/bats tests/integration/
       "
 
@@ -21,4 +24,6 @@ services:
     stdin_open: true
     tty: true
     command: >
-      bash -c "scripts/bootstrap-test.sh && bash"
+      bash -c "
+        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles && bash
+      "
