@@ -13,17 +13,40 @@
   become: true
   when: ansible_facts.os_family == 'Archlinux'
 
-- name: Upgrade all Homebrew formulae
+# `brew upgrade` upgrades BOTH formulae and casks in one shot, so this single
+# task covers everything (a separate homebrew_cask task would be redundant).
+# Some casks can only fail in a non-interactive run -- they need sudo (no TTY
+# under `just upgrade`), collide with an app already in /Applications, or (like
+# docker-desktop) need a forced reinstall. `failed_when: false` keeps one bad
+# cask from aborting the whole play so the mise/rustup/nvim/tmux/beads upgrades
+# below still run; the problems are surfaced for manual remediation just after.
+- name: Upgrade Homebrew packages (formulae and casks)
   community.general.homebrew:
     update_homebrew: true
     upgrade_all: true
     path: "{{ (dotfiles_brew_bin | default('')) | dirname }}"
+  register: brew_upgrade
+  failed_when: false
 
-- name: Upgrade all Homebrew casks (macOS)
-  community.general.homebrew_cask:
-    upgrade_all: true
-    path: "{{ (dotfiles_brew_bin | default('')) | dirname }}"
-  when: ansible_facts.system == 'Darwin'
+# regex_findall keeps the line extraction inside the regex engine, where `\n` is
+# a real metacharacter -- a `.split('\n')` here would break, because a folded YAML
+# scalar hands Jinja a literal backslash-n it does not expand. `(?m)^.*<kw>.*$`
+# returns each whole line that mentions an actionable problem.
+- name: Collect Homebrew problems needing manual remediation
+  ansible.builtin.set_fact:
+    brew_manual_problems: >-
+      {{
+        (brew_upgrade.msg | default(''))
+        | regex_findall('(?m)^.*(?:It seems there is already|cannot be upgraded as-is|password is required|terminal is required|are not trusted|has been deprecated|Failure while executing).*$')
+        | map('trim')
+        | reject('equalto', '')
+        | list
+      }}
+
+- name: Surface Homebrew problems needing manual remediation
+  ansible.builtin.debug:
+    msg: "{{ ['⚠ Homebrew upgrade finished with issues that need YOUR manual attention:'] + brew_manual_problems }}"
+  when: brew_manual_problems | length > 0
 
 - name: Upgrade mise-managed runtimes
   ansible.builtin.command:
