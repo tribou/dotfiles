@@ -9,6 +9,7 @@
   community.general.homebrew_cask:
     name: "{{ item }}"
     state: present
+    accept_external_apps: true
   loop: "{{ dotfiles_brew_macos_casks }}"
   when: ansible_facts.system == 'Darwin'
   ignore_errors: true
