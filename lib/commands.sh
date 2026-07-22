@@ -210,7 +210,7 @@ function _dotfiles_commit_generate_message ()
       ;;
     agy)
       git diff --cached | head -c 100000 \
-        | agy --model "$model" --print "$(_dotfiles_commit_prompt "$ticket")" \
+        | agy --add-dir "$PWD" --model "$model" --print "$(_dotfiles_commit_prompt "$ticket")" \
           > "$outfile" &
       ;;
     *)
