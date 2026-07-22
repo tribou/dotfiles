@@ -57,35 +57,40 @@ digraph entry {
 ```
 
 - **Issue number given** ("brainstorm gh issue 47") → this is the resume/adopt path. Load it. If it lacks the `[DRAFT]` prefix or the structured body, add them (fold any existing body text into Summary/Motivation) — see `issue-lifecycle.md`.
-- **No number** → keyword-search open issues to **dedupe** (you may have already logged a placeholder). If a plausible match exists, surface it and **ask before adopting**. Never silently reuse.
+- **No number** → dedupe first, with BOTH searches (you may have already logged a placeholder):
+  1. `gh issue list --state open --search "<keywords>"`
+  2. `gh issue list --search "[DRAFT] in:title"`
+
+  If a plausible match exists, surface it and **ask before adopting**. Never silently reuse.
 - **No match** → create the `[DRAFT]` issue **immediately**, from the raw idea, with a mostly-TBD body. Do this *before* the dialogue so nothing is ever conversation-only.
 
-## The Draft Lifecycle (core loop)
+## The Draft Lifecycle (core loop — all 4 steps)
 
-**REQUIRED SUB-SKILL:** Run `superpowers:brainstorming` for the dialogue — steps 1-5 exactly as written: explore context, clarifying questions **one at a time**, propose 2-3 approaches, present the design in sections, get **user approval**. Do NOT collapse this into a single self-answered pass; the one-question-at-a-time HIL loop is the point.
+1. **REQUIRED SUB-SKILL:** Run `superpowers:brainstorming` for the dialogue — steps 1-5 exactly as written: explore context, clarifying questions **one at a time**, propose 2-3 approaches, present the design in sections, get **user approval**. Do NOT collapse this into a single self-answered pass; the one-question-at-a-time HIL loop is the point.
+2. Override inside that sub-skill — its persistence only (brainstorming's own steps 6-9 are replaced by this skill):
+   - Never write a spec file under `docs/` (no `docs/superpowers/specs/…`).
+   - Never commit a spec doc.
+   - Never invoke `writing-plans` — there is no plan step here.
+   - The spec's only home is the GitHub issue. This override removes brainstorming's ending only — when the dialogue completes, continue with THIS skill's Finalize → Ready below.
+3. Persist after EVERY answer — all three parts, immediately, every round (see `issue-lifecycle.md`):
+   1. Fold the answer into the relevant spec section.
+   2. Check off the answered log item.
+   3. Set the next `[ ]` question.
 
-The difference from plain brainstorming is **persistence after every answer**:
-
-1. Ask one question.
-2. User answers.
-3. **Immediately update the issue body** (see `issue-lifecycle.md`): fold the answer into the relevant spec section, check off the log item, and set the next `[ ]` question. This happens every round — not batched, not deferred to the end. A hard interruption after any answer must leave the issue current.
+   Not batched, not deferred to the end: a hard interruption after any answer must leave the issue current. Build each update from the issue's *current* body — never regenerate it from conversation memory, and never drop, shorten, or paraphrase earlier answers.
 4. Repeat until the design is presented and approved.
 
 The body is the living spec; a `## Brainstorm log` section (visible while draft) carries the checkboxed Q&A + the next open question, which IS the resume state.
 
-<HARD-OVERRIDE>
-`superpowers:brainstorming` ends by writing `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`, committing it, and invoking `writing-plans`. When using THIS skill you do NONE of that:
+## Finalize → Ready (all 5 steps, in order)
 
-- Do NOT write a spec file under `docs/`.
-- Do NOT commit a spec doc.
-- Do NOT invoke `writing-plans`. There is no plan step here.
+Pre-finalize gate — when the design is approved, confirm each check aloud before editing:
 
-The spec's only home is the GitHub issue.
-</HARD-OVERRIDE>
+1. The user explicitly approved the presented design.
+2. The issue body is current through the latest answer (nothing exists only in conversation).
+3. No `docs/` spec file was written and `writing-plans` was never invoked.
 
-## Finalize → Ready
-
-When the design is approved:
+Then:
 
 1. **Spec self-review** on the issue body: scan for placeholders/TBDs, internal contradictions, scope creep, ambiguous requirements. Fix inline.
 2. **Strip the `[DRAFT]` prefix** from the title.
@@ -111,17 +116,20 @@ Implementation happens later. When it does, any implementation **plan is optiona
 | Batching persistence / holding answers in conversation only | Update the issue body after EVERY answer |
 | Silently reusing a found issue | Surface the match and ask before adopting |
 | Skipping the dedupe search when no number is given | Search open issues first — a placeholder may already exist |
+| Stopping when brainstorming's steps 6-9 are overridden | The override replaces those steps with THIS skill's Finalize → Ready — run it |
 | Finalizing without stripping `[DRAFT]` | Ready = prefix stripped + log collapsed to `<details>` |
-| Following brainstorming to a `docs/` file + commit | Divert per HARD-OVERRIDE; the issue is the only artifact |
+| Following brainstorming to a `docs/` file + commit | Divert per the persistence override; the issue is the only artifact |
 | Invoking `writing-plans` | No plan step — stop at the issue |
 | Self-answering all clarifying questions in one pass | Run the real one-question-at-a-time dialogue with the user |
 | Ad-hoc issue structure that differs every run | Use the template in `issue-lifecycle.md` |
 | Hardcoding `--repo owner/name` | Run from the repo; let `gh` infer from the remote |
+| Compressing or summarizing recorded decisions as the body grows | Never — fidelity first; if the body nears GitHub's 65,536-character limit, surface it and ask the user to split the spec into multiple issues |
 
 ## Red Flags — STOP
 
 - About to ask questions before the `[DRAFT]` issue exists (or is adopted)
 - Answers accumulating in the conversation but not on the issue
+- About to shorten or summarize recorded spec content (for any reason, including GitHub's 65k body limit) instead of asking the user to split the spec
 - About to reuse a found issue without asking
 - Finalizing with the `[DRAFT]` prefix still in the title
 - About to write anything under `docs/superpowers/specs/`

@@ -96,7 +96,7 @@ Capture the returned issue number/URL — every subsequent round edits this issu
 
 ## Per-Answer Update (every round)
 
-After each answer, rewrite the body: fold the answer into the relevant spec section, check off the log item, and set the next `[ ]` question. Editing the whole body is the reliable path — assemble the new body and pass it via `--body-file`:
+After each answer, rewrite the body: fold the answer into the relevant spec section, check off the log item, and set the next `[ ]` question. Editing the whole body is the reliable path — assemble the new body and pass it via `--body-file`. Assemble it from the issue's **current** body (`gh issue view` it first) plus the new answer, never from conversation memory: earlier answers and decisions are never dropped, shortened, or paraphrased.
 
 ```bash
 gh issue edit 47 --body-file /path/to/updated-body.md

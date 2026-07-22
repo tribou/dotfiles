@@ -11,7 +11,7 @@
       "source": "tribou/dotfiles",
       "sourceType": "github",
       "skillPath": "skills/brainstorming-to-issue/SKILL.md",
-      "computedHash": "88dbb0ab364767bd2ce87cc095ae6a0fe8d35c6012fe8400e78530da61561273"
+      "computedHash": "14da614e777af31bd052a79fca708bc1e9ecd39796991ba63da1e0bff0a4b394"
     },
     "dispatching-parallel-agents": {
       "source": "obra/superpowers",
@@ -35,7 +35,7 @@
       "source": "tribou/dotfiles",
       "sourceType": "github",
       "skillPath": "skills/issue-to-plan/SKILL.md",
-      "computedHash": "ec64fea30d075e1329aee367c05f14a7f0159078ad4fa58f25be5e9168718d75"
+      "computedHash": "b4d7e6d7573fd64c6d554e2fa5b013fe39dba86af902f13502d039b32e3d59c5"
     },
     "organize-ai-context": {
       "source": "tribou/dotfiles",
@@ -47,7 +47,7 @@
       "source": "tribou/dotfiles",
       "sourceType": "github",
       "skillPath": "skills/plan-to-implementation/SKILL.md",
-      "computedHash": "187d754c5e9faab7b359573c852ade0b6a8b68908bd0312d9601714f188e1d49"
+      "computedHash": "a5bc3c7fc003e99a709ac5d415a3f312f782eb8b7a47a3b9329649f580c94074"
     },
     "prd": {
       "source": "tribou/dotfiles",
