@@ -85,7 +85,7 @@ export REACT_EDITOR='vscode'
 export DOTFILES_COMMIT_BACKEND=opencode
 
 # Seconds to wait for the commit backend before falling back to a manual commit
-export DOTFILES_COMMIT_TIMEOUT=15
+export DOTFILES_COMMIT_TIMEOUT=30
 
 _dotfiles_debug_timing "$LINENO"
 
