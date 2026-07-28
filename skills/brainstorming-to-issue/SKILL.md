@@ -104,6 +104,16 @@ Exact commands for all of the above are in `issue-lifecycle.md`.
 
 This skill deliberately uses **GitHub issues (`gh`)**. Do not route the spec to a non-GitHub tracker and do not hesitate — the whole purpose of this skill is a GitHub-issue spec. (If a caller genuinely wants a different tracker, they want a different skill, not this one.)
 
+## When the Spec Is About a Skill
+
+A skill is spec-able like anything else. `superpowers:writing-skills` is the **downstream implementer** — the same slot `writing-plans` occupies for other work. It does not replace this skill, and it is not invoked while the draft issue is open. A project rule saying skills are created with `writing-skills` governs *creating* the skill, later; it does not govern speccing it, here.
+
+- **The Iron Law is not in play yet.** "No skill without a failing test first" binds whoever writes the skill. An issue is a spec, not a skill — so do NOT run RED baseline subagents, and do NOT scaffold `skills/<name>/` or a `SKILL.md`, to get ahead of it. Write the scenarios down in the issue instead; that is what carries the obligation forward.
+- **`## Requirements`** = what the skill must make agents DO — behaviors and triggering conditions, stated testably.
+- **`## Testing`** = three things: the baseline failure to reproduce without the skill (RED), the compliant behavior expected with it (GREEN), and the quality gate the change runs under — for documentation-only skill files that is those scenarios plus `git diff --check`, not the full suite. The issue is the only place the implementer learns which failure the skill must fix.
+- **Never put draft `SKILL.md` text in the issue body** — that is the artifact, not the spec.
+- **Refining an existing skill:** read its current text as project context before proposing anything, and never edit it mid-brainstorm.
+
 ## Downstream (out of scope — do not do it here)
 
 Implementation happens later. When it does, any implementation **plan is optional, scope-gated, and lives in the PR description** — never in `docs/`, never in this issue. This skill does not produce or persist a plan.
@@ -120,6 +130,8 @@ Implementation happens later. When it does, any implementation **plan is optiona
 | Finalizing without stripping `[DRAFT]` | Ready = prefix stripped + log collapsed to `<details>` |
 | Following brainstorming to a `docs/` file + commit | Divert per the persistence override; the issue is the only artifact |
 | Invoking `writing-plans` | No plan step — stop at the issue |
+| Handing a skill brainstorm to `writing-skills` because "creating skills uses that skill" | That's the downstream implementer — spec here, build there |
+| Leaving RED/GREEN scenarios out of the issue because they "belong to `writing-skills`" | They go in `## Testing` — the issue is where the implementer learns which baseline failure to reproduce |
 | Self-answering all clarifying questions in one pass | Run the real one-question-at-a-time dialogue with the user |
 | Ad-hoc issue structure that differs every run | Use the template in `issue-lifecycle.md` |
 | Hardcoding `--repo owner/name` | Run from the repo; let `gh` infer from the remote |
@@ -134,5 +146,6 @@ Implementation happens later. When it does, any implementation **plan is optiona
 - Finalizing with the `[DRAFT]` prefix still in the title
 - About to write anything under `docs/superpowers/specs/`
 - About to invoke `writing-plans`
+- About to invoke `writing-skills`, scaffold `skills/<name>/`, or run RED baseline subagents while the draft issue is open
 
 All of these mean: get the draft issue current first, with real HIL approval, before continuing.
