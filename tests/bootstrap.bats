@@ -103,3 +103,15 @@ setup() {
 @test "role: dirs.yml creates ~/.config/mise/conf.d for opt-in drop-ins" {
   grep -q '\.config/mise/conf\.d' "$REPO_ROOT/roles/dotfiles/tasks/dirs.yml"
 }
+
+@test "role: mise.yml installs all tools un-scoped (picks up conf.d drop-ins)" {
+  local f="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
+  grep -q '/.local/bin/mise" install' "$f"
+  ! grep -q 'mise install {{ item }}' "$f"
+  grep -q 'MISE_RUBY_COMPILE' "$f"
+  grep -q 'all tools are installed' "$f"
+}
+
+@test "role: upgrade.yml upgrades mise tools un-scoped" {
+  grep -qE 'mise upgrade( --yes)?($|[^[:alnum:]_-])' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
+}
