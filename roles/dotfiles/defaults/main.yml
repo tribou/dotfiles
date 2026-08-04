@@ -49,14 +49,8 @@ dotfiles_brew_linux:
 # macOS-only brew formulae
 dotfiles_brew_macos_formulae:
   - bash-completion
-  - rename
   - alacritty
-  - ngrok/ngrok/ngrok
   - reattach-to-user-namespace
-  - tfenv
-  - tor
-  - vimpager
-  - renameutils
   - tmux-mem-cpu-load
 
 # macOS-only casks

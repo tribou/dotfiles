@@ -76,3 +76,17 @@ setup() {
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*beads[[:space:]]*$'
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*lazygit[[:space:]]*$'
 }
+
+@test "role: macOS formulae keep only core (alacritty, reattach, tmux-mem-cpu-load, bash-completion)" {
+  local block
+  block="$(awk '/^dotfiles_brew_macos_formulae:/,/^dotfiles_brew_macos_casks:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
+  for opt in rename ngrok tfenv tor vimpager renameutils; do
+    if echo "$block" | grep -qE "^[[:space:]]*-[[:space:]]*[^[:space:]]*${opt}"; then
+      fail "optional macOS formula '$opt' must not be in dotfiles_brew_macos_formulae"
+    fi
+  done
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*reattach-to-user-namespace[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux-mem-cpu-load[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*bash-completion[[:space:]]*$'
+}
