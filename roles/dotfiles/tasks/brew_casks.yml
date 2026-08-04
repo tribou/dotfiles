@@ -25,13 +25,13 @@
 
 - name: Apply global Brewfile (install missing opt-in casks/formulae)
   ansible.builtin.command:
-    cmd: brew bundle --global --no-upgrade
+    cmd: "{{ dotfiles_brew_bin }} bundle --global --no-upgrade"
   when:
     - brewfile_stat.stat.exists
 
 - name: Upgrade global Brewfile packages (opt-in casks/formulae)
   ansible.builtin.command:
-    cmd: brew bundle --global --upgrade
+    cmd: "{{ dotfiles_brew_bin }} bundle --global --upgrade"
   when:
     - brewfile_stat.stat.exists
     - dotfiles_state == 'latest'

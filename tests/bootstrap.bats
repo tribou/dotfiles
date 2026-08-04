@@ -123,8 +123,8 @@ setup() {
   # The Brewfile hook must NOT be Darwin-only (formulae apply on Linux too).
   ! echo "$block" | grep -q "ansible_facts.system == 'Darwin'"
   # present path installs without upgrading; latest path forces upgrade.
-  grep -q 'brew bundle --global --no-upgrade' "$f"
-  grep -q 'brew bundle --global --upgrade' "$f"
+  grep -q '{{ dotfiles_brew_bin }} bundle --global --no-upgrade' "$f"
+  grep -q '{{ dotfiles_brew_bin }} bundle --global --upgrade' "$f"
   grep -q "dotfiles_state == 'latest'" "$f"
 }
 
