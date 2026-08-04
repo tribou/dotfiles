@@ -62,3 +62,17 @@ setup() {
 @test "role: core brew list includes tmux (installed via homebrew)" {
   awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml" | grep -qE '^\s*-\s*tmux\s*$'
 }
+
+@test "role: core brew list excludes optional tools (moved to mise/Brewfile opt-in)" {
+  local block
+  block="$(awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
+  for opt in nmap ansible tree awscli dos2unix tidy-html5 navi tlrc; do
+    if echo "$block" | grep -qE "^[[:space:]]*-[[:space:]]*${opt}[[:space:]]*$"; then
+      fail "optional tool '$opt' must not be in dotfiles_brew_core"
+    fi
+  done
+  # core keepers still present
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*beads[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*lazygit[[:space:]]*$'
+}
