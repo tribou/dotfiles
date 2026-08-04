@@ -11,6 +11,7 @@
     - .config/nvim
     - .config/alacritty
     - .config/mise
+    - .config/mise/conf.d
     - .local/bin
     - .local/share/nvim/site/autoload
     - .tmux

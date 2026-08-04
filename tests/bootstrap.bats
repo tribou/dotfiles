@@ -99,3 +99,7 @@ setup() {
   fi
   echo "$block" | grep -qE '^[[:space:]]*dotfiles_brew_macos_casks:[[:space:]]*\[\][[:space:]]*$'
 }
+
+@test "role: dirs.yml creates ~/.config/mise/conf.d for opt-in drop-ins" {
+  grep -q '\.config/mise/conf\.d' "$REPO_ROOT/roles/dotfiles/tasks/dirs.yml"
+}
