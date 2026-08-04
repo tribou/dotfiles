@@ -53,18 +53,8 @@ dotfiles_brew_macos_formulae:
   - reattach-to-user-namespace
   - tmux-mem-cpu-load
 
-# macOS-only casks
-dotfiles_brew_macos_casks:
-  - cmake
-  - appcleaner
-  - balenaetcher
-  - bruno
-  - firefox
-  - imageoptim
-  - orbstack
-  - font-fira-code-nerd-font
-  - font-hack-nerd-font
-  - font-fontawesome
+# macOS-only casks (opt-in via ~/.Brewfile — see Brewfile.optional.example)
+dotfiles_brew_macos_casks: []
 
 # mise-managed runtimes
 dotfiles_mise_tools:

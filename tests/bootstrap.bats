@@ -90,3 +90,12 @@ setup() {
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux-mem-cpu-load[[:space:]]*$'
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*bash-completion[[:space:]]*$'
 }
+
+@test "role: macOS casks list is empty (casks are opt-in via ~/.Brewfile)" {
+  local block
+  block="$(awk '/^dotfiles_brew_macos_casks:/,/^dotfiles_mise_tools:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
+  if echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*\S+'; then
+    fail "dotfiles_brew_macos_casks must be empty; found entries"
+  fi
+  echo "$block" | grep -qE '^[[:space:]]*dotfiles_brew_macos_casks:[[:space:]]*\[\][[:space:]]*$'
+}
