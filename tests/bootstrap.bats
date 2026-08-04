@@ -115,3 +115,15 @@ setup() {
 @test "role: upgrade.yml upgrades mise tools un-scoped" {
   grep -qE 'mise upgrade( --yes)?($|[^[:alnum:]_-])' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
 }
+
+@test "role: brew_casks.yml applies ~/.Brewfile on all platforms (present=install, latest=upgrade)" {
+  local f="$REPO_ROOT/roles/dotfiles/tasks/brew_casks.yml"
+  local block
+  block="$(awk '/name: Stat global Brewfile/,0' "$f")"
+  # The Brewfile hook must NOT be Darwin-only (formulae apply on Linux too).
+  ! echo "$block" | grep -q "ansible_facts.system == 'Darwin'"
+  # present path installs without upgrading; latest path forces upgrade.
+  grep -q 'brew bundle --global --no-upgrade' "$f"
+  grep -q 'brew bundle --global --upgrade' "$f"
+  grep -q "dotfiles_state == 'latest'" "$f"
+}
