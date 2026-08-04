@@ -127,3 +127,14 @@ setup() {
   grep -q 'brew bundle --global --upgrade' "$f"
   grep -q "dotfiles_state == 'latest'" "$f"
 }
+
+@test "repo: ships mise-config.optional.toml.example as a commented drop-in template" {
+  local f="$REPO_ROOT/mise-config.optional.toml.example"
+  [ -f "$f" ]
+  # every tool assignment is commented out (user uncomments what they want)
+  ! grep -qE '^[[:space:]]*[a-z0-9_-]+[[:space:]]*=' "$f"
+  # lists the verified-backend optional mise tools
+  for t in awscli terraform-ls ansible navi tlrc; do
+    grep -q "$t" "$f"
+  done
+}
