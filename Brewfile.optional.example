@@ -1,0 +1,33 @@
+# Optional Homebrew casks and formulae — global Brewfile.
+#
+# Enable:  cp Brewfile.optional.example ~/.Brewfile
+# Then uncomment what you want. bootstrap runs `brew bundle --global --no-upgrade`
+# on every install (and `brew bundle --global --upgrade` under `just upgrade`).
+# Casks are macOS-only — `brew bundle` skips cask directives on Linux automatically;
+# formulae apply on every platform.
+
+# --- Casks (macOS only) ---
+# cask "firefox"
+# cask "orbstack"
+# cask "bruno"
+# cask "balenaetcher"
+# cask "appcleaner"
+# cask "imageoptim"
+# cask "cmake"
+# cask "font-fira-code-nerd-font"
+# cask "font-hack-nerd-font"
+# cask "font-fontawesome"
+
+# --- Formulae (macOS and Linux via brew) ---
+# Tools without a mise backend:
+# brew "nmap"
+# brew "tree"
+# brew "dos2unix"
+# brew "tidy-html5"
+# Optional macOS-only formulae:
+# brew "ngrok/ngrok/ngrok"
+# brew "tor"
+# brew "tfenv"
+# brew "rename"
+# brew "renameutils"
+# brew "vimpager"

@@ -138,3 +138,15 @@ setup() {
     grep -q "$t" "$f"
   done
 }
+
+@test "repo: ships Brewfile.optional.example as a commented opt-in template" {
+  local f="$REPO_ROOT/Brewfile.optional.example"
+  [ -f "$f" ]
+  # every cask/brew directive is commented
+  ! grep -qE '^[[:space:]]*(cask|brew)[[:space:]]' "$f"
+  # includes no-mise-backend formulae, the optional macOS formulae, and casks
+  for t in nmap tree dos2unix tidy-html5 ngrok tfenv tor rename vimpager renameutils \
+           firefox orbstack bruno font-fira-code-nerd-font cmake; do
+    grep -q "$t" "$f"
+  done
+}
