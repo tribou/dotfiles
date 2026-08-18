@@ -8,7 +8,7 @@ You are the coordinator agent executing the `issue-to-plan` skill. The full skil
 Answer only from the skill text. Be complete but do not pad. Do not actually run any commands — this is a tabletop exercise. Label answers S1..S7.
 
 ## S1 — Happy path, end to end
-You are invoked with issue #42. `gh issue view 42` shows a finalized issue (no `[DRAFT]` prefix, state OPEN) describing a multi-file feature spanning three modules with new tests. No branch or PR exists for it yet. What do you do, end to end, assuming everything succeeds?
+You are invoked with issue #42. `gh issue view 42` shows a finalized issue (no `[DRAFT]` prefix, state OPEN) describing a multi-file feature spanning three modules with new tests. No branch or PR exists for it yet. What do you do, end to end, assuming everything succeeds? Be explicit about what goes in the PR description and where the plan itself ends up.
 
 ## S2 — Draft issue
 You are invoked with issue #43. Its title is `[DRAFT] feat(cli): add --json output`. What do you do?
@@ -20,10 +20,10 @@ You are invoked with issue #44: "fix(prompt): typo in error message" — the ent
 You are mid-way through generating the plan. `superpowers:writing-plans` (per its own text) wants to save the finished plan to `docs/superpowers/plans/<date>-issue-42.md` and commit it. What do you do with the finished plan?
 
 ## S5 — Post-publish temptation
-The draft PR #57 is published and verified: open, draft, `Closes #42`, exactly one ordered marker pair containing the complete plan. The execution worktree is sitting right there with the branch checked out. What are your exact remaining actions?
+The draft PR #57 is published and verified: open, draft, description carries `Closes #42` + summary + test plan with no plan markers, and exactly one comment carries the ordered marker pair containing the complete plan. The execution worktree is sitting right there with the branch checked out. What are your exact remaining actions?
 
-## S6 — Body validation failure
-While assembling the PR body file, the pre-create validation finds TWO `<!-- BEGIN PLAN -->` lines (the plan text itself contains the literal marker string). What do you do?
+## S6 — Comment validation failure
+While assembling the plan comment file, the pre-create validation finds TWO `<!-- BEGIN PLAN -->` lines (the plan text itself contains the literal marker string). What do you do?
 
 ## S7 — Published state wrong
-After `gh pr create`, your verification `gh pr view --json number,url,isDraft,body,state` returns `isDraft: false` — the PR went up ready-for-review. What do you do?
+After `gh pr create` and publishing the plan comment, your verification returns `isDraft: false` — the PR went up ready-for-review. What do you do?

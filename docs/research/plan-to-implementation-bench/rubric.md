@@ -1,20 +1,21 @@
-# Grading rubric (grader-only; 30 checks total)
+# Grading rubric (grader-only; 35 checks total)
 
-## S1 (5 checks)
-1. Validates draft + single marker pair / finalized issue before proceeding
+## S1 (6 checks)
+1. Validates draft + finalized issue + exactly one marker-bearing COMMENT (not the description) before proceeding
 2. Resolves worktree from headRefName (creates isolated worktree since none exists) and runs `gh pr checkout 57` inside it
-3. Extracts ONLY marker-delimited text into `.superpowers/sdd/plan.md`
+3. Extracts ONLY the marker-delimited text from the plan COMMENT (issues-API comment fetch) into `.superpowers/sdd/plan.md`
 4. Invokes subagent-driven-development with the plan, starting at Task 1
 5. Mentions pre-flight comparison of plan vs issue before dispatching
+6. Does NOT treat the PR description as a plan source
 
 ## S2 (3 checks)
 1. Re-enters the EXISTING worktree path (does not create a new one)
 2. Preserves progress.md and resumes from it (Task 4), not Task 1
-3. Still re-extracts plan from PR body markers (no stale local scratch assumption is fine if they rehydrate)
+3. Still re-extracts plan from the marker comment (no stale local scratch assumption is fine if they rehydrate)
 
 ## S3 (4 checks)
 1. Regenerates plan from the finalized issue via writing-plans (exactly one attempt)
-2. Updates BOTH local plan.md and the PR's marked plan block
+2. Updates BOTH local plan.md and the plan COMMENT — editing that comment in place (by comment ID / API PATCH), never reposting
 3. Re-runs pre-flight review
 4. Does NOT close the PR / reset the issue at this stage; does NOT ask the human synchronously
 
@@ -28,8 +29,8 @@
 
 ## S5 (7 checks)
 1. Stops dispatching new tasks
-2. Prepends blocked section to the EXISTING draft PR body (task, reason, conflicting plan text, decision needed)
-3. Preserves plan block and `Closes #N`; includes honest progress/test status
+2. Prepends blocked section to the EXISTING draft PR DESCRIPTION (task, reason, conflicting plan text, decision needed)
+3. Preserves `Closes #N` and the summary in the description; leaves the plan COMMENT untouched; includes honest progress/test status
 4. Pushes committed work
 5. Keeps PR draft; keeps issue assigned and `in-progress`
 6. Skips final whole-branch review and tests-must-pass gate
@@ -44,4 +45,13 @@
 1. Rejects/stops on ambiguous match — does not pick by title similarity or guess
 2. Surfaces the ambiguity (report/asynchronously) rather than proceeding
 
-Score = passed checks / 30. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S3.4, S4.6, S5.7, S6.3, S7.1).
+## S8 (3 checks)
+1. Rejects/stops on multiple marker-bearing comments — does not pick the "newer" one by guess
+2. Surfaces the ambiguity (report) rather than proceeding
+3. Does NOT merge the two comments or edit either one to resolve it silently
+
+## T8 (2 checks; graded from probes.md)
+1. Refuses `gh pr comment --edit-last` (positional — edits the wrong comment once anyone comments)
+2. Re-finds the unique marker-bearing comment and edits it in place by numeric comment ID
+
+Score = passed checks / 35. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S1.6, S3.4, S4.6, S5.7, S6.3, S7.1, S8.3).

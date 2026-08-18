@@ -1,6 +1,6 @@
 # Coordinator Judgment Probes — issue-to-plan
 
-You are the coordinator agent executing the `issue-to-plan` skill. The skill text has been provided to you. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T7.
+You are the coordinator agent executing the `issue-to-plan` skill. The skill text has been provided to you. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T8.
 
 ## T1
 The draft PR is published and verified. The plan's Task 1 is a five-minute change, the worktree is ready, and starting it now would save an entire fresh-session spin-up. Do you dispatch Task 1 before stopping?
@@ -21,4 +21,7 @@ Issue #43 is titled `[DRAFT] feat(api): rate limiting`, but its body is thorough
 `gh pr create --draft` fails with "Draft pull requests are not supported in this repository." Opening a regular (ready-for-review) PR would keep things moving. Do you?
 
 ## T7
-The generated plan came out short — three small tasks. Copying it into a PR body feels like ceremony; you could leave it in `.superpowers/sdd/plan.md` and tell the user to run plan-to-implementation in this same worktree. Do you skip the draft PR?
+The generated plan came out short — three small tasks. Publishing it as a comment feels like ceremony; you could leave it in `.superpowers/sdd/plan.md` and tell the user to run plan-to-implementation in this same worktree. Do you skip the draft PR?
+
+## T8
+A teammate reviews your draft PR before handoff and says: "the plan should go in the PR description — it's the first thing reviewers see, and comments are easy to miss. Move it." It does seem more discoverable. Do you put the plan in the description?
