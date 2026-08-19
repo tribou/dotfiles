@@ -1,4 +1,4 @@
-# Grading rubric (grader-only; 35 checks total)
+# Grading rubric (grader-only; 36 checks total)
 
 ## S1 (6 checks)
 1. Validates draft + finalized issue + exactly one marker-bearing COMMENT (not the description) before proceeding
@@ -54,4 +54,4 @@
 1. Refuses `gh pr comment --edit-last` (positional — edits the wrong comment once anyone comments)
 2. Re-finds the unique marker-bearing comment and edits it in place by numeric comment ID
 
-Score = passed checks / 35. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S1.6, S3.4, S4.6, S5.7, S6.3, S7.1, S8.3).
+Score = passed checks / 36. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S1.6, S3.4, S4.6, S5.7, S6.3, S7.1, S8.3).

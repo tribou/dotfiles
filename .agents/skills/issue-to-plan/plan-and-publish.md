@@ -22,17 +22,7 @@ git push -u origin HEAD
 
 The description is reviewer-facing and doubles as the squash-commit message: `Closes #N`, a concise change summary, and a concise test plan distilled from the plan. It never contains plan markers or the plan itself.
 
-```bash
-set -e
-desc_file=$(mktemp)
-{
-  printf '%s\n\n' "$SUMMARY"
-  printf '## Test plan\n\n%s\n\n' "$TEST_PLAN"
-  printf 'Closes #%s\n' "$ISSUE"
-} > "$desc_file"
-test "$(grep -Fc '<!-- BEGIN PLAN -->' "$desc_file")" -eq 0
-test "$(grep -Fc '<!-- END PLAN -->' "$desc_file")" -eq 0
-```
+Nothing has been implemented or run at this point, so the test plan states how the work *will* be verified. Never write a result you have not observed — "all tests pass", "verified locally", a green checkmark. The description becomes the merge-commit message, so a false claim there outlives the PR.
 
 ## Plan comment
 
@@ -49,10 +39,31 @@ Construct the comment through a file so the plan is copied verbatim:
 </details>
 ```
 
+## Publish — one shell
+
+Assembly, every validation, `gh pr create`, and `gh pr comment` run in **one** shell invocation. `$desc_file` is created by the description block and consumed by `gh pr create` at the end. Split across two Bash calls the variable is unset in the second shell: `set -u` aborts on the unbound reference before `gh pr create` runs, and without `set -u` the create fails with `--body-file ""`. Either way no usable PR is produced, and the description-side marker checks never re-run.
+
+Use deterministic paths under the ignored scratch dir instead of `mktemp`, and do not trap-delete them. A `gh pr comment` that fails after the PR exists must leave the validated comment file on disk so the retry is one command, not a rebuild.
+
 ```bash
-set -e
-comment_file=$(mktemp)
-trap 'rm -f "$comment_file"' EXIT
+set -euo pipefail
+
+ISSUE=<N>
+TITLE='<PR title, derived from the issue title>'
+SUMMARY='<concise change summary>'
+TEST_PLAN='<how the work will be verified — intent, not results>'
+
+desc_file=.superpowers/sdd/pr-description.md
+comment_file=.superpowers/sdd/plan-comment.md
+
+{
+  printf '%s\n\n' "$SUMMARY"
+  printf '## Test plan\n\n%s\n\n' "$TEST_PLAN"
+  printf 'Closes #%s\n' "$ISSUE"
+} > "$desc_file"
+test "$(grep -Fc '<!-- BEGIN PLAN -->' "$desc_file" || true)" -eq 0
+test "$(grep -Fc '<!-- END PLAN -->' "$desc_file" || true)" -eq 0
+
 {
   printf '<details>\n<summary>Implementation plan</summary>\n\n'
   printf '<!-- BEGIN PLAN -->\n'
@@ -76,12 +87,14 @@ Any validation failure aborts before `gh pr create`. Then repair the comment fil
 
 Two of the checks are fidelity gates with a different repair rule: the last `test` requires the text between the markers to be byte-identical to `.superpowers/sdd/plan.md` (trailing newlines aside), and the `wc -c` test enforces GitHub's 65,536-character comment limit. If the comment is over that limit, never summarize, trim, or paraphrase the plan to fit — verbatim fidelity is the point of the handoff. Stop and report the size; the fix is splitting the source issue into smaller issues, not compressing the plan.
 
-Verify the published result, not only the local files:
+Verify the published result, not only the local files. The plan comment is located the same way `plan-to-implementation` will locate it — paginated, slurped, and filtered to the PR author (see `plan-to-implementation/rehydrate-and-finish.md`), so a handoff that verifies here is one that rehydrates there:
 
 ```bash
-gh pr view --json number,url,isDraft,state,comments
+gh pr view "$pr" --json number,url,isDraft,state
+gh api --paginate "repos/{owner}/{repo}/issues/$pr/comments" --jq '.[]' \
+  | jq -s --arg author "$author" '[.[] | select(.user.login == $author and (.body | contains("<!-- BEGIN PLAN -->")))] | length'
 ```
 
-Require `state == "OPEN"`, `isDraft == true`, exactly one comment whose body contains `<!-- BEGIN PLAN -->`, one ordered marker pair inside it, and the complete plan between them. The URL printed by `gh pr comment` identifies the comment, but always re-verify by marker content — never trust positional state such as comment order or `--edit-last`.
+Require `state == "OPEN"`, `isDraft == true`, a count of exactly `1`, one ordered marker pair inside that comment, and the complete plan between them. The URL printed by `gh pr comment` identifies the comment, but always re-verify by marker content — never trust positional state such as comment order or `--edit-last`.
 
 The terminal output is the PR URL plus `Run plan-to-implementation for PR #M in a fresh session.` Do not dispatch implementation afterward.

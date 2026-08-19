@@ -9,7 +9,7 @@ Resume a plan from an existing draft PR, execute it with SDD, and flip that same
 
 ## Rehydrate (every fresh entry — all 6 steps, in order)
 
-1. Resolve the single open **draft** PR that closes the issue and has exactly one comment containing `<!-- BEGIN PLAN -->`. Zero or multiple matches — PRs or marker-bearing comments: stop and report; never guess or match by title.
+1. Resolve the single open **draft** PR that closes the issue and has exactly one comment **by the PR author** containing `<!-- BEGIN PLAN -->` — a reviewer quoting the plan is not a second plan comment. Zero or multiple matches — PRs or marker-bearing comments: stop and report which of the two it was; never guess or match by title.
 2. Verify the linked issue is finalized (no `[DRAFT]` prefix); if not, stop and report.
 3. Verify that one PR comment contains exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair — not the PR description.
 4. Resolve the worktree from the PR's `headRefName`: re-enter the existing worktree if that branch is checked out, else create an isolated worktree for that existing branch per `superpowers:using-git-worktrees`. Run `gh pr checkout <M>` inside it.
