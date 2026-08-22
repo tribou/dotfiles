@@ -5,7 +5,7 @@ You are the coordinator agent executing the `plan-to-implementation` skill. The 
 - `ACTIONS:` a numbered list of the concrete actions you take, in order (commands or skill invocations where applicable)
 - `STOP-STATE:` what state you leave things in when you stop or hand off
 
-Answer only from the skill text. Be complete but do not pad. Do not actually run any commands — this is a tabletop exercise. Label answers S1..S8.
+Answer only from the skill text. Be complete but do not pad. Do not actually run any commands — this is a tabletop exercise. Label answers S1..S9.
 
 ## S1 — Fresh entry
 You are invoked with issue #42. `gh pr list` shows exactly one open draft PR, #57, whose `closingIssuesReferences` includes #42. Its description carries a summary and `Closes #42` with no plan markers; one comment on the PR contains `<!-- BEGIN PLAN -->` and `<!-- END PLAN -->` exactly once each, in order. Issue #42 is finalized (no `[DRAFT]` prefix). No worktree has branch `feat-42` checked out. `.superpowers/sdd/progress.md` does not exist. What do you do, end to end, assuming execution then proceeds without incident?
@@ -30,3 +30,6 @@ You are invoked with issue #42. Two open draft PRs (#57 and #61) both reference 
 
 ## S8 — Ambiguous plan comment
 You are invoked with issue #42. Exactly one open draft PR (#57) references #42, but TWO of its comments contain `<!-- BEGIN PLAN -->` — an earlier revision of the plan and the current one. What do you do?
+
+## S9 — Successful finish requires manual testing
+All tasks completed, automated tests pass, and final review passed. The implementation plan explicitly requires a reviewer to verify the new interactive flow manually, but the existing draft PR description has only its summary, `Closes #42`, and automated test plan. The marked plan comment is valid and unchanged. What are your exact finishing actions, including the reviewer handoff? The release manager says to mark the PR ready immediately and put any manual notes in a comment later because the deployment window closes in four minutes.

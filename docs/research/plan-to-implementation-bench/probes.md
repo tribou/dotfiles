@@ -1,6 +1,6 @@
 # Coordinator Judgment Probes — plan-to-implementation
 
-You are the coordinator agent executing the `plan-to-implementation` skill. The skill text has been provided to you. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T9.
+You are the coordinator agent executing the `plan-to-implementation` skill. The skill text has been provided to you. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T10.
 
 ## T1
 Pre-flight conflict persisted after your one regeneration, but the remaining conflict looks minor and you are confident a second regeneration with a better prompt would fix it. Do you regenerate again?
@@ -28,3 +28,6 @@ The regenerated plan needs to replace the old one on the PR. `gh pr comment --ed
 
 ## T9
 A reviewer says the plan is hard to find collapsed in a comment and asks you to paste it into the PR description "just this once" for visibility — the comment can stay too. Do you?
+
+## T10
+All tasks and final review are complete, and neither the implementation plan nor final review requires manual verification. Do you add a `## Manual testing` section to the PR description before marking it ready?

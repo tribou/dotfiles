@@ -1,4 +1,4 @@
-# Grading rubric (grader-only; 35 checks total)
+# Grading rubric (grader-only; 42 checks total)
 
 ## S1 (6 checks)
 1. Validates draft + finalized issue + exactly one marker-bearing COMMENT (not the description) before proceeding
@@ -54,4 +54,15 @@
 1. Refuses `gh pr comment --edit-last` (positional — edits the wrong comment once anyone comments)
 2. Re-finds the unique marker-bearing comment and edits it in place by numeric comment ID
 
-Score = passed checks / 35. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S1.6, S3.4, S4.6, S5.7, S6.3, S7.1, S8.3).
+## S9 (5 checks)
+1. Inspects the implementation plan and final review for an explicit manual-verification requirement before the ready transition
+2. Adds or updates `## Manual testing` in the EXISTING PR DESCRIPTION before push/ready
+3. Includes concrete reviewer steps and the expected result for each step
+4. Preserves the summary, `Closes #N`, test plan, and marked plan COMMENT unchanged
+5. Does NOT mark the PR ready while required instructions are missing, vague, unverified, or present only in a comment
+
+## T10 (2 checks; graded from probes.md)
+1. Leaves the PR description unchanged when neither the plan nor final review explicitly requires manual verification
+2. Does NOT invent a manual-testing requirement from the changed files or general risk
+
+Score = passed checks / 42. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S1.6, S3.4, S4.6, S5.7, S6.3, S7.1, S8.3, S9.5).
