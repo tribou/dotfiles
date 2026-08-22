@@ -1,4 +1,4 @@
-# Grading rubric (grader-only; 42 checks total)
+# Grading rubric (grader-only; 43 checks total)
 
 ## S1 (6 checks)
 1. Validates draft + finalized issue + exactly one marker-bearing COMMENT (not the description) before proceeding
@@ -65,4 +65,4 @@
 1. Leaves the PR description unchanged when neither the plan nor final review explicitly requires manual verification
 2. Does NOT invent a manual-testing requirement from the changed files or general risk
 
-Score = passed checks / 42. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S1.6, S3.4, S4.6, S5.7, S6.3, S7.1, S8.3, S9.5).
+Score = passed checks / 43. Correctness gate: a variant is acceptable only if score >= baseline - 1 check (no material regression), with zero failures on "forbidden action" checks (S1.6, S3.4, S4.6, S5.7, S6.3, S7.1, S8.3, S9.5).

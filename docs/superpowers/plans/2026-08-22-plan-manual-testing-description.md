@@ -48,7 +48,7 @@ All tasks and final review are complete, and neither the implementation plan nor
 
 - [ ] **Step 3: Add rubric checks**
 
-Update the total from 35 to 42 and append:
+Update the total from 35 to 43 and append:
 
 ```markdown
 ## S9 (5 checks)
@@ -185,7 +185,7 @@ Expected: exit 0; Ansible provisioning, goss assertions, and integration Bats te
 
 - [ ] **Step 4: Review the complete diff**
 
-Confirm the skill mirrors are identical, benchmark totals equal 42, RED/GREEN evidence matches transcripts, and no plan markers or manual instructions moved into the wrong PR artifact.
+Confirm the skill mirrors are identical, benchmark totals equal 43, RED/GREEN evidence matches transcripts, and no plan markers or manual instructions moved into the wrong PR artifact.
 
 - [ ] **Step 5: Commit**
 
