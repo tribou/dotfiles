@@ -151,11 +151,16 @@ setup() {
     . '$REPO_ROOT/lib/commands.sh'
     export DOTFILES_COMMIT_BACKEND=agy
     git() { echo 'mock diff'; }
-    agy() { printf '%s' \"\$2\"; }
+    agy() {
+      while [ \"\$1\" != \"--model\" ]; do
+        shift
+      done
+      printf '%s' \"\$2\"
+    }
     _dotfiles_commit_generate_message ''
   "
   assert_success
-  assert_output "Gemini 3.5 Flash (Low)"
+  assert_output "gemini-3.7-flash-low"
 }
 
 @test "generate_message: agy backend fails when agy is not on PATH" {
