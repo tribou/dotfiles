@@ -105,7 +105,7 @@ Replace the one-line successful-finish recipe with:
 ```markdown
 - Successful finish:
   1. Inspect `.superpowers/sdd/plan.md` and the final review result for an explicit manual-verification requirement.
-  2. When required, fetch the existing description with `gh pr view <M> --json body --jq .body`, add or update a `## Manual testing` section containing concrete reviewer steps and the expected result for each step, then apply it with `gh pr edit <M> --body-file "$body_file"`.
+  2. When required, create `description_file=$(mktemp)`, fetch the existing description with `gh pr view <M> --json body --jq .body > "$description_file"`, edit that description file to add or update a `## Manual testing` section containing concrete reviewer steps and the expected result for each step, apply it with `gh pr edit <M> --body-file "$description_file"`, then remove the temp file with `rm -f "$description_file"`.
   3. Re-fetch the description and verify the required section and instructions are present while the summary, `Closes #N`, test plan, and other reviewer-facing content remain intact. Keep the marked plan comment untouched. Do not continue if the required handoff is missing, vague, unverified, or only in a comment.
   4. If neither the plan nor final review explicitly requires manual verification, leave the description unchanged.
   5. Push, then `gh pr ready <M>`.
