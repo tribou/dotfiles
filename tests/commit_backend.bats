@@ -48,10 +48,10 @@ setup() {
   assert_output "opencode-go/kimi-k2.7-code"
 }
 
-@test "commit_model: agy backend uses Gemini 3.5 Flash (Low)" {
+@test "commit_model: agy backend uses Gemini 3.7 Flash (Low)" {
   run _dotfiles_commit_model agy
   assert_success
-  assert_output "Gemini 3.5 Flash (Low)"
+  assert_output "gemini-3.7-flash-low"
 }
 
 @test "commit_model: DOTFILES_COMMIT_MODEL overrides the opencode default" {
@@ -131,7 +131,7 @@ setup() {
   "
   assert_success
   assert_output --partial "backend:   agy"
-  assert_output --partial "model:     Gemini 3.5 Flash (Low)"
+  assert_output --partial "model:     gemini-3.7-flash-low"
   assert_output --partial "available: yes"
 }
 
@@ -254,6 +254,6 @@ setup() {
 }
 
 @test "bash_profile: exports a DOTFILES_COMMIT_TIMEOUT default" {
-  run grep -E "^export DOTFILES_COMMIT_TIMEOUT=15" "$REPO_ROOT/bash_profile"
+  run grep -E "^export DOTFILES_COMMIT_TIMEOUT=30" "$REPO_ROOT/bash_profile"
   assert_success
 }
