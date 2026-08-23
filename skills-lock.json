@@ -5,7 +5,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/brainstorming/SKILL.md",
-      "computedHash": "225b53fce53d627d3a1e94bfea84060ccdbf11a58a2d5cf11eefef89d598020e"
+      "computedHash": "b58d55b64742ecd37923985ec7bdfbe678ffbcb9895562abd28c0a32dcacd7fb"
     },
     "brainstorming-to-issue": {
       "source": "tribou/dotfiles",
@@ -29,13 +29,13 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/finishing-a-development-branch/SKILL.md",
-      "computedHash": "a2afe045ea677114a89854f296ae57f8d34eb84864daa7b08ea9434acded724d"
+      "computedHash": "4f571e7befb8b0946d9d7770232c818812412e9ab1dfb811f847edfba1fc6275"
     },
     "issue-to-plan": {
       "source": "tribou/dotfiles",
       "sourceType": "github",
       "skillPath": "skills/issue-to-plan/SKILL.md",
-      "computedHash": "b4d7e6d7573fd64c6d554e2fa5b013fe39dba86af902f13502d039b32e3d59c5"
+      "computedHash": "c954e85bffb694b040facf4571703f1bf7317fe0c9bb9020e026f9b4a7cee8b6"
     },
     "organize-ai-context": {
       "source": "tribou/dotfiles",
@@ -47,7 +47,7 @@
       "source": "tribou/dotfiles",
       "sourceType": "github",
       "skillPath": "skills/plan-to-implementation/SKILL.md",
-      "computedHash": "a5bc3c7fc003e99a709ac5d415a3f312f782eb8b7a47a3b9329649f580c94074"
+      "computedHash": "9af667410adf5860c433782589a9296a6f927cda9e5de61b82278dbe0e28746d"
     },
     "prd": {
       "source": "tribou/dotfiles",
@@ -65,7 +65,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/requesting-code-review/SKILL.md",
-      "computedHash": "2304d2073c62eab163e04de40fe775e3d87c69c0df40cd4dc953fdb8e3205b81"
+      "computedHash": "004f340ae65811095d6a9bb0a759c87d0a8085c5e705dbb019b011626293d2e9"
     },
     "security-review": {
       "source": "github/awesome-copilot",
@@ -77,7 +77,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/subagent-driven-development/SKILL.md",
-      "computedHash": "f32739563160d3612fe2febd0dad4a9cc8a6d1ea7dfcda59f245b3a4b968f7cf"
+      "computedHash": "367cc1d3216d6672b947c8c6583dbd6440ea407beb6da75a97d3a8ee1a23640a"
     },
     "systematic-debugging": {
       "source": "obra/superpowers",
@@ -101,7 +101,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/using-superpowers/SKILL.md",
-      "computedHash": "a77a803b7fc1a19c87605cf7a5ef318c5adc233de10b9ebeecb2ee2609f5454e"
+      "computedHash": "c7abe8bdc2099bbe4f245454d32c7563ccd2bb41dcc218b02b461c2acc3c6ae6"
     },
     "verification-before-completion": {
       "source": "obra/superpowers",
@@ -113,13 +113,13 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/writing-plans/SKILL.md",
-      "computedHash": "a8a8b0d07b744173079b25d26c6a189a0b5e7ddd80444ce92055b974dab7352b"
+      "computedHash": "27c75044e444a4fc68798c3f799dc23eaff3a6bfabff32e6ad75bb20f881c094"
     },
     "writing-skills": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/writing-skills/SKILL.md",
-      "computedHash": "19a1223c9c174f1b4daf807417f13d53886cdc79feeb05c978129a17592f51d7"
+      "computedHash": "e5dfc1a942f56dc757421b0d87ae1f38ab693ebc71138e65268fd408bb5c93d3"
     }
   }
 }
