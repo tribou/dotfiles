@@ -29,7 +29,9 @@ The recipe points back to the successful-finish contract in `SKILL.md` for trigg
 
 Compare the current recipe with the compressed candidate while keeping `SKILL.md`, model, prompts, and grading fixed.
 
-Run five independent tool-disabled Haiku coordinators per recipe variant for each case:
+Resolve the runtime's available basic model tier and record the exact provider/model. Use that same model for every control and candidate run.
+
+Run five independent tool-disabled basic-model coordinators per recipe variant for each case:
 
 1. S9: manual verification is explicitly required.
 2. T10: neither source requires manual verification.
