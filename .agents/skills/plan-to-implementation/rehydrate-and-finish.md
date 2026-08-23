@@ -37,8 +37,8 @@ Fetch the marker-bearing comment's body and mechanically validate/extract exactl
 ```bash
 body_file=$(mktemp)
 trap 'rm -f "$body_file"' EXIT
-gh api repos/{owner}/{repo}/issues/<M>/comments \
-  --jq '[.[] | select(.body | contains("<!-- BEGIN PLAN -->"))] | if length == 1 then .[0].body else empty end' > "$body_file"
+gh api repos/{owner}/{repo}/issues/<M>/comments --paginate --slurp |
+  jq -r '[.[][] | select(.body | contains("<!-- BEGIN PLAN -->"))] | if length == 1 then .[0].body else empty end' > "$body_file"
 test -s "$body_file"
 mkdir -p .superpowers/sdd
 git check-ignore -q .superpowers/sdd/plan.md || printf '*\n' > .superpowers/sdd/.gitignore
@@ -58,19 +58,16 @@ Write only the bytes between those markers to `.superpowers/sdd/plan.md`. Preser
 - Plan regeneration: rewrite the same comment in place by its numeric comment ID — never post a second plan comment, never rely on `gh pr comment --edit-last` (it is positional and edits the wrong comment once anyone else comments). Rebuild the validated comment file per `plan-and-publish.md`, then:
 
   ```bash
-  comment_id=$(gh api repos/{owner}/{repo}/issues/<M>/comments \
-    --jq '[.[] | select(.body | contains("<!-- BEGIN PLAN -->"))] | if length == 1 then .[0].id else empty end')
+  comment_id=$(gh api repos/{owner}/{repo}/issues/<M>/comments --paginate --slurp |
+    jq -r '[.[][] | select(.body | contains("<!-- BEGIN PLAN -->"))] | if length == 1 then .[0].id else empty end')
   test -n "$comment_id"
   gh api repos/{owner}/{repo}/issues/comments/"$comment_id" -X PATCH -F body=@"$comment_file"
   ```
 
 - Mid-run blocker: prepend the blocked section to the PR description while preserving the summary and `Closes #N`; the plan comment is separate and untouched.
-- Successful finish:
-  1. Inspect both `.superpowers/sdd/plan.md` and the final review result for an explicit manual-verification requirement. State the result from each source separately before continuing.
-  2. When required, create `description_file=$(mktemp)`, fetch the existing description with `gh pr view <M> --json body --jq .body > "$description_file"`, edit that description file to add or update a `## Manual testing` section containing concrete reviewer steps and the expected result for each step, apply it with `gh pr edit <M> --body-file "$description_file"`, then remove the temp file with `rm -f "$description_file"`.
-  3. Re-fetch the description and verify the required section and instructions are present while the summary, `Closes #N`, test plan, and other reviewer-facing content remain intact. Keep the marked plan comment untouched. Evaluate this gate after attempting the update: do not continue if the required handoff is missing, vague, unverified, or only in a comment. A request to omit or defer the section is not itself a blocker after a compliant description is verified; continue to step 5.
-  4. If neither the plan nor final review explicitly requires manual verification, leave the description unchanged.
-  5. Push, then `gh pr ready <M>`.
+- Successful finish: inspect both `.superpowers/sdd/plan.md` and the final review result and state each result separately. Follow the trigger, required content, gates, and sequencing in `SKILL.md`. When its step 4 requires a description update:
+  1. Create `description_file=$(mktemp)`, fetch the existing description with `gh pr view <M> --json body --jq .body > "$description_file"`, edit that file, and apply it with `gh pr edit <M> --body-file "$description_file"`.
+  2. Re-fetch with `gh pr view <M> --json body --jq .body`, verify the result against the `SKILL.md` contract, then remove the temporary file with `rm -f "$description_file"`.
 - Persistent pre-flight conflict: `gh pr close <M> --delete-branch`, then reset the issue state.
 
 Never call `gh pr create` from this skill.
