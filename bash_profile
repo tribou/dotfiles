@@ -249,6 +249,9 @@ _dotfiles_debug_timing "$LINENO"
 
 _dotfiles_debug_timing "$LINENO"
 
+# mySQL
+[ -d "/opt/homebrew/opt/mysql-client/bin" ] && export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+
 # OrbStack
 [ -f "$HOME/.orbstack/shell/init.bash" ] && source "$HOME/.orbstack/shell/init.bash"
 
