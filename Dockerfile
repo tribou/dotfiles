@@ -39,9 +39,12 @@ RUN bash -o pipefail -c "curl -fsSL https://mise.run | sh" \
 RUN pip3 install --break-system-packages ansible-core \
   && ansible-galaxy collection install community.general community.crypto ansible.posix
 
-# Install goss for infrastructure assertions
-RUN curl -fsSL https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 \
-    -o /usr/local/bin/goss \
+# Install goss for infrastructure assertions (v0.4.9+ ships versioned tarballs,
+# not bare binaries, so latest/download/goss-linux-amd64 404s)
+RUN GOSS_VERSION=v0.4.10 \
+  && GOSS_ARCH=$(uname -m | sed 's/aarch64/arm64/') \
+  && curl -fsSL "https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss_${GOSS_VERSION#v}_linux_${GOSS_ARCH}.tar.gz" \
+      | tar xz -C /usr/local/bin goss \
   && chmod +x /usr/local/bin/goss
 
 WORKDIR /dotfiles

@@ -15,6 +15,14 @@ let g:ale_php_cs_fixer_use_global = 1
 let g:ale_php_cs_fixer_options = '--using-cache=no'
 let g:ale_go_bingo_executable = 'gopls'
 let g:ale_sql_pgformatter_options = '--keep-newline --wrap-after 80 --wrap-comment --spaces 2'
+
+function! ALEFix_tombi(buffer) abort
+    return {
+    \   'command': 'tombi format -',
+    \   'read_buffer': 1,
+    \}
+endfunction
+
 let g:ale_linters = {
   \   'javascript': [
   \       'eslint',
@@ -103,6 +111,9 @@ let g:ale_fixers = {
   \   ],
   \   'sql': [
   \       'pgformatter',
+  \   ],
+  \   'toml': [
+  \       'ALEFix_tombi',
   \   ],
   \   'yaml': [
   \       'prettier',

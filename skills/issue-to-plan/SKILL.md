@@ -7,9 +7,11 @@ description: Use when a finalized non-[DRAFT] GitHub issue needs an implementati
 
 ## Overview
 
-Turn a finalized issue into a draft PR that carries a machine-recoverable implementation plan, then stop. The draft PR is the durable boundary between planning and execution.
+Turn a finalized issue into a draft PR plus a single marked plan comment, then stop. The draft PR and its plan comment are the durable boundary between planning and execution.
 
 **Core principle:** planning and execution happen in separate contexts. This skill never runs SDD or dispatches Task 1.
+
+The plan lives in a PR comment, never the description. The description stays a concise, reviewer-facing summary (`Closes #N` + change summary + test plan): the simplest merge path — squash-merging from the GitHub web UI, which prefills the commit message from the PR body — then produces a clean commit message instead of a multi-kilobyte plan.
 
 ## Entry Gate (all 5 steps, in order)
 
@@ -17,7 +19,7 @@ Turn a finalized issue into a draft PR that carries a machine-recoverable implem
 2. If the title starts with `[DRAFT]`, stop and route to `brainstorming-to-issue`.
 3. If the entire change is one file, one behavior, and one red-green-commit review pass, use `superpowers:test-driven-development` directly. Uncertainty means it is not trivial.
 4. Claim the issue per repository rules: assign it and add the `in-progress` label.
-5. Retain `Closes #<N>` for the PR body.
+5. Retain `Closes #<N>` for the PR description.
 
 ## Generate the Plan (all 3 steps, in order)
 
@@ -28,26 +30,27 @@ Turn a finalized issue into a draft PR that carries a machine-recoverable implem
    - Never write it under `docs/` and never commit it.
    - Never offer execution approaches and never start implementation.
 
-## Publish the Durable Handoff (all 7 steps, in order)
+## Publish the Durable Handoff (all 8 steps, in order)
 
-Pre-publish gate — before `gh pr create`, confirm each check aloud:
+Pre-publish gate — before creating anything, confirm each check aloud:
 
 1. Source issue is finalized (no `[DRAFT]`), assigned, and labeled `in-progress`.
 2. The plan is at `.superpowers/sdd/plan.md`, untracked and unstaged.
-3. The body file contains `Closes #<N>` and exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair.
-4. The plan between the markers is the verbatim contents of `.superpowers/sdd/plan.md` — never a summary — and the body file is within GitHub's 65,536-character body limit.
+3. The description file contains `Closes #<N>`, a concise change summary, and a concise test plan — and contains no plan markers.
+4. The comment file contains exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair; the plan between the markers is the verbatim contents of `.superpowers/sdd/plan.md` — never a summary — and the comment file is within GitHub's 65,536-character comment limit.
 
-Then, with the exact commands and body shape in `plan-and-publish.md`:
+Then, with the exact commands and shapes in `plan-and-publish.md`:
 
 1. Create an empty seed commit to anchor the branch.
 2. Push the branch.
-3. Open a **draft** PR whose body contains `Closes #N` and the complete plan between `<!-- BEGIN PLAN -->` and `<!-- END PLAN -->`.
-4. Verify the published PR: state OPEN, `isDraft` true, exactly one ordered marker pair.
-5. Print the PR URL.
-6. Print exactly: `Run plan-to-implementation for PR #M in a fresh session.`
-7. **STOP.**
+3. Open a **draft** PR whose description carries `Closes #N`, the change summary, and the test plan.
+4. Publish the plan as a single PR comment containing the complete plan between `<!-- BEGIN PLAN -->` and `<!-- END PLAN -->`.
+5. Verify the published PR: state OPEN, `isDraft` true, and exactly one comment containing the ordered marker pair with the complete plan between them.
+6. Print the PR URL.
+7. Print exactly: `Run plan-to-implementation for PR #M in a fresh session.`
+8. **STOP.**
 
-The plan remains untracked scratch locally; its durable copy is the draft PR body. The empty seed commit contains no plan and disappears under squash merge.
+The plan remains untracked scratch locally; its durable copy is the marked PR comment. When the plan later changes, that comment is edited in place by its comment ID — never reposted as a new comment. The empty seed commit contains no plan and disappears under squash merge.
 
 ## Quick Reference
 
@@ -56,7 +59,8 @@ The plan remains untracked scratch locally; its durable copy is the draft PR bod
 | Source issue | Finalized, assigned, `in-progress` |
 | Local plan | `.superpowers/sdd/plan.md`, ignored, uncommitted |
 | Branch | Pushed, anchored by empty seed commit |
-| PR | Open draft, `Closes #N`, marked plan block |
+| PR | Open draft; description = `Closes #N` + summary + test plan, no markers |
+| Plan comment | Exactly one, holding the verbatim plan between markers |
 | Terminal action | Print handoff, then stop |
 
 ## Common Mistakes
@@ -64,20 +68,22 @@ The plan remains untracked scratch locally; its durable copy is the draft PR bod
 | Mistake | Required correction |
 |---|---|
 | Auto-dispatching Task 1 or running SDD in this session | Stop at the published draft PR; execution requires a fresh context |
-| Keeping the only plan copy in local scratch | Put the complete plan between markers in the PR body |
+| Keeping the only plan copy in local scratch | Put the complete plan between markers in the PR comment |
+| Embedding the plan in the PR description | The description is reviewer-facing (`Closes #N`, summary, test plan); the plan belongs in the comment |
 | Opening a non-draft PR | Use `gh pr create --draft`; it stays draft until execution finishes |
 | Committing the plan | Commit only an empty seed; keep the plan untracked |
 | Saving under `docs/superpowers/plans/` | Divert `writing-plans` output to `.superpowers/sdd/plan.md` |
 | Asking which execution approach to use | There is no execution in this skill |
-| Summarizing or trimming the plan to fit GitHub's 65k body limit | Never compress the plan; stop, report the size, and split the source issue instead |
+| Summarizing or trimming the plan to fit GitHub's 65k comment limit | Never compress the plan; stop, report the size, and split the source issue instead |
 
 ## Red Flags — STOP
 
 - SDD is about to start or Task 1 is about to be dispatched.
-- No open draft PR contains the complete marked plan.
+- No open draft PR has exactly one comment containing the complete marked plan.
+- Plan markers appear in the PR description instead of the comment.
 - The plan or `.superpowers/` is staged.
 - The PR is ready for review instead of draft.
-- The plan in the PR body is a summary or paraphrase instead of the verbatim `.superpowers/sdd/plan.md` contents.
+- The plan in the comment is a summary or paraphrase instead of the verbatim `.superpowers/sdd/plan.md` contents.
 - Planning and execution are still happening in one session.
 
 Any red flag means: first restore the durable draft-PR handoff (for a non-draft PR, convert it back to draft or re-publish it as draft), then stop without implementation — restore, then stop, in that order.

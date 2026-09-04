@@ -10,7 +10,7 @@ For a PR number, inspect it directly:
 gh pr view <M> --json number,url,state,isDraft,body,headRefName,closingIssuesReferences
 ```
 
-For an issue number, list open PRs and select the single draft whose `closingIssuesReferences` includes that issue and whose body contains `<!-- BEGIN PLAN -->`. Do not select by title similarity.
+For an issue number, list open PRs and select the single draft whose `closingIssuesReferences` includes that issue. Do not select by title similarity. Confirm the selection by plan comment, not description: exactly one comment on that PR contains `<!-- BEGIN PLAN -->` — zero or multiple marker-bearing comments: stop and report.
 
 ## Resolve the worktree
 
@@ -32,12 +32,14 @@ Inside the resolved path, run `gh pr checkout <M>` and verify `git branch --show
 
 ## Extract the plan
 
-Fetch the body and mechanically validate/extract exactly one ordered marker pair:
+Fetch the marker-bearing comment's body and mechanically validate/extract exactly one ordered marker pair. PRs are issues, so conversation comments come from the issues API:
 
 ```bash
 body_file=$(mktemp)
 trap 'rm -f "$body_file"' EXIT
-gh pr view <M> --json body --jq .body > "$body_file"
+gh api repos/{owner}/{repo}/issues/<M>/comments --paginate --slurp |
+  jq -r '[.[][] | select(.body | contains("<!-- BEGIN PLAN -->"))] | if length == 1 then .[0].body else empty end' > "$body_file"
+test -s "$body_file"
 mkdir -p .superpowers/sdd
 git check-ignore -q .superpowers/sdd/plan.md || printf '*\n' > .superpowers/sdd/.gitignore
 awk '
@@ -53,9 +55,19 @@ Write only the bytes between those markers to `.superpowers/sdd/plan.md`. Preser
 
 ## Update the existing PR
 
-- Plan regeneration: replace only the content between the markers with `gh pr edit <M> --body-file <file>`.
-- Mid-run blocker: prepend the blocked section while preserving the summary, `Closes #N`, and marked plan.
-- Successful finish: push, then `gh pr ready <M>`.
+- Plan regeneration: rewrite the same comment in place by its numeric comment ID — never post a second plan comment, never rely on `gh pr comment --edit-last` (it is positional and edits the wrong comment once anyone else comments). Rebuild the validated comment file per `plan-and-publish.md`, then:
+
+  ```bash
+  comment_id=$(gh api repos/{owner}/{repo}/issues/<M>/comments --paginate --slurp |
+    jq -r '[.[][] | select(.body | contains("<!-- BEGIN PLAN -->"))] | if length == 1 then .[0].id else empty end')
+  test -n "$comment_id"
+  gh api repos/{owner}/{repo}/issues/comments/"$comment_id" -X PATCH -F body=@"$comment_file"
+  ```
+
+- Mid-run blocker: prepend the blocked section to the PR description while preserving the summary and `Closes #N`; the plan comment is separate and untouched.
+- Successful finish: inspect both `.superpowers/sdd/plan.md` and the final review result and state each result separately. Follow the trigger, required content, gates, and sequencing in `SKILL.md`. When its step 4 requires a description update:
+  1. Create `description_file=$(mktemp)`, fetch the existing description with `gh pr view <M> --json body --jq .body > "$description_file"`, edit that file, and apply it with `gh pr edit <M> --body-file "$description_file"`.
+  2. Re-fetch with `gh pr view <M> --json body --jq .body`, verify the result against the `SKILL.md` contract, then remove the temporary file with `rm -f "$description_file"`.
 - Persistent pre-flight conflict: `gh pr close <M> --delete-branch`, then reset the issue state.
 
 Never call `gh pr create` from this skill.

@@ -108,7 +108,7 @@ function _dotfiles_commit_model ()
   fi
   case "$backend" in
     opencode) printf '%s' 'opencode-go/kimi-k2.7-code' ;;
-    agy)      printf '%s' 'gemini-3.6-flash-low' ;;
+    agy)      printf '%s' 'gemini-3.7-flash-low' ;;
     *)        printf '%s' 'haiku' ;;
   esac
 }
