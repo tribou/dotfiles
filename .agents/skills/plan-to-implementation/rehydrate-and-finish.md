@@ -26,7 +26,7 @@ git worktree list --porcelain | awk -v ref="refs/heads/$head_ref" '
 
 - Exactly one match: enter that path. This is the worktree Phase A left behind.
 - More than one match: stop; worktree state is ambiguous.
-- No match: use `superpowers:using-git-worktrees` directory selection, native-tool preference, ignore checks, setup, and baseline verification to create an isolated worktree for the **existing PR branch**, not a new feature branch. With the git fallback, run `git fetch origin <headRefName>`, then use `git worktree add <path> <headRefName>` when the local branch exists, or `git worktree add -b <headRefName> <path> origin/<headRefName>` otherwise.
+- No match: use `superpowers:using-git-worktrees` directory selection, native-tool preference, ignore checks, setup, and baseline verification to create an isolated worktree for the **existing PR branch**, not a new feature branch — no consent prompt; the worktree preference is already declared as always-isolate. With the git fallback, run `git fetch origin <headRefName>`, then use `git worktree add <path> <headRefName>` when the local branch exists, or `git worktree add -b <headRefName> <path> origin/<headRefName>` otherwise.
 
 Inside the resolved path, run `gh pr checkout <M>` and verify `git branch --show-current` equals `headRefName`. This works both on the original machine and on a fresh machine without guessing a worktree path.
 
