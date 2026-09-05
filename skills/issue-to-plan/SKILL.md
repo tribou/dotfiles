@@ -79,7 +79,6 @@ The plan remains untracked scratch locally; its durable copy is the marked PR co
 
 ## Red Flags — STOP
 
-- About to ask the user a worktree question.
 - SDD is about to start or Task 1 is about to be dispatched.
 - No open draft PR has exactly one comment containing the complete marked plan.
 - Plan markers appear in the PR description instead of the comment.

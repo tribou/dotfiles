@@ -57,6 +57,6 @@ Pre-dispatch gate — before dispatching any task, confirm each check aloud:
 
 ## Red Flags — STOP
 
-- About to ask the user a worktree question.
+- More than one worktree has the PR branch checked out.
 
-Any red flag means: stop and report instead of asking or guessing — an ambiguous or unconfirmed worktree is state to fix, not a question to put to a human.
+Any red flag means: stop and report instead of asking or guessing — an ambiguous worktree is state to fix, not a question to put to a human.
