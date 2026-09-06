@@ -9,6 +9,7 @@
  * Nothing here ever guesses a number: a probe that cannot read real usage
  * emits a record with "source": "unavailable" and a human-readable reason.
  */
+import { Database } from "bun:sqlite";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -123,6 +124,95 @@ function unavailableRecord(
   return makeRecord(stage, harness, sessionId, "unavailable", emptyTokens(), [], [], { reason });
 }
 
+function openSqliteReadonly(dbPath: string): Database {
+  // Read-only so a live agent session is never disturbed.
+  return new Database(dbPath, { readonly: true });
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+const OPENCODE_COLUMNS =
+  "id, model, cost, tokens_input, tokens_output, tokens_reasoning," +
+  " tokens_cache_read, tokens_cache_write";
+
+interface OpencodeRow {
+  id: string;
+  model: string | null;
+  cost: number | null;
+  tokens_input: number | null;
+  tokens_output: number | null;
+  tokens_reasoning: number | null;
+  tokens_cache_read: number | null;
+  tokens_cache_write: number | null;
+}
+
+function opencodeRowTokens(row: OpencodeRow): Tokens {
+  const tokens = emptyTokens();
+  tokens.input = row.tokens_input ?? 0;
+  // opencode keeps reasoning in its own column; the normalized `output` is the
+  // billed output including reasoning, and `reasoning` repeats the subset.
+  tokens.output = (row.tokens_output ?? 0) + (row.tokens_reasoning ?? 0);
+  tokens.reasoning = row.tokens_reasoning ?? 0;
+  tokens.cache_read = row.tokens_cache_read ?? 0;
+  tokens.cache_write = row.tokens_cache_write ?? 0;
+  return finalizeTokens(tokens);
+}
+
+function opencodeDbPath(): string {
+  return process.env.AGENT_USAGE_AUDIT_OPENCODE_DB
+    ?? path.join(homedir(), ".local", "share", "opencode", "opencode.db");
+}
+
+function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
+  const dbPath = opencodeDbPath();
+  if (!existsSync(dbPath)) {
+    return unavailableRecord(stage, "opencode", sessionId, `opencode.db not found at ${dbPath}`);
+  }
+  let db: Database;
+  try {
+    db = openSqliteReadonly(dbPath);
+  } catch (error) {
+    return unavailableRecord(stage, "opencode", sessionId, `opencode.db unreadable: ${errorMessage(error)}`);
+  }
+  let parent: OpencodeRow | null = null;
+  let kids: OpencodeRow[] = [];
+  try {
+    parent = (db.prepare(`SELECT ${OPENCODE_COLUMNS} FROM session WHERE id = ?`).get(sessionId) as OpencodeRow) ?? null;
+    kids = db.prepare(`SELECT ${OPENCODE_COLUMNS} FROM session WHERE parent_id = ?`).all(sessionId) as OpencodeRow[];
+  } catch (error) {
+    return unavailableRecord(stage, "opencode", sessionId, `opencode.db unreadable: ${errorMessage(error)}`);
+  } finally {
+    db.close();
+  }
+
+  if (!parent) {
+    return unavailableRecord(stage, "opencode", sessionId, `session ${sessionId} not present in ${dbPath}`);
+  }
+
+  const rolledUp = opencodeRowTokens(parent);
+  const models: string[] = parent.model ? [parent.model] : [];
+  let cost = parent.cost ?? 0;
+  const children: ChildRecord[] = [];
+  for (const kid of kids) {
+    const kidTokens = opencodeRowTokens(kid);
+    cost += kid.cost ?? 0;
+    if (kid.model) models.push(kid.model);
+    for (const key of TOKEN_KEYS) rolledUp[key] += kidTokens[key];
+    children.push({
+      session_id: kid.id,
+      harness: "opencode",
+      models: kid.model ? [kid.model] : [],
+      tokens: kidTokens,
+    });
+  }
+
+  // Rounding keeps 0.42 + 0.08 from printing as 0.5000000000000001.
+  const costUsd = cost ? Math.round(cost * 1e6) / 1e6 : null;
+  return makeRecord(stage, "opencode", sessionId, "builtin-opencode", rolledUp, models, children, { costUsd });
+}
+
 function claudeProjectsDir(): string {
   return process.env.AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR
     ?? path.join(homedir(), ".claude", "projects");
@@ -227,6 +317,9 @@ async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
   }
   if (harness === "claude-code") {
     return probeClaudeCode(stage, resolved);
+  }
+  if (harness === "opencode") {
+    return probeOpencode(stage, resolved);
   }
   return unavailableRecord(stage, harness, resolved, `no usage adapter for harness '${harness}'`);
 }

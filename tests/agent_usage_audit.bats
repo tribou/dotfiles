@@ -94,6 +94,11 @@ install_claude_fixture() {
     "$dir/sess-cc-0001.jsonl"
 }
 
+install_opencode_fixture() {
+  bun "$REPO_ROOT/tests/fixtures/agent-usage-audit/make_fixtures.ts" \
+    opencode "$AGENT_USAGE_AUDIT_OPENCODE_DB"
+}
+
 @test "claude-code adapter: dedups repeated streaming rows by (message id, request id)" {
   install_claude_fixture
   export AGENT_USAGE_AUDIT_HARNESS="claude-code"
@@ -132,4 +137,56 @@ install_claude_fixture() {
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"transcript"* ]]
+}
+
+@test "opencode adapter: reads the session row and rolls up its child sessions" {
+  install_opencode_fixture
+  export AGENT_USAGE_AUDIT_HARNESS="opencode"
+  export AGENT_USAGE_AUDIT_SESSION_ID="ses_fixture_parent"
+
+  run bun "$SCRIPT" probe --stage plan-to-implementation
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-opencode" ]
+  # parent 120 + child 20
+  [ "$(json_field tokens.input)" = "140" ]
+  # (340 + 60) + (30 + 5): opencode stores reasoning separately from output
+  [ "$(json_field tokens.output)" = "435" ]
+  [ "$(json_field tokens.reasoning)" = "65" ]
+  [ "$(json_field tokens.cache_read)" = "5900" ]
+  [ "$(json_field tokens.cache_write)" = "800" ]
+  [ "$(json_field tokens.total)" = "7275" ]
+  [ "$(json_field children.0.session_id)" = "ses_fixture_child" ]
+  [ "$(json_field children.0.tokens.input)" = "20" ]
+  [ "$(json_field cost_usd)" = "0.5" ]
+}
+
+@test "opencode adapter: a session id absent from the database is unavailable" {
+  install_opencode_fixture
+  export AGENT_USAGE_AUDIT_HARNESS="opencode"
+  export AGENT_USAGE_AUDIT_SESSION_ID="ses_not_here"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+}
+
+@test "opencode adapter: a missing database file is unavailable" {
+  export AGENT_USAGE_AUDIT_HARNESS="opencode"
+  export AGENT_USAGE_AUDIT_SESSION_ID="ses_fixture_parent"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+  [[ "$(json_field reason)" == *"opencode.db"* ]]
+}
+
+@test "opencode adapter: an unreadable database is unavailable" {
+  printf 'definitely not a sqlite database' > "$AGENT_USAGE_AUDIT_OPENCODE_DB"
+  export AGENT_USAGE_AUDIT_HARNESS="opencode"
+  export AGENT_USAGE_AUDIT_SESSION_ID="ses_fixture_parent"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+  [[ "$(json_field reason)" == *"unreadable"* ]]
 }
