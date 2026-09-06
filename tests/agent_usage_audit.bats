@@ -13,9 +13,9 @@ setup() {
   mkdir -p "$FIXTURES"
 
   # Never let the developer's real harness environment leak into a test.
-  unset CLAUDECODE CLAUDE_CODE_SESSION_ID
+  unset CLAUDECODE CLAUDE_CODE_SESSION_ID CLAUDE_SESSION_ID
   unset OPENCODE OPENCODE_SESSION_ID
-  unset AGY_CONVERSATION_ID ANTIGRAVITY_CONVERSATION_ID
+  unset AGY_CONVERSATION_ID ANTIGRAVITY_CONVERSATION_ID ANTIGRAVITY_AGENT
   unset AGENT_USAGE_AUDIT_HARNESS AGENT_USAGE_AUDIT_SESSION_ID
 
   export AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR="$FIXTURES/claude-projects"
@@ -89,6 +89,13 @@ json_field() {
   [ "$(json_field harness)" = "opencode" ]
 }
 
+@test "detect_harness: AGY marker selects the agy harness" {
+  run env AGY_CONVERSATION_ID=conv-0001 \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field harness)" = "agy" ]
+}
+
 install_claude_fixture() {
   local dir="$AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR/-fixture-project"
   mkdir -p "$dir"
@@ -144,6 +151,37 @@ install_agy_fixture() {
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"transcript"* ]]
+}
+
+@test "claude-code adapter: unreadable transcript is unavailable" {
+  local dir="$AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR/-fixture-project"
+  mkdir -p "$dir"
+  local transcript="$dir/sess-unreadable.jsonl"
+  touch "$transcript"
+  chmod 000 "$transcript"
+
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-unreadable \
+    bun "$SCRIPT" probe --stage issue-to-plan
+
+  chmod 644 "$transcript"
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+  [[ "$(json_field reason)" == *"unreadable"* ]]
+}
+
+@test "claude-code adapter: transcript with no assistant turns is unavailable" {
+  local dir="$AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR/-fixture-project"
+  mkdir -p "$dir"
+  echo '{"type":"user","message":{"content":"hello"}}' > "$dir/sess-no-assistant.jsonl"
+
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-no-assistant \
+    bun "$SCRIPT" probe --stage issue-to-plan
+
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+  [[ "$(json_field reason)" == *"no assistant turns"* ]]
 }
 
 @test "opencode adapter: reads the session row and rolls up its child sessions" {
@@ -275,13 +313,13 @@ EOF
 }
 
 @test "probe order: ccusage wins over the built-in adapter when it is installed" {
-  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
   install_claude_fixture
   stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"totalCost":1.25,"modelsUsed":["claude-opus-5"]}]}'
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env -u AGENT_USAGE_AUDIT_DISABLE_CCUSAGE \
+    AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "ccusage" ]
   [ "$(json_field tokens.input)" = "1" ]
@@ -292,27 +330,26 @@ EOF
 }
 
 @test "probe order: a failing ccusage falls back to the built-in adapter" {
-  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
   install_claude_fixture
   stub_ccusage 'not json at all' 1
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env -u AGENT_USAGE_AUDIT_DISABLE_CCUSAGE \
+    AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
   [ "$(json_field tokens.total)" = "3701" ]
 }
 
 @test "probe order: AGENT_USAGE_AUDIT_DISABLE_CCUSAGE skips ccusage entirely" {
-  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
   install_claude_fixture
   stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2}]}'
-  export AGENT_USAGE_AUDIT_DISABLE_CCUSAGE=1
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_DISABLE_CCUSAGE=1 \
+    AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
 }
