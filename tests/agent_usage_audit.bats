@@ -86,3 +86,50 @@ json_field() {
   [ "$status" -eq 0 ]
   [ "$(json_field harness)" = "opencode" ]
 }
+
+install_claude_fixture() {
+  local dir="$AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR/-fixture-project"
+  mkdir -p "$dir"
+  cp "$REPO_ROOT/tests/fixtures/agent-usage-audit/claude-code-session.jsonl" \
+    "$dir/sess-cc-0001.jsonl"
+}
+
+@test "claude-code adapter: dedups repeated streaming rows by (message id, request id)" {
+  install_claude_fixture
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.input)" = "16" ]
+  [ "$(json_field tokens.output)" = "307" ]
+  [ "$(json_field tokens.cache_read)" = "3300" ]
+  [ "$(json_field tokens.cache_write)" = "78" ]
+  [ "$(json_field tokens.reasoning)" = "52" ]
+  [ "$(json_field tokens.total)" = "3701" ]
+}
+
+@test "claude-code adapter: subagent usage rolls up and is itemized in children" {
+  install_claude_fixture
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field children.0.tokens.output)" = "7" ]
+  [ "$(json_field children.0.tokens.cache_read)" = "300" ]
+  [ "$(json_field children.0.models.0)" = "claude-sonnet-5" ]
+  [ "$(json_field models.0)" = "claude-opus-5" ]
+  [ "$(json_field models.1)" = "claude-sonnet-5" ]
+}
+
+@test "claude-code adapter: a missing transcript is unavailable, not zero-filled truth" {
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-does-not-exist"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+  [[ "$(json_field reason)" == *"transcript"* ]]
+}
