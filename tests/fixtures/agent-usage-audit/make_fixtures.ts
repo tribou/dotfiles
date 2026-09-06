@@ -33,6 +33,8 @@ CREATE TABLE session (
 const OPENCODE_ROWS: Array<[string, string | null, number, number, number, number, number, number, string]> = [
   ["ses_fixture_parent", null, 0.42, 120, 340, 60, 5000, 700, "anthropic/claude-opus-5"],
   ["ses_fixture_child", "ses_fixture_parent", 0.08, 20, 30, 5, 900, 100, "anthropic/claude-sonnet-5"],
+  ["ses_fixture_zero_cost_parent", null, 0, 1, 2, 0, 0, 0, "anthropic/claude-haiku-5"],
+  ["ses_fixture_zero_cost_child", "ses_fixture_zero_cost_parent", 0, 3, 4, 0, 0, 0, "anthropic/claude-haiku-5"],
   ["ses_unrelated", null, 9.99, 111, 222, 333, 444, 555, "other/model"],
 ];
 

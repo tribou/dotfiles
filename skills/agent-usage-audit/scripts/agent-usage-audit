@@ -193,11 +193,11 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
 
   const rolledUp = opencodeRowTokens(parent);
   const models: string[] = parent.model ? [parent.model] : [];
-  let cost = parent.cost ?? 0;
+  let cost = parent.cost;
   const children: ChildRecord[] = [];
   for (const kid of kids) {
     const kidTokens = opencodeRowTokens(kid);
-    cost += kid.cost ?? 0;
+    if (kid.cost !== null) cost = (cost ?? 0) + kid.cost;
     if (kid.model) models.push(kid.model);
     for (const key of TOKEN_KEYS) rolledUp[key] += kidTokens[key];
     children.push({
@@ -209,7 +209,7 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
   }
 
   // Rounding keeps 0.42 + 0.08 from printing as 0.5000000000000001.
-  const costUsd = cost ? Math.round(cost * 1e6) / 1e6 : null;
+  const costUsd = cost === null ? null : Math.round(cost * 1e6) / 1e6;
   return makeRecord(stage, "opencode", sessionId, "builtin-opencode", rolledUp, models, children, { costUsd });
 }
 

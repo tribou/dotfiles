@@ -49,9 +49,9 @@ json_field() {
 }
 
 @test "probe: record carries schema, stage and an ISO-8601 UTC timestamp" {
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
-  run bun "$SCRIPT" probe --stage brainstorming-to-issue
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-cc-0001 \
+    bun "$SCRIPT" probe --stage brainstorming-to-issue
   [ "$status" -eq 0 ]
   [ "$(json_field schema)" = "1" ]
   [ "$(json_field stage)" = "brainstorming-to-issue" ]
@@ -60,8 +60,8 @@ json_field() {
 }
 
 @test "probe: --session overrides environment detection" {
-  export AGENT_USAGE_AUDIT_SESSION_ID="from-env"
-  run bun "$SCRIPT" probe --stage issue-to-plan --session from-flag
+  run env AGENT_USAGE_AUDIT_SESSION_ID=from-env \
+    bun "$SCRIPT" probe --stage issue-to-plan --session from-flag
   [ "$status" -eq 0 ]
   [ "$(json_field session_id)" = "from-flag" ]
 }
@@ -72,17 +72,15 @@ json_field() {
 }
 
 @test "detect_harness: CLAUDECODE marker selects the claude-code harness" {
-  export CLAUDECODE=1
-  export CLAUDE_CODE_SESSION_ID="sess-cc-0001"
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env CLAUDECODE=1 CLAUDE_CODE_SESSION_ID=sess-cc-0001 \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field harness)" = "claude-code" ]
 }
 
 @test "detect_harness: OPENCODE marker selects the opencode harness" {
-  export OPENCODE=1
-  export OPENCODE_SESSION_ID="ses_fixture_parent"
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env OPENCODE=1 OPENCODE_SESSION_ID=ses_fixture_parent \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field harness)" = "opencode" ]
 }
@@ -101,10 +99,10 @@ install_opencode_fixture() {
 
 @test "claude-code adapter: dedups repeated streaming rows by (message id, request id)" {
   install_claude_fixture
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-cc-0001 \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
   [ "$(json_field tokens.input)" = "16" ]
@@ -117,10 +115,10 @@ install_opencode_fixture() {
 
 @test "claude-code adapter: subagent usage rolls up and is itemized in children" {
   install_claude_fixture
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-cc-0001 \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field children.0.tokens.output)" = "7" ]
   [ "$(json_field children.0.tokens.cache_read)" = "300" ]
@@ -130,10 +128,9 @@ install_opencode_fixture() {
 }
 
 @test "claude-code adapter: a missing transcript is unavailable, not zero-filled truth" {
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-does-not-exist"
-
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-does-not-exist \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"transcript"* ]]
@@ -141,10 +138,10 @@ install_opencode_fixture() {
 
 @test "opencode adapter: reads the session row and rolls up its child sessions" {
   install_opencode_fixture
-  export AGENT_USAGE_AUDIT_HARNESS="opencode"
-  export AGENT_USAGE_AUDIT_SESSION_ID="ses_fixture_parent"
 
-  run bun "$SCRIPT" probe --stage plan-to-implementation
+  run env AGENT_USAGE_AUDIT_HARNESS=opencode \
+    AGENT_USAGE_AUDIT_SESSION_ID=ses_fixture_parent \
+    bun "$SCRIPT" probe --stage plan-to-implementation
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-opencode" ]
   # parent 120 + child 20
@@ -160,21 +157,32 @@ install_opencode_fixture() {
   [ "$(json_field cost_usd)" = "0.5" ]
 }
 
+@test "opencode adapter: preserves a zero parent-plus-child cost" {
+  install_opencode_fixture
+
+  run env AGENT_USAGE_AUDIT_HARNESS=opencode \
+    AGENT_USAGE_AUDIT_SESSION_ID=ses_fixture_zero_cost_parent \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-opencode" ]
+  [ "$(json_field children.0.session_id)" = "ses_fixture_zero_cost_child" ]
+  [ "$(json_field cost_usd)" = "0" ]
+}
+
 @test "opencode adapter: a session id absent from the database is unavailable" {
   install_opencode_fixture
-  export AGENT_USAGE_AUDIT_HARNESS="opencode"
-  export AGENT_USAGE_AUDIT_SESSION_ID="ses_not_here"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=opencode \
+    AGENT_USAGE_AUDIT_SESSION_ID=ses_not_here \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
 }
 
 @test "opencode adapter: a missing database file is unavailable" {
-  export AGENT_USAGE_AUDIT_HARNESS="opencode"
-  export AGENT_USAGE_AUDIT_SESSION_ID="ses_fixture_parent"
-
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=opencode \
+    AGENT_USAGE_AUDIT_SESSION_ID=ses_fixture_parent \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"opencode.db"* ]]
@@ -182,10 +190,10 @@ install_opencode_fixture() {
 
 @test "opencode adapter: an unreadable database is unavailable" {
   printf 'definitely not a sqlite database' > "$AGENT_USAGE_AUDIT_OPENCODE_DB"
-  export AGENT_USAGE_AUDIT_HARNESS="opencode"
-  export AGENT_USAGE_AUDIT_SESSION_ID="ses_fixture_parent"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=opencode \
+    AGENT_USAGE_AUDIT_SESSION_ID=ses_fixture_parent \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"unreadable"* ]]
