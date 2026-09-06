@@ -18,6 +18,17 @@
 - The repository assumes macOS (checks for Darwin in multiple places)
 - mise loaded on shell startup; tool versions auto-switch natively on directory change via shell integration hooks
 
+## Library Module Organization
+
+The root-level `lib/*.sh` files are shell modules loaded by `lib/index.sh`.
+
+- **Boundary:** Prefer one file per external tool or cohesive domain, such as `git.sh`, `docker.sh`, `tmux.sh`, or `npm.sh`. Small related tools may share a module until it approaches the size limit; for example, `cloud.sh` may group AWS, DigitalOcean, Terraform, and SSH helpers before those concerns are large enough to split.
+- **Size:** Keep each module near 300 physical lines or fewer. `just test-unit` prints a warning for files over 300 lines but deliberately keeps passing so a cohesive exception does not block CI.
+- **Naming:** Use lowercase `snake_case` names based on the tool or domain, such as `git.sh` or `curl_it.sh`. Reserve a leading underscore, such as `_shared.sh`, for non-domain helpers consumed by other modules.
+- **Load order:** `lib/index.sh` sources all `_*.sh` modules before non-underscore modules, independently of locale. Relative order within either group is unspecified, so peer modules must not depend on alphabetical loading.
+
+`lib/commands.sh` predates this convention and is intentionally left for issue #42 to split into focused modules.
+
 ## Naming Conventions
 - Internal functions typically start with an underscore (e.g., `_dotfiles_full_path`)
 - Ticket-related branches use `AB-123/description`, `ab123-description`, or `123_AT_Description` (DCX pattern)
