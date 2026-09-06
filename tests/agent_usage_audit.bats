@@ -312,6 +312,16 @@ EOF
   export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
 }
 
+stub_ccusage_timeout() {
+  mkdir -p "$BATS_TEST_TMPDIR/bin"
+  cat > "$BATS_TEST_TMPDIR/bin/ccusage" <<'EOF'
+#!/usr/bin/env bash
+sleep 31
+EOF
+  chmod +x "$BATS_TEST_TMPDIR/bin/ccusage"
+  export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
+}
+
 @test "probe order: ccusage wins over the built-in adapter when it is installed" {
   install_claude_fixture
   stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"totalCost":1.25,"modelsUsed":["claude-opus-5"]}]}'
@@ -352,4 +362,56 @@ EOF
     bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
+}
+
+@test "probe order: malformed ccusage token fields fall back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":"not-a-number"}]}'
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
+}
+
+@test "probe order: malformed ccusage children fall back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","children":{}}]}'
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
+}
+
+@test "probe order: a non-array ccusage sessions field falls back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":"not-an-array","sessionId":"sess-cc-0001","inputTokens":1}'
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
+}
+
+@test "probe order: a timed-out ccusage falls back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage_timeout
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
 }

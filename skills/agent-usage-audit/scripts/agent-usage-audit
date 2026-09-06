@@ -394,24 +394,65 @@ interface CcusageEntry {
   cacheReadTokens?: number;
   cacheCreationTokens?: number;
   reasoningTokens?: number;
-  totalCost?: number;
+  totalCost?: number | null;
   modelsUsed?: string[];
   children?: CcusageEntry[];
 }
 
+function isCcusageObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isCcusageToken(value: unknown): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function isCcusageCost(value: unknown): boolean {
+  return value === null || isCcusageToken(value);
+}
+
+function validatedCcusageEntry(value: unknown): CcusageEntry | null {
+  if (!isCcusageObject(value)) return null;
+  if (value.sessionId !== undefined && typeof value.sessionId !== "string") return null;
+  for (const key of [
+    "inputTokens",
+    "outputTokens",
+    "cacheReadTokens",
+    "cacheCreationTokens",
+    "reasoningTokens",
+  ]) {
+    if (value[key] !== undefined && !isCcusageToken(value[key])) return null;
+  }
+  if (value.totalCost !== undefined && !isCcusageCost(value.totalCost)) return null;
+  if (
+    value.modelsUsed !== undefined
+    && (!Array.isArray(value.modelsUsed) || !value.modelsUsed.every((model) => typeof model === "string"))
+  ) {
+    return null;
+  }
+  if (value.children !== undefined) {
+    if (!Array.isArray(value.children)) return null;
+    for (const child of value.children) {
+      if (!validatedCcusageEntry(child)) return null;
+    }
+  }
+  return value as CcusageEntry;
+}
+
 function ccusageEntry(payload: unknown, sessionId: string): CcusageEntry | null {
-  if (!payload || typeof payload !== "object") return null;
-  const container = payload as { sessions?: unknown };
-  if (!Array.isArray(container.sessions)) {
-    const entry = payload as CcusageEntry;
-    return entry.sessionId === sessionId ? entry : null;
+  if (!isCcusageObject(payload)) return null;
+  if (Object.prototype.hasOwnProperty.call(payload, "sessions")) {
+    if (!Array.isArray(payload.sessions)) return null;
+    let matchingEntry: CcusageEntry | null = null;
+    for (const candidate of payload.sessions) {
+      const entry = validatedCcusageEntry(candidate);
+      if (!entry) return null;
+      if (entry.sessionId === sessionId) matchingEntry = entry;
+    }
+    return matchingEntry;
   }
-  for (const candidate of container.sessions) {
-    if (!candidate || typeof candidate !== "object") continue;
-    const entry = candidate as CcusageEntry;
-    if (entry.sessionId === sessionId) return entry;
-  }
-  return null;
+  const entry = validatedCcusageEntry(payload);
+  return entry?.sessionId === sessionId ? entry : null;
 }
 
 function ccusageTokensFrom(entry: CcusageEntry): Tokens {
