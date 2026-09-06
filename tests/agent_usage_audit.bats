@@ -97,6 +97,12 @@ install_opencode_fixture() {
     opencode "$AGENT_USAGE_AUDIT_OPENCODE_DB"
 }
 
+install_agy_fixture() {
+  mkdir -p "$AGENT_USAGE_AUDIT_AGY_DIR"
+  bun "$REPO_ROOT/tests/fixtures/agent-usage-audit/make_fixtures.ts" \
+    agy "$AGENT_USAGE_AUDIT_AGY_DIR/conv-0001.db"
+}
+
 @test "claude-code adapter: dedups repeated streaming rows by (message id, request id)" {
   install_claude_fixture
 
@@ -197,4 +203,55 @@ install_opencode_fixture() {
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"unreadable"* ]]
+}
+
+@test "agy adapter: sums only rows whose stored total verifies" {
+  install_agy_fixture
+  export AGENT_USAGE_AUDIT_HARNESS="agy"
+  export AGENT_USAGE_AUDIT_SESSION_ID="conv-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-agy" ]
+  [ "$(json_field tokens.input)" = "3000" ]
+  [ "$(json_field tokens.cache_read)" = "50000" ]
+  # output folds thinking in: (300 + 50) + (400 + 60)
+  [ "$(json_field tokens.output)" = "810" ]
+  [ "$(json_field tokens.reasoning)" = "110" ]
+  [ "$(json_field models.0)" = "gemini-3.8-flash" ]
+}
+
+@test "agy adapter: a row failing the #3 == #9 + #10 self-check is dropped, not guessed" {
+  install_agy_fixture
+  export AGENT_USAGE_AUDIT_HARNESS="agy"
+  export AGENT_USAGE_AUDIT_SESSION_ID="conv-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field verified_rows)" = "2" ]
+  [ "$(json_field dropped_rows)" = "1" ]
+  # The drifted row's 9999 input never reaches the totals.
+  [ "$(json_field tokens.input)" = "3000" ]
+}
+
+@test "agy adapter: a missing conversation database is unavailable" {
+  export AGENT_USAGE_AUDIT_HARNESS="agy"
+  export AGENT_USAGE_AUDIT_SESSION_ID="conv-missing"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+}
+
+@test "agy adapter: a conversation where every row fails verification is unavailable" {
+  mkdir -p "$AGENT_USAGE_AUDIT_AGY_DIR"
+  bun "$REPO_ROOT/tests/fixtures/agent-usage-audit/make_fixtures.ts" \
+    agy-drift "$AGENT_USAGE_AUDIT_AGY_DIR/conv-drift.db"
+  export AGENT_USAGE_AUDIT_HARNESS="agy"
+  export AGENT_USAGE_AUDIT_SESSION_ID="conv-drift"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+  [[ "$(json_field reason)" == *"self-check"* ]]
 }

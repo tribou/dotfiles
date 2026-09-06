@@ -213,6 +213,176 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
   return makeRecord(stage, "opencode", sessionId, "builtin-opencode", rolledUp, models, children, { costUsd });
 }
 
+function agyConversationsDir(): string {
+  return process.env.AGENT_USAGE_AUDIT_AGY_DIR
+    ?? path.join(homedir(), ".gemini", "antigravity-cli", "conversations");
+}
+
+type PbValue = ["varint", number] | ["bytes", Uint8Array] | ["i32", Uint8Array] | ["i64", Uint8Array];
+
+function readVarint(buf: Uint8Array, index: number): [number, number] {
+  let shift = 0;
+  let value = 0;
+  for (;;) {
+    const byte = buf[index]!;
+    index += 1;
+    // Multiplication instead of << keeps values beyond 32 bits exact.
+    value += (byte & 0x7f) * 2 ** shift;
+    shift += 7;
+    if ((byte & 0x80) === 0) return [value, index];
+  }
+}
+
+function parseProtobuf(buf: Uint8Array): Map<number, PbValue[]> {
+  // Decode an unlabeled protobuf message into {field number: [(wire, value)]}.
+  // agy stores usage as unlabeled protobuf, so the field numbers come from
+  // the reverse-engineered agent-walker map and every row is self-verified
+  // before its numbers are trusted.
+  const fields = new Map<number, PbValue[]>();
+  let index = 0;
+  while (index < buf.length) {
+    let key: number;
+    [key, index] = readVarint(buf, index);
+    const field = key >>> 3;
+    const wire = key & 7;
+    const entries = fields.get(field) ?? [];
+    if (wire === 0) {
+      let value: number;
+      [value, index] = readVarint(buf, index);
+      entries.push(["varint", value]);
+    } else if (wire === 2) {
+      let size: number;
+      [size, index] = readVarint(buf, index);
+      entries.push(["bytes", buf.subarray(index, index + size)]);
+      index += size;
+    } else if (wire === 5) {
+      entries.push(["i32", buf.subarray(index, index + 4)]);
+      index += 4;
+    } else if (wire === 1) {
+      entries.push(["i64", buf.subarray(index, index + 8)]);
+      index += 8;
+    } else {
+      throw new Error(`unsupported protobuf wire type ${wire}`);
+    }
+    fields.set(field, entries);
+  }
+  return fields;
+}
+
+function pbVarintValue(fields: Map<number, PbValue[]>, field: number): number {
+  for (const [wire, value] of fields.get(field) ?? []) {
+    if (wire === "varint") return value as number;
+  }
+  return 0;
+}
+
+function pbSubmessage(fields: Map<number, PbValue[]> | undefined, field: number): Map<number, PbValue[]> | null {
+  if (!fields) return null;
+  for (const [wire, value] of fields.get(field) ?? []) {
+    if (wire === "bytes") {
+      try {
+        return parseProtobuf(value as Uint8Array);
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+function pbString(fields: Map<number, PbValue[]>, field: number): string | null {
+  for (const [wire, value] of fields.get(field) ?? []) {
+    if (wire === "bytes") {
+      return new TextDecoder().decode(value as Uint8Array);
+    }
+  }
+  return null;
+}
+
+async function blobToBytes(value: unknown): Promise<Uint8Array> {
+  if (value instanceof Blob) return new Uint8Array(await value.arrayBuffer());
+  if (value instanceof Uint8Array) return value;
+  throw new Error(`unexpected blob column type: ${typeof value}`);
+}
+
+async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
+  const dbPath = path.join(agyConversationsDir(), `${sessionId}.db`);
+  if (!existsSync(dbPath)) {
+    return unavailableRecord(stage, "agy", sessionId, `no agy conversation database at ${dbPath}`);
+  }
+  let db: Database;
+  try {
+    db = openSqliteReadonly(dbPath);
+  } catch (error) {
+    return unavailableRecord(stage, "agy", sessionId, `agy database unreadable: ${errorMessage(error)}`);
+  }
+  let blobs: unknown[] = [];
+  try {
+    blobs = db.prepare("SELECT data FROM gen_metadata ORDER BY idx").values().flat();
+  } catch (error) {
+    return unavailableRecord(stage, "agy", sessionId, `agy database unreadable: ${errorMessage(error)}`);
+  } finally {
+    db.close();
+  }
+
+  const tokens = emptyTokens();
+  const models: string[] = [];
+  let verified = 0;
+  let dropped = 0;
+  for (const blob of blobs) {
+    let buf: Uint8Array;
+    try {
+      buf = await blobToBytes(blob);
+    } catch {
+      dropped += 1;
+      continue;
+    }
+    let outer: Map<number, PbValue[]>;
+    try {
+      outer = parseProtobuf(buf);
+    } catch {
+      dropped += 1;
+      continue;
+    }
+    const envelope = pbSubmessage(outer, 1);
+    const usage = envelope ? pbSubmessage(envelope, 4) : null;
+    if (!usage) {
+      dropped += 1;
+      continue;
+    }
+    const storedTotal = pbVarintValue(usage, 3);
+    const output = pbVarintValue(usage, 9);
+    const thinking = pbVarintValue(usage, 10);
+    // Self-check from agent-walker: a row whose stored total disagrees with
+    // output + thinking has drifted from the reverse-engineered field map.
+    if (storedTotal !== output + thinking) {
+      dropped += 1;
+      continue;
+    }
+    verified += 1;
+    tokens.input += pbVarintValue(usage, 2);
+    tokens.cache_read += pbVarintValue(usage, 5);
+    tokens.output += output + thinking;
+    tokens.reasoning += thinking;
+    const model = pbString(envelope!, 19) ?? pbString(envelope!, 21);
+    if (model && !models.includes(model)) models.push(model);
+  }
+
+  if (verified === 0) {
+    return unavailableRecord(
+      stage,
+      "agy",
+      sessionId,
+      `no gen_metadata row passed the stored-total self-check (${dropped} dropped)`,
+    );
+  }
+
+  const record = makeRecord(stage, "agy", sessionId, "builtin-agy", tokens, models, []);
+  record.verified_rows = verified;
+  record.dropped_rows = dropped;
+  return record;
+}
+
 function claudeProjectsDir(): string {
   return process.env.AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR
     ?? path.join(homedir(), ".claude", "projects");
@@ -320,6 +490,9 @@ async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
   }
   if (harness === "opencode") {
     return probeOpencode(stage, resolved);
+  }
+  if (harness === "agy") {
+    return await probeAgy(stage, resolved);
   }
   return unavailableRecord(stage, harness, resolved, `no usage adapter for harness '${harness}'`);
 }
