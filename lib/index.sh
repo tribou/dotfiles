@@ -8,6 +8,7 @@ function source_lib()
   do
     [ -f "$file" ] || continue
     [ "$file" = "$DOTFILES/lib/index.sh" ] && continue
+    # shellcheck disable=SC1090
     . "$file"
   done
 }

@@ -56,3 +56,18 @@ EOF
   assert_success
   assert_output "underscore,regular"
 }
+
+@test "lib modules over 300 lines emit a soft warning" {
+  local file line_count relative_file
+  for file in "$REPO_ROOT"/lib/*.sh
+  do
+    line_count=$(wc -l < "$file")
+    if [ "$line_count" -gt 300 ]; then
+      relative_file=${file#"$REPO_ROOT/"}
+      printf '# WARNING: %s has %d lines (soft limit: 300)\n' \
+        "$relative_file" "$line_count" >&3
+    fi
+  done
+
+  return 0
+}
