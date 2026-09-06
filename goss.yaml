@@ -34,6 +34,10 @@ command:
   "pnpm --version":
     exit-status: 0
 
+  # Bun must be available via the mise-managed runtime
+  "bun --version":
+    exit-status: 0
+
   # gopls must remain available for editor integration after bootstrap
   "gopls version":
     exit-status: 0

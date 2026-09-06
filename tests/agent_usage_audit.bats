@@ -4,6 +4,10 @@ setup() {
   load 'test_helper/common_setup'
   common_setup
 
+  if ! command -v bun &>/dev/null && [ -d "$HOME/.local/share/mise/shims" ]; then
+    export PATH="$HOME/.local/share/mise/shims:$PATH"
+  fi
+
   SCRIPT="$REPO_ROOT/skills/agent-usage-audit/scripts/agent-usage-audit"
   FIXTURES="$BATS_TEST_TMPDIR/fixtures"
   mkdir -p "$FIXTURES"
@@ -207,10 +211,10 @@ install_agy_fixture() {
 
 @test "agy adapter: sums only rows whose stored total verifies" {
   install_agy_fixture
-  export AGENT_USAGE_AUDIT_HARNESS="agy"
-  export AGENT_USAGE_AUDIT_SESSION_ID="conv-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=agy \
+    AGENT_USAGE_AUDIT_SESSION_ID=conv-0001 \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-agy" ]
   [ "$(json_field tokens.input)" = "3000" ]
@@ -223,10 +227,10 @@ install_agy_fixture() {
 
 @test "agy adapter: a row failing the #3 == #9 + #10 self-check is dropped, not guessed" {
   install_agy_fixture
-  export AGENT_USAGE_AUDIT_HARNESS="agy"
-  export AGENT_USAGE_AUDIT_SESSION_ID="conv-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=agy \
+    AGENT_USAGE_AUDIT_SESSION_ID=conv-0001 \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field verified_rows)" = "2" ]
   [ "$(json_field dropped_rows)" = "1" ]
@@ -235,10 +239,9 @@ install_agy_fixture() {
 }
 
 @test "agy adapter: a missing conversation database is unavailable" {
-  export AGENT_USAGE_AUDIT_HARNESS="agy"
-  export AGENT_USAGE_AUDIT_SESSION_ID="conv-missing"
-
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=agy \
+    AGENT_USAGE_AUDIT_SESSION_ID=conv-missing \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
 }
@@ -247,10 +250,10 @@ install_agy_fixture() {
   mkdir -p "$AGENT_USAGE_AUDIT_AGY_DIR"
   bun "$REPO_ROOT/tests/fixtures/agent-usage-audit/make_fixtures.ts" \
     agy-drift "$AGENT_USAGE_AUDIT_AGY_DIR/conv-drift.db"
-  export AGENT_USAGE_AUDIT_HARNESS="agy"
-  export AGENT_USAGE_AUDIT_SESSION_ID="conv-drift"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS=agy \
+    AGENT_USAGE_AUDIT_SESSION_ID=conv-drift \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"self-check"* ]]
