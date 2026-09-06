@@ -6,7 +6,7 @@ setup() {
 @test "spinner_wait: returns 0 when the watched process exits 0, label printed to stderr" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     sleep 0.2 &
     pid=\$!
     _dotfiles_spinner_wait \"\$pid\" 'Asking Claude for a commit message...'
@@ -19,7 +19,7 @@ setup() {
 @test "spinner_wait: returns the watched process's nonzero exit status" {
   run -7 --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     (sleep 0.1; exit 7) &
     pid=\$!
     _dotfiles_spinner_wait \"\$pid\" 'Asking Claude for a commit message...'
@@ -30,7 +30,7 @@ setup() {
 @test "spinner_wait: times out, kills the watched pid, and returns 124" {
   run -124 --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     command sleep 5 &
     pid=\$!
     sleep() { :; }
@@ -51,7 +51,7 @@ setup() {
 @test "spinner_wait: process finishing before the timeout returns its exit status" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     command sleep 0.2 &
     pid=\$!
     _dotfiles_spinner_wait \"\$pid\" 'Asking Claude for a commit message...' 30
@@ -62,7 +62,7 @@ setup() {
 @test "spinner_wait: a non-numeric timeout is treated as no timeout" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     command sleep 0.2 &
     pid=\$!
     _dotfiles_spinner_wait \"\$pid\" 'Asking Claude for a commit message...' 'bogus'
@@ -73,7 +73,7 @@ setup() {
 @test "spinner_wait: SIGINT kills the watched pid and returns 130 with no stdout output" {
   run -130 --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     sleep 5 &
     pid=\$!
     sleep() {

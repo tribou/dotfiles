@@ -8,7 +8,7 @@ setup() {
   run bash -c "
     unset TMUX
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     fzf() { echo 'feat/just-doctor'; }
     git() { return 0; }
     _dotfiles_git_status() { return 0; }
@@ -22,7 +22,7 @@ setup() {
   run bash -c "
     unset TMUX
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     fzf() { echo 'feature/something'; }
     git() { return 0; }
     _dotfiles_git_status() { return 0; }
@@ -37,7 +37,7 @@ setup() {
   run bash -c "
     unset TMUX
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     fzf() { echo 'renovate/something-else'; }
     git() { return 0; }
     _dotfiles_git_status() { return 0; }
@@ -52,7 +52,7 @@ setup() {
   run bash -c "
     unset TMUX
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     fzf() { return 1; }
     git() { echo 'git called unexpectedly'; return 0; }
     _dotfiles_git_status() { return 0; }
@@ -66,7 +66,7 @@ setup() {
 @test "co: checkouts branch directly without fzf when argument is provided" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     fzf() { echo 'should-not-be-called'; exit 1; }
     git() { echo \"git \$*\"; }
     _dotfiles_git_status() { echo \"git_status\"; }
@@ -80,7 +80,7 @@ setup() {
 @test "co: propagates git checkout failure exit status and skips git status" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() { return 42; }
     _dotfiles_git_status() { echo \"should-not-run\"; return 0; }
     co \"invalid-branch\"

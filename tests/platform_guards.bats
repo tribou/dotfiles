@@ -10,7 +10,7 @@ setup() {
     uname() { echo 'Linux'; }
     export -f uname
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/docker.sh'
     restart-docker
   "
   assert_failure
@@ -28,7 +28,7 @@ setup() {
     docker() { return 0; }
     export -f uname osascript open docker
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/docker.sh'
     # Override wait loop to exit immediately
     restart-docker 2>/dev/null
     echo 'reached_past_guard'

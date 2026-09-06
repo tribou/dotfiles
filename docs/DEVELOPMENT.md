@@ -27,7 +27,7 @@ The root-level `lib/*.sh` files are shell modules loaded by `lib/index.sh`.
 - **Naming:** Use lowercase `snake_case` names based on the tool or domain, such as `git.sh` or `curl_it.sh`. Reserve a leading underscore, such as `_shared.sh`, for non-domain helpers consumed by other modules.
 - **Load order:** `lib/index.sh` sources all `_*.sh` modules before non-underscore modules, independently of locale. Relative order within either group is unspecified, so peer modules must not depend on alphabetical loading.
 
-`lib/commands.sh` predates this convention and is intentionally left for issue #42 to split into focused modules.
+`lib/commands.sh` retains general shell utilities, while tool-specific helpers are split into focused domain modules (`git.sh`, `npm.sh`, `docker.sh`, `tmux.sh`, `cloud.sh`, `repo.sh`, `agent.sh`).
 
 ## Naming Conventions
 - Internal functions typically start with an underscore (e.g., `_dotfiles_full_path`)

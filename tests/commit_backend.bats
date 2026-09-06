@@ -110,7 +110,7 @@ setup() {
 @test "commit status: reports opencode backend, model, availability" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     opencode() { :; }
     commit status
@@ -124,7 +124,7 @@ setup() {
 @test "commit status: reports agy backend, model, availability" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=agy
     agy() { :; }
     commit status
@@ -138,7 +138,7 @@ setup() {
 @test "commit status: reflects a DOTFILES_COMMIT_MODEL override" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     export DOTFILES_COMMIT_MODEL='my/custom-model'
     opencode() { :; }
@@ -152,7 +152,7 @@ setup() {
 @test "commit status: defaults to opencode/kimi 2.7" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     unset DOTFILES_COMMIT_BACKEND
     opencode() { :; }
     commit status
@@ -165,7 +165,7 @@ setup() {
 @test "commit status: reports the configured timeout" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     export DOTFILES_COMMIT_TIMEOUT=42
     opencode() { :; }
@@ -178,7 +178,7 @@ setup() {
 @test "commit status: defaults the timeout to 15s when unset" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     unset DOTFILES_COMMIT_TIMEOUT
     opencode() { :; }
@@ -193,7 +193,7 @@ setup() {
 @test "commit backend opencode: exports the backend for the current shell" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     commit backend opencode > /dev/null
     echo \"BACKEND=\$DOTFILES_COMMIT_BACKEND\"
   "
@@ -204,7 +204,7 @@ setup() {
 @test "commit backend agy: exports the backend for the current shell" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     commit backend agy > /dev/null
     echo \"BACKEND=\$DOTFILES_COMMIT_BACKEND\"
   "
@@ -215,7 +215,7 @@ setup() {
 @test "commit backend opencode: prints a confirmation including the model" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     commit backend opencode
   "
   assert_success
@@ -225,7 +225,7 @@ setup() {
 @test "commit backend: with no value prints the current backend" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     commit backend
   "
@@ -236,7 +236,7 @@ setup() {
 @test "commit backend bogus: errors, returns 1, leaves the backend unchanged" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     commit backend bogus
     echo \"RC=\$? BACKEND=\$DOTFILES_COMMIT_BACKEND\"
