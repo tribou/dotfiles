@@ -35,7 +35,7 @@
       "source": "tribou/dotfiles",
       "sourceType": "github",
       "skillPath": "skills/issue-to-plan/SKILL.md",
-      "computedHash": "c954e85bffb694b040facf4571703f1bf7317fe0c9bb9020e026f9b4a7cee8b6"
+      "computedHash": "262e840714afcb3a9e4262aaf57df9df795bc2ff8d79a8d7c5a1e9ab4e8e7eef"
     },
     "organize-ai-context": {
       "source": "tribou/dotfiles",
@@ -47,7 +47,7 @@
       "source": "tribou/dotfiles",
       "sourceType": "github",
       "skillPath": "skills/plan-to-implementation/SKILL.md",
-      "computedHash": "9af667410adf5860c433782589a9296a6f927cda9e5de61b82278dbe0e28746d"
+      "computedHash": "e9db1e54f847399fbea8dbfc76f3b49a38591e09be0584ec27c4b895867f46ad"
     },
     "prd": {
       "source": "tribou/dotfiles",

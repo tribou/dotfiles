@@ -23,7 +23,7 @@ The plan lives in a PR comment, never the description. The description stays a c
 
 ## Generate the Plan (all 3 steps, in order)
 
-1. **REQUIRED SUB-SKILL:** `superpowers:using-git-worktrees` — create the execution worktree and branch first, before any plan is written.
+1. **REQUIRED SUB-SKILL:** `superpowers:using-git-worktrees` — create the execution worktree and branch first, before any plan is written. **Declared worktree preference — never ask:** always isolate. This is the user's standing answer to that skill's Step 0 consent question; prefer the native worktree tool (`EnterWorktree` or equivalent), else `git worktree add` under `.worktrees/<branch>`. If its Step 3 baseline tests fail, do not ask whether to proceed — stop and report the failures; never plan or implement on a red baseline.
 2. **REQUIRED SUB-SKILL:** `superpowers:writing-plans` — including its Self-Review, File Structure, Global Constraints, per-task Interfaces, and bite-sized TDD steps.
 3. Override inside `writing-plans` — its persistence and handoff only:
    - Write the plan to `.superpowers/sdd/plan.md` in the execution worktree, protected by the nested scratch `.gitignore` convention.
@@ -67,6 +67,7 @@ The plan remains untracked scratch locally; its durable copy is the marked PR co
 
 | Mistake | Required correction |
 |---|---|
+| Asking whether to create a worktree | The preference is declared: always isolate, never ask |
 | Auto-dispatching Task 1 or running SDD in this session | Stop at the published draft PR; execution requires a fresh context |
 | Keeping the only plan copy in local scratch | Put the complete plan between markers in the PR comment |
 | Embedding the plan in the PR description | The description is reviewer-facing (`Closes #N`, summary, test plan); the plan belongs in the comment |
