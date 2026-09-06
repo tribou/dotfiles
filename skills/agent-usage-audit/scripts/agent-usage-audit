@@ -383,6 +383,89 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
   return record;
 }
 
+const CCUSAGE_TIMEOUT_MS = 30_000;
+
+interface CcusageEntry {
+  sessionId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadTokens?: number;
+  cacheCreationTokens?: number;
+  reasoningTokens?: number;
+  totalCost?: number;
+  modelsUsed?: string[];
+  children?: CcusageEntry[];
+}
+
+function ccusageEntry(payload: unknown, sessionId: string): CcusageEntry | null {
+  if (!payload || typeof payload !== "object") return null;
+  const container = payload as { sessions?: unknown };
+  if (!Array.isArray(container.sessions)) {
+    const entry = payload as CcusageEntry;
+    return entry.sessionId === sessionId ? entry : null;
+  }
+  for (const candidate of container.sessions) {
+    if (!candidate || typeof candidate !== "object") continue;
+    const entry = candidate as CcusageEntry;
+    if (entry.sessionId === sessionId) return entry;
+  }
+  return null;
+}
+
+function ccusageTokensFrom(entry: CcusageEntry): Tokens {
+  const tokens = emptyTokens();
+  tokens.input = entry.inputTokens ?? 0;
+  tokens.output = entry.outputTokens ?? 0;
+  tokens.cache_read = entry.cacheReadTokens ?? 0;
+  tokens.cache_write = entry.cacheCreationTokens ?? 0;
+  tokens.reasoning = entry.reasoningTokens ?? 0;
+  return tokens;
+}
+
+function probeCcusage(stage: Stage, harness: Harness, sessionId: string): UsageRecord | null {
+  // Preferred source: ccusage already handles dedup and cache-bucket pricing
+  // across harnesses. Any doubt returns null so the built-in adapters run.
+  if (process.env.AGENT_USAGE_AUDIT_DISABLE_CCUSAGE) return null;
+  const executable = Bun.which("ccusage");
+  if (!executable) return null;
+  let completed: ReturnType<typeof Bun.spawnSync>;
+  try {
+    completed = Bun.spawnSync([executable, "session", "--id", sessionId, "--json"], {
+      stdout: "pipe",
+      stderr: "pipe",
+      timeout: CCUSAGE_TIMEOUT_MS,
+    });
+  } catch {
+    return null;
+  }
+  if (completed.exitCode !== 0) return null;
+  const stdout = completed.stdout?.toString() ?? "";
+  if (!stdout.trim()) return null;
+  let payload: unknown;
+  try {
+    payload = JSON.parse(stdout);
+  } catch {
+    return null;
+  }
+  const entry = ccusageEntry(payload, sessionId);
+  if (!entry) return null;
+
+  const children: ChildRecord[] = [];
+  for (const child of entry.children ?? []) {
+    if (!child || typeof child !== "object") continue;
+    children.push({
+      session_id: child.sessionId ?? "unknown",
+      harness,
+      models: child.modelsUsed ?? [],
+      tokens: finalizeTokens(ccusageTokensFrom(child)),
+    });
+  }
+
+  return makeRecord(stage, harness, sessionId, "ccusage", ccusageTokensFrom(entry), entry.modelsUsed ?? [], children, {
+    costUsd: entry.totalCost ?? null,
+  });
+}
+
 function claudeProjectsDir(): string {
   return process.env.AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR
     ?? path.join(homedir(), ".claude", "projects");
@@ -485,6 +568,8 @@ async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
   if (!resolved) {
     return unavailableRecord(stage, harness, null, `no session id available for harness '${harness}'`);
   }
+  const fromCcusage = probeCcusage(stage, harness, resolved);
+  if (fromCcusage) return fromCcusage;
   if (harness === "claude-code") {
     return probeClaudeCode(stage, resolved);
   }

@@ -258,3 +258,61 @@ install_agy_fixture() {
   [ "$(json_field source)" = "unavailable" ]
   [[ "$(json_field reason)" == *"self-check"* ]]
 }
+
+stub_ccusage() {
+  # $1 is the JSON the stub prints; $2 (optional) its exit status.
+  local payload="$1" rc="${2:-0}"
+  mkdir -p "$BATS_TEST_TMPDIR/bin"
+  cat > "$BATS_TEST_TMPDIR/bin/ccusage" <<EOF
+#!/usr/bin/env bash
+cat <<'JSON'
+$payload
+JSON
+exit $rc
+EOF
+  chmod +x "$BATS_TEST_TMPDIR/bin/ccusage"
+  export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
+}
+
+@test "probe order: ccusage wins over the built-in adapter when it is installed" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"totalCost":1.25,"modelsUsed":["claude-opus-5"]}]}'
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "ccusage" ]
+  [ "$(json_field tokens.input)" = "1" ]
+  [ "$(json_field tokens.output)" = "2" ]
+  [ "$(json_field tokens.cache_read)" = "3" ]
+  [ "$(json_field tokens.cache_write)" = "4" ]
+  [ "$(json_field cost_usd)" = "1.25" ]
+}
+
+@test "probe order: a failing ccusage falls back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage 'not json at all' 1
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
+}
+
+@test "probe order: AGENT_USAGE_AUDIT_DISABLE_CCUSAGE skips ccusage entirely" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2}]}'
+  export AGENT_USAGE_AUDIT_DISABLE_CCUSAGE=1
+  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
+  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
+
+  run bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+}

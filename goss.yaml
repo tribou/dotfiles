@@ -34,7 +34,8 @@ command:
   "pnpm --version":
     exit-status: 0
 
-  # Bun must be available via the mise-managed runtime
+  # bun must be available for skills support scripts (mise-managed runtime;
+  # agent-usage-audit runs on bun)
   "bun --version":
     exit-status: 0
 
