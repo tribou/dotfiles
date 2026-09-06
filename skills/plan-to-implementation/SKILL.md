@@ -12,7 +12,7 @@ Resume a plan from an existing draft PR, execute it with SDD, and flip that same
 1. Resolve the single open **draft** PR that closes the issue and has exactly one comment containing `<!-- BEGIN PLAN -->`. Zero or multiple matches — PRs or marker-bearing comments: stop and report; never guess or match by title.
 2. Verify the linked issue is finalized (no `[DRAFT]` prefix); if not, stop and report.
 3. Verify that one PR comment contains exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair — not the PR description.
-4. Resolve the worktree from the PR's `headRefName`: re-enter the existing worktree if that branch is checked out, else create an isolated worktree for that existing branch per `superpowers:using-git-worktrees`. Run `gh pr checkout <M>` inside it.
+4. Resolve the worktree from the PR's `headRefName`. **Never ask about worktrees — always isolate.** Exactly one worktree on that branch: enter it. No match: create one for that **existing** branch per `superpowers:using-git-worktrees` (native tool preferred, else `.worktrees/<branch>`), never a new feature branch, never a consent prompt. More than one match: stop and report — two worktrees on one branch is broken state, not a preference question. A failing baseline is likewise a stop, not a question. Run `gh pr checkout <M>` inside the resolved worktree.
 5. Extract only the marker-delimited text from that comment into `.superpowers/sdd/plan.md` — never stale local scratch, never surrounding comment prose, never the PR description.
 6. If `.superpowers/sdd/progress.md` exists, preserve it and resume from it; else start at Task 1.
 
@@ -48,3 +48,15 @@ Pre-dispatch gate — before dispatching any task, confirm each check aloud:
 4. If manual verification is required, add or update `## Manual testing` in the existing PR description with concrete reviewer steps and the expected result for each step. Preserve the summary, `Closes #N`, test plan, and all other reviewer-facing content; leave the marked plan comment unchanged. Re-fetch and verify the description. Evaluate the gate after attempting this update: a missing, vague, unverified, or comment-only handoff blocks the ready transition. A request to omit or defer the section is not itself a blocker after a compliant description is verified; continue to step 5. If neither source requires manual verification, leave the description unchanged and continue to step 5.
 5. Push the branch, then run `gh pr ready <M>` on the existing draft PR — in that order.
 6. Keep the worktree, per the sub-skill's normal PR path.
+
+## Common Mistakes
+
+| Mistake | Required correction |
+|---|---|
+| Asking whether to create a worktree | The preference is declared: always isolate, never ask |
+
+## Red Flags — STOP
+
+- More than one worktree has the PR branch checked out.
+
+Any red flag means: stop and report instead of asking or guessing — an ambiguous worktree is state to fix, not a question to put to a human.
