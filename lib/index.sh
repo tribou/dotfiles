@@ -1,11 +1,13 @@
 #!/bin/bash
 
-# Source all the files in this directory
+# Source shared modules first, then domain modules.
 function source_lib()
 {
-  local SOURCE_FILES=($(ls -d "$DOTFILES"/lib/* | grep -Ev '(/index\.sh)$'))
-  for file in "${SOURCE_FILES[@]}"
+  local file
+  for file in "$DOTFILES"/lib/_*.sh "$DOTFILES"/lib/[!_]*.sh
   do
+    [ -f "$file" ] || continue
+    [ "$file" = "$DOTFILES/lib/index.sh" ] && continue
     . "$file"
   done
 }
@@ -14,4 +16,3 @@ source_lib
 
 # Remove this function from the global scope
 unset -f source_lib
-unset file
