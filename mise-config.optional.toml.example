@@ -1,0 +1,16 @@
+# mise optional CLI tools — global drop-in.
+#
+# Enable:  cp mise-config.optional.toml.example ~/.config/mise/conf.d/optional.toml
+# Then uncomment the tools you want. mise auto-loads ~/.config/mise/conf.d/*.toml
+# (alphabetically) and merges [tools] additively over the core config.toml, so
+# `mise install` / `mise upgrade` provision these alongside the core runtimes.
+#
+# Each entry below was verified to have a working mise backend. Tools without a
+# mise backend (nmap, tree, dos2unix, tidy-html5) live in Brewfile.optional.example.
+
+[tools]
+# awscli = "latest"        # pipx backend (AWS CLI v2)
+# terraform-ls = "latest"  # ubi backend (HashiCorp terraform-ls GitHub releases)
+# ansible = "latest"       # pipx backend (note: bootstrap.sh also brew-installs ansible)
+# navi = "latest"          # ubi backend (cheatsheet tool)
+# tlrc = "latest"          # ubi/cargo backend (tldr client)
