@@ -14,15 +14,24 @@
   when: ansible_facts.system == 'Darwin'
   ignore_errors: true
 
+# `brew bundle --global` reads ~/.Brewfile (created by copying
+# Brewfile.optional.example). Cask directives are macOS-only and are skipped
+# automatically on Linux; formulae apply on every platform, so this must NOT
+# be Darwin-gated. Missing file is skipped silently via brewfile_stat.
 - name: Stat global Brewfile
   ansible.builtin.stat:
     path: "{{ dotfiles_home }}/.Brewfile"
   register: brewfile_stat
-  when: ansible_facts.system == 'Darwin'
 
-- name: Apply global Brewfile hook
+- name: Apply global Brewfile (install missing opt-in casks/formulae)
   ansible.builtin.command:
-    cmd: brew bundle --global
+    cmd: "{{ dotfiles_brew_bin }} bundle --global --no-upgrade"
   when:
-    - ansible_facts.system == 'Darwin'
     - brewfile_stat.stat.exists
+
+- name: Upgrade global Brewfile packages (opt-in casks/formulae)
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_brew_bin }} bundle --global --upgrade"
+  when:
+    - brewfile_stat.stat.exists
+    - dotfiles_state == 'latest'

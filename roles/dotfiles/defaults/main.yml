@@ -16,25 +16,17 @@ dotfiles_brew_core:
   - neovim
   - python
   - zlib
-  - nmap
-  - ansible
   - htop
   - gpg
   - editorconfig
   - watchman
-  - tree
-  - awscli
   - ssh-copy-id
   - git-extras
   - jq
-  - dos2unix
-  - tidy-html5
   - fd
   - ripgrep
   - bat
-  - navi
   - shellcheck
-  - tlrc
   - lazydocker
   - lazygit
   - just
@@ -57,35 +49,16 @@ dotfiles_brew_linux:
 # macOS-only brew formulae
 dotfiles_brew_macos_formulae:
   - bash-completion
-  - rename
   - alacritty
-  - ngrok/ngrok/ngrok
   - reattach-to-user-namespace
-  - tfenv
-  - tor
-  - vimpager
-  - renameutils
   - tmux-mem-cpu-load
 
-# macOS-only casks
-dotfiles_brew_macos_casks:
-  - cmake
-  - appcleaner
-  - balenaetcher
-  - bruno
-  - firefox
-  - imageoptim
-  - orbstack
-  - font-fira-code-nerd-font
-  - font-hack-nerd-font
-  - font-fontawesome
+# macOS-only casks (opt-in via ~/.Brewfile — see Brewfile.optional.example)
+dotfiles_brew_macos_casks: []
 
-# mise-managed runtimes
-dotfiles_mise_tools:
-  - node
-  - go
-  - bun
-  - ruby
+# Core mise-managed runtimes are defined in mise-config.toml (symlinked to
+# ~/.config/mise/config.toml), not here: mise.yml runs an un-scoped
+# `mise install` so it also picks up ~/.config/mise/conf.d/*.toml drop-ins.
 
 # TPM plugins (name -> repo) for direct-clone install in headless contexts
 dotfiles_tmux_plugins:

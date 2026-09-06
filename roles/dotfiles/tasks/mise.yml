@@ -8,24 +8,22 @@
     MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
   tags: [mise]
 
-- name: Install mise-managed runtimes (node, go, bun)
+# Un-scoped `mise install` reads every config file mise merges: the repo's
+# core config.toml (node/go/bun/ruby) PLUS any user drop-in under
+# ~/.config/mise/conf.d/*.toml (see mise-config.optional.toml.example). It is
+# inherently idempotent — when every tool is already installed mise prints
+# "mise all tools are installed" on stderr, which we treat as not-changed so
+# re-runs are clean. MISE_RUBY_COMPILE keeps ruby on a precompiled binary.
+- name: Install all mise-managed tools (core runtimes + optional conf.d drop-ins)
   ansible.builtin.shell:
-    cmd: "{{ dotfiles_home }}/.local/bin/mise install {{ item }}"
-    creates: "{{ dotfiles_home }}/.local/share/mise/installs/{{ item }}/"
-  loop: "{{ dotfiles_mise_tools | reject('eq', 'ruby') | list }}"
-  environment:
-    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
-    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
-  tags: [mise]
-
-- name: Install ruby via mise with precompiled binary (falls back to source)
-  ansible.builtin.shell:
-    cmd: "{{ dotfiles_home }}/.local/bin/mise install ruby"
-    creates: "{{ dotfiles_home }}/.local/share/mise/installs/ruby/"
-  environment:
-    MISE_RUBY_COMPILE: "false"
-    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
-    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+    cmd: |
+      export MISE_DATA_DIR="{{ dotfiles_home }}/.local/share/mise"
+      export MISE_CACHE_DIR="{{ dotfiles_home }}/.cache/mise"
+      export MISE_RUBY_COMPILE="false"
+      "{{ dotfiles_home }}/.local/bin/mise" install
+    executable: /bin/bash
+  register: mise_install
+  changed_when: "'all tools are installed' not in mise_install.stderr"
   tags: [mise]
 
 - name: Activate mise shims and enable corepack

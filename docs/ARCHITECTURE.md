@@ -29,7 +29,7 @@ roles/dotfiles/
     ├── main.yml         # Role entry point — includes all task files
     ├── prereqs.yml      # Pre-requisite packages
     ├── brew.yml         # Homebrew formulae (core)
-    ├── brew_casks.yml   # Homebrew casks (macOS)
+    ├── brew_casks.yml   # macOS casks/formulae + global ~/.Brewfile hook
     ├── links.yml        # Symlink management
     ├── dirs.yml         # Directory structure
     ├── ssh.yml          # SSH key generation
@@ -56,6 +56,31 @@ The `dotfiles_state` variable (defined in `roles/dotfiles/defaults/main.yml`) co
 | `latest` | Upgrades formulae, runtimes, and packages to their latest versions |
 
 Use `just upgrade` to run with `dotfiles_state=latest` and the `upgrade` tag (selectively targets only upgrade tasks).
+
+### Opt-in packages
+
+The role installs a **core** package set on every machine. Everything else is
+opt-in via two commented templates shipped at the repo root that the user copies
+into their home directory — nothing in the repo needs editing per machine.
+
+| Repo template | Copy to | Consumed by |
+|---|---|---|
+| `mise-config.optional.toml.example` | `~/.config/mise/conf.d/optional.toml` | un-scoped `mise install` (`tasks/mise.yml`) |
+| `Brewfile.optional.example` | `~/.Brewfile` | `brew bundle --global` (`tasks/brew_casks.yml`) |
+
+- Optional CLI tools **with a mise backend** live in the mise drop-in; mise
+  auto-loads `~/.config/mise/conf.d/*.toml` (alphabetically) and merges
+  `[tools]` additively over `config.toml`.
+- Optional **casks and brew-only formulae** live in the Brewfile. `brew bundle`
+  skips cask directives on Linux automatically, so the hook is not Darwin-gated
+  and optional formulae install on both platforms.
+- Both are skipped silently when absent (a `stat` guard for the Brewfile), so a
+  bare machine gets only the core set.
+- `just install` runs `brew bundle --global --no-upgrade`, which installs
+  newly-uncommented entries. `just upgrade` does **not** re-run `brew bundle`
+  (`brew_casks.yml` is not `upgrade`-tagged) — but its `brew upgrade` covers
+  already-installed Brewfile packages regardless of how they were installed.
+  Run `just install` after uncommenting new entries.
 
 - **`bash_profile`**: Main bash configuration loaded on shell startup
   - Sources all lib scripts via `lib/index.sh`
@@ -112,14 +137,23 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 node = "lts"
 ruby = "3"
 go = "latest"
+bun = "latest"
+tombi = "latest"
 
 [settings]
 legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
+ruby.compile = false        # precompiled ruby binaries, no source build
 ```
 
 - `legacy_version_file = true` means mise respects `.nvmrc`, `.node-version`, `.ruby-version` files automatically
 - Run `mise install` to install all configured tool versions
 - `mise which <tool>` to check which binary will be used
+
+`mise-config.toml` is the single source of truth for the **core** runtime set —
+there is no parallel list in the role. `mise.yml` runs an un-scoped `mise
+install`, which installs everything across every config file mise merges: this
+file plus any user drop-in under `~/.config/mise/conf.d/*.toml` (see
+[Opt-in packages](#opt-in-packages) below).
 
 ## Environment Configuration
 
