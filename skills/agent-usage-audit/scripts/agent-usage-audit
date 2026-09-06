@@ -1,0 +1,168 @@
+#!/usr/bin/env bun
+/**
+ * Probe the running agent harness for this session's model and token usage
+ * and emit one normalized JSON audit record on stdout.
+ *
+ * Subcommands:
+ *   probe --stage STAGE [--session ID]   emit one normalized JSON record
+ *
+ * Nothing here ever guesses a number: a probe that cannot read real usage
+ * emits a record with "source": "unavailable" and a human-readable reason.
+ */
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import path from "node:path";
+
+const SCHEMA = 1;
+const STAGES = ["brainstorming-to-issue", "issue-to-plan", "plan-to-implementation"] as const;
+type Stage = (typeof STAGES)[number];
+
+type Harness = "claude-code" | "opencode" | "agy" | "unknown";
+
+const TOKEN_KEYS = ["input", "output", "cache_read", "cache_write", "reasoning"] as const;
+type TokenKey = (typeof TOKEN_KEYS)[number];
+
+interface Tokens {
+  input: number;
+  output: number;
+  cache_read: number;
+  cache_write: number;
+  reasoning: number;
+  total: number;
+}
+
+interface ChildRecord {
+  session_id: string;
+  harness: Harness;
+  models: string[];
+  tokens: Tokens;
+}
+
+interface UsageRecord {
+  schema: number;
+  stage: Stage;
+  harness: Harness;
+  session_id: string;
+  source: string;
+  models: string[];
+  tokens: Tokens;
+  cost_usd: number | null;
+  children: ChildRecord[];
+  updated_at: string;
+  reason?: string;
+  verified_rows?: number;
+  dropped_rows?: number;
+}
+
+function emptyTokens(): Tokens {
+  return { input: 0, output: 0, cache_read: 0, cache_write: 0, reasoning: 0, total: 0 };
+}
+
+function finalizeTokens(tokens: Tokens): Tokens {
+  // Reasoning is a subset of output, never re-added.
+  tokens.total = tokens.input + tokens.output + tokens.cache_read + tokens.cache_write;
+  return tokens;
+}
+
+function utcNow(): string {
+  return new Date().toISOString().replace(/\.\d+Z$/, "Z");
+}
+
+function detectHarness(): Harness {
+  const forced = process.env.AGENT_USAGE_AUDIT_HARNESS;
+  if (forced) return forced as Harness;
+  if (process.env.OPENCODE || process.env.OPENCODE_SESSION_ID) return "opencode";
+  if (process.env.CLAUDECODE || process.env.CLAUDE_CODE_SESSION_ID) return "claude-code";
+  if (process.env.AGY_CONVERSATION_ID || process.env.ANTIGRAVITY_CONVERSATION_ID) return "agy";
+  return "unknown";
+}
+
+function detectSessionId(harness: Harness): string | null {
+  const forced = process.env.AGENT_USAGE_AUDIT_SESSION_ID;
+  if (forced) return forced;
+  if (harness === "claude-code") return process.env.CLAUDE_CODE_SESSION_ID ?? null;
+  if (harness === "opencode") return process.env.OPENCODE_SESSION_ID ?? null;
+  if (harness === "agy") {
+    return process.env.AGY_CONVERSATION_ID ?? process.env.ANTIGRAVITY_CONVERSATION_ID ?? null;
+  }
+  return null;
+}
+
+function makeRecord(
+  stage: Stage,
+  harness: Harness,
+  sessionId: string | null,
+  source: string,
+  tokens: Tokens,
+  models: string[],
+  children: ChildRecord[],
+  options: { costUsd?: number | null; reason?: string } = {},
+): UsageRecord {
+  const record: UsageRecord = {
+    schema: SCHEMA,
+    stage,
+    harness,
+    session_id: sessionId ?? "unknown",
+    source,
+    models: [...new Set(models)].sort(),
+    tokens: finalizeTokens(tokens),
+    cost_usd: options.costUsd ?? null,
+    children,
+    updated_at: utcNow(),
+  };
+  if (options.reason) record.reason = options.reason;
+  return record;
+}
+
+function unavailableRecord(
+  stage: Stage,
+  harness: Harness,
+  sessionId: string | null,
+  reason: string,
+): UsageRecord {
+  return makeRecord(stage, harness, sessionId, "unavailable", emptyTokens(), [], [], { reason });
+}
+
+async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
+  const harness = detectHarness();
+  const resolved = sessionId || detectSessionId(harness);
+  if (!resolved) {
+    return unavailableRecord(stage, harness, null, `no session id available for harness '${harness}'`);
+  }
+  return unavailableRecord(stage, harness, resolved, `no usage adapter for harness '${harness}'`);
+}
+
+function parseArgs(argv: string[]): { command: string; stage?: string; session?: string } {
+  const [command = "", ...rest] = argv;
+  const parsed: { command: string; stage?: string; session?: string } = { command };
+  for (let i = 0; i < rest.length; i++) {
+    if (rest[i] === "--stage") parsed.stage = rest[i + 1];
+    else if (rest[i] === "--session") parsed.session = rest[i + 1];
+    else throw new Error(`unexpected argument: ${rest[i]}`);
+    i += 1;
+  }
+  return parsed;
+}
+
+async function main(argv: string[]): Promise<number> {
+  let args;
+  try {
+    args = parseArgs(argv);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return 2;
+  }
+  if (args.command !== "probe" || !args.stage) {
+    console.error("usage: agent-usage-audit probe --stage <stage> [--session <id>]");
+    return 2;
+  }
+  if (!STAGES.includes(args.stage as Stage)) {
+    console.error(`--stage must be one of: ${STAGES.join(", ")}`);
+    return 2;
+  }
+  const record = await probe(args.stage as Stage, args.session);
+  console.log(JSON.stringify(record, null, 2));
+  return 0;
+}
+
+process.exit(await main(process.argv.slice(2)));
