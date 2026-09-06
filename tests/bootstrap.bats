@@ -62,3 +62,101 @@ setup() {
 @test "role: core brew list includes tmux (installed via homebrew)" {
   awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml" | grep -qE '^\s*-\s*tmux\s*$'
 }
+
+@test "role: core brew list excludes optional tools (moved to mise/Brewfile opt-in)" {
+  local block
+  block="$(awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
+  for opt in nmap ansible tree awscli dos2unix tidy-html5 navi tlrc; do
+    if echo "$block" | grep -qE "^[[:space:]]*-[[:space:]]*${opt}[[:space:]]*$"; then
+      fail "optional tool '$opt' must not be in dotfiles_brew_core"
+    fi
+  done
+  # core keepers still present
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*beads[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*lazygit[[:space:]]*$'
+}
+
+@test "role: macOS formulae keep only core (alacritty, reattach, tmux-mem-cpu-load, bash-completion)" {
+  local block
+  block="$(awk '/^dotfiles_brew_macos_formulae:/,/^dotfiles_brew_macos_casks:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
+  for opt in rename ngrok tfenv tor vimpager renameutils; do
+    if echo "$block" | grep -qE "^[[:space:]]*-[[:space:]]*[^[:space:]]*${opt}"; then
+      fail "optional macOS formula '$opt' must not be in dotfiles_brew_macos_formulae"
+    fi
+  done
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*reattach-to-user-namespace[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux-mem-cpu-load[[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*bash-completion[[:space:]]*$'
+}
+
+@test "role: macOS casks list is empty (casks are opt-in via ~/.Brewfile)" {
+  local block
+  block="$(awk '/^dotfiles_brew_macos_casks:/,/^dotfiles_tmux_plugins:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
+  if echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*\S+'; then
+    fail "dotfiles_brew_macos_casks must be empty; found entries"
+  fi
+  echo "$block" | grep -qE '^[[:space:]]*dotfiles_brew_macos_casks:[[:space:]]*\[\][[:space:]]*$'
+}
+
+@test "role: dirs.yml creates ~/.config/mise/conf.d for opt-in drop-ins" {
+  grep -q '\.config/mise/conf\.d' "$REPO_ROOT/roles/dotfiles/tasks/dirs.yml"
+}
+
+@test "role: mise.yml installs all tools un-scoped (picks up conf.d drop-ins)" {
+  local f="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
+  grep -q '/.local/bin/mise" install' "$f"
+  ! grep -q 'mise install {{ item }}' "$f"
+  grep -q 'MISE_RUBY_COMPILE' "$f"
+  grep -q 'all tools are installed' "$f"
+}
+
+@test "role: upgrade.yml upgrades mise tools un-scoped" {
+  grep -qE 'mise upgrade( --yes)?($|[^[:alnum:]_-])' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
+}
+
+@test "role: brew_casks.yml applies ~/.Brewfile on all platforms (present=install, latest=upgrade)" {
+  local f="$REPO_ROOT/roles/dotfiles/tasks/brew_casks.yml"
+  local block
+  block="$(awk '/name: Stat global Brewfile/,0' "$f")"
+  # The Brewfile hook must NOT be Darwin-only (formulae apply on Linux too).
+  ! echo "$block" | grep -q "ansible_facts.system == 'Darwin'"
+  # present path installs without upgrading; latest path forces upgrade.
+  grep -q '{{ dotfiles_brew_bin }} bundle --global --no-upgrade' "$f"
+  grep -q '{{ dotfiles_brew_bin }} bundle --global --upgrade' "$f"
+  grep -q "dotfiles_state == 'latest'" "$f"
+}
+
+@test "repo: ships mise-config.optional.toml.example as a commented drop-in template" {
+  local f="$REPO_ROOT/mise-config.optional.toml.example"
+  [ -f "$f" ]
+  # every tool assignment is commented out (user uncomments what they want)
+  ! grep -qE '^[[:space:]]*[a-z0-9_-]+[[:space:]]*=' "$f"
+  # lists the verified-backend optional mise tools
+  for t in awscli terraform-ls ansible navi tlrc; do
+    grep -q "$t" "$f"
+  done
+}
+
+@test "repo: ships Brewfile.optional.example as a commented opt-in template" {
+  local f="$REPO_ROOT/Brewfile.optional.example"
+  [ -f "$f" ]
+  # every cask/brew directive is commented
+  ! grep -qE '^[[:space:]]*(cask|brew)[[:space:]]' "$f"
+  # includes no-mise-backend formulae, the optional macOS formulae, and casks
+  for t in nmap tree dos2unix tidy-html5 ngrok tfenv tor rename vimpager renameutils \
+           firefox orbstack bruno font-fira-code-nerd-font cmake; do
+    grep -q "$t" "$f"
+  done
+}
+
+@test "role: core mise runtimes come from mise-config.toml, not a role variable" {
+  # mise.yml installs un-scoped, so dotfiles_mise_tools no longer drives
+  # anything -- mise-config.toml is the single source of truth for the core
+  # runtime set. A stale list here reads as authoritative and isn't.
+  if grep -q '^dotfiles_mise_tools:' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"; then
+    fail "dotfiles_mise_tools is dead config; core runtimes live in mise-config.toml"
+  fi
+  grep -qE '^node[[:space:]]*=' "$REPO_ROOT/mise-config.toml"
+}

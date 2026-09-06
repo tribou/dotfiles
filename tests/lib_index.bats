@@ -29,3 +29,45 @@ EOF
   assert_success
   assert_output "normal=1 agent=1"
 }
+
+@test "lib index sources underscore modules before regular modules" {
+  run bash -c "
+    set -euo pipefail
+    tmpdir=\$(mktemp -d)
+    trap 'rm -rf \"\$tmpdir\"' EXIT
+
+    mkdir -p \"\$tmpdir/lib\"
+
+    cat > \"\$tmpdir/lib/_z_shared.sh\" <<'EOF'
+LOAD_ORDER=\"\${LOAD_ORDER:+\$LOAD_ORDER,}underscore\"
+EOF
+
+    cat > \"\$tmpdir/lib/a_regular.sh\" <<'EOF'
+LOAD_ORDER=\"\${LOAD_ORDER:+\$LOAD_ORDER,}regular\"
+EOF
+
+    export DOTFILES=\"\$tmpdir\"
+    export LC_ALL=en_US.UTF-8
+    . '$REPO_ROOT/lib/index.sh'
+
+    printf '%s\n' \"\$LOAD_ORDER\"
+  "
+
+  assert_success
+  assert_output "underscore,regular"
+}
+
+@test "lib modules over 300 lines emit a soft warning" {
+  local file line_count relative_file
+  for file in "$REPO_ROOT"/lib/*.sh
+  do
+    line_count=$(wc -l < "$file")
+    if [ "$line_count" -gt 300 ]; then
+      relative_file=${file#"$REPO_ROOT/"}
+      printf '# WARNING: %s has %d lines (soft limit: 300)\n' \
+        "$relative_file" "$line_count" >&3
+    fi
+  done
+
+  return 0
+}
