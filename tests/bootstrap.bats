@@ -93,7 +93,7 @@ setup() {
 
 @test "role: macOS casks list is empty (casks are opt-in via ~/.Brewfile)" {
   local block
-  block="$(awk '/^dotfiles_brew_macos_casks:/,/^dotfiles_mise_tools:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
+  block="$(awk '/^dotfiles_brew_macos_casks:/,/^dotfiles_tmux_plugins:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
   if echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*\S+'; then
     fail "dotfiles_brew_macos_casks must be empty; found entries"
   fi
@@ -149,4 +149,14 @@ setup() {
            firefox orbstack bruno font-fira-code-nerd-font cmake; do
     grep -q "$t" "$f"
   done
+}
+
+@test "role: core mise runtimes come from mise-config.toml, not a role variable" {
+  # mise.yml installs un-scoped, so dotfiles_mise_tools no longer drives
+  # anything -- mise-config.toml is the single source of truth for the core
+  # runtime set. A stale list here reads as authoritative and isn't.
+  if grep -q '^dotfiles_mise_tools:' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"; then
+    fail "dotfiles_mise_tools is dead config; core runtimes live in mise-config.toml"
+  fi
+  grep -qE '^node[[:space:]]*=' "$REPO_ROOT/mise-config.toml"
 }

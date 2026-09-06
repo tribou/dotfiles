@@ -56,12 +56,9 @@ dotfiles_brew_macos_formulae:
 # macOS-only casks (opt-in via ~/.Brewfile — see Brewfile.optional.example)
 dotfiles_brew_macos_casks: []
 
-# mise-managed runtimes
-dotfiles_mise_tools:
-  - node
-  - go
-  - bun
-  - ruby
+# Core mise-managed runtimes are defined in mise-config.toml (symlinked to
+# ~/.config/mise/config.toml), not here: mise.yml runs an un-scoped
+# `mise install` so it also picks up ~/.config/mise/conf.d/*.toml drop-ins.
 
 # TPM plugins (name -> repo) for direct-clone install in headless contexts
 dotfiles_tmux_plugins:
