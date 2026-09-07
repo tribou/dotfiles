@@ -16,6 +16,7 @@ test:
 test-clean:
     #!/usr/bin/env bash
     set -euo pipefail
+    # Fallback to docker compose run handles root-owned .ci-cache permissions
     rm -rf .ci-cache 2>/dev/null || docker compose run --rm -T ci rm -rf /dotfiles/.ci-cache
     git_mount=()
     if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
