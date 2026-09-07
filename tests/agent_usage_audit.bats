@@ -153,8 +153,10 @@ install_agy_fixture() {
   [ "$(json_field models.0)" = "claude-opus-5" ]
   [ "$(json_field models.1)" = "claude-sonnet-5" ]
   [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
   [ "$(json_field model_breakdowns.0.tokens.total)" = "3390" ]
   [ "$(json_field model_breakdowns.1.model)" = "claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.1.role)" = "subagent" ]
   [ "$(json_field model_breakdowns.1.tokens.total)" = "311" ]
 }
 
@@ -384,9 +386,9 @@ EOF
   [ "$status" -eq 0 ]
   [[ "$output" == *"<!-- BEGIN AGENT USAGE -->"* ]]
   [[ "$output" == *"<!-- END AGENT USAGE -->"* ]]
-  [[ "$output" == *"| Stage | Session | Harness | Model | Input | Output | Cache Read | Cache Write | Total | Source |"* ]]
-  [[ "$output" == *"| issue-to-plan | sess-single | claude-code | claude-3-7-sonnet | 1,200 | 800 | 100 | 50 | 2,150 | builtin-claude-code |"* ]]
-  [[ "$output" == *"| **Total** | | | | 1,200 | 800 | 100 | 50 | 2,150 | |"* ]]
+  [[ "$output" == *"| Stage | Session | Harness | Role | Model | Input | Output | Cache Read | Cache Write | Total | Source |"* ]]
+  [[ "$output" == *"| issue-to-plan | sess-single | claude-code | — | claude-3-7-sonnet | 1,200 | 800 | 100 | 50 | 2,150 | builtin-claude-code |"* ]]
+  [[ "$output" == *"| **Total** | | | | | 1,200 | 800 | 100 | 50 | 2,150 | |"* ]]
   [[ "$output" == *"<summary>Ledger data</summary>"* ]]
 }
 
@@ -405,10 +407,12 @@ EOF
       "models": ["model-orchestrator", "model-worker"],
       "model_breakdowns": [
         {
+          "role": "orchestrator",
           "model": "model-orchestrator",
           "tokens": { "input": 1000, "output": 200, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 1200 }
         },
         {
+          "role": "subagent",
           "model": "model-worker",
           "tokens": { "input": 3000, "output": 800, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 3800 }
         }
@@ -424,9 +428,9 @@ EOF
 
   run bun "$SCRIPT" render --file "$ledger"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | model-orchestrator | 1,000 | 200 | 0 | 0 | 1,200 | builtin-opencode |"* ]]
-  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | model-worker | 3,000 | 800 | 0 | 0 | 3,800 | builtin-opencode |"* ]]
-  [[ "$output" == *"| **Total** | | | | 4,000 | 1,000 | 0 | 0 | 5,000 | |"* ]]
+  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | orchestrator | model-orchestrator | 1,000 | 200 | 0 | 0 | 1,200 | builtin-opencode |"* ]]
+  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | subagent | model-worker | 3,000 | 800 | 0 | 0 | 3,800 | builtin-opencode |"* ]]
+  [[ "$output" == *"| **Total** | | | | | 4,000 | 1,000 | 0 | 0 | 5,000 | |"* ]]
 }
 
 @test "render: unavailable record renders em-dashes and is excluded from totals row" {
@@ -455,8 +459,8 @@ EOF
 
   run bun "$SCRIPT" render --file "$ledger"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"| issue-to-plan | sess-unavail | unknown | — | — | — | — | — | — | unavailable |"* ]]
-  [[ "$output" == *"| **Total** | | | | 0 | 0 | 0 | 0 | 0 | |"* ]]
+  [[ "$output" == *"| issue-to-plan | sess-unavail | unknown | — | — | — | — | — | — | — | unavailable |"* ]]
+  [[ "$output" == *"| **Total** | | | | | 0 | 0 | 0 | 0 | 0 | |"* ]]
 }
 
 @test "parse: round-trip test extracts identical ledger records from rendered comment" {
@@ -474,6 +478,7 @@ EOF
       "models": ["claude-3-7-sonnet"],
       "model_breakdowns": [
         {
+          "role": "orchestrator",
           "model": "claude-3-7-sonnet",
           "tokens": { "input": 100, "output": 50, "cache_read": 10, "cache_write": 5, "reasoning": 0, "total": 165 }
         }
@@ -494,6 +499,7 @@ EOF
   [ "$status" -eq 0 ]
   [ "$(json_field records.length)" = "1" ]
   [ "$(json_field records.0.session_id)" = "sess-rt" ]
+  [ "$(json_field records.0.model_breakdowns.0.role)" = "orchestrator" ]
   [ "$(json_field records.0.tokens.total)" = "165" ]
 }
 
@@ -781,11 +787,13 @@ EOF
   [ "$(json_field cost_usd)" = "0.5" ]
   # Tokens divided per model: orchestrator vs subagent
   [ "$(json_field model_breakdowns.0.model)" = "anthropic/claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
   [ "$(json_field model_breakdowns.0.tokens.input)" = "120" ]
   [ "$(json_field model_breakdowns.0.tokens.output)" = "400" ]
   [ "$(json_field model_breakdowns.0.tokens.total)" = "6220" ]
   [ "$(json_field model_breakdowns.0.cost_usd)" = "0.42" ]
   [ "$(json_field model_breakdowns.1.model)" = "anthropic/claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.1.role)" = "subagent" ]
   [ "$(json_field model_breakdowns.1.tokens.input)" = "20" ]
   [ "$(json_field model_breakdowns.1.tokens.output)" = "35" ]
   [ "$(json_field model_breakdowns.1.tokens.total)" = "1055" ]
@@ -844,6 +852,13 @@ EOF
   [ "$(json_field source)" = "builtin-opencode" ]
   [ "$(json_field children.0.session_id)" = "ses_fixture_zero_cost_child" ]
   [ "$(json_field cost_usd)" = "0" ]
+  [ "$(json_field model_breakdowns.length)" = "2" ]
+  [ "$(json_field model_breakdowns.0.model)" = "anthropic/claude-haiku-5" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
+  [ "$(json_field model_breakdowns.0.tokens.total)" = "3" ]
+  [ "$(json_field model_breakdowns.1.model)" = "anthropic/claude-haiku-5" ]
+  [ "$(json_field model_breakdowns.1.role)" = "subagent" ]
+  [ "$(json_field model_breakdowns.1.tokens.total)" = "7" ]
 }
 
 @test "opencode adapter: a session id absent from the database is unavailable" {
@@ -891,6 +906,7 @@ EOF
   [ "$(json_field tokens.reasoning)" = "110" ]
   [ "$(json_field models.0)" = "gemini-3.8-flash" ]
   [ "$(json_field model_breakdowns.0.model)" = "gemini-3.8-flash" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
   [ "$(json_field model_breakdowns.0.tokens.total)" = "53810" ]
 }
 
@@ -1005,6 +1021,8 @@ EOF
   [ "$(json_field tokens.cache_write)" = "4" ]
   [ "$(json_field cost_usd)" = "1.25" ]
   [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+  # ccusage aggregates main and sidechain turns by model, so execution role is unavailable.
+  [ -z "$(json_field model_breakdowns.0.role)" ]
 }
 
 @test "probe order: ccusage extracts multiple model breakdowns" {

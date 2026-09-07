@@ -26,6 +26,7 @@ const STAGES = ["brainstorming-to-issue", "issue-to-plan", "plan-to-implementati
 type Stage = (typeof STAGES)[number];
 
 type Harness = "claude-code" | "opencode" | "agy" | "unknown";
+type Role = "orchestrator" | "subagent";
 
 const TOKEN_KEYS = ["input", "output", "cache_read", "cache_write", "reasoning"] as const;
 type TokenKey = (typeof TOKEN_KEYS)[number];
@@ -47,6 +48,7 @@ interface ChildRecord {
 }
 
 interface ModelBreakdown {
+  role?: Role;
   model: string;
   tokens: Tokens;
   cost_usd?: number | null;
@@ -257,19 +259,20 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
     return unavailableRecord(stage, "opencode", sessionId, `session ${sessionId} not present in ${dbPath}`);
   }
 
-  const tokensByModel = new Map<string, { tokens: Tokens; cost: number | null }>();
-  function recordModelUsage(modelName: string, rowTokens: Tokens, rowCost: number | null) {
-    let entry = tokensByModel.get(modelName);
+  const breakdowns = new Map<string, { role: Role; model: string; tokens: Tokens; cost: number | null }>();
+  function recordModelUsage(role: Role, model: string, rowTokens: Tokens, rowCost: number | null) {
+    const key = JSON.stringify([role, model]);
+    let entry = breakdowns.get(key);
     if (!entry) {
-      entry = { tokens: emptyTokens(), cost: null };
-      tokensByModel.set(modelName, entry);
+      entry = { role, model, tokens: emptyTokens(), cost: null };
+      breakdowns.set(key, entry);
     }
     for (const k of TOKEN_KEYS) entry.tokens[k] += rowTokens[k];
     if (rowCost !== null) entry.cost = (entry.cost ?? 0) + rowCost;
   }
 
   const parentModel = normalizeModelName(parent.model) ?? "unknown";
-  recordModelUsage(parentModel, opencodeRowTokens(parent), parent.cost);
+  recordModelUsage("orchestrator", parentModel, opencodeRowTokens(parent), parent.cost);
 
   const rolledUp = opencodeRowTokens(parent);
   const models: string[] = parent.model ? [parentModel] : [];
@@ -299,7 +302,7 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
   for (const kid of descendants) {
     const kidTokens = opencodeRowTokens(kid);
     const kidModel = normalizeModelName(kid.model) ?? "unknown";
-    recordModelUsage(kidModel, kidTokens, kid.cost);
+    recordModelUsage("subagent", kidModel, kidTokens, kid.cost);
     if (kid.cost !== null) cost = (cost ?? 0) + kid.cost;
     if (kid.model) models.push(kidModel);
     for (const key of TOKEN_KEYS) rolledUp[key] += kidTokens[key];
@@ -311,12 +314,13 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
     });
   }
 
-  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([model, e]) => ({
-      model,
-      tokens: finalizeTokens(e.tokens),
-      cost_usd: e.cost === null ? null : Math.round(e.cost * 1e6) / 1e6,
+  const modelBreakdowns: ModelBreakdown[] = [...breakdowns.values()]
+    .sort((a, b) => a.model.localeCompare(b.model) || a.role.localeCompare(b.role))
+    .map((entry) => ({
+      role: entry.role,
+      model: entry.model,
+      tokens: finalizeTokens(entry.tokens),
+      cost_usd: entry.cost === null ? null : Math.round(entry.cost * 1e6) / 1e6,
     }));
 
   // Rounding keeps 0.42 + 0.08 from printing as 0.5000000000000001.
@@ -509,7 +513,7 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
 
   const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+    .map(([model, tok]) => ({ role: "orchestrator", model, tokens: finalizeTokens(tok) }));
 
   const record = makeRecord(stage, "agy", sessionId, "builtin-agy", tokens, models, [], { modelBreakdowns });
   record.verified_rows = verified;
@@ -658,6 +662,8 @@ function probeCcusage(stage: Stage, harness: Harness, sessionId: string): UsageR
   }
 
   const modelBreakdowns: ModelBreakdown[] = [];
+  // ccusage aggregates main and sidechain turns by model, so assigning an
+  // execution role here would fabricate provenance.
   const rawBreakdowns = Array.isArray((entry as any).modelBreakdowns)
     ? (entry as any).modelBreakdowns
     : isCcusageObject((entry as any).modelBreakdowns)
@@ -764,7 +770,7 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
   const childTokens = emptyTokens();
   const mainModels: string[] = [];
   const childModels: string[] = [];
-  const tokensByModel = new Map<string, Tokens>();
+  const breakdowns = new Map<string, { role: Role; model: string; tokens: Tokens }>();
   // Streaming appends the same assistant message repeatedly; the
   // (message id, request id) pair is what makes a turn unique.
   const seen = new Set<string>();
@@ -795,9 +801,9 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
     if (message === null || typeof message !== "object" || Array.isArray(message)) continue;
     const usage = validatedClaudeUsage((message as Record<string, unknown>).usage);
     if (!usage) continue;
-    const key = JSON.stringify([message.id ?? null, entry.requestId ?? null]);
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const messageKey = JSON.stringify([message.id ?? null, entry.requestId ?? null]);
+    if (seen.has(messageKey)) continue;
+    seen.add(messageKey);
 
     const sidechain = Boolean(entry.isSidechain);
     const tokens = sidechain ? childTokens : mainTokens;
@@ -806,9 +812,11 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
     if (message.model && !models.includes(message.model)) models.push(message.model);
 
     const m = (message as Record<string, unknown>).model;
-    const modelName = typeof m === "string" ? m : "unknown";
-    if (!tokensByModel.has(modelName)) tokensByModel.set(modelName, emptyTokens());
-    addClaudeUsage(tokensByModel.get(modelName)!, usage);
+    const model = typeof m === "string" ? m : "unknown";
+    const role: Role = sidechain ? "subagent" : "orchestrator";
+    const breakdownKey = JSON.stringify([role, model]);
+    if (!breakdowns.has(breakdownKey)) breakdowns.set(breakdownKey, { role, model, tokens: emptyTokens() });
+    addClaudeUsage(breakdowns.get(breakdownKey)!.tokens, usage);
   }
 
   if (seen.size === 0) {
@@ -833,9 +841,9 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
   const rolledUp = emptyTokens();
   for (const key of TOKEN_KEYS) rolledUp[key] = mainTokens[key] + childTokens[key];
 
-  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+  const modelBreakdowns: ModelBreakdown[] = [...breakdowns.values()]
+    .sort((a, b) => a.model.localeCompare(b.model) || a.role.localeCompare(b.role))
+    .map(({ role, model, tokens }) => ({ role, model, tokens: finalizeTokens(tokens) }));
 
   return makeRecord(
     stage,
@@ -879,8 +887,8 @@ function renderAuditComment(records: UsageRecord[]): string {
     "### 🤖 Agent usage",
     "",
     "<!-- BEGIN AGENT USAGE -->",
-    "| Stage | Session | Harness | Model | Input | Output | Cache Read | Cache Write | Total | Source |",
-    "|---|---|---|---|---|---|---|---|---|---|",
+    "| Stage | Session | Harness | Role | Model | Input | Output | Cache Read | Cache Write | Total | Source |",
+    "|---|---|---|---|---|---|---|---|---|---|---|",
   ];
 
   let totalInput = 0;
@@ -893,7 +901,7 @@ function renderAuditComment(records: UsageRecord[]): string {
     if (record.source === "unavailable") {
       const sess = record.session_id || "—";
       const harness = record.harness || "—";
-      lines.push(`| ${record.stage} | ${sess} | ${harness} | — | — | — | — | — | — | ${record.source} |`);
+      lines.push(`| ${record.stage} | ${sess} | ${harness} | — | — | — | — | — | — | — | ${record.source} |`);
       continue;
     }
 
@@ -915,13 +923,13 @@ function renderAuditComment(records: UsageRecord[]): string {
       totalTokens += total;
 
       lines.push(
-        `| ${record.stage} | ${record.session_id} | ${record.harness} | ${mb.model} | ${formatTokenCount(input)} | ${formatTokenCount(output)} | ${formatTokenCount(cacheRead)} | ${formatTokenCount(cacheWrite)} | ${formatTokenCount(total)} | ${record.source} |`,
+        `| ${record.stage} | ${record.session_id} | ${record.harness} | ${mb.role ?? "—"} | ${mb.model} | ${formatTokenCount(input)} | ${formatTokenCount(output)} | ${formatTokenCount(cacheRead)} | ${formatTokenCount(cacheWrite)} | ${formatTokenCount(total)} | ${record.source} |`,
       );
     }
   }
 
   lines.push(
-    `| **Total** | | | | ${formatTokenCount(totalInput)} | ${formatTokenCount(totalOutput)} | ${formatTokenCount(totalCacheRead)} | ${formatTokenCount(totalCacheWrite)} | ${formatTokenCount(totalTokens)} | |`,
+    `| **Total** | | | | | ${formatTokenCount(totalInput)} | ${formatTokenCount(totalOutput)} | ${formatTokenCount(totalCacheRead)} | ${formatTokenCount(totalCacheWrite)} | ${formatTokenCount(totalTokens)} | |`,
   );
   lines.push("");
   lines.push("<details>");
