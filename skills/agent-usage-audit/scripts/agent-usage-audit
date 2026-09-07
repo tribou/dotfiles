@@ -483,6 +483,15 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
 
 const CCUSAGE_TIMEOUT_MS = 30_000;
 
+interface CcusageModelBreakdown {
+  modelName?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadTokens?: number;
+  cacheCreationTokens?: number;
+  cost?: number | null;
+}
+
 interface CcusageEntry {
   sessionId?: string;
   inputTokens?: number;
@@ -493,6 +502,7 @@ interface CcusageEntry {
   totalCost?: number | null;
   modelsUsed?: string[];
   children?: CcusageEntry[];
+  modelBreakdowns?: CcusageModelBreakdown[];
 }
 
 function isCcusageObject(value: unknown): value is Record<string, unknown> {
@@ -527,6 +537,15 @@ function validatedCcusageEntry(value: unknown): CcusageEntry | null {
     && (!Array.isArray(value.modelsUsed) || !value.modelsUsed.every((model) => typeof model === "string"))
   ) {
     return null;
+  }
+  if (value.modelBreakdowns !== undefined) {
+    if (Array.isArray(value.modelBreakdowns)) {
+      for (const item of value.modelBreakdowns) {
+        if (!isCcusageObject(item)) return null;
+      }
+    } else if (!isCcusageObject(value.modelBreakdowns)) {
+      return null;
+    }
   }
   if (value.children !== undefined) {
     if (!Array.isArray(value.children)) return null;
@@ -593,16 +612,45 @@ function probeCcusage(stage: Stage, harness: Harness, sessionId: string): UsageR
 
   const children: ChildRecord[] = [];
   for (const child of entry.children ?? []) {
+    if (!child || typeof child !== "object") continue;
     children.push({
-      session_id: child.sessionId!,
+      session_id: child.sessionId ?? "unknown",
       harness,
       models: child.modelsUsed ?? [],
       tokens: finalizeTokens(ccusageTokensFrom(child)),
     });
   }
 
+  const modelBreakdowns: ModelBreakdown[] = [];
+  const rawBreakdowns = Array.isArray((entry as any).modelBreakdowns)
+    ? (entry as any).modelBreakdowns
+    : isCcusageObject((entry as any).modelBreakdowns)
+      ? Object.values((entry as any).modelBreakdowns)
+      : [];
+  for (const b of rawBreakdowns) {
+    if (!b || typeof b !== "object") continue;
+    const t = emptyTokens();
+    t.input = b.inputTokens ?? 0;
+    t.output = b.outputTokens ?? 0;
+    t.cache_read = b.cacheReadTokens ?? 0;
+    t.cache_write = b.cacheCreationTokens ?? 0;
+    modelBreakdowns.push({
+      model: b.modelName ?? "unknown",
+      tokens: finalizeTokens(t),
+      cost_usd: b.cost ?? null,
+    });
+  }
+  if (modelBreakdowns.length === 0 && entry.modelsUsed && entry.modelsUsed.length === 1) {
+    modelBreakdowns.push({
+      model: entry.modelsUsed[0]!,
+      tokens: finalizeTokens(ccusageTokensFrom(entry)),
+      cost_usd: entry.totalCost ?? null,
+    });
+  }
+
   return makeRecord(stage, harness, sessionId, "ccusage", ccusageTokensFrom(entry), entry.modelsUsed ?? [], children, {
     costUsd: entry.totalCost ?? null,
+    modelBreakdowns,
   });
 }
 

@@ -462,7 +462,7 @@ EOF
 
 @test "probe order: ccusage wins over the built-in adapter when it is installed" {
   install_claude_fixture
-  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"totalCost":1.25,"modelsUsed":["claude-opus-5"]}]}'
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"totalCost":1.25,"modelsUsed":["claude-opus-5"],"modelBreakdowns":[{"modelName":"claude-opus-5","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"cost":1.25}]}]}'
 
   run env -u AGENT_USAGE_AUDIT_DISABLE_CCUSAGE \
     AGENT_USAGE_AUDIT_HARNESS="claude-code" \
@@ -475,6 +475,53 @@ EOF
   [ "$(json_field tokens.cache_read)" = "3" ]
   [ "$(json_field tokens.cache_write)" = "4" ]
   [ "$(json_field cost_usd)" = "1.25" ]
+  [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+}
+
+@test "probe order: ccusage extracts multiple model breakdowns" {
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":10,"outputTokens":20,"cacheReadTokens":30,"cacheCreationTokens":40,"totalCost":2.50,"modelsUsed":["claude-opus-5","claude-sonnet-5"],"modelBreakdowns":[{"modelName":"claude-opus-5","inputTokens":8,"outputTokens":15,"cacheReadTokens":20,"cacheCreationTokens":30,"cost":2.00},{"modelName":"claude-sonnet-5","inputTokens":2,"outputTokens":5,"cacheReadTokens":10,"cacheCreationTokens":10,"cost":0.50}]}]}'
+
+  run env -u AGENT_USAGE_AUDIT_DISABLE_CCUSAGE \
+    AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "ccusage" ]
+  [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.tokens.input)" = "8" ]
+  [ "$(json_field model_breakdowns.0.cost_usd)" = "2" ]
+  [ "$(json_field model_breakdowns.1.model)" = "claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.1.tokens.input)" = "2" ]
+  [ "$(json_field model_breakdowns.1.cost_usd)" = "0.5" ]
+}
+
+@test "probe order: ccusage falls back to modelsUsed when modelBreakdowns is omitted" {
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"totalCost":1.25,"modelsUsed":["claude-opus-5"]}]}'
+
+  run env -u AGENT_USAGE_AUDIT_DISABLE_CCUSAGE \
+    AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "ccusage" ]
+  [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.tokens.total)" = "10" ]
+  [ "$(json_field model_breakdowns.0.cost_usd)" = "1.25" ]
+}
+
+@test "probe order: malformed ccusage modelBreakdowns falls back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"modelBreakdowns":"not-an-array"}]}'
+
+  run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
 }
 
 @test "probe order: a failing ccusage falls back to the built-in adapter" {
