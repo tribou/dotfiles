@@ -634,6 +634,7 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
   const childTokens = emptyTokens();
   const mainModels: string[] = [];
   const childModels: string[] = [];
+  const tokensByModel = new Map<string, Tokens>();
   // Streaming appends the same assistant message repeatedly; the
   // (message id, request id) pair is what makes a turn unique.
   const seen = new Set<string>();
@@ -673,6 +674,11 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
     const models = sidechain ? childModels : mainModels;
     addClaudeUsage(tokens, usage);
     if (message.model && !models.includes(message.model)) models.push(message.model);
+
+    const m = (message as Record<string, unknown>).model;
+    const modelName = typeof m === "string" ? m : "unknown";
+    if (!tokensByModel.has(modelName)) tokensByModel.set(modelName, emptyTokens());
+    addClaudeUsage(tokensByModel.get(modelName)!, usage);
   }
 
   if (seen.size === 0) {
@@ -697,6 +703,10 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
   const rolledUp = emptyTokens();
   for (const key of TOKEN_KEYS) rolledUp[key] = mainTokens[key] + childTokens[key];
 
+  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+
   return makeRecord(
     stage,
     "claude-code",
@@ -705,6 +715,7 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
     rolledUp,
     [...mainModels, ...childModels],
     children,
+    { modelBreakdowns },
   );
 }
 

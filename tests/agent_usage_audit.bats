@@ -152,6 +152,10 @@ install_agy_fixture() {
   [ "$(json_field children.0.models.0)" = "claude-sonnet-5" ]
   [ "$(json_field models.0)" = "claude-opus-5" ]
   [ "$(json_field models.1)" = "claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.tokens.total)" = "3390" ]
+  [ "$(json_field model_breakdowns.1.model)" = "claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.1.tokens.total)" = "311" ]
 }
 
 @test "claude-code adapter: a missing transcript is unavailable, not zero-filled truth" {
