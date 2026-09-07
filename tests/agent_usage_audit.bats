@@ -32,7 +32,7 @@ json_field() {
     Bun.stdin.text().then((text) => {
       let node = JSON.parse(text);
       for (const part of (process.env.AUDIT_JSON_FIELD ?? "").split(".").filter(Boolean)) {
-        node = Array.isArray(node) ? node[Number(part)] : node[part];
+        node = Array.isArray(node) && /^\d+$/.test(part) ? node[Number(part)] : node[part];
       }
       console.log(node === undefined || node === null ? "" : node);
     });
@@ -229,6 +229,127 @@ install_agy_fixture() {
   [ "$(json_field harness)" = "claude-code" ]
   [ "$(json_field session_id)" = "sess-context" ]
   [[ "$(json_field reason)" == *"unexpected probe error"* ]]
+}
+
+@test "ledger merge: appends record to empty ledger" {
+  local rec="$FIXTURES/rec1.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "brainstorming-to-issue",
+  "harness": "claude-code",
+  "session_id": "sess-1",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [
+    {
+      "model": "claude-3-7-sonnet",
+      "tokens": { "input": 10, "output": 20, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 30 }
+    }
+  ],
+  "tokens": { "input": 10, "output": 20, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 30 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "1" ]
+  [ "$(json_field records.0.session_id)" = "sess-1" ]
+}
+
+@test "ledger merge: refreshes existing record in place for same (session_id, stage) without duplicating" {
+  local existing="$FIXTURES/ledger-existing.json"
+  local rec="$FIXTURES/rec-updated.json"
+  cat > "$existing" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "claude-code",
+      "session_id": "sess-1",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [],
+      "tokens": { "input": 10, "output": 20, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 30 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-1",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 50, "output": 50, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 100 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T01:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --existing "$existing" --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "1" ]
+  [ "$(json_field records.0.tokens.total)" = "100" ]
+  [ "$(json_field records.0.updated_at)" = "2026-09-07T01:00:00Z" ]
+}
+
+@test "ledger merge: appends new record for different stage or sitting and sorts stably" {
+  local existing="$FIXTURES/ledger-sort.json"
+  local rec="$FIXTURES/rec-sort.json"
+  cat > "$existing" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "plan-to-implementation",
+      "harness": "claude-code",
+      "session_id": "sess-2",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [],
+      "tokens": { "input": 10, "output": 10, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 20 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T03:00:00Z"
+    }
+  ]
+}
+EOF
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "brainstorming-to-issue",
+  "harness": "claude-code",
+  "session_id": "sess-1",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 5, "output": 5, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 10 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T01:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --existing "$existing" --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "2" ]
+  [ "$(json_field records.0.stage)" = "brainstorming-to-issue" ]
+  [ "$(json_field records.1.stage)" = "plan-to-implementation" ]
 }
 
 @test "opencode adapter: reads the session row and rolls up its child sessions" {

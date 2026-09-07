@@ -62,6 +62,35 @@ interface UsageRecord {
   dropped_rows?: number;
 }
 
+interface LedgerEnvelope {
+  schema: number;
+  records: UsageRecord[];
+}
+
+function sortRecords(records: UsageRecord[]): UsageRecord[] {
+  return [...records].sort((a, b) => {
+    const stageIdxA = STAGES.indexOf(a.stage);
+    const stageIdxB = STAGES.indexOf(b.stage);
+    const stageOrderA = stageIdxA === -1 ? 999 : stageIdxA;
+    const stageOrderB = stageIdxB === -1 ? 999 : stageIdxB;
+    if (stageOrderA !== stageOrderB) return stageOrderA - stageOrderB;
+    const timeCompare = (a.updated_at || "").localeCompare(b.updated_at || "");
+    if (timeCompare !== 0) return timeCompare;
+    return (a.session_id || "").localeCompare(b.session_id || "");
+  });
+}
+
+function mergeLedger(existingRecords: UsageRecord[], newRecord: UsageRecord): UsageRecord[] {
+  const records = [...existingRecords];
+  const idx = records.findIndex((r) => r.session_id === newRecord.session_id && r.stage === newRecord.stage);
+  if (idx >= 0) {
+    records[idx] = newRecord;
+  } else {
+    records.push(newRecord);
+  }
+  return sortRecords(records);
+}
+
 function emptyTokens(): Tokens {
   return { input: 0, output: 0, cache_read: 0, cache_write: 0, reasoning: 0, total: 0 };
 }
@@ -833,9 +862,21 @@ async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
   return unavailableRecord(stage, harness, resolved, `no usage adapter for harness '${harness}'`);
 }
 
-function parseArgs(argv: string[]): { command: string; stage?: string; session?: string } {
+function parseArgs(argv: string[]): {
+  command: string;
+  stage?: string;
+  session?: string;
+  existing?: string;
+  record?: string;
+} {
   const [command = "", ...rest] = argv;
-  const parsed: { command: string; stage?: string; session?: string } = { command };
+  const parsed: {
+    command: string;
+    stage?: string;
+    session?: string;
+    existing?: string;
+    record?: string;
+  } = { command };
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--stage") {
       if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --stage");
@@ -843,6 +884,12 @@ function parseArgs(argv: string[]): { command: string; stage?: string; session?:
     } else if (rest[i] === "--session") {
       if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --session");
       parsed.session = rest[i + 1];
+    } else if (rest[i] === "--existing") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --existing");
+      parsed.existing = rest[i + 1];
+    } else if (rest[i] === "--record") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --record");
+      parsed.record = rest[i + 1];
     } else {
       throw new Error(`unexpected argument: ${rest[i]}`);
     }
@@ -858,6 +905,24 @@ async function main(argv: string[]): Promise<number> {
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     return 2;
+  }
+  if (args.command === "merge") {
+    if (!args.record) {
+      console.error("usage: agent-usage-audit merge --existing <file> --record <file>");
+      return 2;
+    }
+    try {
+      const existing: LedgerEnvelope = args.existing
+        ? JSON.parse(readFileSync(args.existing, "utf8")) as LedgerEnvelope
+        : { schema: SCHEMA, records: [] };
+      const newRecord = JSON.parse(readFileSync(args.record, "utf8")) as UsageRecord;
+      const envelope: LedgerEnvelope = { schema: SCHEMA, records: mergeLedger(existing.records, newRecord) };
+      console.log(JSON.stringify(envelope, null, 2));
+      return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
   }
   if (args.command !== "probe" || !args.stage) {
     console.error("usage: agent-usage-audit probe --stage <stage> [--session <id>]");
