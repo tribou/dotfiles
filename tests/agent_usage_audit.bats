@@ -32,7 +32,7 @@ json_field() {
     Bun.stdin.text().then((text) => {
       let node = JSON.parse(text);
       for (const part of (process.env.AUDIT_JSON_FIELD ?? "").split(".").filter(Boolean)) {
-        node = Array.isArray(node) ? node[Number(part)] : node[part];
+        node = Array.isArray(node) && /^\d+$/.test(part) ? node[Number(part)] : node[part];
       }
       console.log(node === undefined || node === null ? "" : node);
     });
@@ -153,8 +153,10 @@ install_agy_fixture() {
   [ "$(json_field models.0)" = "claude-opus-5" ]
   [ "$(json_field models.1)" = "claude-sonnet-5" ]
   [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
   [ "$(json_field model_breakdowns.0.tokens.total)" = "3390" ]
   [ "$(json_field model_breakdowns.1.model)" = "claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.1.role)" = "subagent" ]
   [ "$(json_field model_breakdowns.1.tokens.total)" = "311" ]
 }
 
@@ -231,6 +233,539 @@ install_agy_fixture() {
   [[ "$(json_field reason)" == *"unexpected probe error"* ]]
 }
 
+@test "ledger merge: appends record to empty ledger" {
+  local rec="$FIXTURES/rec1.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "brainstorming-to-issue",
+  "harness": "claude-code",
+  "session_id": "sess-1",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [
+    {
+      "model": "claude-3-7-sonnet",
+      "tokens": { "input": 10, "output": 20, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 30 }
+    }
+  ],
+  "tokens": { "input": 10, "output": 20, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 30 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "1" ]
+  [ "$(json_field records.0.session_id)" = "sess-1" ]
+}
+
+@test "ledger merge: refreshes existing record in place for same (session_id, stage) without duplicating" {
+  local existing="$FIXTURES/ledger-existing.json"
+  local rec="$FIXTURES/rec-updated.json"
+  cat > "$existing" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "claude-code",
+      "session_id": "sess-1",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [],
+      "tokens": { "input": 10, "output": 20, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 30 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-1",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 50, "output": 50, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 100 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T01:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --existing "$existing" --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "1" ]
+  [ "$(json_field records.0.tokens.total)" = "100" ]
+  [ "$(json_field records.0.updated_at)" = "2026-09-07T01:00:00Z" ]
+}
+
+@test "ledger merge: appends new record for different stage or sitting and sorts stably" {
+  local existing="$FIXTURES/ledger-sort.json"
+  local rec="$FIXTURES/rec-sort.json"
+  cat > "$existing" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "plan-to-implementation",
+      "harness": "claude-code",
+      "session_id": "sess-2",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [],
+      "tokens": { "input": 10, "output": 10, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 20 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T03:00:00Z"
+    }
+  ]
+}
+EOF
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "brainstorming-to-issue",
+  "harness": "claude-code",
+  "session_id": "sess-1",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 5, "output": 5, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 10 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T01:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --existing "$existing" --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "2" ]
+  [ "$(json_field records.0.stage)" = "brainstorming-to-issue" ]
+  [ "$(json_field records.1.stage)" = "plan-to-implementation" ]
+}
+
+@test "render: single-model session renders one table row and correct totals" {
+  local ledger="$FIXTURES/ledger-single.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "claude-code",
+      "session_id": "sess-single",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [
+        {
+          "model": "claude-3-7-sonnet",
+          "tokens": { "input": 1200, "output": 800, "cache_read": 100, "cache_write": 50, "reasoning": 0, "total": 2150 }
+        }
+      ],
+      "tokens": { "input": 1200, "output": 800, "cache_read": 100, "cache_write": 50, "reasoning": 0, "total": 2150 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  run bun "$SCRIPT" render --file "$ledger"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"<!-- BEGIN AGENT USAGE -->"* ]]
+  [[ "$output" == *"<!-- END AGENT USAGE -->"* ]]
+  [[ "$output" == *"| Stage | Session | Harness | Role | Model | Input | Output | Cache Read | Cache Write | Total | Source |"* ]]
+  [[ "$output" == *"| issue-to-plan | sess-single | claude-code | — | claude-3-7-sonnet | 1,200 | 800 | 100 | 50 | 2,150 | builtin-claude-code |"* ]]
+  [[ "$output" == *"| **Total** | | | | | 1,200 | 800 | 100 | 50 | 2,150 | |"* ]]
+  [[ "$output" == *"<summary>Ledger data</summary>"* ]]
+}
+
+@test "render: multi-model session renders separate rows for each model with divided tokens" {
+  local ledger="$FIXTURES/ledger-multi.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "plan-to-implementation",
+      "harness": "opencode",
+      "session_id": "sess-multi",
+      "source": "builtin-opencode",
+      "models": ["model-orchestrator", "model-worker"],
+      "model_breakdowns": [
+        {
+          "role": "orchestrator",
+          "model": "model-orchestrator",
+          "tokens": { "input": 1000, "output": 200, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 1200 }
+        },
+        {
+          "role": "subagent",
+          "model": "model-worker",
+          "tokens": { "input": 3000, "output": 800, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 3800 }
+        }
+      ],
+      "tokens": { "input": 4000, "output": 1000, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 5000 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  run bun "$SCRIPT" render --file "$ledger"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | orchestrator | model-orchestrator | 1,000 | 200 | 0 | 0 | 1,200 | builtin-opencode |"* ]]
+  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | subagent | model-worker | 3,000 | 800 | 0 | 0 | 3,800 | builtin-opencode |"* ]]
+  [[ "$output" == *"| **Total** | | | | | 4,000 | 1,000 | 0 | 0 | 5,000 | |"* ]]
+}
+
+@test "render: unavailable record renders em-dashes and is excluded from totals row" {
+  local ledger="$FIXTURES/ledger-unavail.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "unknown",
+      "session_id": "sess-unavail",
+      "source": "unavailable",
+      "models": [],
+      "model_breakdowns": [],
+      "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+      "cost_usd": null,
+      "children": [],
+      "reason": "no session id",
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  run bun "$SCRIPT" render --file "$ledger"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"| issue-to-plan | sess-unavail | unknown | — | — | — | — | — | — | — | unavailable |"* ]]
+  [[ "$output" == *"| **Total** | | | | | 0 | 0 | 0 | 0 | 0 | |"* ]]
+}
+
+@test "parse: round-trip test extracts identical ledger records from rendered comment" {
+  local ledger="$FIXTURES/ledger-rt.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "claude-code",
+      "session_id": "sess-rt",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [
+        {
+          "role": "orchestrator",
+          "model": "claude-3-7-sonnet",
+          "tokens": { "input": 100, "output": 50, "cache_read": 10, "cache_write": 5, "reasoning": 0, "total": 165 }
+        }
+      ],
+      "tokens": { "input": 100, "output": 50, "cache_read": 10, "cache_write": 5, "reasoning": 0, "total": 165 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  local rendered="$FIXTURES/rendered.md"
+  bun "$SCRIPT" render --file "$ledger" > "$rendered"
+
+  run bun "$SCRIPT" parse --file "$rendered"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "1" ]
+  [ "$(json_field records.0.session_id)" = "sess-rt" ]
+  [ "$(json_field records.0.model_breakdowns.0.role)" = "orchestrator" ]
+  [ "$(json_field records.0.tokens.total)" = "165" ]
+}
+
+@test "parse: returns empty ledger for unparseable or malformed comment markdown" {
+  local malformed="$FIXTURES/malformed.md"
+  cat > "$malformed" <<'EOF'
+<!-- BEGIN AGENT USAGE -->
+```json
+{ invalid json here
+```
+<!-- END AGENT USAGE -->
+EOF
+
+  run bun "$SCRIPT" parse --file "$malformed"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "0" ]
+}
+
+@test "parse: returns empty ledger when no ledger block or markers exist" {
+  local plain="$FIXTURES/plain.md"
+  cat > "$plain" <<'EOF'
+Just a regular PR comment without any usage markers.
+EOF
+
+  run bun "$SCRIPT" parse --file "$plain"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "0" ]
+}
+
+@test "record: creates new comment (POST) when no audit comment exists" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo "[]"
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "POST" ]]; then
+  echo "{"id": 999}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-post-test",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [
+    {
+      "model": "claude-3-7-sonnet",
+      "tokens": { "input": 100, "output": 100, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 200 }
+    }
+  ],
+  "tokens": { "input": 100, "output": 100, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 200 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "POST repos/:owner/:repo/issues/181/comments" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
+@test "record: PATCHes existing comment when audit comment exists" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo '[{"id": 456, "body": "### 🤖 Agent usage\n\n<!-- BEGIN AGENT USAGE -->\n```json\n{\"schema\": 1, \"records\": []}\n```\n<!-- END AGENT USAGE -->"}]'
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "PATCH" ]]; then
+  echo "{"id": 456}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-patch.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-patch-test",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 50, "output": 50, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 100 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "PATCH repos/:owner/:repo/issues/comments/456" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
+@test "record: never selects a plan comment as the audit comment" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo '[{"id": 111, "body": "<details><summary>Plan</summary>\n<!-- BEGIN PLAN -->\nTask 1\n<!-- END PLAN -->\n</details>"}]'
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "POST" ]]; then
+  echo "{\"id\": 999}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-plan.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-plan-test",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "PATCH.*111" "$logfile"
+  [ "$status" -ne 0 ]
+  run grep "POST repos/:owner/:repo/issues/181/comments" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
+@test "record: never selects a plan comment that embeds an audit usage block" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo '[{"id": 222, "body": "<details><summary>Plan</summary>\n<!-- BEGIN PLAN -->\nTask 1\n<!-- END PLAN -->\n\n<!-- BEGIN AGENT USAGE -->\n```json\n{\"schema\": 1, \"records\": []}\n```\n<!-- END AGENT USAGE -->\n</details>"}]'
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "POST" ]]; then
+  echo "{\"id\": 999}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-plan-embed.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-plan-embed-test",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "PATCH.*222" "$logfile"
+  [ "$status" -ne 0 ]
+  run grep "POST repos/:owner/:repo/issues/181/comments" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
+@test "record: --dry-run prints comment body without calling POST or PATCH" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo "[]"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-dry.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-dry-test",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 10, "output": 10, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 20 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec" --dry-run
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"<!-- BEGIN AGENT USAGE -->"* ]]
+  [[ "$output" == *"sess-dry-test"* ]]
+  run grep -E "(POST|PATCH)" "$logfile"
+  [ "$status" -ne 0 ]
+}
+
+@test "record: errors when comment body exceeds 65536 characters" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+echo "[]"
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/huge-record.json"
+  bun -e '
+    const huge = {
+      schema: 1,
+      stage: "issue-to-plan",
+      harness: "claude-code",
+      session_id: "sess-huge",
+      source: "builtin-claude-code",
+      models: ["model-x"],
+      model_breakdowns: [],
+      tokens: { input: 1, output: 1, cache_read: 0, cache_write: 0, reasoning: 0, total: 2 },
+      cost_usd: null,
+      children: [],
+      reason: "x".repeat(70000),
+      updated_at: "2026-09-07T00:00:00Z"
+    };
+    await Bun.write(process.argv[1], JSON.stringify(huge));
+  ' "$rec"
+
+  run env PATH="$stubdir:$PATH" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"exceeds GitHub limit of 65536"* ]]
+}
+
 @test "opencode adapter: reads the session row and rolls up its child sessions" {
   install_opencode_fixture
 
@@ -252,11 +787,13 @@ install_agy_fixture() {
   [ "$(json_field cost_usd)" = "0.5" ]
   # Tokens divided per model: orchestrator vs subagent
   [ "$(json_field model_breakdowns.0.model)" = "anthropic/claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
   [ "$(json_field model_breakdowns.0.tokens.input)" = "120" ]
   [ "$(json_field model_breakdowns.0.tokens.output)" = "400" ]
   [ "$(json_field model_breakdowns.0.tokens.total)" = "6220" ]
   [ "$(json_field model_breakdowns.0.cost_usd)" = "0.42" ]
   [ "$(json_field model_breakdowns.1.model)" = "anthropic/claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.1.role)" = "subagent" ]
   [ "$(json_field model_breakdowns.1.tokens.input)" = "20" ]
   [ "$(json_field model_breakdowns.1.tokens.output)" = "35" ]
   [ "$(json_field model_breakdowns.1.tokens.total)" = "1055" ]
@@ -315,6 +852,13 @@ install_agy_fixture() {
   [ "$(json_field source)" = "builtin-opencode" ]
   [ "$(json_field children.0.session_id)" = "ses_fixture_zero_cost_child" ]
   [ "$(json_field cost_usd)" = "0" ]
+  [ "$(json_field model_breakdowns.length)" = "2" ]
+  [ "$(json_field model_breakdowns.0.model)" = "anthropic/claude-haiku-5" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
+  [ "$(json_field model_breakdowns.0.tokens.total)" = "3" ]
+  [ "$(json_field model_breakdowns.1.model)" = "anthropic/claude-haiku-5" ]
+  [ "$(json_field model_breakdowns.1.role)" = "subagent" ]
+  [ "$(json_field model_breakdowns.1.tokens.total)" = "7" ]
 }
 
 @test "opencode adapter: a session id absent from the database is unavailable" {
@@ -362,6 +906,7 @@ install_agy_fixture() {
   [ "$(json_field tokens.reasoning)" = "110" ]
   [ "$(json_field models.0)" = "gemini-3.8-flash" ]
   [ "$(json_field model_breakdowns.0.model)" = "gemini-3.8-flash" ]
+  [ "$(json_field model_breakdowns.0.role)" = "orchestrator" ]
   [ "$(json_field model_breakdowns.0.tokens.total)" = "53810" ]
 }
 
@@ -476,6 +1021,8 @@ EOF
   [ "$(json_field tokens.cache_write)" = "4" ]
   [ "$(json_field cost_usd)" = "1.25" ]
   [ "$(json_field model_breakdowns.0.model)" = "claude-opus-5" ]
+  # ccusage aggregates main and sidechain turns by model, so execution role is unavailable.
+  [ -z "$(json_field model_breakdowns.0.role)" ]
 }
 
 @test "probe order: ccusage extracts multiple model breakdowns" {

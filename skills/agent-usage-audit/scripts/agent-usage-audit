@@ -5,12 +5,19 @@
  *
  * Subcommands:
  *   probe --stage STAGE [--session ID]   emit one normalized JSON record
+ *   record --stage STAGE --target issue:N|pr:M [--session ID] [--dry-run] [--record FILE]
+ *                                       upsert the audit comment on a GitHub issue/PR
+ *   merge --existing FILE --record FILE  merge a record into a ledger by (session_id, stage),
+ *                                       stable stage/timestamp ordering
+ *   render [--file FILE]                 render ledger records as the audit comment
+ *                                       (markdown table + collapsed JSON details)
+ *   parse [--file FILE]                  extract ledger records from an audit comment body
  *
  * Nothing here ever guesses a number: a probe that cannot read real usage
  * emits a record with "source": "unavailable" and a human-readable reason.
  */
 import { Database } from "bun:sqlite";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 
@@ -19,6 +26,7 @@ const STAGES = ["brainstorming-to-issue", "issue-to-plan", "plan-to-implementati
 type Stage = (typeof STAGES)[number];
 
 type Harness = "claude-code" | "opencode" | "agy" | "unknown";
+type Role = "orchestrator" | "subagent";
 
 const TOKEN_KEYS = ["input", "output", "cache_read", "cache_write", "reasoning"] as const;
 type TokenKey = (typeof TOKEN_KEYS)[number];
@@ -40,6 +48,7 @@ interface ChildRecord {
 }
 
 interface ModelBreakdown {
+  role?: Role;
   model: string;
   tokens: Tokens;
   cost_usd?: number | null;
@@ -60,6 +69,35 @@ interface UsageRecord {
   reason?: string;
   verified_rows?: number;
   dropped_rows?: number;
+}
+
+interface LedgerEnvelope {
+  schema: number;
+  records: UsageRecord[];
+}
+
+function sortRecords(records: UsageRecord[]): UsageRecord[] {
+  return [...records].sort((a, b) => {
+    const stageIdxA = STAGES.indexOf(a.stage);
+    const stageIdxB = STAGES.indexOf(b.stage);
+    const stageOrderA = stageIdxA === -1 ? 999 : stageIdxA;
+    const stageOrderB = stageIdxB === -1 ? 999 : stageIdxB;
+    if (stageOrderA !== stageOrderB) return stageOrderA - stageOrderB;
+    const timeCompare = (a.updated_at || "").localeCompare(b.updated_at || "");
+    if (timeCompare !== 0) return timeCompare;
+    return (a.session_id || "").localeCompare(b.session_id || "");
+  });
+}
+
+function mergeLedger(existingRecords: UsageRecord[], newRecord: UsageRecord): UsageRecord[] {
+  const records = [...existingRecords];
+  const idx = records.findIndex((r) => r.session_id === newRecord.session_id && r.stage === newRecord.stage);
+  if (idx >= 0) {
+    records[idx] = newRecord;
+  } else {
+    records.push(newRecord);
+  }
+  return sortRecords(records);
 }
 
 function emptyTokens(): Tokens {
@@ -221,19 +259,20 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
     return unavailableRecord(stage, "opencode", sessionId, `session ${sessionId} not present in ${dbPath}`);
   }
 
-  const tokensByModel = new Map<string, { tokens: Tokens; cost: number | null }>();
-  function recordModelUsage(modelName: string, rowTokens: Tokens, rowCost: number | null) {
-    let entry = tokensByModel.get(modelName);
+  const breakdowns = new Map<string, { role: Role; model: string; tokens: Tokens; cost: number | null }>();
+  function recordModelUsage(role: Role, model: string, rowTokens: Tokens, rowCost: number | null) {
+    const key = JSON.stringify([role, model]);
+    let entry = breakdowns.get(key);
     if (!entry) {
-      entry = { tokens: emptyTokens(), cost: null };
-      tokensByModel.set(modelName, entry);
+      entry = { role, model, tokens: emptyTokens(), cost: null };
+      breakdowns.set(key, entry);
     }
     for (const k of TOKEN_KEYS) entry.tokens[k] += rowTokens[k];
     if (rowCost !== null) entry.cost = (entry.cost ?? 0) + rowCost;
   }
 
   const parentModel = normalizeModelName(parent.model) ?? "unknown";
-  recordModelUsage(parentModel, opencodeRowTokens(parent), parent.cost);
+  recordModelUsage("orchestrator", parentModel, opencodeRowTokens(parent), parent.cost);
 
   const rolledUp = opencodeRowTokens(parent);
   const models: string[] = parent.model ? [parentModel] : [];
@@ -263,7 +302,7 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
   for (const kid of descendants) {
     const kidTokens = opencodeRowTokens(kid);
     const kidModel = normalizeModelName(kid.model) ?? "unknown";
-    recordModelUsage(kidModel, kidTokens, kid.cost);
+    recordModelUsage("subagent", kidModel, kidTokens, kid.cost);
     if (kid.cost !== null) cost = (cost ?? 0) + kid.cost;
     if (kid.model) models.push(kidModel);
     for (const key of TOKEN_KEYS) rolledUp[key] += kidTokens[key];
@@ -275,12 +314,13 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
     });
   }
 
-  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([model, e]) => ({
-      model,
-      tokens: finalizeTokens(e.tokens),
-      cost_usd: e.cost === null ? null : Math.round(e.cost * 1e6) / 1e6,
+  const modelBreakdowns: ModelBreakdown[] = [...breakdowns.values()]
+    .sort((a, b) => a.model.localeCompare(b.model) || a.role.localeCompare(b.role))
+    .map((entry) => ({
+      role: entry.role,
+      model: entry.model,
+      tokens: finalizeTokens(entry.tokens),
+      cost_usd: entry.cost === null ? null : Math.round(entry.cost * 1e6) / 1e6,
     }));
 
   // Rounding keeps 0.42 + 0.08 from printing as 0.5000000000000001.
@@ -473,7 +513,7 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
 
   const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+    .map(([model, tok]) => ({ role: "orchestrator", model, tokens: finalizeTokens(tok) }));
 
   const record = makeRecord(stage, "agy", sessionId, "builtin-agy", tokens, models, [], { modelBreakdowns });
   record.verified_rows = verified;
@@ -622,6 +662,8 @@ function probeCcusage(stage: Stage, harness: Harness, sessionId: string): UsageR
   }
 
   const modelBreakdowns: ModelBreakdown[] = [];
+  // ccusage aggregates main and sidechain turns by model, so assigning an
+  // execution role here would fabricate provenance.
   const rawBreakdowns = Array.isArray((entry as any).modelBreakdowns)
     ? (entry as any).modelBreakdowns
     : isCcusageObject((entry as any).modelBreakdowns)
@@ -728,7 +770,7 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
   const childTokens = emptyTokens();
   const mainModels: string[] = [];
   const childModels: string[] = [];
-  const tokensByModel = new Map<string, Tokens>();
+  const breakdowns = new Map<string, { role: Role; model: string; tokens: Tokens }>();
   // Streaming appends the same assistant message repeatedly; the
   // (message id, request id) pair is what makes a turn unique.
   const seen = new Set<string>();
@@ -759,9 +801,9 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
     if (message === null || typeof message !== "object" || Array.isArray(message)) continue;
     const usage = validatedClaudeUsage((message as Record<string, unknown>).usage);
     if (!usage) continue;
-    const key = JSON.stringify([message.id ?? null, entry.requestId ?? null]);
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const messageKey = JSON.stringify([message.id ?? null, entry.requestId ?? null]);
+    if (seen.has(messageKey)) continue;
+    seen.add(messageKey);
 
     const sidechain = Boolean(entry.isSidechain);
     const tokens = sidechain ? childTokens : mainTokens;
@@ -770,9 +812,11 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
     if (message.model && !models.includes(message.model)) models.push(message.model);
 
     const m = (message as Record<string, unknown>).model;
-    const modelName = typeof m === "string" ? m : "unknown";
-    if (!tokensByModel.has(modelName)) tokensByModel.set(modelName, emptyTokens());
-    addClaudeUsage(tokensByModel.get(modelName)!, usage);
+    const model = typeof m === "string" ? m : "unknown";
+    const role: Role = sidechain ? "subagent" : "orchestrator";
+    const breakdownKey = JSON.stringify([role, model]);
+    if (!breakdowns.has(breakdownKey)) breakdowns.set(breakdownKey, { role, model, tokens: emptyTokens() });
+    addClaudeUsage(breakdowns.get(breakdownKey)!.tokens, usage);
   }
 
   if (seen.size === 0) {
@@ -797,9 +841,9 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
   const rolledUp = emptyTokens();
   for (const key of TOKEN_KEYS) rolledUp[key] = mainTokens[key] + childTokens[key];
 
-  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+  const modelBreakdowns: ModelBreakdown[] = [...breakdowns.values()]
+    .sort((a, b) => a.model.localeCompare(b.model) || a.role.localeCompare(b.role))
+    .map(({ role, model, tokens }) => ({ role, model, tokens: finalizeTokens(tokens) }));
 
   return makeRecord(
     stage,
@@ -833,9 +877,218 @@ async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
   return unavailableRecord(stage, harness, resolved, `no usage adapter for harness '${harness}'`);
 }
 
-function parseArgs(argv: string[]): { command: string; stage?: string; session?: string } {
+function formatTokenCount(n: number | null | undefined): string {
+  if (n === null || n === undefined) return "0";
+  return n.toLocaleString("en-US");
+}
+
+function renderAuditComment(records: UsageRecord[]): string {
+  const lines: string[] = [
+    "### 🤖 Agent usage",
+    "",
+    "<!-- BEGIN AGENT USAGE -->",
+    "| Stage | Session | Harness | Role | Model | Input | Output | Cache Read | Cache Write | Total | Source |",
+    "|---|---|---|---|---|---|---|---|---|---|---|",
+  ];
+
+  let totalInput = 0;
+  let totalOutput = 0;
+  let totalCacheRead = 0;
+  let totalCacheWrite = 0;
+  let totalTokens = 0;
+
+  for (const record of records) {
+    if (record.source === "unavailable") {
+      const sess = record.session_id || "—";
+      const harness = record.harness || "—";
+      lines.push(`| ${record.stage} | ${sess} | ${harness} | — | — | — | — | — | — | — | ${record.source} |`);
+      continue;
+    }
+
+    const breakdowns = record.model_breakdowns && record.model_breakdowns.length > 0
+      ? record.model_breakdowns
+      : [{ model: record.models.join(", ") || "—", tokens: record.tokens }];
+
+    for (const mb of breakdowns) {
+      const input = mb.tokens.input ?? 0;
+      const output = mb.tokens.output ?? 0;
+      const cacheRead = mb.tokens.cache_read ?? 0;
+      const cacheWrite = mb.tokens.cache_write ?? 0;
+      const total = mb.tokens.total ?? (input + output + cacheRead + cacheWrite);
+
+      totalInput += input;
+      totalOutput += output;
+      totalCacheRead += cacheRead;
+      totalCacheWrite += cacheWrite;
+      totalTokens += total;
+
+      lines.push(
+        `| ${record.stage} | ${record.session_id} | ${record.harness} | ${mb.role ?? "—"} | ${mb.model} | ${formatTokenCount(input)} | ${formatTokenCount(output)} | ${formatTokenCount(cacheRead)} | ${formatTokenCount(cacheWrite)} | ${formatTokenCount(total)} | ${record.source} |`,
+      );
+    }
+  }
+
+  lines.push(
+    `| **Total** | | | | | ${formatTokenCount(totalInput)} | ${formatTokenCount(totalOutput)} | ${formatTokenCount(totalCacheRead)} | ${formatTokenCount(totalCacheWrite)} | ${formatTokenCount(totalTokens)} | |`,
+  );
+  lines.push("");
+  lines.push("<details>");
+  lines.push("<summary>Ledger data</summary>");
+  lines.push("");
+  lines.push("```json");
+  lines.push(JSON.stringify({ schema: SCHEMA, records }, null, 2));
+  lines.push("```");
+  lines.push("</details>");
+  lines.push("<!-- END AGENT USAGE -->");
+
+  return lines.join("\n");
+}
+
+function parseAuditComment(commentBody: string): UsageRecord[] {
+  if (!commentBody || typeof commentBody !== "string") return [];
+  const beginMarker = "<!-- BEGIN AGENT USAGE -->";
+  const endMarker = "<!-- END AGENT USAGE -->";
+  const beginIdx = commentBody.indexOf(beginMarker);
+  const endIdx = commentBody.indexOf(endMarker);
+  const content = (beginIdx >= 0 && endIdx > beginIdx)
+    ? commentBody.slice(beginIdx + beginMarker.length, endIdx)
+    : commentBody;
+
+  const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+  if (!jsonMatch || !jsonMatch[1]) return [];
+
+  try {
+    const parsed = JSON.parse(jsonMatch[1]);
+    if (parsed && Array.isArray(parsed.records)) return parsed.records;
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+const GH_COMMENT_MAX_BYTES = 65536;
+
+interface RecordOptions {
+  stage: Stage;
+  session?: string;
+  target: string;
+  dryRun?: boolean;
+  recordFile?: string;
+}
+
+function parseTarget(target: string): number {
+  const match = target.match(/^(?:issue:|pr:|#)?(\d+)$/i);
+  if (!match) {
+    throw new Error(`invalid --target '${target}': expected issue:<number> or pr:<number>`);
+  }
+  const n = parseInt(match[1]!, 10);
+  if (isNaN(n) || n <= 0) throw new Error(`invalid issue/pr number in target '${target}'`);
+  return n;
+}
+
+function runGh(args: string[]): string {
+  const res = Bun.spawnSync(["gh", ...args], {
+    env: process.env,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  if (res.exitCode !== 0) {
+    const err = Buffer.from(res.stderr).toString().trim();
+    throw new Error(`gh ${args.join(" ")} failed (exit ${res.exitCode}): ${err}`);
+  }
+  return Buffer.from(res.stdout).toString();
+}
+
+function findAuditComment(targetNum: number, repo: string): { id: number; body: string } | null {
+  const raw = runGh(["api", "--paginate", `repos/${repo}/issues/${targetNum}/comments`]);
+  let comments: any[] = [];
+  try {
+    comments = JSON.parse(raw);
+    if (!Array.isArray(comments)) comments = [];
+  } catch {
+    comments = [];
+  }
+
+  for (const c of comments) {
+    if (typeof c.body === "string" && c.body.includes("<!-- BEGIN AGENT USAGE -->")) {
+      // Plan comments quote their own markers; they are never the ledger.
+      const planMarker = "<" + "!-- BEGIN PLAN --" + ">";
+      if (!c.body.includes(planMarker)) {
+        return { id: c.id, body: c.body };
+      }
+    }
+  }
+  return null;
+}
+
+async function recordUsage(options: RecordOptions): Promise<number> {
+  const targetNum = parseTarget(options.target);
+  const repo = process.env.AGENT_USAGE_AUDIT_REPO || ":owner/:repo";
+
+  let record: UsageRecord;
+  if (options.recordFile) {
+    record = JSON.parse(readFileSync(options.recordFile, "utf-8"));
+  } else {
+    record = await probe(options.stage, options.session);
+  }
+
+  const existingComment = findAuditComment(targetNum, repo);
+  const existingRecords = existingComment ? parseAuditComment(existingComment.body) : [];
+  const mergedRecords = mergeLedger(existingRecords, record);
+  const rendered = renderAuditComment(mergedRecords);
+
+  const byteLen = Buffer.byteLength(rendered, "utf8");
+  if (byteLen > GH_COMMENT_MAX_BYTES) {
+    console.error(`audit comment exceeds GitHub limit of ${GH_COMMENT_MAX_BYTES} characters (actual: ${byteLen})`);
+    return 1;
+  }
+
+  if (options.dryRun) {
+    console.log(rendered);
+    return 0;
+  }
+
+  // gh api reads the field value from a file via @, keeping the body out of
+  // argv so shell-quoting can never mangle the comment.
+  const tmpFile = path.join(homedir(), `.audit-comment-${Date.now()}-${Math.random().toString(36).slice(2)}.tmp`);
+  await Bun.write(tmpFile, rendered);
+
+  try {
+    if (existingComment) {
+      runGh(["api", "-X", "PATCH", `repos/${repo}/issues/comments/${existingComment.id}`, "-F", `body=@${tmpFile}`]);
+    } else {
+      runGh(["api", "-X", "POST", `repos/${repo}/issues/${targetNum}/comments`, "-F", `body=@${tmpFile}`]);
+    }
+    return 0;
+  } finally {
+    try {
+      unlinkSync(tmpFile);
+    } catch {}
+  }
+}
+
+function parseArgs(argv: string[]): {
+  command: string;
+  stage?: string;
+  session?: string;
+  existing?: string;
+  record?: string;
+  file?: string;
+  target?: string;
+  dryRun?: boolean;
+} {
   const [command = "", ...rest] = argv;
-  const parsed: { command: string; stage?: string; session?: string } = { command };
+  const parsed: {
+    command: string;
+    stage?: string;
+    session?: string;
+    existing?: string;
+    record?: string;
+    file?: string;
+    target?: string;
+    dryRun?: boolean;
+  } = { command };
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--stage") {
       if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --stage");
@@ -843,6 +1096,21 @@ function parseArgs(argv: string[]): { command: string; stage?: string; session?:
     } else if (rest[i] === "--session") {
       if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --session");
       parsed.session = rest[i + 1];
+    } else if (rest[i] === "--existing") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --existing");
+      parsed.existing = rest[i + 1];
+    } else if (rest[i] === "--record") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --record");
+      parsed.record = rest[i + 1];
+    } else if (rest[i] === "--file") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --file");
+      parsed.file = rest[i + 1];
+    } else if (rest[i] === "--target") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --target");
+      parsed.target = rest[i + 1];
+    } else if (rest[i] === "--dry-run") {
+      parsed.dryRun = true;
+      continue;
     } else {
       throw new Error(`unexpected argument: ${rest[i]}`);
     }
@@ -858,6 +1126,68 @@ async function main(argv: string[]): Promise<number> {
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     return 2;
+  }
+  if (args.command === "merge") {
+    if (!args.record) {
+      console.error("usage: agent-usage-audit merge --existing <file> --record <file>");
+      return 2;
+    }
+    try {
+      const existing: LedgerEnvelope = args.existing
+        ? JSON.parse(readFileSync(args.existing, "utf8")) as LedgerEnvelope
+        : { schema: SCHEMA, records: [] };
+      const newRecord = JSON.parse(readFileSync(args.record, "utf8")) as UsageRecord;
+      const envelope: LedgerEnvelope = { schema: SCHEMA, records: mergeLedger(existing.records, newRecord) };
+      console.log(JSON.stringify(envelope, null, 2));
+      return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
+  }
+  if (args.command === "render") {
+    try {
+      const input = args.file ? readFileSync(args.file, "utf8") : await Bun.stdin.text();
+      const ledger = JSON.parse(input) as LedgerEnvelope;
+      console.log(renderAuditComment(ledger.records));
+      return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
+  }
+  if (args.command === "parse") {
+    try {
+      const input = args.file ? readFileSync(args.file, "utf8") : await Bun.stdin.text();
+      const envelope: LedgerEnvelope = { schema: SCHEMA, records: parseAuditComment(input) };
+      console.log(JSON.stringify(envelope, null, 2));
+      return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
+  }
+  if (args.command === "record") {
+    if (!args.stage || !args.target) {
+      console.error("usage: agent-usage-audit record --stage <stage> [--session <id>] --target <issue:N|pr:M> [--dry-run] [--record <file>]");
+      return 2;
+    }
+    if (!STAGES.includes(args.stage as Stage)) {
+      console.error(`--stage must be one of: ${STAGES.join(", ")}`);
+      return 2;
+    }
+    try {
+      return await recordUsage({
+        stage: args.stage as Stage,
+        session: args.session,
+        target: args.target,
+        dryRun: args.dryRun,
+        recordFile: args.record,
+      });
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
   }
   if (args.command !== "probe" || !args.stage) {
     console.error("usage: agent-usage-audit probe --stage <stage> [--session <id>]");
