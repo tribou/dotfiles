@@ -47,6 +47,9 @@ RUN GOSS_VERSION=v0.4.10 \
       | tar xz -C /usr/local/bin goss \
   && chmod +x /usr/local/bin/goss
 
+# Configure git safe directory to allow operations across host/container UID boundaries and worktrees
+RUN git config --system --add safe.directory "*"
+
 WORKDIR /dotfiles
 
 # Copy dotfiles — changes here don't bust the apt cache

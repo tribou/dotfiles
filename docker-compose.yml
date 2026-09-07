@@ -1,6 +1,8 @@
 services:
   base:
     build: .
+    environment:
+      GIT_CONFIG_PARAMETERS: "'safe.directory=*'"
     volumes:
       - .:/dotfiles
 
