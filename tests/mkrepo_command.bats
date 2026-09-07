@@ -7,7 +7,7 @@ setup() {
 @test "mkrepo: prints usage and fails with no argument" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/repo.sh'
     mkrepo
   "
   [ "$status" -eq 1 ]
@@ -18,7 +18,7 @@ setup() {
   run bash -c "
     tmp=\$(mktemp -d)
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/repo.sh'
     git() { echo \"git \$*\"; }
     gh() { echo \"gh \$*\"; }
     npx() { echo \"npx \$*\"; }
@@ -40,7 +40,7 @@ setup() {
   run bash -c "
     tmp=\$(mktemp -d)
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/repo.sh'
     git() { echo \"git \$*\"; }
     gh() { echo \"gh \$*\"; }
     npx() { echo \"npx \$*\"; }
@@ -56,7 +56,7 @@ setup() {
   run bash -c "
     tmp=\$(mktemp -d)
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/repo.sh'
     git() { echo \"git \$*\"; }
     gh() { echo \"gh \$*\"; }
     npx() { echo \"npx \$*\"; return 1; }
@@ -71,7 +71,7 @@ setup() {
   tmp="$(mktemp -d)"
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/repo.sh'
     git() { echo \"git \$*\"; }
     gh() { echo \"gh \$*\"; }
     npx() { :; }

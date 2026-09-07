@@ -100,7 +100,7 @@ linux_env() {
   run bash -c "
     PATH='$MOCK_BIN:\$PATH'
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/agent.sh'
     echo n | agent-grant /tmp
   "
 
@@ -116,7 +116,7 @@ linux_env() {
     PATH='$MOCK_BIN:\$PATH'
     DOTFILES='$REPO_ROOT'
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/agent.sh'
     echo y | agent-grant /tmp/test-target
   "
 
@@ -333,7 +333,7 @@ linux_env() {
     PATH='$MOCK_BIN:\$PATH'
     DOTFILES='$REPO_ROOT'
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/agent.sh'
     cd '$target'
     echo y | agent-grant
   "
