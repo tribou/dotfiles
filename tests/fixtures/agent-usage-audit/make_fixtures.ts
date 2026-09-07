@@ -173,6 +173,11 @@ const AGY_MALFORMED_ROWS: Array<[number, Uint8Array]> = [
   )],
 ];
 
+const AGY_MULTI_MODEL_ROWS: Array<[number, Uint8Array]> = [
+  [0, agyBlob(100, 200, 30, 5, "gemini-3.8-flash")],
+  [1, agyBlob(500, 1000, 80, 20, "gemini-3.8-pro")],
+];
+
 function buildAgy(dbPath: string, rows: Array<[number, Uint8Array]> = AGY_ROWS): void {
   const db = new Database(dbPath);
   db.exec(AGY_SCHEMA);
@@ -184,7 +189,7 @@ function buildAgy(dbPath: string, rows: Array<[number, Uint8Array]> = AGY_ROWS):
 function main(argv: string[]): number {
   const [kind, dbPath] = argv;
   if (!kind || !dbPath) {
-    console.error("usage: make_fixtures.ts opencode|opencode-nested|agy|agy-drift|agy-malformed <db-path>");
+    console.error("usage: make_fixtures.ts opencode|opencode-nested|agy|agy-drift|agy-malformed|agy-multi-model <db-path>");
     return 2;
   }
   if (kind === "opencode") {
@@ -205,6 +210,10 @@ function main(argv: string[]): number {
   }
   if (kind === "agy-malformed") {
     buildAgy(dbPath, AGY_MALFORMED_ROWS);
+    return 0;
+  }
+  if (kind === "agy-multi-model") {
+    buildAgy(dbPath, AGY_MULTI_MODEL_ROWS);
     return 0;
   }
   console.error(`unknown fixture kind: ${kind}`);

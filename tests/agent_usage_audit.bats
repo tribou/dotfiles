@@ -361,6 +361,8 @@ install_agy_fixture() {
   [ "$(json_field tokens.output)" = "810" ]
   [ "$(json_field tokens.reasoning)" = "110" ]
   [ "$(json_field models.0)" = "gemini-3.8-flash" ]
+  [ "$(json_field model_breakdowns.0.model)" = "gemini-3.8-flash" ]
+  [ "$(json_field model_breakdowns.0.tokens.total)" = "53810" ]
 }
 
 @test "agy adapter: a row failing the #3 == #9 + #10 self-check is dropped, not guessed" {
@@ -411,6 +413,26 @@ install_agy_fixture() {
   [ "$(json_field dropped_rows)" = "3" ]
   [ "$(json_field tokens.input)" = "1000" ]
   [ "$(json_field tokens.total)" = "21350" ]
+}
+
+@test "agy adapter: groups tokens across multiple models" {
+  mkdir -p "$AGENT_USAGE_AUDIT_AGY_DIR"
+  bun "$REPO_ROOT/tests/fixtures/agent-usage-audit/make_fixtures.ts" \
+    agy-multi-model "$AGENT_USAGE_AUDIT_AGY_DIR/conv-multi.db"
+
+  run env AGENT_USAGE_AUDIT_HARNESS=agy \
+    AGENT_USAGE_AUDIT_SESSION_ID=conv-multi \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-agy" ]
+  [ "$(json_field models.0)" = "gemini-3.8-flash" ]
+  [ "$(json_field models.1)" = "gemini-3.8-pro" ]
+  [ "$(json_field model_breakdowns.0.model)" = "gemini-3.8-flash" ]
+  [ "$(json_field model_breakdowns.0.tokens.input)" = "100" ]
+  [ "$(json_field model_breakdowns.0.tokens.total)" = "335" ]
+  [ "$(json_field model_breakdowns.1.model)" = "gemini-3.8-pro" ]
+  [ "$(json_field model_breakdowns.1.tokens.input)" = "500" ]
+  [ "$(json_field model_breakdowns.1.tokens.total)" = "1600" ]
 }
 
 stub_ccusage() {

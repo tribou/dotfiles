@@ -408,6 +408,7 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
 
   const tokens = emptyTokens();
   const models: string[] = [];
+  const tokensByModel = new Map<string, Tokens>();
   let verified = 0;
   let dropped = 0;
   for (const blob of blobs) {
@@ -451,6 +452,14 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
     tokens.reasoning += thinking;
     const model = pbString(envelope!, 19) ?? pbString(envelope!, 21);
     if (model && !models.includes(model)) models.push(model);
+
+    const m = model ?? "unknown";
+    if (!tokensByModel.has(m)) tokensByModel.set(m, emptyTokens());
+    const mt = tokensByModel.get(m)!;
+    mt.input += pbVarintValue(usage, 2) ?? 0;
+    mt.cache_read += pbVarintValue(usage, 5) ?? 0;
+    mt.output += output + thinking;
+    mt.reasoning += thinking;
   }
 
   if (verified === 0) {
@@ -462,7 +471,11 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
     );
   }
 
-  const record = makeRecord(stage, "agy", sessionId, "builtin-agy", tokens, models, []);
+  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+
+  const record = makeRecord(stage, "agy", sessionId, "builtin-agy", tokens, models, [], { modelBreakdowns });
   record.verified_rows = verified;
   record.dropped_rows = dropped;
   return record;
