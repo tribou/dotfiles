@@ -5,12 +5,14 @@
  *
  * Subcommands:
  *   probe --stage STAGE [--session ID]   emit one normalized JSON record
+ *   record --stage STAGE --target issue:N|pr:M [--session ID] [--dry-run] [--record FILE]
+ *                                       upsert the audit comment on a GitHub issue/PR
  *
  * Nothing here ever guesses a number: a probe that cannot read real usage
  * emits a record with "source": "unavailable" and a human-readable reason.
  */
 import { Database } from "bun:sqlite";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 
@@ -952,6 +954,107 @@ function parseAuditComment(commentBody: string): UsageRecord[] {
   }
 }
 
+const GH_COMMENT_MAX_BYTES = 65536;
+
+interface RecordOptions {
+  stage: Stage;
+  session?: string;
+  target: string;
+  dryRun?: boolean;
+  recordFile?: string;
+}
+
+function parseTarget(target: string): number {
+  const match = target.match(/^(?:issue:|pr:|#)?(\d+)$/i);
+  if (!match) {
+    throw new Error(`invalid --target '${target}': expected issue:<number> or pr:<number>`);
+  }
+  const n = parseInt(match[1]!, 10);
+  if (isNaN(n) || n <= 0) throw new Error(`invalid issue/pr number in target '${target}'`);
+  return n;
+}
+
+function runGh(args: string[]): string {
+  const res = Bun.spawnSync(["gh", ...args], {
+    env: process.env,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  if (res.exitCode !== 0) {
+    const err = Buffer.from(res.stderr).toString().trim();
+    throw new Error(`gh ${args.join(" ")} failed (exit ${res.exitCode}): ${err}`);
+  }
+  return Buffer.from(res.stdout).toString();
+}
+
+function findAuditComment(targetNum: number, repo: string): { id: number; body: string } | null {
+  const raw = runGh(["api", "--paginate", `repos/${repo}/issues/${targetNum}/comments`]);
+  let comments: any[] = [];
+  try {
+    comments = JSON.parse(raw);
+    if (!Array.isArray(comments)) comments = [];
+  } catch {
+    comments = [];
+  }
+
+  for (const c of comments) {
+    if (typeof c.body === "string" && c.body.includes("<!-- BEGIN AGENT USAGE -->")) {
+      // Plan comments quote their own markers; they are never the ledger.
+      const planMarker = "<" + "!-- BEGIN PLAN --" + ">";
+      if (!c.body.includes(planMarker)) {
+        return { id: c.id, body: c.body };
+      }
+    }
+  }
+  return null;
+}
+
+async function recordUsage(options: RecordOptions): Promise<number> {
+  const targetNum = parseTarget(options.target);
+  const repo = process.env.AGENT_USAGE_AUDIT_REPO || ":owner/:repo";
+
+  let record: UsageRecord;
+  if (options.recordFile) {
+    record = JSON.parse(readFileSync(options.recordFile, "utf-8"));
+  } else {
+    record = await probe(options.stage, options.session);
+  }
+
+  const existingComment = findAuditComment(targetNum, repo);
+  const existingRecords = existingComment ? parseAuditComment(existingComment.body) : [];
+  const mergedRecords = mergeLedger(existingRecords, record);
+  const rendered = renderAuditComment(mergedRecords);
+
+  const byteLen = Buffer.byteLength(rendered, "utf8");
+  if (byteLen > GH_COMMENT_MAX_BYTES) {
+    console.error(`audit comment exceeds GitHub limit of ${GH_COMMENT_MAX_BYTES} characters (actual: ${byteLen})`);
+    return 1;
+  }
+
+  if (options.dryRun) {
+    console.log(rendered);
+    return 0;
+  }
+
+  // gh api reads the field value from a file via @, keeping the body out of
+  // argv so shell-quoting can never mangle the comment.
+  const tmpFile = path.join(homedir(), `.audit-comment-${Date.now()}-${Math.random().toString(36).slice(2)}.tmp`);
+  await Bun.write(tmpFile, rendered);
+
+  try {
+    if (existingComment) {
+      runGh(["api", "-X", "PATCH", `repos/${repo}/issues/comments/${existingComment.id}`, "-F", `body=@${tmpFile}`]);
+    } else {
+      runGh(["api", "-X", "POST", `repos/${repo}/issues/${targetNum}/comments`, "-F", `body=@${tmpFile}`]);
+    }
+    return 0;
+  } finally {
+    try {
+      unlinkSync(tmpFile);
+    } catch {}
+  }
+}
+
 function parseArgs(argv: string[]): {
   command: string;
   stage?: string;
@@ -959,6 +1062,8 @@ function parseArgs(argv: string[]): {
   existing?: string;
   record?: string;
   file?: string;
+  target?: string;
+  dryRun?: boolean;
 } {
   const [command = "", ...rest] = argv;
   const parsed: {
@@ -968,6 +1073,8 @@ function parseArgs(argv: string[]): {
     existing?: string;
     record?: string;
     file?: string;
+    target?: string;
+    dryRun?: boolean;
   } = { command };
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--stage") {
@@ -985,6 +1092,12 @@ function parseArgs(argv: string[]): {
     } else if (rest[i] === "--file") {
       if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --file");
       parsed.file = rest[i + 1];
+    } else if (rest[i] === "--target") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --target");
+      parsed.target = rest[i + 1];
+    } else if (rest[i] === "--dry-run") {
+      parsed.dryRun = true;
+      continue;
     } else {
       throw new Error(`unexpected argument: ${rest[i]}`);
     }
@@ -1036,6 +1149,28 @@ async function main(argv: string[]): Promise<number> {
       const envelope: LedgerEnvelope = { schema: SCHEMA, records: parseAuditComment(input) };
       console.log(JSON.stringify(envelope, null, 2));
       return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
+  }
+  if (args.command === "record") {
+    if (!args.stage || !args.target) {
+      console.error("usage: agent-usage-audit record --stage <stage> [--session <id>] --target <issue:N|pr:M> [--dry-run] [--record <file>]");
+      return 2;
+    }
+    if (!STAGES.includes(args.stage as Stage)) {
+      console.error(`--stage must be one of: ${STAGES.join(", ")}`);
+      return 2;
+    }
+    try {
+      return await recordUsage({
+        stage: args.stage as Stage,
+        session: args.session,
+        target: args.target,
+        dryRun: args.dryRun,
+        recordFile: args.record,
+      });
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
       return 2;

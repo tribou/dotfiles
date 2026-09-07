@@ -523,6 +523,202 @@ EOF
   [ "$(json_field records.length)" = "0" ]
 }
 
+@test "record: creates new comment (POST) when no audit comment exists" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo "[]"
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "POST" ]]; then
+  echo "{"id": 999}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-post-test",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [
+    {
+      "model": "claude-3-7-sonnet",
+      "tokens": { "input": 100, "output": 100, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 200 }
+    }
+  ],
+  "tokens": { "input": 100, "output": 100, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 200 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "POST repos/:owner/:repo/issues/181/comments" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
+@test "record: PATCHes existing comment when audit comment exists" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo '[{"id": 456, "body": "### 🤖 Agent usage\n\n<!-- BEGIN AGENT USAGE -->\n```json\n{\"schema\": 1, \"records\": []}\n```\n<!-- END AGENT USAGE -->"}]'
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "PATCH" ]]; then
+  echo "{"id": 456}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-patch.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-patch-test",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 50, "output": 50, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 100 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "PATCH repos/:owner/:repo/issues/comments/456" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
+@test "record: never selects a plan comment as the audit comment" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo '[{"id": 111, "body": "<details><summary>Plan</summary>\n<!-- BEGIN PLAN -->\nTask 1\n<!-- END PLAN -->\n</details>"}]'
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "POST" ]]; then
+  echo "{\"id\": 999}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-plan.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-plan-test",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "PATCH.*111" "$logfile"
+  [ "$status" -ne 0 ]
+  run grep "POST repos/:owner/:repo/issues/181/comments" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
+@test "record: --dry-run prints comment body without calling POST or PATCH" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo "[]"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-dry.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-dry-test",
+  "source": "builtin-claude-code",
+  "models": ["claude-3-7-sonnet"],
+  "model_breakdowns": [],
+  "tokens": { "input": 10, "output": 10, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 20 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec" --dry-run
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"<!-- BEGIN AGENT USAGE -->"* ]]
+  [[ "$output" == *"sess-dry-test"* ]]
+  run grep -E "(POST|PATCH)" "$logfile"
+  [ "$status" -ne 0 ]
+}
+
+@test "record: errors when comment body exceeds 65536 characters" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+echo "[]"
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/huge-record.json"
+  bun -e '
+    const huge = {
+      schema: 1,
+      stage: "issue-to-plan",
+      harness: "claude-code",
+      session_id: "sess-huge",
+      source: "builtin-claude-code",
+      models: ["model-x"],
+      model_breakdowns: [],
+      tokens: { input: 1, output: 1, cache_read: 0, cache_write: 0, reasoning: 0, total: 2 },
+      cost_usd: null,
+      children: [],
+      reason: "x".repeat(70000),
+      updated_at: "2026-09-07T00:00:00Z"
+    };
+    await Bun.write(process.argv[1], JSON.stringify(huge));
+  ' "$rec"
+
+  run env PATH="$stubdir:$PATH" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"exceeds GitHub limit of 65536"* ]]
+}
+
 @test "opencode adapter: reads the session row and rolls up its child sessions" {
   install_opencode_fixture
 
