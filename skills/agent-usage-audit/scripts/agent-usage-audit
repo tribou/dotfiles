@@ -929,6 +929,29 @@ function renderAuditComment(records: UsageRecord[]): string {
   return lines.join("\n");
 }
 
+function parseAuditComment(commentBody: string): UsageRecord[] {
+  if (!commentBody || typeof commentBody !== "string") return [];
+  const beginMarker = "<!-- BEGIN AGENT USAGE -->";
+  const endMarker = "<!-- END AGENT USAGE -->";
+  const beginIdx = commentBody.indexOf(beginMarker);
+  const endIdx = commentBody.indexOf(endMarker);
+  const content = (beginIdx >= 0 && endIdx > beginIdx)
+    ? commentBody.slice(beginIdx + beginMarker.length, endIdx)
+    : commentBody;
+
+  const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+  if (!jsonMatch || !jsonMatch[1]) return [];
+
+  try {
+    const parsed = JSON.parse(jsonMatch[1]);
+    if (parsed && Array.isArray(parsed.records)) return parsed.records;
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
 function parseArgs(argv: string[]): {
   command: string;
   stage?: string;
@@ -1001,6 +1024,17 @@ async function main(argv: string[]): Promise<number> {
       const input = args.file ? readFileSync(args.file, "utf8") : await Bun.stdin.text();
       const ledger = JSON.parse(input) as LedgerEnvelope;
       console.log(renderAuditComment(ledger.records));
+      return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
+  }
+  if (args.command === "parse") {
+    try {
+      const input = args.file ? readFileSync(args.file, "utf8") : await Bun.stdin.text();
+      const envelope: LedgerEnvelope = { schema: SCHEMA, records: parseAuditComment(input) };
+      console.log(JSON.stringify(envelope, null, 2));
       return 0;
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));

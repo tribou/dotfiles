@@ -459,6 +459,70 @@ EOF
   [[ "$output" == *"| **Total** | | | | 0 | 0 | 0 | 0 | 0 | |"* ]]
 }
 
+@test "parse: round-trip test extracts identical ledger records from rendered comment" {
+  local ledger="$FIXTURES/ledger-rt.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "claude-code",
+      "session_id": "sess-rt",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [
+        {
+          "model": "claude-3-7-sonnet",
+          "tokens": { "input": 100, "output": 50, "cache_read": 10, "cache_write": 5, "reasoning": 0, "total": 165 }
+        }
+      ],
+      "tokens": { "input": 100, "output": 50, "cache_read": 10, "cache_write": 5, "reasoning": 0, "total": 165 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  local rendered="$FIXTURES/rendered.md"
+  bun "$SCRIPT" render --file "$ledger" > "$rendered"
+
+  run bun "$SCRIPT" parse --file "$rendered"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "1" ]
+  [ "$(json_field records.0.session_id)" = "sess-rt" ]
+  [ "$(json_field records.0.tokens.total)" = "165" ]
+}
+
+@test "parse: returns empty ledger for unparseable or malformed comment markdown" {
+  local malformed="$FIXTURES/malformed.md"
+  cat > "$malformed" <<'EOF'
+<!-- BEGIN AGENT USAGE -->
+```json
+{ invalid json here
+```
+<!-- END AGENT USAGE -->
+EOF
+
+  run bun "$SCRIPT" parse --file "$malformed"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "0" ]
+}
+
+@test "parse: returns empty ledger when no ledger block or markers exist" {
+  local plain="$FIXTURES/plain.md"
+  cat > "$plain" <<'EOF'
+Just a regular PR comment without any usage markers.
+EOF
+
+  run bun "$SCRIPT" parse --file "$plain"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "0" ]
+}
+
 @test "opencode adapter: reads the session row and rolls up its child sessions" {
   install_opencode_fixture
 
