@@ -7,6 +7,11 @@
  *   probe --stage STAGE [--session ID]   emit one normalized JSON record
  *   record --stage STAGE --target issue:N|pr:M [--session ID] [--dry-run] [--record FILE]
  *                                       upsert the audit comment on a GitHub issue/PR
+ *   merge --existing FILE --record FILE  merge a record into a ledger by (session_id, stage),
+ *                                       stable stage/timestamp ordering
+ *   render [--file FILE]                 render ledger records as the audit comment
+ *                                       (markdown table + collapsed JSON details)
+ *   parse [--file FILE]                  extract ledger records from an audit comment body
  *
  * Nothing here ever guesses a number: a probe that cannot read real usage
  * emits a record with "source": "unavailable" and a human-readable reason.
