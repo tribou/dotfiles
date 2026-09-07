@@ -35,6 +35,8 @@ const OPENCODE_ROWS: Array<[string, string | null, number, number, number, numbe
   ["ses_fixture_child", "ses_fixture_parent", 0.08, 20, 30, 5, 900, 100, "anthropic/claude-sonnet-5"],
   ["ses_fixture_zero_cost_parent", null, 0, 1, 2, 0, 0, 0, "anthropic/claude-haiku-5"],
   ["ses_fixture_zero_cost_child", "ses_fixture_zero_cost_parent", 0, 3, 4, 0, 0, 0, "anthropic/claude-haiku-5"],
+  ["ses_fixture_json_model_parent", null, 0.15, 100, 200, 20, 500, 50, '{"id":"glm-5.3","provider":"openrouter"}'],
+  ["ses_fixture_json_model_child", "ses_fixture_json_model_parent", 0.05, 10, 20, 0, 50, 5, '{"id":"glm-4-flash"}'],
   ["ses_unrelated", null, 9.99, 111, 222, 333, 444, 555, "other/model"],
 ];
 

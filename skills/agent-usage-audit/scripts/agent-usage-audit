@@ -169,6 +169,15 @@ interface OpencodeRow {
   tokens_cache_write: number | null;
 }
 
+function normalizeModelName(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && typeof parsed.id === "string") return parsed.id;
+  } catch {}
+  return raw;
+}
+
 function opencodeRowTokens(row: OpencodeRow): Tokens {
   const tokens = emptyTokens();
   tokens.input = row.tokens_input ?? 0;
@@ -212,8 +221,22 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
     return unavailableRecord(stage, "opencode", sessionId, `session ${sessionId} not present in ${dbPath}`);
   }
 
+  const tokensByModel = new Map<string, { tokens: Tokens; cost: number | null }>();
+  function recordModelUsage(modelName: string, rowTokens: Tokens, rowCost: number | null) {
+    let entry = tokensByModel.get(modelName);
+    if (!entry) {
+      entry = { tokens: emptyTokens(), cost: null };
+      tokensByModel.set(modelName, entry);
+    }
+    for (const k of TOKEN_KEYS) entry.tokens[k] += rowTokens[k];
+    if (rowCost !== null) entry.cost = (entry.cost ?? 0) + rowCost;
+  }
+
+  const parentModel = normalizeModelName(parent.model) ?? "unknown";
+  recordModelUsage(parentModel, opencodeRowTokens(parent), parent.cost);
+
   const rolledUp = opencodeRowTokens(parent);
-  const models: string[] = parent.model ? [parent.model] : [];
+  const models: string[] = parent.model ? [parentModel] : [];
   let cost = parent.cost;
   const childrenByParent = new Map<string, OpencodeRow[]>();
   for (const row of rows) {
@@ -239,20 +262,30 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
   const children: ChildRecord[] = [];
   for (const kid of descendants) {
     const kidTokens = opencodeRowTokens(kid);
+    const kidModel = normalizeModelName(kid.model) ?? "unknown";
+    recordModelUsage(kidModel, kidTokens, kid.cost);
     if (kid.cost !== null) cost = (cost ?? 0) + kid.cost;
-    if (kid.model) models.push(kid.model);
+    if (kid.model) models.push(kidModel);
     for (const key of TOKEN_KEYS) rolledUp[key] += kidTokens[key];
     children.push({
       session_id: kid.id,
       harness: "opencode",
-      models: kid.model ? [kid.model] : [],
+      models: kid.model ? [kidModel] : [],
       tokens: kidTokens,
     });
   }
 
+  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([model, e]) => ({
+      model,
+      tokens: finalizeTokens(e.tokens),
+      cost_usd: e.cost === null ? null : Math.round(e.cost * 1e6) / 1e6,
+    }));
+
   // Rounding keeps 0.42 + 0.08 from printing as 0.5000000000000001.
   const costUsd = cost === null ? null : Math.round(cost * 1e6) / 1e6;
-  return makeRecord(stage, "opencode", sessionId, "builtin-opencode", rolledUp, models, children, { costUsd });
+  return makeRecord(stage, "opencode", sessionId, "builtin-opencode", rolledUp, models, children, { costUsd, modelBreakdowns });
 }
 
 function agyConversationsDir(): string {

@@ -250,6 +250,39 @@ install_agy_fixture() {
   [ "$(json_field children.0.session_id)" = "ses_fixture_child" ]
   [ "$(json_field children.0.tokens.input)" = "20" ]
   [ "$(json_field cost_usd)" = "0.5" ]
+  # Tokens divided per model: orchestrator vs subagent
+  [ "$(json_field model_breakdowns.0.model)" = "anthropic/claude-opus-5" ]
+  [ "$(json_field model_breakdowns.0.tokens.input)" = "120" ]
+  [ "$(json_field model_breakdowns.0.tokens.output)" = "400" ]
+  [ "$(json_field model_breakdowns.0.tokens.total)" = "6220" ]
+  [ "$(json_field model_breakdowns.0.cost_usd)" = "0.42" ]
+  [ "$(json_field model_breakdowns.1.model)" = "anthropic/claude-sonnet-5" ]
+  [ "$(json_field model_breakdowns.1.tokens.input)" = "20" ]
+  [ "$(json_field model_breakdowns.1.tokens.output)" = "35" ]
+  [ "$(json_field model_breakdowns.1.tokens.total)" = "1055" ]
+  [ "$(json_field model_breakdowns.1.cost_usd)" = "0.08" ]
+}
+
+@test "opencode adapter: extracts model id from JSON model column" {
+  install_opencode_fixture
+
+  run env AGENT_USAGE_AUDIT_HARNESS=opencode \
+    AGENT_USAGE_AUDIT_SESSION_ID=ses_fixture_json_model_parent \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-opencode" ]
+  [ "$(json_field models.0)" = "glm-4-flash" ]
+  [ "$(json_field models.1)" = "glm-5.3" ]
+  [ "$(json_field children.0.session_id)" = "ses_fixture_json_model_child" ]
+  [ "$(json_field children.0.models.0)" = "glm-4-flash" ]
+  [ "$(json_field model_breakdowns.0.model)" = "glm-4-flash" ]
+  [ "$(json_field model_breakdowns.0.tokens.input)" = "10" ]
+  [ "$(json_field model_breakdowns.0.tokens.output)" = "20" ]
+  [ "$(json_field model_breakdowns.0.cost_usd)" = "0.05" ]
+  [ "$(json_field model_breakdowns.1.model)" = "glm-5.3" ]
+  [ "$(json_field model_breakdowns.1.tokens.input)" = "100" ]
+  [ "$(json_field model_breakdowns.1.tokens.output)" = "220" ]
+  [ "$(json_field model_breakdowns.1.cost_usd)" = "0.15" ]
 }
 
 @test "opencode adapter: rolls up nested descendants and stops on parent cycles" {
