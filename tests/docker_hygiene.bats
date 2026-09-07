@@ -21,3 +21,15 @@ setup() {
   run grep -E "GIT_CONFIG_PARAMETERS:.*safe\.directory=\*" "$REPO_ROOT/docker-compose.yml"
   assert_success
 }
+
+@test "dockerfile: pre-installs build prerequisites for sub-45s inner loop" {
+  run grep -E 'build-essential' "$REPO_ROOT/Dockerfile"
+  assert_success
+  run grep -E 'zlib1g-dev' "$REPO_ROOT/Dockerfile"
+  assert_success
+  run grep -E 'xdg-utils' "$REPO_ROOT/Dockerfile"
+  assert_success
+  run grep -E 'bash-completion' "$REPO_ROOT/Dockerfile"
+  assert_success
+}
+

@@ -14,6 +14,10 @@ RUN apt-get update && apt-get install -y \
     fd-find \
     bat \
     git-delta \
+    build-essential \
+    zlib1g-dev \
+    xdg-utils \
+    bash-completion \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install --break-system-packages pynvim \
   && ln -s /usr/bin/fdfind /usr/local/bin/fd \
