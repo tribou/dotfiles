@@ -40,7 +40,7 @@ function copy_to_clipboard ()
 function histgrep ()
 {
   # Remove histfile directory prefix during fzf search
-  local AWK_REMOVE_HISTDIR='^\/.*\/\.history\/'
+  local AWK_REMOVE_HISTDIR='^/.*/[.]history/'
 
   # Pipe results from two history sources into cat
   local RESULT

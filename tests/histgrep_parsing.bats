@@ -1,4 +1,6 @@
 # tests/histgrep_parsing.bats
+bats_require_minimum_version 1.5.0
+
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -33,4 +35,22 @@ setup() {
   local line="    1  2024-01-15 10:30:00 ls"
   run bash -c ". '$REPO_ROOT/lib/_shared.sh' && echo '$line' | awk -F \"\$DOTFILES_HISTORY_DELIM\" '{print \$NF}'"
   assert_output "ls"
+}
+
+@test "histgrep parses history files without awk warnings" {
+  mkdir -p "$BATS_TEST_TMPDIR/home/.history/2024/01"
+  printf '%s\n' "ssh remote" > "$BATS_TEST_TMPDIR/home/.history/2024/01/15.10.30.00_server"
+
+  run --separate-stderr bash -c "
+    export HOME='$BATS_TEST_TMPDIR/home'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    fzf() { cat; }
+    copy_to_clipboard() { :; }
+    histgrep remote
+  "
+
+  assert_success
+  assert_output "ssh remote"
+  assert_equal "$stderr" ""
 }
