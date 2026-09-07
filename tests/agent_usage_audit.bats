@@ -49,6 +49,7 @@ json_field() {
   [ "$(json_field source)" = "unavailable" ]
   [ "$(json_field harness)" = "unknown" ]
   [ "$(json_field tokens.total)" = "0" ]
+  [ "$(json_field model_breakdowns)" = "[]" ]
   [ -n "$(json_field reason)" ]
 }
 

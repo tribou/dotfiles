@@ -39,6 +39,12 @@ interface ChildRecord {
   tokens: Tokens;
 }
 
+interface ModelBreakdown {
+  model: string;
+  tokens: Tokens;
+  cost_usd?: number | null;
+}
+
 interface UsageRecord {
   schema: number;
   stage: Stage;
@@ -46,6 +52,7 @@ interface UsageRecord {
   session_id: string;
   source: string;
   models: string[];
+  model_breakdowns: ModelBreakdown[];
   tokens: Tokens;
   cost_usd: number | null;
   children: ChildRecord[];
@@ -103,15 +110,22 @@ function makeRecord(
   tokens: Tokens,
   models: string[],
   children: ChildRecord[],
-  options: { costUsd?: number | null; reason?: string } = {},
+  options: { costUsd?: number | null; reason?: string; modelBreakdowns?: ModelBreakdown[] } = {},
 ): UsageRecord {
+  const uniqueModels = [...new Set(models)].sort();
+  const modelBreakdowns = options.modelBreakdowns ?? (
+    uniqueModels.length === 1
+      ? [{ model: uniqueModels[0]!, tokens: finalizeTokens(tokens), cost_usd: options.costUsd ?? null }]
+      : []
+  );
   const record: UsageRecord = {
     schema: SCHEMA,
     stage,
     harness,
     session_id: sessionId ?? "unknown",
     source,
-    models: [...new Set(models)].sort(),
+    models: uniqueModels,
+    model_breakdowns: modelBreakdowns,
     tokens: finalizeTokens(tokens),
     cost_usd: options.costUsd ?? null,
     children,
