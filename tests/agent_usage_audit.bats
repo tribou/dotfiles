@@ -75,6 +75,15 @@ json_field() {
   [ "$status" -ne 0 ]
 }
 
+@test "probe: invalid harness override falls back to the unknown harness" {
+  run env AGENT_USAGE_AUDIT_HARNESS=not-a-harness \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-invalid-harness \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field harness)" = "unknown" ]
+  [ "$(json_field session_id)" = "sess-invalid-harness" ]
+}
+
 @test "detect_harness: CLAUDECODE marker selects the claude-code harness" {
   run env CLAUDECODE=1 CLAUDE_CODE_SESSION_ID=sess-cc-0001 \
     bun "$SCRIPT" probe --stage issue-to-plan
@@ -184,6 +193,39 @@ install_agy_fixture() {
   [[ "$(json_field reason)" == *"no assistant turns"* ]]
 }
 
+@test "claude-code adapter: malformed usage rows are dropped without corrupting totals" {
+  local dir="$AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR/-fixture-project"
+  mkdir -p "$dir"
+  printf '%s\n' \
+    '{"type":"assistant","requestId":"valid","message":{"id":"valid","model":"claude-opus-5","usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":30,"cache_creation_input_tokens":40,"output_tokens_details":{"thinking_tokens":5}}}}' \
+    '{"type":"assistant","requestId":"bad","message":{"id":"bad","model":"claude-opus-5","usage":{"input_tokens":"10","output_tokens":2,"cache_read_input_tokens":3,"cache_creation_input_tokens":4,"output_tokens_details":{"thinking_tokens":1}}}}' \
+    > "$dir/sess-malformed.jsonl"
+
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-malformed \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.input)" = "10" ]
+  [ "$(json_field tokens.output)" = "20" ]
+  [ "$(json_field tokens.total)" = "100" ]
+}
+
+@test "probe: unexpected errors preserve detected harness and session context" {
+  local projects="$FIXTURES/not-a-directory"
+  printf '%s' 'not a directory' > "$projects"
+
+  run env AGENT_USAGE_AUDIT_HARNESS=claude-code \
+    AGENT_USAGE_AUDIT_SESSION_ID=sess-context \
+    AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR="$projects" \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "unavailable" ]
+  [ "$(json_field harness)" = "claude-code" ]
+  [ "$(json_field session_id)" = "sess-context" ]
+  [[ "$(json_field reason)" == *"unexpected probe error"* ]]
+}
+
 @test "opencode adapter: reads the session row and rolls up its child sessions" {
   install_opencode_fixture
 
@@ -203,6 +245,26 @@ install_agy_fixture() {
   [ "$(json_field children.0.session_id)" = "ses_fixture_child" ]
   [ "$(json_field children.0.tokens.input)" = "20" ]
   [ "$(json_field cost_usd)" = "0.5" ]
+}
+
+@test "opencode adapter: rolls up nested descendants and stops on parent cycles" {
+  bun "$REPO_ROOT/tests/fixtures/agent-usage-audit/make_fixtures.ts" \
+    opencode-nested "$AGENT_USAGE_AUDIT_OPENCODE_DB"
+
+  run env AGENT_USAGE_AUDIT_HARNESS=opencode \
+    AGENT_USAGE_AUDIT_SESSION_ID=ses_nested_parent \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-opencode" ]
+  [ "$(json_field tokens.input)" = "115" ]
+  [ "$(json_field tokens.output)" = "250" ]
+  [ "$(json_field tokens.reasoning)" = "24" ]
+  [ "$(json_field tokens.cache_read)" = "1250" ]
+  [ "$(json_field tokens.cache_write)" = "137" ]
+  [ "$(json_field tokens.total)" = "1752" ]
+  [ "$(json_field children.0.session_id)" = "ses_nested_child" ]
+  [ "$(json_field children.1.session_id)" = "ses_nested_grandchild" ]
+  [ "$(json_field cost_usd)" = "0.6" ]
 }
 
 @test "opencode adapter: preserves a zero parent-plus-child cost" {
@@ -297,6 +359,22 @@ install_agy_fixture() {
   [[ "$(json_field reason)" == *"self-check"* ]]
 }
 
+@test "agy adapter: malformed and truncated protobuf rows are dropped" {
+  mkdir -p "$AGENT_USAGE_AUDIT_AGY_DIR"
+  bun "$REPO_ROOT/tests/fixtures/agent-usage-audit/make_fixtures.ts" \
+    agy-malformed "$AGENT_USAGE_AUDIT_AGY_DIR/conv-malformed.db"
+
+  run env AGENT_USAGE_AUDIT_HARNESS=agy \
+    AGENT_USAGE_AUDIT_SESSION_ID=conv-malformed \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-agy" ]
+  [ "$(json_field verified_rows)" = "1" ]
+  [ "$(json_field dropped_rows)" = "3" ]
+  [ "$(json_field tokens.input)" = "1000" ]
+  [ "$(json_field tokens.total)" = "21350" ]
+}
+
 stub_ccusage() {
   # $1 is the JSON the stub prints; $2 (optional) its exit status.
   local payload="$1" rc="${2:-0}"
@@ -368,10 +446,36 @@ EOF
   unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
   install_claude_fixture
   stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":"not-a-number"}]}'
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
+}
+
+@test "probe order: ccusage entries missing usage fall back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001"}]}'
+
+  run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
+  [ "$status" -eq 0 ]
+  [ "$(json_field source)" = "builtin-claude-code" ]
+  [ "$(json_field tokens.total)" = "3701" ]
+}
+
+@test "probe order: ccusage children missing identity or usage fall back to the built-in adapter" {
+  unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
+  install_claude_fixture
+  stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"children":[{}]}]}'
+
+  run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
   [ "$(json_field tokens.total)" = "3701" ]
@@ -381,10 +485,10 @@ EOF
   unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
   install_claude_fixture
   stub_ccusage '{"sessions":[{"sessionId":"sess-cc-0001","children":{}}]}'
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
   [ "$(json_field tokens.total)" = "3701" ]
@@ -394,10 +498,10 @@ EOF
   unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
   install_claude_fixture
   stub_ccusage '{"sessions":"not-an-array","sessionId":"sess-cc-0001","inputTokens":1}'
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
   [ "$(json_field tokens.total)" = "3701" ]
@@ -407,10 +511,10 @@ EOF
   unset AGENT_USAGE_AUDIT_DISABLE_CCUSAGE
   install_claude_fixture
   stub_ccusage_timeout
-  export AGENT_USAGE_AUDIT_HARNESS="claude-code"
-  export AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001"
 
-  run bun "$SCRIPT" probe --stage issue-to-plan
+  run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
+    AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]
   [ "$(json_field tokens.total)" = "3701" ]

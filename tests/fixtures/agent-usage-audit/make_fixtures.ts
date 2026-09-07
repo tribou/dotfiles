@@ -38,7 +38,16 @@ const OPENCODE_ROWS: Array<[string, string | null, number, number, number, numbe
   ["ses_unrelated", null, 9.99, 111, 222, 333, 444, 555, "other/model"],
 ];
 
-function buildOpencode(dbPath: string): void {
+const OPENCODE_NESTED_ROWS: Array<[string, string | null, number, number, number, number, number, number, string]> = [
+  ["ses_nested_parent", "ses_nested_grandchild", 0.1, 100, 200, 20, 1000, 100, "model-parent"],
+  ["ses_nested_child", "ses_nested_parent", 0.2, 10, 20, 3, 200, 30, "model-child"],
+  ["ses_nested_grandchild", "ses_nested_child", 0.3, 5, 6, 1, 50, 7, "model-grandchild"],
+];
+
+function buildOpencode(
+  dbPath: string,
+  rows: Array<[string, string | null, number, number, number, number, number, number, string]> = OPENCODE_ROWS,
+): void {
   const db = new Database(dbPath);
   db.exec(OPENCODE_SCHEMA);
   const insert = db.prepare(
@@ -46,7 +55,7 @@ function buildOpencode(dbPath: string): void {
       " tokens_reasoning, tokens_cache_read, tokens_cache_write, model)" +
       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
   );
-  for (const row of OPENCODE_ROWS) insert.run(...row);
+  for (const row of rows) insert.run(...row);
   db.close();
 }
 
@@ -79,6 +88,10 @@ function pbBytes(field: number, payload: Uint8Array): Uint8Array {
   return concatBytes(pbTag(field, 2), varintBytes(payload.length), payload);
 }
 
+function pbBytesWithLength(field: number, declaredLength: number, payload: Uint8Array): Uint8Array {
+  return concatBytes(pbTag(field, 2), varintBytes(declaredLength), payload);
+}
+
 function concatBytes(...parts: Uint8Array[]): Uint8Array {
   const total = parts.reduce((sum, part) => sum + part.length, 0);
   const out = new Uint8Array(total);
@@ -109,6 +122,10 @@ function agyBlob(
     pbVarint(10, thinking),
     pbBytes(11, new TextEncoder().encode("resp-id")),
   );
+  return agyBlobFromUsage(usage, model);
+}
+
+function agyBlobFromUsage(usage: Uint8Array, model: string): Uint8Array {
   const inner = concatBytes(
     pbVarint(3, 1318),
     pbBytes(4, usage),
@@ -125,6 +142,35 @@ const AGY_ROWS: Array<[number, Uint8Array]> = [
   [2, agyBlob(9999, 99999, 999, 99, "gemini-3.8-flash", 1)],
 ];
 
+const AGY_MALFORMED_ROWS: Array<[number, Uint8Array]> = [
+  [0, agyBlob(1000, 20000, 300, 50, "gemini-3.8-flash")],
+  // Missing #3, #9, and #10 used to pass the self-check as 0 == 0 + 0.
+  [1, agyBlobFromUsage(
+    concatBytes(pbVarint(1, 1318), pbVarint(2, 9999), pbVarint(5, 8888)),
+    "gemini-3.8-flash",
+  )],
+  // The outer length claims bytes that are not present.
+  [2, (() => {
+    const valid = agyBlob(777, 666, 5, 2, "gemini-3.8-flash");
+    const inner = valid.subarray(2);
+    return pbBytesWithLength(1, inner.length + 2, inner);
+  })()],
+  // A second #10 field ends in a truncated varint. The old parser accepted
+  // the earlier zero value and treated this row as verified.
+  [3, agyBlobFromUsage(
+    concatBytes(
+      pbVarint(1, 1318),
+      pbVarint(2, 777),
+      pbVarint(3, 5),
+      pbVarint(5, 666),
+      pbVarint(9, 5),
+      pbVarint(10, 0),
+      new Uint8Array([0x50, 0x80]),
+    ),
+    "gemini-3.8-flash",
+  )],
+];
+
 function buildAgy(dbPath: string, rows: Array<[number, Uint8Array]> = AGY_ROWS): void {
   const db = new Database(dbPath);
   db.exec(AGY_SCHEMA);
@@ -136,11 +182,15 @@ function buildAgy(dbPath: string, rows: Array<[number, Uint8Array]> = AGY_ROWS):
 function main(argv: string[]): number {
   const [kind, dbPath] = argv;
   if (!kind || !dbPath) {
-    console.error("usage: make_fixtures.ts opencode|agy|agy-drift <db-path>");
+    console.error("usage: make_fixtures.ts opencode|opencode-nested|agy|agy-drift|agy-malformed <db-path>");
     return 2;
   }
   if (kind === "opencode") {
     buildOpencode(dbPath);
+    return 0;
+  }
+  if (kind === "opencode-nested") {
+    buildOpencode(dbPath, OPENCODE_NESTED_ROWS);
     return 0;
   }
   if (kind === "agy") {
@@ -149,6 +199,10 @@ function main(argv: string[]): number {
   }
   if (kind === "agy-drift") {
     buildAgy(dbPath, [AGY_ROWS[2]!]);
+    return 0;
+  }
+  if (kind === "agy-malformed") {
+    buildAgy(dbPath, AGY_MALFORMED_ROWS);
     return 0;
   }
   console.error(`unknown fixture kind: ${kind}`);

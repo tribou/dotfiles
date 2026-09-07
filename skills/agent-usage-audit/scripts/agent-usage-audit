@@ -70,12 +70,16 @@ function utcNow(): string {
 }
 
 function detectHarness(): Harness {
-  const forced = process.env.AGENT_USAGE_AUDIT_HARNESS;
-  if (forced) return forced as Harness;
+  const forced: unknown = process.env.AGENT_USAGE_AUDIT_HARNESS;
+  if (isHarness(forced)) return forced;
   if (process.env.OPENCODE || process.env.OPENCODE_SESSION_ID) return "opencode";
   if (process.env.CLAUDECODE || process.env.CLAUDE_CODE_SESSION_ID || process.env.CLAUDE_SESSION_ID) return "claude-code";
   if (process.env.AGY_CONVERSATION_ID || process.env.ANTIGRAVITY_CONVERSATION_ID || process.env.ANTIGRAVITY_AGENT) return "agy";
   return "unknown";
+}
+
+function isHarness(value: unknown): value is Harness {
+  return value === "claude-code" || value === "opencode" || value === "agy" || value === "unknown";
 }
 
 function detectSessionId(harness: Harness): string | null {
@@ -136,11 +140,12 @@ function errorMessage(error: unknown): string {
 }
 
 const OPENCODE_COLUMNS =
-  "id, model, cost, tokens_input, tokens_output, tokens_reasoning," +
+  "id, parent_id, model, cost, tokens_input, tokens_output, tokens_reasoning," +
   " tokens_cache_read, tokens_cache_write";
 
 interface OpencodeRow {
   id: string;
+  parent_id: string | null;
   model: string | null;
   cost: number | null;
   tokens_input: number | null;
@@ -179,10 +184,10 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
     return unavailableRecord(stage, "opencode", sessionId, `opencode.db unreadable: ${errorMessage(error)}`);
   }
   let parent: OpencodeRow | null = null;
-  let kids: OpencodeRow[] = [];
+  let rows: OpencodeRow[] = [];
   try {
-    parent = (db.prepare(`SELECT ${OPENCODE_COLUMNS} FROM session WHERE id = ?`).get(sessionId) as OpencodeRow) ?? null;
-    kids = db.prepare(`SELECT ${OPENCODE_COLUMNS} FROM session WHERE parent_id = ?`).all(sessionId) as OpencodeRow[];
+    rows = db.prepare(`SELECT ${OPENCODE_COLUMNS} FROM session`).all() as OpencodeRow[];
+    parent = rows.find((row) => row.id === sessionId) ?? null;
   } catch (error) {
     return unavailableRecord(stage, "opencode", sessionId, `opencode.db unreadable: ${errorMessage(error)}`);
   } finally {
@@ -196,8 +201,29 @@ function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
   const rolledUp = opencodeRowTokens(parent);
   const models: string[] = parent.model ? [parent.model] : [];
   let cost = parent.cost;
+  const childrenByParent = new Map<string, OpencodeRow[]>();
+  for (const row of rows) {
+    if (row.parent_id === null) continue;
+    const children = childrenByParent.get(row.parent_id) ?? [];
+    children.push(row);
+    childrenByParent.set(row.parent_id, children);
+  }
+
+  // Walk the complete descendant graph while preventing parent_id cycles from
+  // re-adding a session indefinitely.
+  const descendants: OpencodeRow[] = [];
+  const visited = new Set([sessionId]);
+  const pending = [...(childrenByParent.get(sessionId) ?? [])];
+  while (pending.length > 0) {
+    const child = pending.shift()!;
+    if (visited.has(child.id)) continue;
+    visited.add(child.id);
+    descendants.push(child);
+    pending.push(...(childrenByParent.get(child.id) ?? []));
+  }
+
   const children: ChildRecord[] = [];
-  for (const kid of kids) {
+  for (const kid of descendants) {
     const kidTokens = opencodeRowTokens(kid);
     if (kid.cost !== null) cost = (cost ?? 0) + kid.cost;
     if (kid.model) models.push(kid.model);
@@ -225,14 +251,17 @@ type PbValue = ["varint", number] | ["bytes", Uint8Array] | ["i32", Uint8Array] 
 function readVarint(buf: Uint8Array, index: number): [number, number] {
   let shift = 0;
   let value = 0;
-  for (;;) {
+  for (let count = 0; count < 10; count += 1) {
+    if (index >= buf.length) throw new Error("truncated protobuf varint");
     const byte = buf[index]!;
     index += 1;
     // Multiplication instead of << keeps values beyond 32 bits exact.
     value += (byte & 0x7f) * 2 ** shift;
+    if (!Number.isSafeInteger(value)) throw new Error("protobuf varint exceeds safe integer range");
     shift += 7;
     if ((byte & 0x80) === 0) return [value, index];
   }
+  throw new Error("protobuf varint is too long");
 }
 
 function parseProtobuf(buf: Uint8Array): Map<number, PbValue[]> {
@@ -245,7 +274,7 @@ function parseProtobuf(buf: Uint8Array): Map<number, PbValue[]> {
   while (index < buf.length) {
     let key: number;
     [key, index] = readVarint(buf, index);
-    const field = key >>> 3;
+    const field = Math.floor(key / 8);
     const wire = key & 7;
     const entries = fields.get(field) ?? [];
     if (wire === 0) {
@@ -255,12 +284,15 @@ function parseProtobuf(buf: Uint8Array): Map<number, PbValue[]> {
     } else if (wire === 2) {
       let size: number;
       [size, index] = readVarint(buf, index);
+      if (size > buf.length - index) throw new Error("truncated protobuf length-delimited field");
       entries.push(["bytes", buf.subarray(index, index + size)]);
       index += size;
     } else if (wire === 5) {
+      if (buf.length - index < 4) throw new Error("truncated protobuf 32-bit field");
       entries.push(["i32", buf.subarray(index, index + 4)]);
       index += 4;
     } else if (wire === 1) {
+      if (buf.length - index < 8) throw new Error("truncated protobuf 64-bit field");
       entries.push(["i64", buf.subarray(index, index + 8)]);
       index += 8;
     } else {
@@ -271,11 +303,11 @@ function parseProtobuf(buf: Uint8Array): Map<number, PbValue[]> {
   return fields;
 }
 
-function pbVarintValue(fields: Map<number, PbValue[]>, field: number): number {
+function pbVarintValue(fields: Map<number, PbValue[]>, field: number): number | null {
   for (const [wire, value] of fields.get(field) ?? []) {
     if (wire === "varint") return value as number;
   }
-  return 0;
+  return null;
 }
 
 function pbSubmessage(fields: Map<number, PbValue[]> | undefined, field: number): Map<number, PbValue[]> | null {
@@ -355,6 +387,10 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
     const storedTotal = pbVarintValue(usage, 3);
     const output = pbVarintValue(usage, 9);
     const thinking = pbVarintValue(usage, 10);
+    if (storedTotal === null || output === null || thinking === null) {
+      dropped += 1;
+      continue;
+    }
     // Self-check from agent-walker: a row whose stored total disagrees with
     // output + thinking has drifted from the reverse-engineered field map.
     if (storedTotal !== output + thinking) {
@@ -362,8 +398,8 @@ async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
       continue;
     }
     verified += 1;
-    tokens.input += pbVarintValue(usage, 2);
-    tokens.cache_read += pbVarintValue(usage, 5);
+    tokens.input += pbVarintValue(usage, 2) ?? 0;
+    tokens.cache_read += pbVarintValue(usage, 5) ?? 0;
     tokens.output += output + thinking;
     tokens.reasoning += thinking;
     const model = pbString(envelope!, 19) ?? pbString(envelope!, 21);
@@ -413,15 +449,17 @@ function isCcusageCost(value: unknown): boolean {
 
 function validatedCcusageEntry(value: unknown): CcusageEntry | null {
   if (!isCcusageObject(value)) return null;
-  if (value.sessionId !== undefined && typeof value.sessionId !== "string") return null;
+  if (typeof value.sessionId !== "string" || value.sessionId.trim().length === 0) return null;
   for (const key of [
     "inputTokens",
     "outputTokens",
     "cacheReadTokens",
     "cacheCreationTokens",
-    "reasoningTokens",
   ]) {
-    if (value[key] !== undefined && !isCcusageToken(value[key])) return null;
+    if (!Object.prototype.hasOwnProperty.call(value, key) || !isCcusageToken(value[key])) return null;
+  }
+  if (value.reasoningTokens !== undefined && !isCcusageToken(value.reasoningTokens)) {
+    return null;
   }
   if (value.totalCost !== undefined && !isCcusageCost(value.totalCost)) return null;
   if (
@@ -495,9 +533,8 @@ function probeCcusage(stage: Stage, harness: Harness, sessionId: string): UsageR
 
   const children: ChildRecord[] = [];
   for (const child of entry.children ?? []) {
-    if (!child || typeof child !== "object") continue;
     children.push({
-      session_id: child.sessionId ?? "unknown",
+      session_id: child.sessionId!,
       harness,
       models: child.modelsUsed ?? [],
       tokens: finalizeTokens(ccusageTokensFrom(child)),
@@ -531,7 +568,36 @@ interface ClaudeUsage {
   output_tokens_details?: { thinking_tokens?: number };
 }
 
-function addClaudeUsage(tokens: Tokens, usage: ClaudeUsage | undefined): void {
+function validClaudeNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function validatedClaudeUsage(value: unknown): ClaudeUsage | null {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+  const usage = value as Record<string, unknown>;
+  let hasUsageField = false;
+  for (const key of [
+    "input_tokens",
+    "output_tokens",
+    "cache_read_input_tokens",
+    "cache_creation_input_tokens",
+  ]) {
+    if (usage[key] !== undefined) {
+      if (!validClaudeNumber(usage[key])) return null;
+      hasUsageField = true;
+    }
+  }
+  if (usage.output_tokens_details !== undefined) {
+    const details = usage.output_tokens_details;
+    if (details === null || typeof details !== "object" || Array.isArray(details)) return null;
+    const thinking = (details as Record<string, unknown>).thinking_tokens;
+    if (thinking !== undefined && !validClaudeNumber(thinking)) return null;
+    hasUsageField ||= thinking !== undefined;
+  }
+  return hasUsageField ? usage as ClaudeUsage : null;
+}
+
+function addClaudeUsage(tokens: Tokens, usage: ClaudeUsage): void {
   tokens.input += usage?.input_tokens ?? 0;
   tokens.output += usage?.output_tokens ?? 0;
   tokens.cache_read += usage?.cache_read_input_tokens ?? 0;
@@ -580,7 +646,10 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
       continue;
     }
     if (entry?.type !== "assistant") continue;
-    const message = entry.message ?? {};
+    const message = entry.message;
+    if (message === null || typeof message !== "object" || Array.isArray(message)) continue;
+    const usage = validatedClaudeUsage((message as Record<string, unknown>).usage);
+    if (!usage) continue;
     const key = JSON.stringify([message.id ?? null, entry.requestId ?? null]);
     if (seen.has(key)) continue;
     seen.add(key);
@@ -588,7 +657,7 @@ function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
     const sidechain = Boolean(entry.isSidechain);
     const tokens = sidechain ? childTokens : mainTokens;
     const models = sidechain ? childModels : mainModels;
-    addClaudeUsage(tokens, message.usage);
+    addClaudeUsage(tokens, usage);
     if (message.model && !models.includes(message.model)) models.push(message.model);
   }
 
@@ -684,10 +753,12 @@ async function main(argv: string[]): Promise<number> {
     console.log(JSON.stringify(record, null, 2));
     return 0;
   } catch (error) {
+    const harness = detectHarness();
+    const sessionId = args.session ?? detectSessionId(harness);
     const fallback = unavailableRecord(
       args.stage as Stage,
-      "unknown",
-      args.session ?? null,
+      harness,
+      sessionId,
       `unexpected probe error: ${error instanceof Error ? error.message : String(error)}`,
     );
     console.log(JSON.stringify(fallback, null, 2));
