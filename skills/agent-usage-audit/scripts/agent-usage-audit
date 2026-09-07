@@ -1,0 +1,888 @@
+#!/usr/bin/env bun
+/**
+ * Probe the running agent harness for this session's model and token usage
+ * and emit one normalized JSON audit record on stdout.
+ *
+ * Subcommands:
+ *   probe --stage STAGE [--session ID]   emit one normalized JSON record
+ *
+ * Nothing here ever guesses a number: a probe that cannot read real usage
+ * emits a record with "source": "unavailable" and a human-readable reason.
+ */
+import { Database } from "bun:sqlite";
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import path from "node:path";
+
+const SCHEMA = 1;
+const STAGES = ["brainstorming-to-issue", "issue-to-plan", "plan-to-implementation"] as const;
+type Stage = (typeof STAGES)[number];
+
+type Harness = "claude-code" | "opencode" | "agy" | "unknown";
+
+const TOKEN_KEYS = ["input", "output", "cache_read", "cache_write", "reasoning"] as const;
+type TokenKey = (typeof TOKEN_KEYS)[number];
+
+interface Tokens {
+  input: number;
+  output: number;
+  cache_read: number;
+  cache_write: number;
+  reasoning: number;
+  total: number;
+}
+
+interface ChildRecord {
+  session_id: string;
+  harness: Harness;
+  models: string[];
+  tokens: Tokens;
+}
+
+interface ModelBreakdown {
+  model: string;
+  tokens: Tokens;
+  cost_usd?: number | null;
+}
+
+interface UsageRecord {
+  schema: number;
+  stage: Stage;
+  harness: Harness;
+  session_id: string;
+  source: string;
+  models: string[];
+  model_breakdowns: ModelBreakdown[];
+  tokens: Tokens;
+  cost_usd: number | null;
+  children: ChildRecord[];
+  updated_at: string;
+  reason?: string;
+  verified_rows?: number;
+  dropped_rows?: number;
+}
+
+function emptyTokens(): Tokens {
+  return { input: 0, output: 0, cache_read: 0, cache_write: 0, reasoning: 0, total: 0 };
+}
+
+function finalizeTokens(tokens: Tokens): Tokens {
+  // Reasoning is a subset of output, never re-added.
+  tokens.total = tokens.input + tokens.output + tokens.cache_read + tokens.cache_write;
+  return tokens;
+}
+
+function utcNow(): string {
+  return new Date().toISOString().replace(/\.\d+Z$/, "Z");
+}
+
+function detectHarness(): Harness {
+  const forced: unknown = process.env.AGENT_USAGE_AUDIT_HARNESS;
+  if (isHarness(forced)) return forced;
+  if (process.env.OPENCODE || process.env.OPENCODE_SESSION_ID) return "opencode";
+  if (process.env.CLAUDECODE || process.env.CLAUDE_CODE_SESSION_ID || process.env.CLAUDE_SESSION_ID) return "claude-code";
+  if (process.env.AGY_CONVERSATION_ID || process.env.ANTIGRAVITY_CONVERSATION_ID || process.env.ANTIGRAVITY_AGENT) return "agy";
+  return "unknown";
+}
+
+function isHarness(value: unknown): value is Harness {
+  return value === "claude-code" || value === "opencode" || value === "agy" || value === "unknown";
+}
+
+function detectSessionId(harness: Harness): string | null {
+  const forced = process.env.AGENT_USAGE_AUDIT_SESSION_ID;
+  if (forced) return forced;
+  if (harness === "claude-code") {
+    return process.env.CLAUDE_CODE_SESSION_ID ?? process.env.CLAUDE_SESSION_ID ?? null;
+  }
+  if (harness === "opencode") return process.env.OPENCODE_SESSION_ID ?? null;
+  if (harness === "agy") {
+    return process.env.AGY_CONVERSATION_ID ?? process.env.ANTIGRAVITY_CONVERSATION_ID ?? null;
+  }
+  return null;
+}
+
+function makeRecord(
+  stage: Stage,
+  harness: Harness,
+  sessionId: string | null,
+  source: string,
+  tokens: Tokens,
+  models: string[],
+  children: ChildRecord[],
+  options: { costUsd?: number | null; reason?: string; modelBreakdowns?: ModelBreakdown[] } = {},
+): UsageRecord {
+  const uniqueModels = [...new Set(models)].sort();
+  const modelBreakdowns = options.modelBreakdowns ?? (
+    uniqueModels.length === 1
+      ? [{ model: uniqueModels[0]!, tokens: finalizeTokens(tokens), cost_usd: options.costUsd ?? null }]
+      : []
+  );
+  const record: UsageRecord = {
+    schema: SCHEMA,
+    stage,
+    harness,
+    session_id: sessionId ?? "unknown",
+    source,
+    models: uniqueModels,
+    model_breakdowns: modelBreakdowns,
+    tokens: finalizeTokens(tokens),
+    cost_usd: options.costUsd ?? null,
+    children,
+    updated_at: utcNow(),
+  };
+  if (options.reason) record.reason = options.reason;
+  return record;
+}
+
+function unavailableRecord(
+  stage: Stage,
+  harness: Harness,
+  sessionId: string | null,
+  reason: string,
+): UsageRecord {
+  return makeRecord(stage, harness, sessionId, "unavailable", emptyTokens(), [], [], { reason });
+}
+
+function openSqliteReadonly(dbPath: string): Database {
+  // Read-only so a live agent session is never disturbed.
+  return new Database(dbPath, { readonly: true });
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+const OPENCODE_COLUMNS =
+  "id, parent_id, model, cost, tokens_input, tokens_output, tokens_reasoning," +
+  " tokens_cache_read, tokens_cache_write";
+
+interface OpencodeRow {
+  id: string;
+  parent_id: string | null;
+  model: string | null;
+  cost: number | null;
+  tokens_input: number | null;
+  tokens_output: number | null;
+  tokens_reasoning: number | null;
+  tokens_cache_read: number | null;
+  tokens_cache_write: number | null;
+}
+
+function normalizeModelName(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && typeof parsed.id === "string") return parsed.id;
+  } catch {}
+  return raw;
+}
+
+function opencodeRowTokens(row: OpencodeRow): Tokens {
+  const tokens = emptyTokens();
+  tokens.input = row.tokens_input ?? 0;
+  // opencode keeps reasoning in its own column; the normalized `output` is the
+  // billed output including reasoning, and `reasoning` repeats the subset.
+  tokens.output = (row.tokens_output ?? 0) + (row.tokens_reasoning ?? 0);
+  tokens.reasoning = row.tokens_reasoning ?? 0;
+  tokens.cache_read = row.tokens_cache_read ?? 0;
+  tokens.cache_write = row.tokens_cache_write ?? 0;
+  return finalizeTokens(tokens);
+}
+
+function opencodeDbPath(): string {
+  return process.env.AGENT_USAGE_AUDIT_OPENCODE_DB
+    ?? path.join(homedir(), ".local", "share", "opencode", "opencode.db");
+}
+
+function probeOpencode(stage: Stage, sessionId: string): UsageRecord {
+  const dbPath = opencodeDbPath();
+  if (!existsSync(dbPath)) {
+    return unavailableRecord(stage, "opencode", sessionId, `opencode.db not found at ${dbPath}`);
+  }
+  let db: Database;
+  try {
+    db = openSqliteReadonly(dbPath);
+  } catch (error) {
+    return unavailableRecord(stage, "opencode", sessionId, `opencode.db unreadable: ${errorMessage(error)}`);
+  }
+  let parent: OpencodeRow | null = null;
+  let rows: OpencodeRow[] = [];
+  try {
+    rows = db.prepare(`SELECT ${OPENCODE_COLUMNS} FROM session`).all() as OpencodeRow[];
+    parent = rows.find((row) => row.id === sessionId) ?? null;
+  } catch (error) {
+    return unavailableRecord(stage, "opencode", sessionId, `opencode.db unreadable: ${errorMessage(error)}`);
+  } finally {
+    db.close();
+  }
+
+  if (!parent) {
+    return unavailableRecord(stage, "opencode", sessionId, `session ${sessionId} not present in ${dbPath}`);
+  }
+
+  const tokensByModel = new Map<string, { tokens: Tokens; cost: number | null }>();
+  function recordModelUsage(modelName: string, rowTokens: Tokens, rowCost: number | null) {
+    let entry = tokensByModel.get(modelName);
+    if (!entry) {
+      entry = { tokens: emptyTokens(), cost: null };
+      tokensByModel.set(modelName, entry);
+    }
+    for (const k of TOKEN_KEYS) entry.tokens[k] += rowTokens[k];
+    if (rowCost !== null) entry.cost = (entry.cost ?? 0) + rowCost;
+  }
+
+  const parentModel = normalizeModelName(parent.model) ?? "unknown";
+  recordModelUsage(parentModel, opencodeRowTokens(parent), parent.cost);
+
+  const rolledUp = opencodeRowTokens(parent);
+  const models: string[] = parent.model ? [parentModel] : [];
+  let cost = parent.cost;
+  const childrenByParent = new Map<string, OpencodeRow[]>();
+  for (const row of rows) {
+    if (row.parent_id === null) continue;
+    const children = childrenByParent.get(row.parent_id) ?? [];
+    children.push(row);
+    childrenByParent.set(row.parent_id, children);
+  }
+
+  // Walk the complete descendant graph while preventing parent_id cycles from
+  // re-adding a session indefinitely.
+  const descendants: OpencodeRow[] = [];
+  const visited = new Set([sessionId]);
+  const pending = [...(childrenByParent.get(sessionId) ?? [])];
+  while (pending.length > 0) {
+    const child = pending.shift()!;
+    if (visited.has(child.id)) continue;
+    visited.add(child.id);
+    descendants.push(child);
+    pending.push(...(childrenByParent.get(child.id) ?? []));
+  }
+
+  const children: ChildRecord[] = [];
+  for (const kid of descendants) {
+    const kidTokens = opencodeRowTokens(kid);
+    const kidModel = normalizeModelName(kid.model) ?? "unknown";
+    recordModelUsage(kidModel, kidTokens, kid.cost);
+    if (kid.cost !== null) cost = (cost ?? 0) + kid.cost;
+    if (kid.model) models.push(kidModel);
+    for (const key of TOKEN_KEYS) rolledUp[key] += kidTokens[key];
+    children.push({
+      session_id: kid.id,
+      harness: "opencode",
+      models: kid.model ? [kidModel] : [],
+      tokens: kidTokens,
+    });
+  }
+
+  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([model, e]) => ({
+      model,
+      tokens: finalizeTokens(e.tokens),
+      cost_usd: e.cost === null ? null : Math.round(e.cost * 1e6) / 1e6,
+    }));
+
+  // Rounding keeps 0.42 + 0.08 from printing as 0.5000000000000001.
+  const costUsd = cost === null ? null : Math.round(cost * 1e6) / 1e6;
+  return makeRecord(stage, "opencode", sessionId, "builtin-opencode", rolledUp, models, children, { costUsd, modelBreakdowns });
+}
+
+function agyConversationsDir(): string {
+  return process.env.AGENT_USAGE_AUDIT_AGY_DIR
+    ?? path.join(homedir(), ".gemini", "antigravity-cli", "conversations");
+}
+
+type PbValue = ["varint", number] | ["bytes", Uint8Array] | ["i32", Uint8Array] | ["i64", Uint8Array];
+
+function readVarint(buf: Uint8Array, index: number): [number, number] {
+  let shift = 0;
+  let value = 0;
+  for (let count = 0; count < 10; count += 1) {
+    if (index >= buf.length) throw new Error("truncated protobuf varint");
+    const byte = buf[index]!;
+    index += 1;
+    // Multiplication instead of << keeps values beyond 32 bits exact.
+    value += (byte & 0x7f) * 2 ** shift;
+    if (!Number.isSafeInteger(value)) throw new Error("protobuf varint exceeds safe integer range");
+    shift += 7;
+    if ((byte & 0x80) === 0) return [value, index];
+  }
+  throw new Error("protobuf varint is too long");
+}
+
+function parseProtobuf(buf: Uint8Array): Map<number, PbValue[]> {
+  // Decode an unlabeled protobuf message into {field number: [(wire, value)]}.
+  // agy stores usage as unlabeled protobuf, so the field numbers come from
+  // the reverse-engineered agent-walker map and every row is self-verified
+  // before its numbers are trusted.
+  const fields = new Map<number, PbValue[]>();
+  let index = 0;
+  while (index < buf.length) {
+    let key: number;
+    [key, index] = readVarint(buf, index);
+    const field = Math.floor(key / 8);
+    const wire = key & 7;
+    const entries = fields.get(field) ?? [];
+    if (wire === 0) {
+      let value: number;
+      [value, index] = readVarint(buf, index);
+      entries.push(["varint", value]);
+    } else if (wire === 2) {
+      let size: number;
+      [size, index] = readVarint(buf, index);
+      if (size > buf.length - index) throw new Error("truncated protobuf length-delimited field");
+      entries.push(["bytes", buf.subarray(index, index + size)]);
+      index += size;
+    } else if (wire === 5) {
+      if (buf.length - index < 4) throw new Error("truncated protobuf 32-bit field");
+      entries.push(["i32", buf.subarray(index, index + 4)]);
+      index += 4;
+    } else if (wire === 1) {
+      if (buf.length - index < 8) throw new Error("truncated protobuf 64-bit field");
+      entries.push(["i64", buf.subarray(index, index + 8)]);
+      index += 8;
+    } else {
+      throw new Error(`unsupported protobuf wire type ${wire}`);
+    }
+    fields.set(field, entries);
+  }
+  return fields;
+}
+
+function pbVarintValue(fields: Map<number, PbValue[]>, field: number): number | null {
+  for (const [wire, value] of fields.get(field) ?? []) {
+    if (wire === "varint") return value as number;
+  }
+  return null;
+}
+
+function pbSubmessage(fields: Map<number, PbValue[]> | undefined, field: number): Map<number, PbValue[]> | null {
+  if (!fields) return null;
+  for (const [wire, value] of fields.get(field) ?? []) {
+    if (wire === "bytes") {
+      try {
+        return parseProtobuf(value as Uint8Array);
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+function pbString(fields: Map<number, PbValue[]>, field: number): string | null {
+  for (const [wire, value] of fields.get(field) ?? []) {
+    if (wire === "bytes") {
+      return new TextDecoder().decode(value as Uint8Array);
+    }
+  }
+  return null;
+}
+
+async function blobToBytes(value: unknown): Promise<Uint8Array> {
+  if (value instanceof Blob) return new Uint8Array(await value.arrayBuffer());
+  if (value instanceof Uint8Array) return value;
+  throw new Error(`unexpected blob column type: ${typeof value}`);
+}
+
+async function probeAgy(stage: Stage, sessionId: string): Promise<UsageRecord> {
+  const dbPath = path.join(agyConversationsDir(), `${sessionId}.db`);
+  if (!existsSync(dbPath)) {
+    return unavailableRecord(stage, "agy", sessionId, `no agy conversation database at ${dbPath}`);
+  }
+  let db: Database;
+  try {
+    db = openSqliteReadonly(dbPath);
+  } catch (error) {
+    return unavailableRecord(stage, "agy", sessionId, `agy database unreadable: ${errorMessage(error)}`);
+  }
+  let blobs: unknown[] = [];
+  try {
+    blobs = db.prepare("SELECT data FROM gen_metadata ORDER BY idx").values().flat();
+  } catch (error) {
+    return unavailableRecord(stage, "agy", sessionId, `agy database unreadable: ${errorMessage(error)}`);
+  } finally {
+    db.close();
+  }
+
+  const tokens = emptyTokens();
+  const models: string[] = [];
+  const tokensByModel = new Map<string, Tokens>();
+  let verified = 0;
+  let dropped = 0;
+  for (const blob of blobs) {
+    let buf: Uint8Array;
+    try {
+      buf = await blobToBytes(blob);
+    } catch {
+      dropped += 1;
+      continue;
+    }
+    let outer: Map<number, PbValue[]>;
+    try {
+      outer = parseProtobuf(buf);
+    } catch {
+      dropped += 1;
+      continue;
+    }
+    const envelope = pbSubmessage(outer, 1);
+    const usage = envelope ? pbSubmessage(envelope, 4) : null;
+    if (!usage) {
+      dropped += 1;
+      continue;
+    }
+    const storedTotal = pbVarintValue(usage, 3);
+    const output = pbVarintValue(usage, 9);
+    const thinking = pbVarintValue(usage, 10);
+    if (storedTotal === null || output === null || thinking === null) {
+      dropped += 1;
+      continue;
+    }
+    // Self-check from agent-walker: a row whose stored total disagrees with
+    // output + thinking has drifted from the reverse-engineered field map.
+    if (storedTotal !== output + thinking) {
+      dropped += 1;
+      continue;
+    }
+    verified += 1;
+    tokens.input += pbVarintValue(usage, 2) ?? 0;
+    tokens.cache_read += pbVarintValue(usage, 5) ?? 0;
+    tokens.output += output + thinking;
+    tokens.reasoning += thinking;
+    const model = pbString(envelope!, 19) ?? pbString(envelope!, 21);
+    if (model && !models.includes(model)) models.push(model);
+
+    const m = model ?? "unknown";
+    if (!tokensByModel.has(m)) tokensByModel.set(m, emptyTokens());
+    const mt = tokensByModel.get(m)!;
+    mt.input += pbVarintValue(usage, 2) ?? 0;
+    mt.cache_read += pbVarintValue(usage, 5) ?? 0;
+    mt.output += output + thinking;
+    mt.reasoning += thinking;
+  }
+
+  if (verified === 0) {
+    return unavailableRecord(
+      stage,
+      "agy",
+      sessionId,
+      `no gen_metadata row passed the stored-total self-check (${dropped} dropped)`,
+    );
+  }
+
+  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+
+  const record = makeRecord(stage, "agy", sessionId, "builtin-agy", tokens, models, [], { modelBreakdowns });
+  record.verified_rows = verified;
+  record.dropped_rows = dropped;
+  return record;
+}
+
+const CCUSAGE_TIMEOUT_MS = 30_000;
+
+interface CcusageModelBreakdown {
+  modelName?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadTokens?: number;
+  cacheCreationTokens?: number;
+  cost?: number | null;
+}
+
+interface CcusageEntry {
+  sessionId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadTokens?: number;
+  cacheCreationTokens?: number;
+  reasoningTokens?: number;
+  totalCost?: number | null;
+  modelsUsed?: string[];
+  children?: CcusageEntry[];
+  modelBreakdowns?: CcusageModelBreakdown[];
+}
+
+function isCcusageObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isCcusageToken(value: unknown): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function isCcusageCost(value: unknown): boolean {
+  return value === null || isCcusageToken(value);
+}
+
+function validatedCcusageEntry(value: unknown): CcusageEntry | null {
+  if (!isCcusageObject(value)) return null;
+  if (typeof value.sessionId !== "string" || value.sessionId.trim().length === 0) return null;
+  for (const key of [
+    "inputTokens",
+    "outputTokens",
+    "cacheReadTokens",
+    "cacheCreationTokens",
+  ]) {
+    if (!Object.prototype.hasOwnProperty.call(value, key) || !isCcusageToken(value[key])) return null;
+  }
+  if (value.reasoningTokens !== undefined && !isCcusageToken(value.reasoningTokens)) {
+    return null;
+  }
+  if (value.totalCost !== undefined && !isCcusageCost(value.totalCost)) return null;
+  if (
+    value.modelsUsed !== undefined
+    && (!Array.isArray(value.modelsUsed) || !value.modelsUsed.every((model) => typeof model === "string"))
+  ) {
+    return null;
+  }
+  if (value.modelBreakdowns !== undefined) {
+    if (Array.isArray(value.modelBreakdowns)) {
+      for (const item of value.modelBreakdowns) {
+        if (!isCcusageObject(item)) return null;
+      }
+    } else if (!isCcusageObject(value.modelBreakdowns)) {
+      return null;
+    }
+  }
+  if (value.children !== undefined) {
+    if (!Array.isArray(value.children)) return null;
+    for (const child of value.children) {
+      if (!validatedCcusageEntry(child)) return null;
+    }
+  }
+  return value as CcusageEntry;
+}
+
+function ccusageEntry(payload: unknown, sessionId: string): CcusageEntry | null {
+  if (!isCcusageObject(payload)) return null;
+  if (Object.prototype.hasOwnProperty.call(payload, "sessions")) {
+    if (!Array.isArray(payload.sessions)) return null;
+    let matchingEntry: CcusageEntry | null = null;
+    for (const candidate of payload.sessions) {
+      const entry = validatedCcusageEntry(candidate);
+      if (!entry) return null;
+      if (entry.sessionId === sessionId) matchingEntry = entry;
+    }
+    return matchingEntry;
+  }
+  const entry = validatedCcusageEntry(payload);
+  return entry?.sessionId === sessionId ? entry : null;
+}
+
+function ccusageTokensFrom(entry: CcusageEntry): Tokens {
+  const tokens = emptyTokens();
+  tokens.input = entry.inputTokens ?? 0;
+  tokens.output = entry.outputTokens ?? 0;
+  tokens.cache_read = entry.cacheReadTokens ?? 0;
+  tokens.cache_write = entry.cacheCreationTokens ?? 0;
+  tokens.reasoning = entry.reasoningTokens ?? 0;
+  return tokens;
+}
+
+function probeCcusage(stage: Stage, harness: Harness, sessionId: string): UsageRecord | null {
+  // Preferred source: ccusage already handles dedup and cache-bucket pricing
+  // across harnesses. Any doubt returns null so the built-in adapters run.
+  if (process.env.AGENT_USAGE_AUDIT_DISABLE_CCUSAGE) return null;
+  const executable = Bun.which("ccusage");
+  if (!executable) return null;
+  let completed: ReturnType<typeof Bun.spawnSync>;
+  try {
+    completed = Bun.spawnSync([executable, "session", "--id", sessionId, "--json"], {
+      stdout: "pipe",
+      stderr: "pipe",
+      timeout: CCUSAGE_TIMEOUT_MS,
+    });
+  } catch {
+    return null;
+  }
+  if (completed.exitCode !== 0) return null;
+  const stdout = completed.stdout?.toString() ?? "";
+  if (!stdout.trim()) return null;
+  let payload: unknown;
+  try {
+    payload = JSON.parse(stdout);
+  } catch {
+    return null;
+  }
+  const entry = ccusageEntry(payload, sessionId);
+  if (!entry) return null;
+
+  const children: ChildRecord[] = [];
+  for (const child of entry.children ?? []) {
+    if (!child || typeof child !== "object") continue;
+    children.push({
+      session_id: child.sessionId ?? "unknown",
+      harness,
+      models: child.modelsUsed ?? [],
+      tokens: finalizeTokens(ccusageTokensFrom(child)),
+    });
+  }
+
+  const modelBreakdowns: ModelBreakdown[] = [];
+  const rawBreakdowns = Array.isArray((entry as any).modelBreakdowns)
+    ? (entry as any).modelBreakdowns
+    : isCcusageObject((entry as any).modelBreakdowns)
+      ? Object.values((entry as any).modelBreakdowns)
+      : [];
+  for (const b of rawBreakdowns) {
+    if (!b || typeof b !== "object") continue;
+    const t = emptyTokens();
+    t.input = b.inputTokens ?? 0;
+    t.output = b.outputTokens ?? 0;
+    t.cache_read = b.cacheReadTokens ?? 0;
+    t.cache_write = b.cacheCreationTokens ?? 0;
+    modelBreakdowns.push({
+      model: b.modelName ?? "unknown",
+      tokens: finalizeTokens(t),
+      cost_usd: b.cost ?? null,
+    });
+  }
+  if (modelBreakdowns.length === 0 && entry.modelsUsed && entry.modelsUsed.length === 1) {
+    modelBreakdowns.push({
+      model: entry.modelsUsed[0]!,
+      tokens: finalizeTokens(ccusageTokensFrom(entry)),
+      cost_usd: entry.totalCost ?? null,
+    });
+  }
+
+  return makeRecord(stage, harness, sessionId, "ccusage", ccusageTokensFrom(entry), entry.modelsUsed ?? [], children, {
+    costUsd: entry.totalCost ?? null,
+    modelBreakdowns,
+  });
+}
+
+function claudeProjectsDir(): string {
+  return process.env.AGENT_USAGE_AUDIT_CLAUDE_PROJECTS_DIR
+    ?? path.join(homedir(), ".claude", "projects");
+}
+
+function findClaudeTranscript(sessionId: string): string | null {
+  // Claude Code files transcripts under a per-working-directory slug, so the
+  // session id is searched for across every project directory.
+  const dir = claudeProjectsDir();
+  if (!existsSync(dir)) return null;
+  const matches = [...new Bun.Glob(`*/${sessionId}.jsonl`).scanSync({ cwd: dir, onlyFiles: true })].sort();
+  return matches.length ? path.join(dir, matches[0]!) : null;
+}
+
+interface ClaudeUsage {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_read_input_tokens?: number;
+  cache_creation_input_tokens?: number;
+  output_tokens_details?: { thinking_tokens?: number };
+}
+
+function validClaudeNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function validatedClaudeUsage(value: unknown): ClaudeUsage | null {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+  const usage = value as Record<string, unknown>;
+  let hasUsageField = false;
+  for (const key of [
+    "input_tokens",
+    "output_tokens",
+    "cache_read_input_tokens",
+    "cache_creation_input_tokens",
+  ]) {
+    if (usage[key] !== undefined) {
+      if (!validClaudeNumber(usage[key])) return null;
+      hasUsageField = true;
+    }
+  }
+  if (usage.output_tokens_details !== undefined) {
+    const details = usage.output_tokens_details;
+    if (details === null || typeof details !== "object" || Array.isArray(details)) return null;
+    const thinking = (details as Record<string, unknown>).thinking_tokens;
+    if (thinking !== undefined && !validClaudeNumber(thinking)) return null;
+    hasUsageField ||= thinking !== undefined;
+  }
+  return hasUsageField ? usage as ClaudeUsage : null;
+}
+
+function addClaudeUsage(tokens: Tokens, usage: ClaudeUsage): void {
+  tokens.input += usage?.input_tokens ?? 0;
+  tokens.output += usage?.output_tokens ?? 0;
+  tokens.cache_read += usage?.cache_read_input_tokens ?? 0;
+  tokens.cache_write += usage?.cache_creation_input_tokens ?? 0;
+  tokens.reasoning += usage?.output_tokens_details?.thinking_tokens ?? 0;
+}
+
+function probeClaudeCode(stage: Stage, sessionId: string): UsageRecord {
+  const transcriptPath = findClaudeTranscript(sessionId);
+  if (!transcriptPath) {
+    return unavailableRecord(
+      stage,
+      "claude-code",
+      sessionId,
+      `no transcript found for session ${sessionId} under ${claudeProjectsDir()}`,
+    );
+  }
+
+  const mainTokens = emptyTokens();
+  const childTokens = emptyTokens();
+  const mainModels: string[] = [];
+  const childModels: string[] = [];
+  const tokensByModel = new Map<string, Tokens>();
+  // Streaming appends the same assistant message repeatedly; the
+  // (message id, request id) pair is what makes a turn unique.
+  const seen = new Set<string>();
+
+  let lines: string[];
+  try {
+    lines = readFileSync(transcriptPath, "utf8").split("\n");
+  } catch (error) {
+    return unavailableRecord(
+      stage,
+      "claude-code",
+      sessionId,
+      `transcript unreadable: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    let entry: any;
+    try {
+      entry = JSON.parse(trimmed);
+    } catch {
+      continue;
+    }
+    if (entry?.type !== "assistant") continue;
+    const message = entry.message;
+    if (message === null || typeof message !== "object" || Array.isArray(message)) continue;
+    const usage = validatedClaudeUsage((message as Record<string, unknown>).usage);
+    if (!usage) continue;
+    const key = JSON.stringify([message.id ?? null, entry.requestId ?? null]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const sidechain = Boolean(entry.isSidechain);
+    const tokens = sidechain ? childTokens : mainTokens;
+    const models = sidechain ? childModels : mainModels;
+    addClaudeUsage(tokens, usage);
+    if (message.model && !models.includes(message.model)) models.push(message.model);
+
+    const m = (message as Record<string, unknown>).model;
+    const modelName = typeof m === "string" ? m : "unknown";
+    if (!tokensByModel.has(modelName)) tokensByModel.set(modelName, emptyTokens());
+    addClaudeUsage(tokensByModel.get(modelName)!, usage);
+  }
+
+  if (seen.size === 0) {
+    return unavailableRecord(
+      stage,
+      "claude-code",
+      sessionId,
+      `no assistant turns found in transcript ${transcriptPath}`,
+    );
+  }
+
+  const children: ChildRecord[] = [];
+  if (TOKEN_KEYS.some((key) => childTokens[key] !== 0)) {
+    children.push({
+      session_id: `${sessionId}#subagents`,
+      harness: "claude-code",
+      models: [...new Set(childModels)].sort(),
+      tokens: finalizeTokens({ ...childTokens }),
+    });
+  }
+
+  const rolledUp = emptyTokens();
+  for (const key of TOKEN_KEYS) rolledUp[key] = mainTokens[key] + childTokens[key];
+
+  const modelBreakdowns: ModelBreakdown[] = [...tokensByModel.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([model, tok]) => ({ model, tokens: finalizeTokens(tok) }));
+
+  return makeRecord(
+    stage,
+    "claude-code",
+    sessionId,
+    "builtin-claude-code",
+    rolledUp,
+    [...mainModels, ...childModels],
+    children,
+    { modelBreakdowns },
+  );
+}
+
+async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
+  const harness = detectHarness();
+  const resolved = sessionId || detectSessionId(harness);
+  if (!resolved) {
+    return unavailableRecord(stage, harness, null, `no session id available for harness '${harness}'`);
+  }
+  const fromCcusage = probeCcusage(stage, harness, resolved);
+  if (fromCcusage) return fromCcusage;
+  if (harness === "claude-code") {
+    return probeClaudeCode(stage, resolved);
+  }
+  if (harness === "opencode") {
+    return probeOpencode(stage, resolved);
+  }
+  if (harness === "agy") {
+    return await probeAgy(stage, resolved);
+  }
+  return unavailableRecord(stage, harness, resolved, `no usage adapter for harness '${harness}'`);
+}
+
+function parseArgs(argv: string[]): { command: string; stage?: string; session?: string } {
+  const [command = "", ...rest] = argv;
+  const parsed: { command: string; stage?: string; session?: string } = { command };
+  for (let i = 0; i < rest.length; i++) {
+    if (rest[i] === "--stage") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --stage");
+      parsed.stage = rest[i + 1];
+    } else if (rest[i] === "--session") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --session");
+      parsed.session = rest[i + 1];
+    } else {
+      throw new Error(`unexpected argument: ${rest[i]}`);
+    }
+    i += 1;
+  }
+  return parsed;
+}
+
+async function main(argv: string[]): Promise<number> {
+  let args;
+  try {
+    args = parseArgs(argv);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return 2;
+  }
+  if (args.command !== "probe" || !args.stage) {
+    console.error("usage: agent-usage-audit probe --stage <stage> [--session <id>]");
+    return 2;
+  }
+  if (!STAGES.includes(args.stage as Stage)) {
+    console.error(`--stage must be one of: ${STAGES.join(", ")}`);
+    return 2;
+  }
+  try {
+    const record = await probe(args.stage as Stage, args.session);
+    console.log(JSON.stringify(record, null, 2));
+    return 0;
+  } catch (error) {
+    const harness = detectHarness();
+    const sessionId = args.session ?? detectSessionId(harness);
+    const fallback = unavailableRecord(
+      args.stage as Stage,
+      harness,
+      sessionId,
+      `unexpected probe error: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    console.log(JSON.stringify(fallback, null, 2));
+    return 0;
+  }
+}
+
+process.exit(await main(process.argv.slice(2)));

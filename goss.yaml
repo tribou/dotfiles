@@ -34,6 +34,11 @@ command:
   "pnpm --version":
     exit-status: 0
 
+  # bun must be available for skills support scripts (mise-managed runtime;
+  # agent-usage-audit runs on bun)
+  "bun --version":
+    exit-status: 0
+
   # gopls must remain available for editor integration after bootstrap
   "gopls version":
     exit-status: 0
