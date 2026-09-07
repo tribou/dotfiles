@@ -647,6 +647,47 @@ EOF
   [ "$status" -eq 0 ]
 }
 
+@test "record: never selects a plan comment that embeds an audit usage block" {
+  local stubdir="$FIXTURES/bin"
+  mkdir -p "$stubdir"
+  local logfile="$FIXTURES/gh.log"
+  rm -f "$logfile"
+  cat > "$stubdir/gh" <<'EOF'
+#!/usr/bin/env bash
+printf "%s\n" "$*" >> "$FIXTURES/gh.log"
+if [[ "$1" == "api" && "$2" == "--paginate" ]]; then
+  echo '[{"id": 222, "body": "<details><summary>Plan</summary>\n<!-- BEGIN PLAN -->\nTask 1\n<!-- END PLAN -->\n\n<!-- BEGIN AGENT USAGE -->\n```json\n{\"schema\": 1, \"records\": []}\n```\n<!-- END AGENT USAGE -->\n</details>"}]'
+elif [[ "$1" == "api" && "$2" == "-X" && "$3" == "POST" ]]; then
+  echo "{\"id\": 999}"
+fi
+EOF
+  chmod +x "$stubdir/gh"
+
+  local rec="$FIXTURES/mock-record-plan-embed.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-plan-embed-test",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  [ "$status" -eq 0 ]
+  run grep "PATCH.*222" "$logfile"
+  [ "$status" -ne 0 ]
+  run grep "POST repos/:owner/:repo/issues/181/comments" "$logfile"
+  [ "$status" -eq 0 ]
+}
+
 @test "record: --dry-run prints comment body without calling POST or PATCH" {
   local stubdir="$FIXTURES/bin"
   mkdir -p "$stubdir"
