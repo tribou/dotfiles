@@ -24,6 +24,9 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v3
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Run bash function tests
         run: just test-unit
 
