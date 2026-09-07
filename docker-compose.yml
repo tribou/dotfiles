@@ -10,11 +10,18 @@ services:
     extends:
       service: base
     init: true
+    environment:
+      DOTFILES_ANSIBLE_EXTRA_ARGS: ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust}
     volumes:
       - ./.ci-cache/nvim:/root/.local/share/nvim
+      - ./.ci-cache/mise:/root/.local/share/mise
+      - ./.ci-cache/mise-cache:/root/.cache/mise
+      - ./.ci-cache/tmux:/root/.tmux/plugins
+      - ./.ci-cache/go:/root/dev/go
+      - ./.ci-cache/coc:/root/.config/coc
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS:-} &&
+        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust} &&
         source ~/.bash_profile &&
         DOTFILES=/dotfiles goss validate --format tap &&
         ./tests/test_helper/bats-core/bin/bats tests/integration/
@@ -27,5 +34,5 @@ services:
     tty: true
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles && bash
+        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust} && bash
       "

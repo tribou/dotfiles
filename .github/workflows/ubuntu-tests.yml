@@ -43,5 +43,5 @@ jobs:
         # it in CI to avoid paying for untested coverage; `just test` locally
         # (no override) still installs everything for real.
         env:
-          DOTFILES_ANSIBLE_EXTRA_ARGS: "--skip-tags brew,brew_casks"
+          DOTFILES_ANSIBLE_EXTRA_ARGS: "--skip-tags brew,rust"
         run: just test
