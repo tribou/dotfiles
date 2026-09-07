@@ -44,10 +44,19 @@
   environment:
     PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"
 
+- name: Check if gopls is installed
+  ansible.builtin.command: which gopls
+  register: dotfiles_gopls_check
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  environment:
+    PATH: "{{ dotfiles_home }}/dev/go/bin:{{ dotfiles_home }}/go/bin:{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"
+
 - name: Install gopls (Go language server)
   ansible.builtin.command:
     cmd: "go install golang.org/x/tools/gopls@latest"
-    creates: "{{ dotfiles_home }}/dev/go/bin/gopls"
+  when: dotfiles_gopls_check.rc != 0
   environment:
     GOPATH: "{{ dotfiles_home }}/dev/go"
-    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"
+    PATH: "{{ dotfiles_home }}/dev/go/bin:{{ dotfiles_home }}/go/bin:{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"
