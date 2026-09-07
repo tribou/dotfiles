@@ -862,12 +862,80 @@ async function probe(stage: Stage, sessionId?: string): Promise<UsageRecord> {
   return unavailableRecord(stage, harness, resolved, `no usage adapter for harness '${harness}'`);
 }
 
+function formatTokenCount(n: number | null | undefined): string {
+  if (n === null || n === undefined) return "0";
+  return n.toLocaleString("en-US");
+}
+
+function renderAuditComment(records: UsageRecord[]): string {
+  const lines: string[] = [
+    "### 🤖 Agent usage",
+    "",
+    "<!-- BEGIN AGENT USAGE -->",
+    "| Stage | Session | Harness | Model | Input | Output | Cache Read | Cache Write | Total | Source |",
+    "|---|---|---|---|---|---|---|---|---|---|",
+  ];
+
+  let totalInput = 0;
+  let totalOutput = 0;
+  let totalCacheRead = 0;
+  let totalCacheWrite = 0;
+  let totalTokens = 0;
+
+  for (const record of records) {
+    if (record.source === "unavailable") {
+      const sess = record.session_id || "—";
+      const harness = record.harness || "—";
+      lines.push(`| ${record.stage} | ${sess} | ${harness} | — | — | — | — | — | — | ${record.source} |`);
+      continue;
+    }
+
+    const breakdowns = record.model_breakdowns && record.model_breakdowns.length > 0
+      ? record.model_breakdowns
+      : [{ model: record.models.join(", ") || "—", tokens: record.tokens }];
+
+    for (const mb of breakdowns) {
+      const input = mb.tokens.input ?? 0;
+      const output = mb.tokens.output ?? 0;
+      const cacheRead = mb.tokens.cache_read ?? 0;
+      const cacheWrite = mb.tokens.cache_write ?? 0;
+      const total = mb.tokens.total ?? (input + output + cacheRead + cacheWrite);
+
+      totalInput += input;
+      totalOutput += output;
+      totalCacheRead += cacheRead;
+      totalCacheWrite += cacheWrite;
+      totalTokens += total;
+
+      lines.push(
+        `| ${record.stage} | ${record.session_id} | ${record.harness} | ${mb.model} | ${formatTokenCount(input)} | ${formatTokenCount(output)} | ${formatTokenCount(cacheRead)} | ${formatTokenCount(cacheWrite)} | ${formatTokenCount(total)} | ${record.source} |`,
+      );
+    }
+  }
+
+  lines.push(
+    `| **Total** | | | | ${formatTokenCount(totalInput)} | ${formatTokenCount(totalOutput)} | ${formatTokenCount(totalCacheRead)} | ${formatTokenCount(totalCacheWrite)} | ${formatTokenCount(totalTokens)} | |`,
+  );
+  lines.push("");
+  lines.push("<details>");
+  lines.push("<summary>Ledger data</summary>");
+  lines.push("");
+  lines.push("```json");
+  lines.push(JSON.stringify({ schema: SCHEMA, records }, null, 2));
+  lines.push("```");
+  lines.push("</details>");
+  lines.push("<!-- END AGENT USAGE -->");
+
+  return lines.join("\n");
+}
+
 function parseArgs(argv: string[]): {
   command: string;
   stage?: string;
   session?: string;
   existing?: string;
   record?: string;
+  file?: string;
 } {
   const [command = "", ...rest] = argv;
   const parsed: {
@@ -876,6 +944,7 @@ function parseArgs(argv: string[]): {
     session?: string;
     existing?: string;
     record?: string;
+    file?: string;
   } = { command };
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--stage") {
@@ -890,6 +959,9 @@ function parseArgs(argv: string[]): {
     } else if (rest[i] === "--record") {
       if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --record");
       parsed.record = rest[i + 1];
+    } else if (rest[i] === "--file") {
+      if (!rest[i + 1] || rest[i + 1].startsWith("--")) throw new Error("missing argument for --file");
+      parsed.file = rest[i + 1];
     } else {
       throw new Error(`unexpected argument: ${rest[i]}`);
     }
@@ -918,6 +990,17 @@ async function main(argv: string[]): Promise<number> {
       const newRecord = JSON.parse(readFileSync(args.record, "utf8")) as UsageRecord;
       const envelope: LedgerEnvelope = { schema: SCHEMA, records: mergeLedger(existing.records, newRecord) };
       console.log(JSON.stringify(envelope, null, 2));
+      return 0;
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      return 2;
+    }
+  }
+  if (args.command === "render") {
+    try {
+      const input = args.file ? readFileSync(args.file, "utf8") : await Bun.stdin.text();
+      const ledger = JSON.parse(input) as LedgerEnvelope;
+      console.log(renderAuditComment(ledger.records));
       return 0;
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));

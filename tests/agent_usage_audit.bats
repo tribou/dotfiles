@@ -352,6 +352,113 @@ EOF
   [ "$(json_field records.1.stage)" = "plan-to-implementation" ]
 }
 
+@test "render: single-model session renders one table row and correct totals" {
+  local ledger="$FIXTURES/ledger-single.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "claude-code",
+      "session_id": "sess-single",
+      "source": "builtin-claude-code",
+      "models": ["claude-3-7-sonnet"],
+      "model_breakdowns": [
+        {
+          "model": "claude-3-7-sonnet",
+          "tokens": { "input": 1200, "output": 800, "cache_read": 100, "cache_write": 50, "reasoning": 0, "total": 2150 }
+        }
+      ],
+      "tokens": { "input": 1200, "output": 800, "cache_read": 100, "cache_write": 50, "reasoning": 0, "total": 2150 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  run bun "$SCRIPT" render --file "$ledger"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"<!-- BEGIN AGENT USAGE -->"* ]]
+  [[ "$output" == *"<!-- END AGENT USAGE -->"* ]]
+  [[ "$output" == *"| Stage | Session | Harness | Model | Input | Output | Cache Read | Cache Write | Total | Source |"* ]]
+  [[ "$output" == *"| issue-to-plan | sess-single | claude-code | claude-3-7-sonnet | 1,200 | 800 | 100 | 50 | 2,150 | builtin-claude-code |"* ]]
+  [[ "$output" == *"| **Total** | | | | 1,200 | 800 | 100 | 50 | 2,150 | |"* ]]
+  [[ "$output" == *"<summary>Ledger data</summary>"* ]]
+}
+
+@test "render: multi-model session renders separate rows for each model with divided tokens" {
+  local ledger="$FIXTURES/ledger-multi.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "plan-to-implementation",
+      "harness": "opencode",
+      "session_id": "sess-multi",
+      "source": "builtin-opencode",
+      "models": ["model-orchestrator", "model-worker"],
+      "model_breakdowns": [
+        {
+          "model": "model-orchestrator",
+          "tokens": { "input": 1000, "output": 200, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 1200 }
+        },
+        {
+          "model": "model-worker",
+          "tokens": { "input": 3000, "output": 800, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 3800 }
+        }
+      ],
+      "tokens": { "input": 4000, "output": 1000, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 5000 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  run bun "$SCRIPT" render --file "$ledger"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | model-orchestrator | 1,000 | 200 | 0 | 0 | 1,200 | builtin-opencode |"* ]]
+  [[ "$output" == *"| plan-to-implementation | sess-multi | opencode | model-worker | 3,000 | 800 | 0 | 0 | 3,800 | builtin-opencode |"* ]]
+  [[ "$output" == *"| **Total** | | | | 4,000 | 1,000 | 0 | 0 | 5,000 | |"* ]]
+}
+
+@test "render: unavailable record renders em-dashes and is excluded from totals row" {
+  local ledger="$FIXTURES/ledger-unavail.json"
+  cat > "$ledger" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "issue-to-plan",
+      "harness": "unknown",
+      "session_id": "sess-unavail",
+      "source": "unavailable",
+      "models": [],
+      "model_breakdowns": [],
+      "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+      "cost_usd": null,
+      "children": [],
+      "reason": "no session id",
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+
+  run bun "$SCRIPT" render --file "$ledger"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"| issue-to-plan | sess-unavail | unknown | — | — | — | — | — | — | unavailable |"* ]]
+  [[ "$output" == *"| **Total** | | | | 0 | 0 | 0 | 0 | 0 | |"* ]]
+}
+
 @test "opencode adapter: reads the session row and rolls up its child sessions" {
   install_opencode_fixture
 
