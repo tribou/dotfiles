@@ -4,6 +4,20 @@ setup() {
   common_setup
 }
 
+@test "common_setup loads all library modules via lib/index.sh" {
+  run bash -c "
+    load_helper() {
+      REPO_ROOT=\"\$REPO_ROOT\"
+      . \"\$REPO_ROOT/tests/test_helper/common_setup.bash\"
+      common_setup
+    }
+    load_helper
+    type is_macos >/dev/null 2>&1 || exit 1
+    type bashcheck >/dev/null 2>&1 || exit 2
+  "
+  assert_success
+}
+
 @test "lib index sources every lib file except index.sh" {
   run bash -c "
     set -euo pipefail

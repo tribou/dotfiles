@@ -6,7 +6,7 @@ setup() {
 @test "commit: ticket present builds TICKET: <summary> and commits" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
@@ -27,7 +27,7 @@ setup() {
 @test "commit: no ticket uses the generated message verbatim" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
@@ -47,7 +47,7 @@ setup() {
 @test "commit: nothing staged prints message and skips commit" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 0; fi
@@ -67,7 +67,7 @@ setup() {
   run bash -c "
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
@@ -88,7 +88,7 @@ setup() {
 @test "commit: mid-merge delegates to c instead of generating an AI message" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     tmpdir=\$(mktemp -d)
     mkdir -p \"\$tmpdir/.git\"
     touch \"\$tmpdir/.git/MERGE_HEAD\"
@@ -108,7 +108,7 @@ setup() {
 @test "commit: falls back to c with no forwarded args when message generation fails" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
@@ -125,14 +125,14 @@ setup() {
 }
 
 @test "commit: removes the old non-AI alias" {
-  run grep -F "alias commit=" "$REPO_ROOT/lib/commands.sh"
+  run grep -F "alias commit=" "$REPO_ROOT/lib/git.sh"
   assert_failure
 }
 
 @test "commit: propagates cancellation from generate_message without falling back to c" {
   run -130 bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
@@ -154,7 +154,7 @@ setup() {
     export DOTFILES_COMMIT_BACKEND=claude
     export DOTFILES_COMMIT_TIMEOUT=1
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
@@ -177,7 +177,7 @@ setup() {
     export DOTFILES_COMMIT_BACKEND=claude
     export DOTFILES_COMMIT_TIMEOUT=bogus
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
       if [ \"\$1\" = \"diff\" ] && [ \"\$2\" = \"--cached\" ] && [ \"\$3\" = \"--quiet\" ]; then return 1; fi
@@ -196,7 +196,7 @@ setup() {
 @test "commit: fallback message names the active backend (opencode)" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi
@@ -216,7 +216,7 @@ setup() {
 @test "commit: fallback message names the active backend (agy)" {
   run bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
-    . '$REPO_ROOT/lib/commands.sh'
+    . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=agy
     git() {
       if [ \"\$1\" = \"add\" ] && [ \"\$2\" = \"-A\" ]; then return 0; fi

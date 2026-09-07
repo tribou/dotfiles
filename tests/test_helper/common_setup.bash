@@ -10,13 +10,14 @@ common_setup() {
   # Ensure DOTFILES is defined so platform.sh can source correctly
   export DOTFILES="$REPO_ROOT"
 
-  # Source shared lib (order matters: _shared first)
-  . "$REPO_ROOT/lib/_shared.sh"
-  . "$REPO_ROOT/lib/commands.sh"
+  # Source all library modules via index.sh (handles underscore-prefixed files first)
+  # shellcheck disable=SC1091
+  . "$REPO_ROOT/lib/index.sh"
   # Export REPO_ROOT and all _dotfiles_* functions for use in bash -c subshells
   export REPO_ROOT
   export -f is_macos is_linux
   while IFS= read -r _fn; do
+    # shellcheck disable=SC2163
     export -f "$_fn" 2>/dev/null || true
   done < <(declare -F | awk '{print $3}' | grep '^_dotfiles_')
 }
