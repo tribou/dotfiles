@@ -102,7 +102,7 @@ setup() {
   [ "$status" -eq 0 ]
   run grep -Fc -- "--stage plan-to-implementation" "$skill"
   [ "$status" -eq 0 ]
-  [ "$output" -ge 2 ]
+  [ "$output" -ge 3 ]
 }
 
 @test "plan-to-implementation: copies stay byte-identical" {

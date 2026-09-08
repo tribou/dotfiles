@@ -15,7 +15,7 @@ The support script does all the work. Callers never re-implement probing, mergin
 
 ## Invocation
 
-Run from inside the repository so `gh` infers the remote. The script is `scripts/agent-usage-audit` under this skill's base directory (the path announced when this skill loads):
+Run from inside the repository so `gh` infers the remote. The script path below is relative to this skill's own base directory (the path announced when this skill loads) — equivalently, `skills/agent-usage-audit/scripts/agent-usage-audit` from the repository root:
 
 ```bash
 scripts/agent-usage-audit record --stage <stage> --target <issue:N|pr:M>
