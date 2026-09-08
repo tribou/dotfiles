@@ -85,3 +85,28 @@ setup() {
   run diff -r "$REPO_ROOT/skills/issue-to-plan" "$REPO_ROOT/.agents/skills/issue-to-plan"
   [ "$status" -eq 0 ]
 }
+
+@test "plan-to-implementation: both the blocker and finish paths gained a step" {
+  skill="$REPO_ROOT/skills/plan-to-implementation/SKILL.md"
+  run grep -Fq "## Mid-execution blocker (implementer BLOCKED, or review finding needs a human — all 7 steps, in order)" "$skill"
+  [ "$status" -eq 0 ]
+  run grep -Fq "## Successful finish (all 7 steps, in order)" "$skill"
+  [ "$status" -eq 0 ]
+}
+
+@test "plan-to-implementation: invokes the audit sub-skill for its own stage and target" {
+  skill="$REPO_ROOT/skills/plan-to-implementation/SKILL.md"
+  run grep -Fq "agent-usage-audit" "$skill"
+  [ "$status" -eq 0 ]
+  run grep -Fq -- "--target pr:<M>" "$skill"
+  [ "$status" -eq 0 ]
+  run grep -Fc -- "--stage plan-to-implementation" "$skill"
+  [ "$status" -eq 0 ]
+  [ "$output" -ge 2 ]
+}
+
+@test "plan-to-implementation: copies stay byte-identical" {
+  run diff -r "$REPO_ROOT/skills/plan-to-implementation" \
+    "$REPO_ROOT/.agents/skills/plan-to-implementation"
+  [ "$status" -eq 0 ]
+}
