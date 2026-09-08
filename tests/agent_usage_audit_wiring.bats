@@ -42,3 +42,25 @@ setup() {
   [ "$(readlink "$REPO_ROOT/.claude/skills/agent-usage-audit")" = "../../.agents/skills/agent-usage-audit" ]
   [ -f "$REPO_ROOT/.claude/skills/agent-usage-audit/SKILL.md" ]
 }
+
+@test "brainstorming-to-issue: Finalize → Ready is a six-step sequence" {
+  run grep -Fq "## Finalize → Ready (all 6 steps, in order)" \
+    "$REPO_ROOT/skills/brainstorming-to-issue/SKILL.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "brainstorming-to-issue: invokes the audit sub-skill for its own stage and target" {
+  skill="$REPO_ROOT/skills/brainstorming-to-issue/SKILL.md"
+  run grep -Fq "agent-usage-audit" "$skill"
+  [ "$status" -eq 0 ]
+  run grep -Fq -- "--stage brainstorming-to-issue" "$skill"
+  [ "$status" -eq 0 ]
+  run grep -Fq -- "--target issue:<N>" "$skill"
+  [ "$status" -eq 0 ]
+}
+
+@test "brainstorming-to-issue: copies stay byte-identical" {
+  run diff -r "$REPO_ROOT/skills/brainstorming-to-issue" \
+    "$REPO_ROOT/.agents/skills/brainstorming-to-issue"
+  [ "$status" -eq 0 ]
+}
