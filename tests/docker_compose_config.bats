@@ -27,3 +27,8 @@ setup() {
   run grep -E 'DOTFILES_ANSIBLE_EXTRA_ARGS:\s*"--skip-tags brew,rust"' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml"
   assert_success
 }
+
+@test "ci-workflow: caches full .ci-cache directory with actions/cache" {
+  run grep -E 'path:\s*\.ci-cache$' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml"
+  assert_success
+}

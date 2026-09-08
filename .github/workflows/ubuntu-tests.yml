@@ -30,11 +30,13 @@ jobs:
       - name: Run bash function tests
         run: just test-unit
 
-      - name: Cache Neovim plugins
+      - name: Cache CI dependencies
         uses: actions/cache@v4
         with:
-          path: .ci-cache/nvim
-          key: nvim-plugins-${{ hashFiles('init.vim') }}
+          path: .ci-cache
+          key: ci-cache-${{ runner.os }}-${{ hashFiles('init.vim', 'mise.toml', 'roles/dotfiles/tasks/**', 'Dockerfile') }}
+          restore-keys: |
+            ci-cache-${{ runner.os }}-
 
       - name: Run Docker environment tests
         # Homebrew installs ~35 packages here (~10min) but nothing in goss.yaml
@@ -46,3 +48,7 @@ jobs:
         env:
           DOTFILES_ANSIBLE_EXTRA_ARGS: "--skip-tags brew,rust"
         run: just test
+
+      - name: Fix cache permissions for GitHub Actions cache
+        if: always()
+        run: sudo chown -R "$USER:$USER" .ci-cache 2>/dev/null || true
