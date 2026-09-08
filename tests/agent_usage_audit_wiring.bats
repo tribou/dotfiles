@@ -64,3 +64,24 @@ setup() {
     "$REPO_ROOT/.agents/skills/brainstorming-to-issue"
   [ "$status" -eq 0 ]
 }
+
+@test "issue-to-plan: Publish the Durable Handoff is a nine-step sequence" {
+  run grep -Fq "## Publish the Durable Handoff (all 9 steps, in order)" \
+    "$REPO_ROOT/skills/issue-to-plan/SKILL.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "issue-to-plan: invokes the audit sub-skill for its own stage and target" {
+  skill="$REPO_ROOT/skills/issue-to-plan/SKILL.md"
+  run grep -Fq "agent-usage-audit" "$skill"
+  [ "$status" -eq 0 ]
+  run grep -Fq -- "--stage issue-to-plan" "$skill"
+  [ "$status" -eq 0 ]
+  run grep -Fq -- "--target pr:<M>" "$skill"
+  [ "$status" -eq 0 ]
+}
+
+@test "issue-to-plan: copies stay byte-identical" {
+  run diff -r "$REPO_ROOT/skills/issue-to-plan" "$REPO_ROOT/.agents/skills/issue-to-plan"
+  [ "$status" -eq 0 ]
+}
