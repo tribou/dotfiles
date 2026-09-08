@@ -44,7 +44,7 @@ build-clean:
 
 # Run bash unit tests with bats-core
 test-unit *args="tests/*.bats":
-    ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ansible-playbook --syntax-check playbook.yml
+    if command -v ansible-playbook >/dev/null 2>&1; then ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ansible-playbook --syntax-check playbook.yml; fi
     ./tests/test_helper/bats-core/bin/bats {{args}}
 
 # Install/repair dotfiles on an already-bootstrapped machine (default: present)

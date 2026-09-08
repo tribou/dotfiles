@@ -27,3 +27,17 @@ setup() {
   echo "$block" | grep -q 'DOTFILES_ANSIBLE_EXTRA_ARGS=""'
   echo "$block" | grep -q -- '-v "${git_common_dir}:${git_common_dir}:ro"'
 }
+
+@test "justfile: test-unit guards ansible-playbook with command -v" {
+  block="$(sed -n '/^test-unit/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
+  echo "$block" | grep -q 'command -v ansible-playbook'
+}
+
+@test "justfile: test-unit succeeds when ansible-playbook is not installed" {
+  temp_bin="$(mktemp -d)"
+  ln -s "$(command -v just)" "$temp_bin/just"
+  run env PATH="$temp_bin:/bin:/usr/bin" just test-unit tests/ansible_idempotency.bats
+  rm -rf "$temp_bin"
+  assert_success
+}
+
