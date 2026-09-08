@@ -4,11 +4,35 @@ default:
 
 # Run full test suite in Docker (goss infrastructure + bats integration tests)
 test:
-    docker compose run --rm -T ci
+    #!/usr/bin/env bash
+    set -euo pipefail
+    git_mount=()
+    if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
+        git_mount=(-v "${git_common_dir}:${git_common_dir}:ro")
+    fi
+    docker compose run --rm -T "${git_mount[@]}" ci
+
+# Run clean test suite in Docker from scratch (wipes .ci-cache, runs cold without skip-tags)
+test-clean:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Fallback to docker compose run handles root-owned .ci-cache permissions
+    rm -rf .ci-cache 2>/dev/null || docker compose run --rm -T ci rm -rf /dotfiles/.ci-cache
+    git_mount=()
+    if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
+        git_mount=(-v "${git_common_dir}:${git_common_dir}:ro")
+    fi
+    DOTFILES_ANSIBLE_EXTRA_ARGS="" docker compose run --rm -T "${git_mount[@]}" ci
 
 # Spin up interactive dev environment (manual tmux/plugin inspection)
 dev:
-    docker compose run --rm dev
+    #!/usr/bin/env bash
+    set -euo pipefail
+    git_mount=()
+    if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
+        git_mount=(-v "${git_common_dir}:${git_common_dir}:ro")
+    fi
+    docker compose run --rm "${git_mount[@]}" dev
 
 # Rebuild Docker image (uses layer cache; run after Dockerfile changes)
 build:
@@ -20,6 +44,7 @@ build-clean:
 
 # Run bash unit tests with bats-core
 test-unit *args="tests/*.bats":
+    if command -v ansible-playbook >/dev/null 2>&1; then ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ansible-playbook --syntax-check playbook.yml; fi
     ./tests/test_helper/bats-core/bin/bats {{args}}
 
 # Install/repair dotfiles on an already-bootstrapped machine (default: present)

@@ -14,6 +14,10 @@ RUN apt-get update && apt-get install -y \
     fd-find \
     bat \
     git-delta \
+    build-essential \
+    zlib1g-dev \
+    xdg-utils \
+    bash-completion \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install --break-system-packages pynvim \
   && ln -s /usr/bin/fdfind /usr/local/bin/fd \
@@ -46,6 +50,9 @@ RUN GOSS_VERSION=v0.4.10 \
   && curl -fsSL "https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss_${GOSS_VERSION#v}_linux_${GOSS_ARCH}.tar.gz" \
       | tar xz -C /usr/local/bin goss \
   && chmod +x /usr/local/bin/goss
+
+# Configure git safe directory to allow operations across host/container UID boundaries and worktrees
+RUN git config --system --add safe.directory "*"
 
 WORKDIR /dotfiles
 

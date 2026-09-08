@@ -30,18 +30,25 @@ jobs:
       - name: Run bash function tests
         run: just test-unit
 
-      - name: Cache Neovim plugins
+      - name: Cache CI dependencies
         uses: actions/cache@v4
         with:
-          path: .ci-cache/nvim
-          key: nvim-plugins-${{ hashFiles('init.vim') }}
+          path: .ci-cache
+          key: ci-cache-${{ runner.os }}-${{ hashFiles('init.vim', 'mise.toml', 'roles/dotfiles/tasks/**', 'Dockerfile') }}
+          restore-keys: |
+            ci-cache-${{ runner.os }}-
 
       - name: Run Docker environment tests
         # Homebrew installs ~35 packages here (~10min) but nothing in goss.yaml
         # or the bats integration tests actually verifies any of them — every
-        # check they run is satisfied by apt/mise/the Dockerfile instead. Skip
-        # it in CI to avoid paying for untested coverage; `just test` locally
-        # (no override) still installs everything for real.
+        # check they run is satisfied by apt/mise/the Dockerfile instead. Both
+        # local `just test` and CI skip `brew,rust` by default via docker-compose.yml
+        # to keep inner-loop runs fast, while `just test-clean` runs cold without
+        # skip-tags to verify the full unskipped installation.
         env:
-          DOTFILES_ANSIBLE_EXTRA_ARGS: "--skip-tags brew,brew_casks"
+          DOTFILES_ANSIBLE_EXTRA_ARGS: "--skip-tags brew,rust"
         run: just test
+
+      - name: Fix cache permissions for GitHub Actions cache
+        if: always()
+        run: sudo chown -R "$USER:$USER" .ci-cache 2>/dev/null || true
