@@ -24,7 +24,7 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "agent-usage-audit: SKILL.md documents all three stage strings" {
+@test "agent-usage-audit: SKILL.md documents all three current workflow stages" {
   for stage in brainstorming-to-issue issue-to-plan plan-to-implementation; do
     run grep -Fq -- "--stage $stage" "$REPO_ROOT/skills/agent-usage-audit/SKILL.md"
     [ "$status" -eq 0 ]

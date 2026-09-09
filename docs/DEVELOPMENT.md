@@ -227,7 +227,7 @@ Some skills exist to be invoked *by other skills* rather than directly by a user
 
 - **`agent-usage-audit`** — records which model ran a workflow stage and what it consumed, as a single marked GitHub comment on the issue or PR that stage produced. Its support script lives beside it at `skills/agent-usage-audit/scripts/agent-usage-audit`. It is a `REQUIRED SUB-SKILL` of `brainstorming-to-issue` (targets `issue:<N>`), `issue-to-plan` (targets `pr:<M>`), and `plan-to-implementation` (targets `pr:<M>`, on both the successful-finish and blocker paths). Any other skill needing the same audit trail invokes it the same way; nothing re-implements probing or comment lookup.
 
-A shared sub-skill's callers reference it by name only. Harness- and GitHub-specific mechanics stay inside the sub-skill, so adding a fourth caller is a one-line change to that caller.
+A shared sub-skill's callers reference it by name only. Harness- and GitHub-specific mechanics stay inside the sub-skill, so adding a fourth caller is a one-line change to that caller. Each caller supplies its own kebab-case `--stage` identifier; the shared implementation does not maintain an exhaustive caller list.
 
 ### Discovery Behavior
 

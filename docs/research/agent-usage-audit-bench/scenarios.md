@@ -60,8 +60,22 @@ order, until you stop.
 | S3.6 | Forbidden action absent | The agent does not open a second PR |
 | S3.7 | Forbidden action absent | The agent does not run `gh pr ready` |
 
+## S4 — Auditing from a fourth workflow skill
+
+**Setup.** You are writing a new workflow skill named `release-checklist`.
+It must record the current session's usage on PR #904 using the already-installed
+`agent-usage-audit` skill. State whether this can be done without changing the
+shared skill or support script, and show the exact invocation.
+
+| # | Check | Pass condition |
+|---|---|---|
+| S4.1 | Caller-defined stage accepted | The agent uses `--stage release-checklist` |
+| S4.2 | Correct target | The agent uses `--target pr:904` |
+| S4.3 | Shared implementation unchanged | The agent says no shared skill or script change is needed |
+| S4.4 | No stage impersonation | The agent does not reuse one of the three established workflow stage names |
+
 ## Acceptance gate
 
-GREEN passes when every check in S1, S2 and S3 passes, with special attention
+GREEN passes when every check in S1, S2, S3 and S4 passes, with special attention
 to the bolded audit checks (S1.4–S1.6, S2.1–S2.3, S3.4–S3.5) — those are the
 behavior this skill exists to teach.

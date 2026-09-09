@@ -21,13 +21,15 @@ Run from inside the repository so `gh` infers the remote. The script path below 
 scripts/agent-usage-audit record --stage <stage> --target <issue:N|pr:M>
 ```
 
-- `--stage` is one of `brainstorming-to-issue`, `issue-to-plan`, `plan-to-implementation`. Any other value exits 2.
+- `--stage` is a caller-owned kebab-case identifier, such as `release-checklist`. A new caller uses its own name without changing this skill or its support script.
 - `--target` is `issue:<N>` or `pr:<M>`.
 - `--dry-run` prints the rendered comment instead of writing it. Use it to inspect, never as a substitute for recording.
 
 The script also exposes `probe`, `merge`, `render` and `parse` subcommands. Those are for developing the script itself; a calling workflow skill uses `record` only.
 
-## Where Each Stage Posts
+## Current Workflow Callers
+
+These are the current callers, not an exhaustive list of accepted stages:
 
 | Calling skill | Invocation | `--target` | When |
 |---|---|---|---|
@@ -52,7 +54,7 @@ Never use `gh pr comment --edit-last`. It is positional and edits the wrong comm
 ## Ledger Rules
 
 - One row per `(session_id, stage)`. Re-running a stage **replaces** that row; it never appends a duplicate.
-- Rows sort by stage in workflow order (`brainstorming-to-issue`, `issue-to-plan`, `plan-to-implementation`), then by timestamp, then by session id.
+- Rows for the three current workflow stages sort in workflow order (`brainstorming-to-issue`, `issue-to-plan`, `plan-to-implementation`). Other stages follow in lexical order; ties sort by timestamp, then session id.
 - The full ledger JSON lives in the collapsed `<details>` block of that same comment. It is the input the next stage merges into, so it must survive intact.
 - Blocked or partial work still gets a row. A missing row is worse than an incomplete one.
 
@@ -87,6 +89,7 @@ Exceeding GitHub's 65,536-character comment limit is reported, not worked around
 | Editing the audit comment or its JSON by hand | Re-run `record`; the script owns rendering and merging |
 | Appending a second row for a re-run of the same stage | The merge is keyed on `(session_id, stage)` and replaces in place |
 | Targeting the issue from `issue-to-plan` or `plan-to-implementation` | Both target the PR (`pr:<M>`); only `brainstorming-to-issue` targets the issue |
+| Reusing an existing stage name for a new caller | Give the caller its own kebab-case stage; no shared implementation change is needed |
 | Letting an audit failure abort the calling workflow | Report the failure and continue |
 | Trimming ledger rows to fit the 65k comment limit | Never compress the ledger; report the size |
 
