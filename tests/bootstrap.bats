@@ -79,18 +79,8 @@ setup() {
   done
 }
 
-@test "role: macOS formulae keep only core (alacritty, reattach, tmux-mem-cpu-load, bash-completion)" {
-  local block
-  block="$(awk '/^dotfiles_brew_macos_formulae:/,/^dotfiles_brew_macos_casks:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
-  for opt in rename ngrok tfenv tor vimpager renameutils; do
-    if echo "$block" | grep -qE "^[[:space:]]*-[[:space:]]*[^[:space:]]*${opt}"; then
-      fail "optional macOS formula '$opt' must not be in dotfiles_brew_macos_formulae"
-    fi
-  done
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*reattach-to-user-namespace[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux-mem-cpu-load[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*bash-completion[[:space:]]*$'
+@test "role: macOS formula inventory is removed" {
+  ! grep -qE '^dotfiles_brew_macos_formulae:' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"
 }
 
 @test "role: macOS casks list is empty (casks are opt-in via ~/.Brewfile)" {
@@ -117,16 +107,12 @@ setup() {
   grep -qE 'mise upgrade( --yes)?($|[^[:alnum:]_-])' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
 }
 
-@test "role: brew_casks.yml applies ~/.Brewfile on all platforms (present=install, latest=upgrade)" {
+@test "role: brew_casks.yml applies ~/.Brewfile on Darwin only" {
   local f="$REPO_ROOT/roles/dotfiles/tasks/brew_casks.yml"
   local block
   block="$(awk '/name: Stat global Brewfile/,0' "$f")"
-  # The Brewfile hook must NOT be Darwin-only (formulae apply on Linux too).
-  ! echo "$block" | grep -q "ansible_facts.system == 'Darwin'"
-  # present path installs without upgrading; latest path forces upgrade.
+  echo "$block" | grep -q "ansible_facts.system == 'Darwin'"
   grep -q '{{ dotfiles_brew_bin }} bundle --global --no-upgrade' "$f"
-  grep -q '{{ dotfiles_brew_bin }} bundle --global --upgrade' "$f"
-  grep -q "dotfiles_state == 'latest'" "$f"
 }
 
 @test "repo: ships mise-config.optional.toml.example as a commented drop-in template" {
