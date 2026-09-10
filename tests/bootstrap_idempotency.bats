@@ -25,3 +25,57 @@ setup() {
   grep -qF 'ANSIBLE_CONFIG="$PWD/ansible.cfg" "$MISE_BIN" exec -- ansible-playbook playbook.yml "$@"' "$REPO_ROOT/bootstrap.sh"
   grep -qF 'MISE_BIN: "{{ dotfiles_home }}/.local/bin/mise"' "$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
 }
+
+@test "role: mise tool install reports first convergence changed and second clean" {
+  if ! command -v ansible-playbook >/dev/null 2>&1; then
+    skip "ansible-playbook not installed"
+  fi
+
+  local fixture_home="$BATS_TEST_TMPDIR/home"
+  local fixture_bin="$BATS_TEST_TMPDIR/bin"
+  local fixture_playbook="$BATS_TEST_TMPDIR/mise-idempotency.yml"
+  mkdir -p "$fixture_home/.local/bin" "$fixture_home/.local/share/mise" \
+    "$fixture_home/.cache/mise" "$fixture_bin"
+
+  printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    'set -euo pipefail' \
+    'case "$*" in' \
+    '  "bootstrap packages --help"|"bootstrap packages status --missing") ;;' \
+    '  "bootstrap packages apply --yes")' \
+    '    if [ ! -e "'$BATS_TEST_TMPDIR'/mise-installed" ]; then printf "Installing package\\n"; fi' \
+    '    ;;' \
+    '  "install --yes")' \
+    '    if [ ! -e "'$BATS_TEST_TMPDIR'/mise-installed" ]; then' \
+    '      printf "mise ansible@14.4.0 [1/1] install\\n" >&2' \
+    '      touch "'$BATS_TEST_TMPDIR'/mise-installed"' \
+    '    fi' \
+    '    ;;' \
+    '  "exec --"*) ;;' \
+    '  *) printf "unexpected mise args: %s\\n" "$*" >&2; exit 1 ;;' \
+    'esac' > "$fixture_home/.local/bin/mise"
+  chmod +x "$fixture_home/.local/bin/mise"
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$fixture_bin/corepack"
+  chmod +x "$fixture_bin/corepack"
+
+  printf '%s\n' \
+    '- hosts: localhost' \
+    '  connection: local' \
+    '  gather_facts: false' \
+    '  vars:' \
+    '    dotfiles_home: "'$fixture_home'"' \
+    '    dotfiles_repo_root: "'$REPO_ROOT'"' \
+    '  tasks:' \
+    '    - ansible.builtin.include_tasks: "'$REPO_ROOT'/roles/dotfiles/tasks/mise.yml"' \
+    > "$fixture_playbook"
+
+  run env PATH="$fixture_bin:$PATH" ANSIBLE_CONFIG="$REPO_ROOT/ansible.cfg" \
+    ansible-playbook -i localhost, "$fixture_playbook"
+  assert_success
+  [[ "$output" =~ changed=[1-9][0-9]* ]]
+
+  run env PATH="$fixture_bin:$PATH" ANSIBLE_CONFIG="$REPO_ROOT/ansible.cfg" \
+    ansible-playbook -i localhost, "$fixture_playbook"
+  assert_success
+  assert_output --partial 'changed=0'
+}
