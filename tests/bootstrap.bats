@@ -83,13 +83,10 @@ setup() {
   ! grep -qE '^dotfiles_brew_macos_formulae:' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"
 }
 
-@test "role: macOS casks list is empty (casks are opt-in via ~/.Brewfile)" {
+@test "role: macOS casks retain core Alacritty" {
   local block
   block="$(awk '/^dotfiles_brew_macos_casks:/,/^dotfiles_tmux_plugins:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
-  if echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*\S+'; then
-    fail "dotfiles_brew_macos_casks must be empty; found entries"
-  fi
-  echo "$block" | grep -qE '^[[:space:]]*dotfiles_brew_macos_casks:[[:space:]]*\[\][[:space:]]*$'
+  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'
 }
 
 @test "role: dirs.yml creates ~/.config/mise/conf.d for opt-in drop-ins" {

@@ -20,6 +20,15 @@ setup() {
   grep -qF 'brewfile_stat.stat.exists' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
 }
 
+@test "upgrade.yml: cask and Brewfile failures collect nonzero rc safely" {
+  local file="$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
+  grep -qF "selectattr('rc', 'defined')" "$file"
+  grep -qF "selectattr('rc', 'ne', 0)" "$file"
+  grep -qF 'dotfiles_brewfile_upgrade.rc | default(0)' "$file"
+  grep -qF 'problem.item' "$file"
+  grep -qF 'problem.stderr' "$file"
+}
+
 @test "upgrade.yml: formula and tool upgrades use mise" {
   grep -qF 'bootstrap packages upgrade' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
   grep -qF 'mise upgrade --yes' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
