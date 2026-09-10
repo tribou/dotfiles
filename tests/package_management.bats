@@ -110,3 +110,37 @@ setup() {
   grep -qF "ansible_facts.system == 'Darwin'" "$casks"
   grep -qF 'dotfiles_brew_macos_casks' "$casks"
 }
+
+@test "cleanup failure remains nonfatal and later provisioning is reachable" {
+  local tmpdir fake_brew fixture
+  tmpdir="$(mktemp -d)"
+  fake_brew="$tmpdir/brew"
+  fixture="$tmpdir/continuation.yml"
+
+  {
+    printf '%s\n' '#!/bin/sh'
+    printf '%s\n' 'if [ "$1" = "list" ] && [ "$2" = "--formula" ] && [ "$3" = "neovim" ]; then exit 0; fi'
+    printf '%s\n' 'if [ "$1" = "uninstall" ] && [ "$2" = "--formula" ]; then printf "cannot remove %s\\n" "$3" >&2; exit 1; fi'
+    printf '%s\n' 'exit 1'
+  } > "$fake_brew"
+  chmod +x "$fake_brew"
+
+  {
+    printf '%s\n' '---'
+    printf '%s\n' '- name: Cleanup continuation fixture'
+    printf '%s\n' '  hosts: localhost'
+    printf '%s\n' '  connection: local'
+    printf '%s\n' '  gather_facts: false'
+    printf '%s\n' '  tasks:'
+    printf '    - ansible.builtin.include_tasks: %s\n' "$REPO_ROOT/roles/dotfiles/tasks/brew_cleanup.yml"
+    printf '%s\n' '    - name: Prove later provisioning remains reachable'
+    printf '%s\n' '      ansible.builtin.debug:'
+    printf '%s\n' '        msg: continuation reached'
+  } > "$fixture"
+
+  run env "PATH=$tmpdir:$PATH" "ANSIBLE_CONFIG=$REPO_ROOT/ansible.cfg" ansible-playbook "$fixture"
+  assert_success
+  assert_output --partial 'neovim: cannot remove neovim'
+  assert_output --partial 'continuation reached'
+  rm -rf "$tmpdir"
+}

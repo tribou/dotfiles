@@ -9,8 +9,9 @@ dotfiles_repo_root: "{{ (role_path ~ '/../..') | realpath }}"
 # SSH identity
 dotfiles_ssh_key_email: "tribou@users.noreply.github.com"
 
-# macOS-only casks (opt-in via ~/.Brewfile — see Brewfile.optional.example)
-dotfiles_brew_macos_casks: []
+# macOS-only casks (core plus opt-in entries from ~/.Brewfile)
+dotfiles_brew_macos_casks:
+  - alacritty
 
 # Core mise-managed runtimes are defined in mise-config.toml (symlinked to
 # ~/.config/mise/config.toml), not here: mise.yml runs an un-scoped
