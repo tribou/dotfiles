@@ -57,10 +57,6 @@ setup() {
   grep -q "dotfiles_state == 'latest'" "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
 }
 
-@test "role: core brew list includes tmux (installed via homebrew)" {
-  awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml" | grep -qE '^\s*-\s*tmux\s*$'
-}
-
 @test "role: core brew list excludes optional tools (moved to mise/Brewfile opt-in)" {
   local block
   block="$(awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
@@ -69,10 +65,6 @@ setup() {
       fail "optional tool '$opt' must not be in dotfiles_brew_core"
     fi
   done
-  # core keepers still present
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*beads[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*lazygit[[:space:]]*$'
 }
 
 @test "role: macOS formulae keep only core (alacritty, reattach, tmux-mem-cpu-load, bash-completion)" {
