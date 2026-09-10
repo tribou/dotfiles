@@ -13,13 +13,24 @@ jobs:
   test:
     name: Run bash function tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           submodules: true
+
+      - name: Install and verify mise packages and tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin" "$HOME/.config/mise"
+          curl -fsSL https://mise.run | MISE_INSTALL_PATH="$HOME/.local/bin/mise" sh
+          ln -sfn "$GITHUB_WORKSPACE/mise-config.toml" "$HOME/.config/mise/config.toml"
+          "$HOME/.local/bin/mise" bootstrap packages apply --yes
+          "$HOME/.local/bin/mise" install --yes
+          MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
 
       - name: Install just
         uses: extractions/setup-just@v3
@@ -34,7 +45,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ci-cache
-          key: ci-cache-${{ runner.os }}-${{ hashFiles('init.vim', 'mise.toml', 'roles/dotfiles/tasks/**', 'Dockerfile') }}
+          key: ci-cache-${{ runner.os }}-${{ hashFiles('init.vim', 'mise-config.toml', 'roles/dotfiles/tasks/**', 'Dockerfile') }}
           restore-keys: |
             ci-cache-${{ runner.os }}-
 
