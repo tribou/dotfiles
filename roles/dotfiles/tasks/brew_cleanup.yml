@@ -1,0 +1,78 @@
+---
+- name: Probe installed Homebrew for legacy cleanup
+  ansible.builtin.shell:
+    cmd: |
+      for candidate in "$(command -v brew 2>/dev/null || true)" /opt/homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew /usr/local/bin/brew; do
+        if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+          printf '%s\n' "$candidate"
+          exit 0
+        fi
+      done
+      exit 1
+  register: dotfiles_brew_cleanup_probe
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Set cleanup Homebrew executable
+  ansible.builtin.set_fact:
+    dotfiles_brew_cleanup_bin: "{{ dotfiles_brew_cleanup_probe.stdout | trim }}"
+  when: dotfiles_brew_cleanup_probe.rc == 0
+
+# Keep this migration list local to cleanup; it is not desired-state inventory.
+- name: Check legacy Homebrew formula
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_brew_cleanup_bin }} list --formula {{ item }}"
+  loop:
+    - neovim
+    - python
+    - jq
+    - fd
+    - ripgrep
+    - bat
+    - shellcheck
+    - lazydocker
+    - lazygit
+    - just
+    - tree-sitter-cli
+    - fzf
+    - git-delta
+    - gh
+    - glow
+    - zoxide
+    - tmux
+  loop_control:
+    label: "{{ item }}"
+  register: dotfiles_brew_cleanup_checks
+  changed_when: false
+  failed_when: false
+  when: dotfiles_brew_cleanup_bin | default('') | length > 0
+
+- name: Remove installed legacy Homebrew formula
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_brew_cleanup_bin }} uninstall --formula {{ item.item }}"
+  loop: >-
+    {{ dotfiles_brew_cleanup_checks.results | default([])
+       | selectattr('rc', 'equalto', 0) | list }}
+  loop_control:
+    label: "{{ item.item }}"
+  register: dotfiles_brew_cleanup_uninstalls
+  changed_when: dotfiles_brew_cleanup_uninstalls.rc == 0
+  failed_when: false
+  when: dotfiles_brew_cleanup_bin | default('') | length > 0
+
+- name: Collect legacy Homebrew cleanup failures
+  ansible.builtin.set_fact:
+    dotfiles_brew_cleanup_failures: >-
+      {{ dotfiles_brew_cleanup_uninstalls.results | default([])
+         | selectattr('rc', 'ne', 0) | list }}
+  changed_when: false
+
+- name: Warn about legacy Homebrew cleanup failures
+  ansible.builtin.debug:
+    msg: |
+      WARNING: Homebrew cleanup could not remove these legacy formulae:
+      {% for failure in dotfiles_brew_cleanup_failures %}
+      - {{ failure.item.item }}: {{ failure.stderr | default('unknown error') | trim }}
+      {% endfor %}
+  when: dotfiles_brew_cleanup_failures | length > 0
