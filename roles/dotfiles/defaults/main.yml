@@ -9,50 +9,6 @@ dotfiles_repo_root: "{{ (role_path ~ '/../..') | realpath }}"
 # SSH identity
 dotfiles_ssh_key_email: "tribou@users.noreply.github.com"
 
-# Homebrew formulae installed on every platform
-dotfiles_brew_core:
-  - bash
-  - git
-  - neovim
-  - python
-  - zlib
-  - htop
-  - gpg
-  - editorconfig
-  - watchman
-  - ssh-copy-id
-  - git-extras
-  - jq
-  - fd
-  - ripgrep
-  - bat
-  - shellcheck
-  - lazydocker
-  - lazygit
-  - just
-  - lynx
-  - tree-sitter-cli
-  - fzf
-  - git-delta
-  - gh
-  - glow
-  - beads
-  - zoxide
-  - tmux
-
-dotfiles_brew_taps: []
-
-# Linux-only brew formulae
-dotfiles_brew_linux:
-  - gcc
-
-# macOS-only brew formulae
-dotfiles_brew_macos_formulae:
-  - bash-completion
-  - alacritty
-  - reattach-to-user-namespace
-  - tmux-mem-cpu-load
-
 # macOS-only casks (opt-in via ~/.Brewfile — see Brewfile.optional.example)
 dotfiles_brew_macos_casks: []
 

@@ -62,3 +62,51 @@ setup() {
   ! grep -R -qF 'bootstrap packages prune --manager brew' \
     "$REPO_ROOT/bootstrap.sh" "$REPO_ROOT/roles" "$REPO_ROOT/justfile" "$REPO_ROOT/scripts"
 }
+
+@test "Ansible has no repository-managed formula inventory" {
+  local defaults="$REPO_ROOT/roles/dotfiles/defaults/main.yml"
+  ! grep -qE '^dotfiles_brew_(core|linux|macos_formulae):' "$defaults"
+  ! grep -R -qF 'upgrade_all: true' "$REPO_ROOT/roles/dotfiles/tasks"
+}
+
+@test "role verifies mise before targeted cleanup and cask-only Homebrew" {
+  local main="$REPO_ROOT/roles/dotfiles/tasks/main.yml"
+  local mise_line cleanup_line brew_line casks_line
+  mise_line="$(grep -nF 'mise.yml' "$main" | cut -d: -f1)"
+  cleanup_line="$(grep -nF 'brew_cleanup.yml' "$main" | cut -d: -f1)"
+  brew_line="$(grep -nF 'brew.yml' "$main" | cut -d: -f1)"
+  casks_line="$(grep -nF 'brew_casks.yml' "$main" | cut -d: -f1)"
+  [ "$mise_line" -lt "$cleanup_line" ]
+  [ "$cleanup_line" -lt "$brew_line" ]
+  [ "$brew_line" -lt "$casks_line" ]
+}
+
+@test "cleanup targets only formulae replaced by qualified tools" {
+  local cleanup="$REPO_ROOT/roles/dotfiles/tasks/brew_cleanup.yml"
+  grep -qF 'list --formula' "$cleanup"
+  grep -qF 'uninstall --formula' "$cleanup"
+  grep -qF 'failed_when: false' "$cleanup"
+  grep -qF 'dotfiles_brew_cleanup_failures' "$cleanup"
+  grep -qF 'failure.item.item' "$cleanup"
+  grep -qF 'failure.stderr' "$cleanup"
+  ! grep -qF -- '--ignore-dependencies' "$cleanup"
+  ! grep -qF 'bootstrap packages prune' "$cleanup"
+
+  for formula in neovim python jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter-cli fzf git-delta gh glow zoxide tmux; do
+    grep -qF "$formula" "$cleanup"
+  done
+  for formula in bash git zlib htop gpg editorconfig watchman ssh-copy-id git-extras lynx beads gcc; do
+    ! grep -qE "(^|[[:space:]'-])${formula}([[:space:]']|$)" "$cleanup"
+  done
+}
+
+@test "brew tasks are Darwin-only and cask-only" {
+  local brew="$REPO_ROOT/roles/dotfiles/tasks/brew.yml"
+  local casks="$REPO_ROOT/roles/dotfiles/tasks/brew_casks.yml"
+  ! grep -qF 'dotfiles_brew_core' "$brew"
+  ! grep -qF 'dotfiles_brew_linux' "$brew"
+  ! grep -qF 'dotfiles_brew_macos_formulae' "$casks"
+  grep -qF "ansible_facts.system == 'Darwin'" "$brew"
+  grep -qF "ansible_facts.system == 'Darwin'" "$casks"
+  grep -qF 'dotfiles_brew_macos_casks' "$casks"
+}
