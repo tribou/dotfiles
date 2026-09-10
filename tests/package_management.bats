@@ -9,6 +9,8 @@ setup() {
   grep -qE '^node[[:space:]]*=[[:space:]]*"lts"$' "$config"
   grep -qE '^ruby[[:space:]]*=[[:space:]]*"3"$' "$config"
   grep -qF 'postinstall = "python -m pip install --upgrade pynvim"' "$config"
+  grep -qF '[settings.npm]' "$config"
+  grep -qF 'package_manager = "npm"' "$config"
 
   for tool in ansible neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux; do
     grep -qE "^${tool}[[:space:]]*=[[:space:]]*\"latest\"$" "$config"

@@ -66,6 +66,9 @@ tmux = "latest"
 legacy_version_file = true
 ruby.compile = false
 
+[settings.npm]
+package_manager = "npm"
+
 [shell_alias]
 coi = "co $INTEGRATION_BRANCH"
 mi = "merge $INTEGRATION_BRANCH"
