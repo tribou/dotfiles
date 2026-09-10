@@ -52,7 +52,7 @@ test-unit *args="tests/*.bats":
 # ANSIBLE_CONFIG in the user's shell env (it has the highest precedence in
 # Ansible's config search order) can't shadow this repo's inventory.
 install *args:
-    ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ansible-playbook playbook.yml {{args}}
+    ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ~/.local/bin/mise exec -- ansible-playbook playbook.yml {{args}}
 
 # Upgrade everything (dotfiles_state=latest, upgrade-tagged tasks)
 # Ansible and its Python runtime are brew-managed, so the play's `brew upgrade`
@@ -92,4 +92,3 @@ cleanup-worktrees:
     git worktree prune
     @echo "Pruned stale worktrees. Remaining:"
     git worktree list
-

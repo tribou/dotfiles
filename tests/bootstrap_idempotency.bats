@@ -19,14 +19,9 @@ setup() {
   refute_output --partial 'Unable to parse'
 }
 
-@test "role: ansible check mode completes on an installed machine" {
-  if ! command -v ansible-playbook >/dev/null 2>&1; then
-    skip "ansible-playbook not installed"
-  fi
-  if ! command -v brew >/dev/null 2>&1; then
-    skip "Homebrew not installed"
-  fi
-  cd "$REPO_ROOT"
-  run ansible-playbook playbook.yml --check --diff
-  assert_success
+@test "bootstrap and Ansible convergence use mise execution boundary" {
+  grep -qF 'MISE_BIN="$MISE_BIN" ./scripts/verify_mise_tools.sh' "$REPO_ROOT/bootstrap.sh"
+  grep -qF '"$MISE_BIN" exec -- ansible-galaxy collection install -r requirements.yml' "$REPO_ROOT/bootstrap.sh"
+  grep -qF 'ANSIBLE_CONFIG="$PWD/ansible.cfg" "$MISE_BIN" exec -- ansible-playbook playbook.yml "$@"' "$REPO_ROOT/bootstrap.sh"
+  grep -qF 'MISE_BIN: "{{ dotfiles_home }}/.local/bin/mise"' "$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
 }

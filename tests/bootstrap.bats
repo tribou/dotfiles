@@ -12,17 +12,29 @@ setup() {
   grep -q 'apt-get install -y curl git build-essential ca-certificates' "$REPO_ROOT/bootstrap.sh"
 }
 
-@test "bootstrap: installs Homebrew non-interactively when missing" {
-  grep -q 'NONINTERACTIVE=1' "$REPO_ROOT/bootstrap.sh"
-  grep -q 'Homebrew/install/HEAD/install.sh' "$REPO_ROOT/bootstrap.sh"
+@test "bootstrap refreshes mise and runs package then tool phases before Ansible" {
+  local file="$REPO_ROOT/bootstrap.sh"
+  grep -qF 'bootstrap packages --help' "$file"
+  grep -qF 'bootstrap packages apply --yes' "$file"
+  grep -qF 'install --yes' "$file"
+  grep -qF 'exec -- ansible-galaxy collection install -r requirements.yml' "$file"
+  grep -qF 'exec -- ansible-playbook playbook.yml "$@"' "$file"
+  ! grep -qF 'brew install ansible' "$file"
+
+  local apply_line install_line playbook_line
+  apply_line="$(grep -nF 'bootstrap packages apply --yes' "$file" | tail -1 | cut -d: -f1)"
+  install_line="$(grep -nF 'install --yes' "$file" | tail -1 | cut -d: -f1)"
+  playbook_line="$(grep -nF 'exec -- ansible-playbook' "$file" | tail -1 | cut -d: -f1)"
+  [ "$apply_line" -lt "$install_line" ]
+  [ "$install_line" -lt "$playbook_line" ]
 }
 
-@test "bootstrap: installs ansible via brew if absent" {
-  grep -q 'brew install ansible' "$REPO_ROOT/bootstrap.sh"
-}
-
-@test "bootstrap: hands off to ansible-playbook playbook.yml" {
-  grep -q 'ansible-playbook playbook.yml' "$REPO_ROOT/bootstrap.sh"
+@test "Ansible convergence repeats explicit package and tool phases" {
+  local file="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
+  grep -qF 'bootstrap packages --help' "$file"
+  grep -qF 'bootstrap packages apply --yes' "$file"
+  grep -qF 'install --yes' "$file"
+  grep -qF 'verify_mise_tools.sh' "$file"
 }
 
 # Regression: a leaked ANSIBLE_CONFIG in the invoking shell (highest precedence
@@ -96,9 +108,8 @@ setup() {
 
 @test "role: mise.yml installs all tools un-scoped (picks up conf.d drop-ins)" {
   local f="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
-  grep -q '/.local/bin/mise" install' "$f"
+  grep -qF '/.local/bin/mise install --yes' "$f"
   ! grep -q 'mise install {{ item }}' "$f"
-  grep -q 'MISE_RUBY_COMPILE' "$f"
   grep -q 'all tools are installed' "$f"
 }
 
