@@ -1,9 +1,67 @@
+min_version = "2026.7.5"
+
 [tools]
 node = "lts"
 ruby = "3"
+python = { version = "latest", postinstall = "python -m pip install --upgrade pynvim" }
 go = "latest"
 bun = "latest"
 tombi = "latest"
+ansible = "latest"
+neovim = "latest"
+jq = "latest"
+fd = "latest"
+ripgrep = "latest"
+bat = "latest"
+shellcheck = "latest"
+lazydocker = "latest"
+lazygit = "latest"
+just = "latest"
+tree-sitter = "latest"
+fzf = "latest"
+delta = "latest"
+gh = "latest"
+glow = "latest"
+zoxide = "latest"
+tmux = "latest"
+"npm:eas-cli" = "latest"
+"npm:eslint_d" = "latest"
+"npm:editorconfig" = "latest"
+"npm:intelephense" = "latest"
+"npm:js-yaml" = "latest"
+"npm:jsonlint" = "latest"
+"npm:neovim" = "latest"
+"npm:prettier" = "latest"
+"npm:react-devtools" = "latest"
+"npm:nodemon" = "latest"
+"npm:tern" = "latest"
+"npm:tslint" = "latest"
+"npm:typescript" = "latest"
+"npm:bash-language-server" = "latest"
+"npm:flow-bin" = "latest"
+"npm:vue-language-server" = "latest"
+"npm:vscode-css-languageserver-bin" = "latest"
+"npm:vscode-html-languageserver-bin" = "latest"
+"gem:neovim" = "latest"
+"gem:solargraph" = "latest"
+
+[bootstrap.packages]
+"brew:bash" = "latest"
+"brew:git" = "latest"
+"brew:zlib" = "latest"
+"brew:htop" = "latest"
+"brew:gpg" = "latest"
+"brew:editorconfig" = "latest"
+"brew:watchman" = "latest"
+"brew:ssh-copy-id" = "latest"
+"brew:git-extras" = "latest"
+"brew:lynx" = "latest"
+"brew:beads" = "latest"
+"brew:gcc" = { version = "latest", os = "linux" }
+"brew:bash-completion" = { version = "latest", os = "macos/arm64" }
+"brew:alacritty" = { version = "latest", os = "macos/arm64" }
+"brew:reattach-to-user-namespace" = { version = "latest", os = "macos/arm64" }
+"brew:tmux-mem-cpu-load" = { version = "latest", os = "macos/arm64" }
 
 [settings]
 legacy_version_file = true
