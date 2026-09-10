@@ -133,8 +133,11 @@ export HISTFILE="${HISTDIR}/$(date -u +%d.%H.%M.%S)_${HOSTNAME_SHORT}_$$"
 _dotfiles_debug_timing "$LINENO"
 
 # Set path for HOMEBREW
-[ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+for package_bin in /opt/homebrew/bin /home/linuxbrew/.linuxbrew/bin; do
+  if [ -d "$package_bin" ]; then
+    export PATH="$package_bin:$PATH"
+  fi
+done
 
 
 export GOPATH=$DEVPATH/go
@@ -316,11 +319,8 @@ _dotfiles_debug_timing "$LINENO"
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
-# Deduplicate PATH and ensure homebrew takes precedence
-_path_strip "*homebrew*" "*linuxbrew*"
+# Deduplicate PATH while preserving canonical package manager prefixes.
 _path_dedup
-[ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Cleanup debug timing
 unset DOTFILES_DEBUG_LAST_TIME

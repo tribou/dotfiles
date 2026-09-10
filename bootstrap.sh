@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Thin bootstrapper: solve the chicken-and-egg of installing brew + ansible,
-# then hand off to the Ansible role. Everything else lives in roles/dotfiles/.
+# Thin bootstrapper: install mise, then hand off to the Ansible role.
+# Everything else lives in roles/dotfiles/.
 
 REPO_URL="https://github.com/tribou/dotfiles.git"
 REPO_DIR="$HOME/dev/dotfiles"
@@ -29,24 +29,37 @@ if [ "$(uname -s)" != "Darwin" ]; then
   fi
 fi
 
-# 3. Install brew (if missing), then ansible, then exec the playbook.
-if ! command -v brew >/dev/null 2>&1; then
-  NONINTERACTIVE=1 /bin/bash -c \
-    "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  if [ "$(uname -s)" = "Darwin" ]; then
-    eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
-  else
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  fi
+# 3. Install mise, apply its host packages, then install and verify tools.
+MISE_BIN="$HOME/.local/bin/mise"
+
+install_mise() {
+  mkdir -p "$HOME/.local/bin"
+  curl -fsSL https://mise.run | MISE_INSTALL_PATH="$MISE_BIN" sh
+}
+
+if [ ! -x "$MISE_BIN" ] || ! "$MISE_BIN" bootstrap packages --help >/dev/null 2>&1; then
+  install_mise
+fi
+if ! "$MISE_BIN" bootstrap packages --help >/dev/null 2>&1; then
+  printf 'error: mise does not support bootstrap packages after reinstall\n' >&2
+  exit 1
 fi
 
-command -v ansible-playbook >/dev/null 2>&1 || brew install ansible
-
-echo "==> Handing off to Ansible (ansible-playbook playbook.yml)"
+mkdir -p "$HOME/.config/mise"
+ln -sfn "$PWD/mise-config.toml" "$HOME/.config/mise/config.toml"
+case "$(uname -s)/$(uname -m)" in
+  Darwin/arm64) export PATH="/opt/homebrew/bin:$PATH" ;;
+  Linux/*) export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH" ;;
+esac
+"$MISE_BIN" bootstrap packages apply --yes
+"$MISE_BIN" install --yes
+MISE_BIN="$MISE_BIN" ./scripts/verify_mise_tools.sh
+"$MISE_BIN" exec -- ansible-galaxy collection install -r requirements.yml
+echo "==> Handing off to Ansible (mise exec -- ansible-playbook playbook.yml)"
 # Pin ANSIBLE_CONFIG to this repo's own config so a stale/unrelated
 # ANSIBLE_CONFIG in the invoking shell (highest precedence in Ansible's
 # config search order) can't shadow this repo's inventory.
-ANSIBLE_CONFIG="$PWD/ansible.cfg" ansible-playbook playbook.yml "$@"
+ANSIBLE_CONFIG="$PWD/ansible.cfg" "$MISE_BIN" exec -- ansible-playbook playbook.yml "$@"
 
 cat <<'EOF'
 
