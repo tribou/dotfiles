@@ -65,3 +65,6 @@ tmux = "latest"
 [settings]
 legacy_version_file = true
 ruby.compile = false
+
+[settings.npm]
+package_manager = "npm"
