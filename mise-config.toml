@@ -59,7 +59,6 @@ tmux = "latest"
 "brew:beads" = "latest"
 "brew:gcc" = { version = "latest", os = "linux" }
 "brew:bash-completion" = { version = "latest", os = "macos/arm64" }
-"brew:alacritty" = { version = "latest", os = "macos/arm64" }
 "brew:reattach-to-user-namespace" = { version = "latest", os = "macos/arm64" }
 "brew:tmux-mem-cpu-load" = { version = "latest", os = "macos/arm64" }
 
