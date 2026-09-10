@@ -47,7 +47,11 @@
     cmd: "{{ dotfiles_home }}/.local/bin/mise install --yes"
   environment: *mise_environment
   register: dotfiles_mise_tools_install
-  changed_when: "'all tools are installed' not in dotfiles_mise_tools_install.stderr"
+  # Installing tools emits lines such as "mise ansible@14.4.0 [1/3] install";
+  # clean runs emit "mise all tools are installed" or no output.
+  changed_when: >-
+    dotfiles_mise_tools_install.stdout is search('\\[[0-9]+/[0-9]+\\] install')
+    or dotfiles_mise_tools_install.stderr is search('\\[[0-9]+/[0-9]+\\] install')
   tags: [mise]
 
 - name: Verify mise-managed packages and tools
