@@ -1,12 +1,9 @@
-# Optional Homebrew casks and formulae — global Brewfile.
+# Optional Homebrew casks — global Brewfile.
 #
 # Enable:  cp Brewfile.optional.example ~/.Brewfile
-# Then uncomment what you want. `just install` runs `brew bundle --global
-# --no-upgrade` (installs missing entries). `just upgrade` upgrades already-
-# installed casks/formulae via `brew upgrade`; run `just install -e
-# dotfiles_state=latest` to also force `brew bundle --global --upgrade` (e.g. to
-# pull in newly-uncommented entries). Casks are macOS-only — `brew bundle` skips
-# cask directives on Linux automatically; formulae apply on every platform.
+# Then uncomment the casks you want. Formulae belong in
+# mise-config.optional.toml.example. This file is consumed only by the retained
+# macOS cask flow.
 
 # --- Casks (macOS only) ---
 # cask "firefox"
@@ -19,17 +16,3 @@
 # cask "font-fira-code-nerd-font"
 # cask "font-hack-nerd-font"
 # cask "font-fontawesome"
-
-# --- Formulae (macOS and Linux via brew) ---
-# Tools without a mise backend:
-# brew "nmap"
-# brew "tree"
-# brew "dos2unix"
-# brew "tidy-html5"
-# Optional macOS-only formulae:
-# brew "ngrok/ngrok/ngrok"
-# brew "tor"
-# brew "tfenv"
-# brew "rename"
-# brew "renameutils"
-# brew "vimpager"
