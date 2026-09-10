@@ -23,6 +23,7 @@ setup() {
   for formula in bash git zlib htop gnupg editorconfig watchman ssh-copy-id git-extras lynx beads; do
     grep -qF "\"brew:${formula}\" = \"latest\"" "$config"
   done
+  ! grep -qF '"brew:gpg" = "latest"' "$config"
   grep -qF '"brew:gcc" = { version = "latest", os = "linux" }' "$config"
   for formula in bash-completion alacritty reattach-to-user-namespace tmux-mem-cpu-load; do
     grep -qF "\"brew:${formula}\" = { version = \"latest\", os = \"macos/arm64\" }" "$config"
