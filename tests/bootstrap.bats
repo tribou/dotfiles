@@ -49,10 +49,8 @@ setup() {
   done
 }
 
-@test "role: mise default-node-packages is the sole global npm package source" {
-  [ ! -e "$REPO_ROOT/roles/dotfiles/tasks/npm.yml" ]
-  ! grep -q 'npm.yml' "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
-  ! grep -q 'dotfiles_npm_globals' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"
+@test "role: package ownership assertions live in package_management.bats" {
+  [ -f "$REPO_ROOT/tests/package_management.bats" ]
 }
 
 @test "role: upgrade tasks are gated on dotfiles_state == latest" {
@@ -134,7 +132,7 @@ setup() {
   # every tool assignment is commented out (user uncomments what they want)
   ! grep -qE '^[[:space:]]*[a-z0-9_-]+[[:space:]]*=' "$f"
   # lists the verified-backend optional mise tools
-  for t in awscli terraform-ls ansible navi tlrc; do
+  for t in awscli terraform-ls navi tlrc tfenv; do
     grep -q "$t" "$f"
   done
 }
@@ -144,9 +142,8 @@ setup() {
   [ -f "$f" ]
   # every cask/brew directive is commented
   ! grep -qE '^[[:space:]]*(cask|brew)[[:space:]]' "$f"
-  # includes no-mise-backend formulae, the optional macOS formulae, and casks
-  for t in nmap tree dos2unix tidy-html5 ngrok tfenv tor rename vimpager renameutils \
-           firefox orbstack bruno font-fira-code-nerd-font cmake; do
+  # includes only optional casks
+  for t in firefox orbstack bruno font-fira-code-nerd-font cmake; do
     grep -q "$t" "$f"
   done
 }

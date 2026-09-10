@@ -12,12 +12,6 @@
         dest: .zshrc
       - src: tmux/tmux-conf
         dest: .tmux.conf
-      - src: default-node-packages
-        dest: .default-node-packages
-      - src: default-gems
-        dest: .default-gems
-      - src: default-python-packages
-        dest: .default-python-packages
       - src: gpg-agent-conf
         dest: .gnupg/gpg-agent.conf
       - src: init.vim
