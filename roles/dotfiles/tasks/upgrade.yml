@@ -58,9 +58,9 @@
   ansible.builtin.set_fact:
     brew_manual_problems: >-
       {{ (dotfiles_brew_cask_upgrade.results | default([])
-          | selectattr('failed', 'defined') | selectattr('failed', 'equalto', true)
+          | selectattr('rc', 'defined') | selectattr('rc', 'ne', 0)
           | list)
-         + ([dotfiles_brewfile_upgrade] if (dotfiles_brewfile_upgrade is defined and dotfiles_brewfile_upgrade.rc != 0) else []) }}
+         + ([dotfiles_brewfile_upgrade] if (dotfiles_brewfile_upgrade is defined and (dotfiles_brewfile_upgrade.rc | default(0) | int) != 0) else []) }}
   changed_when: false
 
 - name: Surface Homebrew problems needing manual remediation
@@ -68,7 +68,7 @@
     msg: |
       WARNING: Homebrew cask upgrades finished with issues that need manual remediation:
       {% for problem in brew_manual_problems %}
-      - {{ problem.item | default('global Brewfile') }}: {{ problem.stderr | default(problem.msg | default('unknown error')) | trim }}
+      - {{ problem.item | default('global Brewfile') }}: {{ (problem.stderr | default('') | trim) or (problem.msg | default('unknown error') | trim) }}
       {% endfor %}
   when: brew_manual_problems | length > 0
 
