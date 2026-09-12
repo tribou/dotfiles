@@ -32,3 +32,13 @@ setup() {
   run grep -E 'path:\s*\.ci-cache$' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml"
   assert_success
 }
+
+@test "docker-compose: ci converges twice before goss and integration checks" {
+  local compose="$REPO_ROOT/docker-compose.yml"
+  [ "$(grep -cF './bootstrap.sh' "$compose")" -eq 2 ]
+  grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/first-converge.log' "$compose"
+  grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/second-converge.log' "$compose"
+  grep -qF "! grep -Eq 'changed=[1-9][0-9]*' /tmp/second-converge.log" "$compose"
+  grep -qF 'DOTFILES=/dotfiles goss validate --format tap' "$compose"
+  grep -qF './tests/test_helper/bats-core/bin/bats tests/integration/' "$compose"
+}
