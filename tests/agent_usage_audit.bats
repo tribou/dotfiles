@@ -89,6 +89,52 @@ json_field() {
   [[ "$output" == *"--stage must be a kebab-case identifier"* ]]
 }
 
+@test "record: rejects a malformed stage in an injected record before accessing GitHub" {
+  local rec="$FIXTURES/malformed-stage-record.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "not_a_stage",
+  "harness": "claude-code",
+  "session_id": "sess-malformed-stage",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-12T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" record --stage release-checklist --target pr:1 --record "$rec"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"record stage must match --stage"* ]]
+}
+
+@test "record: rejects an injected record for a different stage before accessing GitHub" {
+  local rec="$FIXTURES/mismatched-stage-record.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-mismatched-stage",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-12T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" record --stage release-checklist --target pr:1 --record "$rec"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"record stage must match --stage"* ]]
+}
+
 @test "probe: invalid harness override falls back to the unknown harness" {
   run env AGENT_USAGE_AUDIT_HARNESS=not-a-harness \
     AGENT_USAGE_AUDIT_SESSION_ID=sess-invalid-harness \

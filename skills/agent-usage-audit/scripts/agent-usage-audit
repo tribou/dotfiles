@@ -1040,6 +1040,9 @@ async function recordUsage(options: RecordOptions): Promise<number> {
   let record: UsageRecord;
   if (options.recordFile) {
     record = JSON.parse(readFileSync(options.recordFile, "utf-8"));
+    if (typeof record.stage !== "string" || !isStage(record.stage) || record.stage !== options.stage) {
+      throw new Error("record stage must match --stage");
+    }
   } else {
     record = await probe(options.stage, options.session);
   }
