@@ -82,7 +82,7 @@ digraph entry {
 
 The body is the living spec; a `## Brainstorm log` section (visible while draft) carries the checkboxed Q&A + the next open question, which IS the resume state.
 
-## Finalize → Ready (all 5 steps, in order)
+## Finalize → Ready (all 6 steps, in order)
 
 Pre-finalize gate — when the design is approved, confirm each check aloud before editing:
 
@@ -95,8 +95,9 @@ Then:
 1. **Spec self-review** on the issue body: scan for placeholders/TBDs, internal contradictions, scope creep, ambiguous requirements. Fix inline.
 2. **Strip the `[DRAFT]` prefix** from the title.
 3. **Collapse `## Brainstorm log` into a `<details>` block** at the bottom so the spec reads clean by default while the decision trail stays recoverable.
-4. **Show the user the issue URL** and ask them to review. If they request changes, edit and re-run the self-review. This is the spec review gate — keep it.
-5. **STOP.** The issue is the handoff. Do not branch, plan, or implement.
+4. **REQUIRED SUB-SKILL:** `agent-usage-audit` — record this stage with `--stage brainstorming-to-issue --target issue:<N>`, after the prefix is stripped and before the URL is shown. A failed audit is reported, never a reason to stop finalizing.
+5. **Show the user the issue URL** and ask them to review. If they request changes, edit and re-run the self-review. This is the spec review gate — keep it.
+6. **STOP.** The issue is the handoff. Do not branch, plan, or implement.
 
 Exact commands for all of the above are in `issue-lifecycle.md`.
 
@@ -118,6 +119,7 @@ Implementation happens later. When it does, any implementation **plan is optiona
 | Skipping the dedupe search when no number is given | Search open issues first — a placeholder may already exist |
 | Stopping when brainstorming's steps 6-9 are overridden | The override replaces those steps with THIS skill's Finalize → Ready — run it |
 | Finalizing without stripping `[DRAFT]` | Ready = prefix stripped + log collapsed to `<details>` |
+| Finalizing without recording the stage's agent usage | Run `agent-usage-audit` with `--stage brainstorming-to-issue --target issue:<N>` after stripping `[DRAFT]`, before showing the URL |
 | Following brainstorming to a `docs/` file + commit | Divert per the persistence override; the issue is the only artifact |
 | Invoking `writing-plans` | No plan step — stop at the issue |
 | Self-answering all clarifying questions in one pass | Run the real one-question-at-a-time dialogue with the user |

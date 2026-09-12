@@ -37,7 +37,7 @@ setup() {
 @test "check_tools passes for available tool" {
     local tool_dir
     tool_dir="$(mktemp -d)"
-    for tool in git nvim tmux mise node go bun; do
+    for tool in mise node python ruby go bun tombi ansible-playbook nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph git bash; do
         touch "$tool_dir/$tool"
         chmod +x "$tool_dir/$tool"
     done
@@ -54,7 +54,52 @@ setup() {
     run check_tools
     export PATH="$saved_path"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"✗ go → run: mise install go"* ]]
+    local expected
+    for expected in \
+        "mise~run: ./bootstrap.sh" \
+        "node~run: mise install node" \
+        "python~run: mise install python" \
+        "ruby~run: mise install ruby" \
+        "go~run: mise install go" \
+        "bun~run: mise install bun" \
+        "tombi~run: mise install tombi" \
+        "ansible-playbook~run: mise install ansible" \
+        "nvim~run: mise install neovim" \
+        "jq~run: mise install jq" \
+        "fd~run: mise install fd" \
+        "rg~run: mise install ripgrep" \
+        "bat~run: mise install bat" \
+        "shellcheck~run: mise install shellcheck" \
+        "lazydocker~run: mise install lazydocker" \
+        "lazygit~run: mise install lazygit" \
+        "just~run: mise install just" \
+        "tree-sitter~run: mise install tree-sitter" \
+        "fzf~run: mise install fzf" \
+        "delta~run: mise install delta" \
+        "gh~run: mise install gh" \
+        "glow~run: mise install glow" \
+        "zoxide~run: mise install zoxide" \
+        "tmux~run: mise install tmux" \
+        "prettier~run: mise install npm:prettier" \
+        "solargraph~run: mise install gem:solargraph" \
+        "git~run: mise bootstrap packages apply --yes" \
+        "bash~run: mise bootstrap packages apply --yes"; do
+        [[ "$output" == *"✗ ${expected%~*} → ${expected#*~}"* ]]
+    done
+}
+
+@test "doctor uses owner-specific mise remediation" {
+    grep -qF 'nvim~run: mise install neovim' scripts/doctor.sh
+    grep -qF 'tmux~run: mise install tmux' scripts/doctor.sh
+    grep -qF 'rg~run: mise install ripgrep' scripts/doctor.sh
+    grep -qF 'ansible-playbook~run: mise install ansible' scripts/doctor.sh
+    grep -qF 'git~run: mise bootstrap packages apply --yes' scripts/doctor.sh
+}
+
+@test "doctor no longer checks legacy package links" {
+    ! grep -qF '.default-node-packages' scripts/doctor.sh
+    ! grep -qF '.default-python-packages' scripts/doctor.sh
+    ! grep -qF '.default-gems' scripts/doctor.sh
 }
 
 @test "main exits 0 when all checks pass" {
@@ -62,27 +107,19 @@ setup() {
     export DOTFILES="$(mktemp -d)"
     local tool_dir
     tool_dir="$(mktemp -d)"
-    for tool in git nvim tmux mise node go bun; do
+    for tool in mise node python ruby go bun tombi ansible-playbook nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph git bash; do
         touch "$tool_dir/$tool"
         chmod +x "$tool_dir/$tool"
     done
-    cat > "$tool_dir/delta" <<'EOF'
-#!/usr/bin/env bash
-exit 0
-EOF
-    chmod +x "$tool_dir/delta"
     export PATH="$tool_dir:$PATH"
 
-    # Set up valid symlinks for all 15 entries
+    # Set up valid symlinks for all role-owned entries.
     local symlinks=(
         "~/.bash_profile~bash_profile"
         "~/.vimrc~init.vim"
         "~/.gitconfig~gitconfig"
         "~/.zshrc~zshrc"
         "~/.tmux.conf~tmux/tmux-conf"
-        "~/.default-node-packages~default-node-packages"
-        "~/.default-gems~default-gems"
-        "~/.default-python-packages~default-python-packages"
         "~/.gnupg/gpg-agent.conf~gpg-agent-conf"
         "~/.config/nvim/init.vim~init.vim"
         "~/.config/alacritty/alacritty.toml~alacritty.toml"
@@ -106,7 +143,9 @@ EOF
 
     run main
     [ "$status" -eq 0 ]
-    [[ "$output" == *"doctor: 23/23 checks passed (0 failures)"* ]]
+    local total_checks
+    total_checks="$(grep -cE '  (✓|✗) ' <<< "$output")"
+    [[ "$output" == *"doctor: $total_checks/$total_checks checks passed (0 failures)"* ]]
 }
 
 @test "main exits 1 when checks fail" {
@@ -120,52 +159,15 @@ EOF
     run main
     export PATH="$saved_path"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"doctor: 0/23 checks passed (23 failures)"* ]]
+    local total_checks
+    total_checks="$(grep -cE '  (✓|✗) ' <<< "$output")"
+    [[ "$output" == *"doctor: 0/$total_checks checks passed ($total_checks failures)"* ]]
 }
 
 @test "justfile has doctor recipe" {
     run grep -A 2 '^doctor:' justfile
     [ "$status" -eq 0 ]
     [[ "$output" == *"./scripts/doctor.sh"* ]]
-}
-
-@test "check_delta fails when delta is not found" {
-    local saved_path="$PATH"
-    export PATH="$(mktemp -d)"
-    run check_delta
-    export PATH="$saved_path"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"✗ delta → run: brew install git-delta"* ]]
-}
-
-@test "check_delta fails when delta binary exists but cannot run" {
-    local tool_dir
-    tool_dir="$(mktemp -d)"
-    cat > "$tool_dir/delta" <<'EOF'
-#!/usr/bin/env bash
-exit 1
-EOF
-    chmod +x "$tool_dir/delta"
-    export PATH="$tool_dir:$PATH"
-
-    run check_delta
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"✗ delta → run: brew reinstall git-delta"* ]]
-}
-
-@test "check_delta passes when delta runs correctly" {
-    local tool_dir
-    tool_dir="$(mktemp -d)"
-    cat > "$tool_dir/delta" <<'EOF'
-#!/usr/bin/env bash
-exit 0
-EOF
-    chmod +x "$tool_dir/delta"
-    export PATH="$tool_dir:$PATH"
-
-    run check_delta
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"✓ delta"* ]]
 }
 
 @test "doctor.sh produces output when checks fail (set -e regression)" {

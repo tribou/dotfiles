@@ -13,46 +13,69 @@
   become: true
   when: ansible_facts.os_family == 'Archlinux'
 
-# `brew upgrade` upgrades BOTH formulae and casks in one shot, so this single
-# task covers everything (a separate homebrew_cask task would be redundant).
-# Some casks can only fail in a non-interactive run -- they need sudo (no TTY
-# under `just upgrade`), collide with an app already in /Applications, or (like
-# docker-desktop) need a forced reinstall. `failed_when: false` keeps one bad
-# cask from aborting the whole play so the mise/rustup/nvim/tmux/beads upgrades
-# below still run; the problems are surfaced for manual remediation just after.
-- name: Upgrade Homebrew packages (formulae and casks)
-  community.general.homebrew:
-    update_homebrew: true
-    upgrade_all: true
-    path: "{{ (dotfiles_brew_bin | default('')) | dirname }}"
-  register: brew_upgrade
-  failed_when: false
+- name: Upgrade mise-managed host packages
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise bootstrap packages upgrade"
+  register: dotfiles_mise_package_upgrade
+  changed_when: "'Upgrading' in dotfiles_mise_package_upgrade.stdout"
+  tags: [upgrade]
 
-# regex_findall keeps the line extraction inside the regex engine, where `\n` is
-# a real metacharacter -- a `.split('\n')` here would break, because a folded YAML
-# scalar hands Jinja a literal backslash-n it does not expand. `(?m)^.*<kw>.*$`
-# returns each whole line that mentions an actionable problem.
+- name: Upgrade mise-managed tools
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise upgrade --yes"
+  register: dotfiles_mise_tool_upgrade
+  changed_when: "'Installing' in dotfiles_mise_tool_upgrade.stdout or 'Updating' in dotfiles_mise_tool_upgrade.stdout"
+  tags: [upgrade]
+
+- name: Upgrade retained macOS Homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+    state: latest
+    accept_external_apps: true
+    path: "{{ (dotfiles_brew_bin | default('brew')) | dirname }}"
+  loop: "{{ dotfiles_brew_macos_casks }}"
+  register: dotfiles_brew_cask_upgrade
+  failed_when: false
+  when: ansible_facts.system == 'Darwin'
+
+- name: Stat global Brewfile for upgrade
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.Brewfile"
+  register: brewfile_stat
+  when: ansible_facts.system == 'Darwin'
+
+- name: Upgrade global Brewfile casks
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_brew_bin | default('brew') }} bundle --global --upgrade"
+  register: dotfiles_brewfile_upgrade
+  changed_when: false
+  failed_when: false
+  when:
+    - ansible_facts.system == 'Darwin'
+    - brewfile_stat.stat.exists
+
 - name: Collect Homebrew problems needing manual remediation
   ansible.builtin.set_fact:
     brew_manual_problems: >-
-      {{
-        (brew_upgrade.msg | default(''))
-        | regex_findall('(?m)^.*(?:It seems there is already|cannot be upgraded as-is|password is required|terminal is required|are not trusted|has been deprecated|Failure while executing).*$')
-        | map('trim')
-        | reject('equalto', '')
-        | list
-      }}
+      {% set cask_failures = (dotfiles_brew_cask_upgrade.results | default([])
+          | selectattr('failed', 'defined') | selectattr('failed', 'equalto', true)
+          | list) %}
+      {% set cask_rc_failures = (dotfiles_brew_cask_upgrade.results | default([])
+          | rejectattr('failed', 'equalto', true)
+          | selectattr('rc', 'defined') | selectattr('rc', 'ne', 0)
+          | list) %}
+      {{ cask_failures + cask_rc_failures
+         + ([dotfiles_brewfile_upgrade] if (dotfiles_brewfile_upgrade is defined and (dotfiles_brewfile_upgrade.rc | default(0) | int) != 0) else []) }}
+  changed_when: false
 
 - name: Surface Homebrew problems needing manual remediation
   ansible.builtin.debug:
-    msg: "{{ ['⚠ Homebrew upgrade finished with issues that need YOUR manual attention:'] + brew_manual_problems }}"
+    msg: |
+      WARNING: Homebrew cask upgrades finished with issues that need manual remediation:
+      {% for problem in brew_manual_problems %}
+      - {{ problem.item | default('global Brewfile') }}: {{ (problem.stderr | default('') | trim) or (problem.msg | default('unknown error') | trim) }}
+      {% endfor %}
   when: brew_manual_problems | length > 0
-
-- name: Upgrade mise-managed runtimes
-  ansible.builtin.command:
-    cmd: "{{ dotfiles_home }}/.local/bin/mise upgrade --yes"
-  register: mise_upgrade
-  changed_when: "'Installing' in mise_upgrade.stdout or 'Updating' in mise_upgrade.stdout"
 
 - name: Update rustup and toolchains
   ansible.builtin.shell:
