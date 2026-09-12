@@ -15,7 +15,7 @@
 ## Design Principles
 - Keep scripts modular by breaking them into `lib/` files
 - Sourced functions should be reliable and prefer fast execution
-- The repository assumes macOS (checks for Darwin in multiple places)
+- Provisioning supports Apple Silicon macOS and Linux; Intel macOS is unsupported
 - mise loaded on shell startup; tool versions auto-switch natively on directory change via shell integration hooks
 
 ## Library Module Organization
@@ -107,6 +107,18 @@ nu express         # Upgrade specific package (fzf select if no args)
 ```
 
 Detection order: `pnpm-lock.yaml` → `yarn.lock` → `bun.lock` → npm
+
+### Provisioning Ownership
+
+Select new machine-wide packages in this order:
+
+1. Use the canonical mise registry tool when it qualifies on both macOS arm64 and Linux.
+2. Use an explicit `npm:` or `gem:` tool key when the package supplies the required executable.
+3. Use `pipx:` for an isolated Python application.
+4. Use a tool-level `postinstall` when a library must be imported by its managed interpreter rather than run as a standalone executable.
+5. Use a `brew:` bootstrap package only after dual-platform tool qualification fails or when shared-prefix artifact semantics are required.
+
+Record each qualification failure and resulting owner in the package ownership table in [ARCHITECTURE.md](ARCHITECTURE.md#package-ownership-audit). Casks remain owned by the real Homebrew CLI on macOS, while native OS package managers retain bootstrap and system dependencies. Ansible executes mise convergence but must not mirror either `[tools]` or `[bootstrap.packages]`; `mise-config.toml` and optional mise drop-ins are the inventories.
 
 ## Development Environment
 
