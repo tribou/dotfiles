@@ -35,10 +35,20 @@ setup() {
 
 @test "docker-compose: ci converges twice before goss and integration checks" {
   local compose="$REPO_ROOT/docker-compose.yml"
-  [ "$(grep -cF './bootstrap.sh' "$compose")" -eq 2 ]
-  grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/first-converge.log' "$compose"
-  grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/second-converge.log' "$compose"
+  local ci_block
+  ci_block="$(awk '/^  ci:/,/^  dev:/' "$compose")"
+  [ "$(grep -cF './bootstrap.sh' <<< "$ci_block")" -eq 2 ]
+  grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/first-converge.log' <<< "$ci_block"
+  grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/second-converge.log' <<< "$ci_block"
   grep -qF "! grep -Eq 'changed=[1-9][0-9]*' /tmp/second-converge.log" "$compose"
   grep -qF 'DOTFILES=/dotfiles goss validate --format tap' "$compose"
   grep -qF './tests/test_helper/bats-core/bin/bats tests/integration/' "$compose"
+}
+
+@test "docker-compose: dev uses the mise-first bootstrap boundary" {
+  local compose="$REPO_ROOT/docker-compose.yml"
+  local dev_block
+  dev_block="$(awk '/^  dev:/,0' "$compose")"
+  grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} && bash' <<< "$dev_block"
+  ! grep -qF 'ansible-playbook -i localhost' <<< "$dev_block"
 }

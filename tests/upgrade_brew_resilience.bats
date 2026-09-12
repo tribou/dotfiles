@@ -24,9 +24,11 @@ setup() {
   local file="$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
   grep -qF "selectattr('rc', 'defined')" "$file"
   grep -qF "selectattr('rc', 'ne', 0)" "$file"
+  grep -qF "selectattr('failed', 'equalto', true)" "$file"
   grep -qF 'dotfiles_brewfile_upgrade.rc | default(0)' "$file"
   grep -qF 'problem.item' "$file"
   grep -qF 'problem.stderr' "$file"
+  grep -qF 'problem.msg' "$file"
 }
 
 @test "upgrade.yml: formula and tool upgrades use mise" {
