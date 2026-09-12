@@ -4,10 +4,11 @@
 
 ## Entry Points
 
-- **`bootstrap.sh`**: Thin bootstrapper that solves the chicken-and-egg problem of installing Homebrew + Ansible, then hands off to the Ansible role. Accepts `curl | bash` for zero-clone installs.
+- **`bootstrap.sh`**: Thin bootstrapper that solves the chicken-and-egg problem by installing standalone mise, then hands off to the Ansible role through mise. Accepts `curl | bash` for zero-clone installs.
   - Self-locates or self-clones the repo into `$HOME/dev/dotfiles`
-  - Installs brew (if missing) and ansible (if missing)
-  - Runs `ansible-playbook playbook.yml` — all actual provisioning lives in the role
+  - Installs native OS prerequisites needed to bootstrap mise packages
+  - Exposes the global mise config, applies packages, installs tools, and runs smoke verification
+  - Runs `mise exec -- ansible-playbook playbook.yml` — all repeatable provisioning lives in the role
 
 - **`playbook.yml`**: Top-level Ansible playbook that applies the `dotfiles` role to `localhost`
 - **`ansible.cfg`**: Configures `roles_path = roles`, disables retry files, sets YAML output format
@@ -28,8 +29,8 @@ roles/dotfiles/
 └── tasks/
     ├── main.yml         # Role entry point — includes all task files
     ├── prereqs.yml      # Pre-requisite packages
-    ├── brew.yml         # Homebrew formulae (core)
-    ├── brew_casks.yml   # macOS casks/formulae + global ~/.Brewfile hook
+    ├── brew.yml         # Real Homebrew discovery/install for macOS casks
+    ├── brew_casks.yml   # Retained macOS casks + global ~/.Brewfile hook
     ├── links.yml        # Symlink management
     ├── dirs.yml         # Directory structure
     ├── ssh.yml          # SSH key generation
@@ -42,7 +43,7 @@ roles/dotfiles/
     ├── terminfo.yml     # Terminal info DB
     ├── tools_cli.yml    # Additional CLI tools
     ├── beads.yml        # Beads issue tracking
-    ├── upgrade.yml      # Upgrade-only tasks (brew upgrade, mise upgrade, npm update)
+    ├── upgrade.yml      # Upgrade-only tasks (mise packages/tools + macOS casks)
     └── config files in the repo root
   ```
 
@@ -53,7 +54,7 @@ The `dotfiles_state` variable (defined in `roles/dotfiles/defaults/main.yml`) co
 | Value | Behavior |
 |-------|----------|
 | `present` (default) | Ensures tools/config are present but does not force the latest versions |
-| `latest` | Upgrades formulae, runtimes, and packages to their latest versions |
+| `latest` | Runs explicit package, tool, native-system, and retained-cask upgrades |
 
 Use `just upgrade` to run with `dotfiles_state=latest` and the `upgrade` tag (selectively targets only upgrade tasks).
 
@@ -66,21 +67,122 @@ into their home directory — nothing in the repo needs editing per machine.
 | Repo template | Copy to | Consumed by |
 |---|---|---|
 | `mise-config.optional.toml.example` | `~/.config/mise/conf.d/optional.toml` | un-scoped `mise install` (`tasks/mise.yml`) |
-| `Brewfile.optional.example` | `~/.Brewfile` | `brew bundle --global` (`tasks/brew_casks.yml`) |
+| `Brewfile.optional.example` | `~/.Brewfile` | macOS-only `brew bundle --global` (`tasks/brew_casks.yml`) |
 
 - Optional CLI tools **with a mise backend** live in the mise drop-in; mise
   auto-loads `~/.config/mise/conf.d/*.toml` (alphabetically) and merges
   `[tools]` additively over `config.toml`.
-- Optional **casks and brew-only formulae** live in the Brewfile. `brew bundle`
-  skips cask directives on Linux automatically, so the hook is not Darwin-gated
-  and optional formulae install on both platforms.
+- Optional formulae live under `[bootstrap.packages]` in the mise drop-in.
+- Optional **casks only** live in the Brewfile, which the retained real Homebrew
+  flow consumes on macOS.
 - Both are skipped silently when absent (a `stat` guard for the Brewfile), so a
   bare machine gets only the core set.
-- `just install` runs `brew bundle --global --no-upgrade`, which installs
-  newly-uncommented entries. `just upgrade` does **not** re-run `brew bundle`
-  (`brew_casks.yml` is not `upgrade`-tagged) — but its `brew upgrade` covers
-  already-installed Brewfile packages regardless of how they were installed.
-  Run `just install` after uncommenting new entries.
+- `just install` applies newly enabled mise entries and runs `brew bundle
+  --global --no-upgrade` for newly enabled macOS casks. `just upgrade` uses
+  `mise bootstrap packages upgrade` and `mise upgrade`, then upgrades retained
+  casks through Homebrew. Run `just install` after uncommenting new entries.
+
+### Mise-First Provisioning Flow
+
+```text
+native OS prerequisites
+        |
+        v
+standalone ~/.local/bin/mise
+        |
+        +--> global mise-config.toml
+        |       |
+        |       +--> bootstrap packages apply --> canonical brew prefix
+        |       +--> mise install -------------> versioned tools + shims
+        |
+        v
+smoke verification
+        |
+        +--> targeted cleanup of old [tools] formula copies, if brew already exists
+        |
+        v
+mise exec -- ansible-playbook
+        |
+        +--> repeat package/tool convergence and verification
+        +--> real Homebrew CLI on Apple Silicon macOS for casks only
+```
+
+`brew:` is a mise package backend, not a requirement for a `brew` executable. It writes formula artifacts and links into the canonical platform prefix: `/opt/homebrew` on Apple Silicon macOS and `/home/linuxbrew/.linuxbrew` on Linux. Bootstrap, verification, and shell startup add the applicable prefix to `PATH` explicitly. In the Linux greenfield result there is no `brew` executable, while package links such as `git` and `bash` resolve from `/home/linuxbrew/.linuxbrew/bin`.
+
+For bootstrap packages, `version = "latest"` accepts an already installed package; it does not upgrade that package during apply. Package upgrades are therefore an explicit `mise bootstrap packages upgrade` phase, separate from `mise upgrade` for `[tools]`. Manager-wide `mise bootstrap packages prune --manager brew` is prohibited because it can remove formulae installed manually outside this repository. Cleanup is limited to the explicit legacy formula list replaced by qualified mise tools.
+
+Only Apple Silicon macOS and Linux are supported by this ownership model; Intel macOS is unsupported. The Docker greenfield suite also passes two complete bootstrap convergences and requires the second convergence to report no changes.
+
+### Qualification Evidence
+
+Both platform workflows passed mise package apply, all 43 configured tool installs, and the shared smoke verifier after `[settings.npm] package_manager = "npm"` selected external npm. That setting avoids embedded aube aborts for three required npm packages on both platforms.
+
+- macOS arm64: [workflow run 34425518410, job 102709799798](https://github.com/tribou/dotfiles/actions/runs/34425518410/job/102709799798)
+- Ubuntu: [workflow run 34425518399, job 102709799806](https://github.com/tribou/dotfiles/actions/runs/34425518399/job/102709799806)
+
+### Package Ownership Audit
+
+Each row records one audited formula/tool alias or executable so future qualification results cannot be hidden inside a grouped inventory.
+
+| Original scope | Formula/tool | Final owner | Config key / executable | Reason/evidence |
+|---|---|---|---|---|
+| core qualified | `neovim` | mise `[tools]` | `neovim` / `nvim` | passed macOS arm64 and Linux qualification |
+| core qualified | `python` | mise `[tools]` | `python` / `python` | passed macOS arm64 and Linux qualification |
+| core qualified | `jq` | mise `[tools]` | `jq` / `jq` | passed macOS arm64 and Linux qualification |
+| core qualified | `fd` | mise `[tools]` | `fd` / `fd` | passed macOS arm64 and Linux qualification |
+| core qualified | `ripgrep` | mise `[tools]` | `ripgrep` / `rg` | passed macOS arm64 and Linux qualification |
+| core qualified | `bat` | mise `[tools]` | `bat` / `bat` | passed macOS arm64 and Linux qualification |
+| core qualified | `shellcheck` | mise `[tools]` | `shellcheck` / `shellcheck` | passed macOS arm64 and Linux qualification |
+| core qualified | `lazydocker` | mise `[tools]` | `lazydocker` / `lazydocker` | passed macOS arm64 and Linux qualification |
+| core qualified | `lazygit` | mise `[tools]` | `lazygit` / `lazygit` | passed macOS arm64 and Linux qualification |
+| core qualified | `just` | mise `[tools]` | `just` / `just` | passed macOS arm64 and Linux qualification |
+| core qualified | `tree-sitter-cli` | mise `[tools]` | `tree-sitter` / `tree-sitter` | passed macOS arm64 and Linux qualification |
+| core qualified | `fzf` | mise `[tools]` | `fzf` / `fzf` | passed macOS arm64 and Linux qualification |
+| core qualified | `git-delta` | mise `[tools]` | `delta` / `delta` | passed macOS arm64 and Linux qualification |
+| core qualified | `gh` | mise `[tools]` | `gh` / `gh` | passed macOS arm64 and Linux qualification |
+| core qualified | `glow` | mise `[tools]` | `glow` / `glow` | passed macOS arm64 and Linux qualification |
+| core qualified | `zoxide` | mise `[tools]` | `zoxide` / `zoxide` | passed macOS arm64 and Linux qualification |
+| core qualified | `tmux` | mise `[tools]` | `tmux` / `tmux` | passed macOS arm64 and Linux qualification |
+| core residual | `bash` | mise `[bootstrap.packages]` | `brew:bash` / `bash` | retained shared-prefix artifact |
+| core residual | `git` | mise `[bootstrap.packages]` | `brew:git` / `git` | retained shared-prefix artifact |
+| core residual | `zlib` | mise `[bootstrap.packages]` | `brew:zlib` / `libz` | library requires shared-prefix artifact semantics |
+| core residual | `htop` | mise `[bootstrap.packages]` | `brew:htop` / `htop` | no dual-platform canonical tool qualification |
+| core residual | `gpg` | mise `[bootstrap.packages]` | `brew:gnupg` / `gpg` | canonical formula; `brew:gpg` returned a mise formula API 404 |
+| core residual | `editorconfig` | mise `[bootstrap.packages]` | `brew:editorconfig` / `editorconfig` | retained shared-prefix artifact |
+| core residual | `watchman` | mise `[bootstrap.packages]` | `brew:watchman` / `watchman` | no dual-platform canonical tool qualification |
+| core residual | `ssh-copy-id` | mise `[bootstrap.packages]` | `brew:ssh-copy-id` / `ssh-copy-id` | retained shared-prefix artifact |
+| core residual | `git-extras` | mise `[bootstrap.packages]` | `brew:git-extras` / Git subcommands | retained shared-prefix artifact |
+| core residual | `lynx` | mise `[bootstrap.packages]` | `brew:lynx` / `lynx` | no dual-platform canonical tool qualification |
+| core residual | `beads` | mise `[bootstrap.packages]` | `brew:beads` / `bd` | no dual-platform canonical tool qualification |
+| Linux | `gcc` | mise `[bootstrap.packages]` | `brew:gcc` / `gcc`, `os = "linux"` | Linux compiler/system dependency |
+| macOS | `bash-completion` | mise `[bootstrap.packages]` | `brew:bash-completion`, `os = "macos/arm64"` | Apple Silicon shell integration |
+| macOS | `alacritty` | real Homebrew | `cask "alacritty"` / `alacritty` | `brew:alacritty` returned a mise formula API 404; retained cask flow passed |
+| macOS | `reattach-to-user-namespace` | mise `[bootstrap.packages]` | `brew:reattach-to-user-namespace`, `os = "macos/arm64"` | Apple Silicon platform integration |
+| macOS | `tmux-mem-cpu-load` | mise `[bootstrap.packages]` | `brew:tmux-mem-cpu-load`, `os = "macos/arm64"` | Apple Silicon platform integration |
+| optional tools | `awscli` | optional mise `[tools]` | `awscli` / `aws` | portable opt-in tool |
+| optional tools | `terraform-ls` | optional mise `[tools]` | `terraform-ls` / `terraform-ls` | portable opt-in tool |
+| optional tools | `navi` | optional mise `[tools]` | `navi` / `navi` | portable opt-in tool |
+| optional tools | `tlrc` | optional mise `[tools]` | `tlrc` / `tldr` | portable opt-in tool |
+| optional tools | `tfenv` | optional mise `[tools]` | `tfenv` / `tfenv` | portable opt-in tool |
+| optional formulae | `nmap` | optional mise `[bootstrap.packages]` | `brew:nmap` / `nmap` | opt-in shared-prefix artifact |
+| optional formulae | `tree` | optional mise `[bootstrap.packages]` | `brew:tree` / `tree` | opt-in shared-prefix artifact |
+| optional formulae | `dos2unix` | optional mise `[bootstrap.packages]` | `brew:dos2unix` / `dos2unix` | opt-in shared-prefix artifact |
+| optional formulae | `tidy-html5` | optional mise `[bootstrap.packages]` | `brew:tidy-html5` / `tidy` | opt-in shared-prefix artifact |
+| optional formulae | `ngrok` | optional mise `[bootstrap.packages]` | `brew:ngrok/ngrok/ngrok` / `ngrok`, `os = "macos/arm64"` | opt-in platform-selected artifact |
+| optional formulae | `tor` | optional mise `[bootstrap.packages]` | `brew:tor` / `tor`, `os = "macos/arm64"` | opt-in platform-selected artifact |
+| optional formulae | `rename` | optional mise `[bootstrap.packages]` | `brew:rename` / `rename`, `os = "macos/arm64"` | opt-in platform-selected artifact |
+| optional formulae | `renameutils` | optional mise `[bootstrap.packages]` | `brew:renameutils` / `qmv`, `os = "macos/arm64"` | opt-in platform-selected artifact |
+| optional formulae | `vimpager` | optional mise `[bootstrap.packages]` | `brew:vimpager` / `vimpager`, `os = "macos/arm64"` | opt-in platform-selected artifact |
+| optional casks | `firefox` | real Homebrew | `cask "firefox"` | casks explicitly remain outside mise |
+| optional casks | `orbstack` | real Homebrew | `cask "orbstack"` | casks explicitly remain outside mise |
+| optional casks | `bruno` | real Homebrew | `cask "bruno"` | casks explicitly remain outside mise |
+| optional casks | `balenaetcher` | real Homebrew | `cask "balenaetcher"` | casks explicitly remain outside mise |
+| optional casks | `appcleaner` | real Homebrew | `cask "appcleaner"` | casks explicitly remain outside mise |
+| optional casks | `imageoptim` | real Homebrew | `cask "imageoptim"` | casks explicitly remain outside mise |
+| optional casks | `cmake` | real Homebrew | `cask "cmake"` | casks explicitly remain outside mise |
+| optional casks | `font-fira-code-nerd-font` | real Homebrew | `cask "font-fira-code-nerd-font"` | casks explicitly remain outside mise |
+| optional casks | `font-hack-nerd-font` | real Homebrew | `cask "font-hack-nerd-font"` | casks explicitly remain outside mise |
+| optional casks | `font-fontawesome` | real Homebrew | `cask "font-fontawesome"` | casks explicitly remain outside mise |
 
 - **`bash_profile`**: Main bash configuration loaded on shell startup
   - Sources all lib scripts via `lib/index.sh`
@@ -136,24 +238,34 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 [tools]
 node = "lts"
 ruby = "3"
+python = { version = "latest", postinstall = "python -m pip install --upgrade pynvim" }
 go = "latest"
 bun = "latest"
 tombi = "latest"
+# Portable tools and explicit npm:/gem: executables continue here.
+
+[bootstrap.packages]
+"brew:bash" = "latest"
+"brew:git" = "latest"
+# Shared-prefix and platform-selected formula artifacts continue here.
 
 [settings]
 legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
 ruby.compile = false        # precompiled ruby binaries, no source build
+
+[settings.npm]
+package_manager = "npm"     # use external npm instead of embedded aube
 ```
 
 - `legacy_version_file = true` means mise respects `.nvmrc`, `.node-version`, `.ruby-version` files automatically
 - Run `mise install` to install all configured tool versions
 - `mise which <tool>` to check which binary will be used
 
-`mise-config.toml` is the single source of truth for the **core** runtime set —
-there is no parallel list in the role. `mise.yml` runs an un-scoped `mise
-install`, which installs everything across every config file mise merges: this
-file plus any user drop-in under `~/.config/mise/conf.d/*.toml` (see
-[Opt-in packages](#opt-in-packages) below).
+`mise-config.toml` is the single source of truth for core `[tools]` and
+`[bootstrap.packages]`; there is no parallel inventory in the role. `mise.yml`
+runs un-scoped package apply and tool install commands, which converge this file
+plus any user drop-in under `~/.config/mise/conf.d/*.toml` (see [Opt-in
+packages](#opt-in-packages)).
 
 ## Environment Configuration
 
