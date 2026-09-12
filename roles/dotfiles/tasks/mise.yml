@@ -38,6 +38,7 @@
   environment: &mise_environment
     MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
     MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+    PATH: "{{ (ansible_facts.system == 'Darwin') | ternary('/opt/homebrew/bin', '/home/linuxbrew/.linuxbrew/bin') }}:{{ dotfiles_home }}/.local/bin:{{ ansible_facts.env.PATH }}"
   register: dotfiles_mise_packages
   changed_when: "'Installing' in dotfiles_mise_packages.stdout"
   tags: [mise]

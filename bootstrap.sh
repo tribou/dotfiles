@@ -47,6 +47,7 @@ fi
 
 mkdir -p "$HOME/.config/mise"
 ln -sfn "$PWD/mise-config.toml" "$HOME/.config/mise/config.toml"
+export PATH="$HOME/.local/bin:$PATH"
 case "$(uname -s)/$(uname -m)" in
   Darwin/arm64) export PATH="/opt/homebrew/bin:$PATH" ;;
   Linux/*) export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH" ;;

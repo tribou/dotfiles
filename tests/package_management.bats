@@ -12,7 +12,7 @@ setup() {
   grep -qF '[settings.npm]' "$config"
   grep -qF 'package_manager = "npm"' "$config"
 
-  for tool in ansible neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux; do
+  for tool in neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux; do
     grep -qE "^${tool}[[:space:]]*=[[:space:]]*\"latest\"$" "$config"
   done
   for package in eas-cli eslint_d editorconfig intelephense js-yaml jsonlint neovim prettier react-devtools nodemon tern tslint typescript bash-language-server flow-bin vue-language-server vscode-css-languageserver-bin vscode-html-languageserver-bin; do
@@ -33,6 +33,13 @@ setup() {
   for formula in bash-completion reattach-to-user-namespace tmux-mem-cpu-load; do
     grep -qF "\"brew:${formula}\" = { version = \"latest\", os = \"macos/arm64\" }" "$config"
   done
+}
+
+@test "ansible declares its configured pipx install prerequisite" {
+  local config="$REPO_ROOT/mise-config.toml"
+
+  grep -qE '^pipx[[:space:]]*=[[:space:]]*"latest"$' "$config"
+  grep -qF 'ansible = { version = "latest", depends = ["pipx"] }' "$config"
 }
 
 @test "legacy package files, links, and provider installers are removed" {

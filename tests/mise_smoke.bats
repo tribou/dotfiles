@@ -24,3 +24,12 @@ setup() {
   run env MISE_BIN="$fake_bin/mise" "$REPO_ROOT/scripts/verify_mise_tools.sh"
   [ "$status" -eq 42 ]
 }
+
+@test "package qualification workflows authenticate mise GitHub requests" {
+  local workflow block
+
+  for workflow in macos-tests.yml ubuntu-tests.yml; do
+    block="$(awk '/- name: Install and verify mise packages and tools/{found=1} found && /- name: Install just/{exit} found' "$REPO_ROOT/.github/workflows/$workflow")"
+    echo "$block" | grep -qF 'GITHUB_TOKEN: ${{ github.token }}'
+  done
+}
