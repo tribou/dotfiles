@@ -23,6 +23,8 @@ jobs:
 
       - name: Install and verify mise packages and tools
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin" "$HOME/.config/mise"
