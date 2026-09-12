@@ -154,6 +154,7 @@ Each row records one audited formula/tool alias or executable so future qualific
 | core residual | `git-extras` | mise `[bootstrap.packages]` | `brew:git-extras` / Git subcommands | retained shared-prefix artifact |
 | core residual | `lynx` | mise `[bootstrap.packages]` | `brew:lynx` / `lynx` | no dual-platform canonical tool qualification |
 | core residual | `beads` | mise `[bootstrap.packages]` | `brew:beads` / `bd` | no dual-platform canonical tool qualification |
+| core tooling | `pipx` (ansible dependency) | mise `[tools]` | `pipx` / `ansible depends = ["pipx"]` | configured prerequisite for the pipx-backed Ansible tool |
 | Linux | `gcc` | mise `[bootstrap.packages]` | `brew:gcc` / `gcc`, `os = "linux"` | Linux compiler/system dependency |
 | macOS | `bash-completion` | mise `[bootstrap.packages]` | `brew:bash-completion`, `os = "macos/arm64"` | Apple Silicon shell integration |
 | macOS | `alacritty` | real Homebrew | `cask "alacritty"` / `alacritty` | `brew:alacritty` returned a mise formula API 404; retained cask flow passed |

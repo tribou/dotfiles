@@ -57,9 +57,14 @@
 - name: Collect Homebrew problems needing manual remediation
   ansible.builtin.set_fact:
     brew_manual_problems: >-
-      {{ (dotfiles_brew_cask_upgrade.results | default([])
+      {% set cask_failures = (dotfiles_brew_cask_upgrade.results | default([])
+          | selectattr('failed', 'defined') | selectattr('failed', 'equalto', true)
+          | list) %}
+      {% set cask_rc_failures = (dotfiles_brew_cask_upgrade.results | default([])
+          | rejectattr('failed', 'equalto', true)
           | selectattr('rc', 'defined') | selectattr('rc', 'ne', 0)
-          | list)
+          | list) %}
+      {{ cask_failures + cask_rc_failures
          + ([dotfiles_brewfile_upgrade] if (dotfiles_brewfile_upgrade is defined and (dotfiles_brewfile_upgrade.rc | default(0) | int) != 0) else []) }}
   changed_when: false
 

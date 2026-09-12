@@ -87,7 +87,9 @@ setup() {
 
 @test "Docker exercises mise-first bootstrap twice" {
   local compose="$REPO_ROOT/docker-compose.yml"
-  [ "$(grep -cF './bootstrap.sh' "$compose")" -eq 2 ]
+  local ci_block
+  ci_block="$(awk '/^  ci:/,/^  dev:/' "$compose")"
+  [ "$(grep -cF './bootstrap.sh' <<< "$ci_block")" -eq 2 ]
   grep -qF '/tmp/second-converge.log' "$compose"
   grep -qE "changed=\[1-9\]" "$compose" || grep -qF 'changed=[1-9]' "$compose"
 

@@ -25,6 +25,16 @@ setup() {
   [ "$status" -eq 42 ]
 }
 
+@test "mise verifier reports a missing executable clearly" {
+  local output status
+  set +e
+  output="$(env MISE_BIN="$BATS_TEST_TMPDIR/missing-mise" "$REPO_ROOT/scripts/verify_mise_tools.sh" 2>&1)"
+  status=$?
+  set -e
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"mise executable not found"* ]]
+}
+
 @test "package qualification workflows authenticate mise GitHub requests" {
   local workflow block
 
@@ -32,4 +42,13 @@ setup() {
     block="$(awk '/- name: Install and verify mise packages and tools/{found=1} found && /- name: Install just/{exit} found' "$REPO_ROOT/.github/workflows/$workflow")"
     echo "$block" | grep -qF 'GITHUB_TOKEN: ${{ github.token }}'
   done
+}
+
+@test "macOS workflow smoke-tests the Darwin cask role through mise" {
+  local workflow="$REPO_ROOT/.github/workflows/macos-tests.yml"
+  grep -qF 'ansible-galaxy collection install -r requirements.yml' "$workflow"
+  grep -qF 'Smoke-test Darwin Homebrew cask role' "$workflow"
+  grep -qF 'exec -- ansible-playbook' "$workflow"
+  grep -qF 'playbook.yml' "$workflow"
+  grep -qF 'dotfiles_brew_macos_casks=[]' "$workflow"
 }
