@@ -33,3 +33,13 @@ setup() {
   assert_success
 }
 
+@test "dockerfile: leaves product tools to mise" {
+  local dockerfile="$REPO_ROOT/Dockerfile"
+  ! grep -qF 'https://mise.run' "$dockerfile"
+  ! grep -qF 'ansible-core' "$dockerfile"
+  ! grep -qF 'setup_24.x' "$dockerfile"
+  ! grep -qF 'nvim-linux' "$dockerfile"
+  ! grep -qF 'pip3 install' "$dockerfile"
+  ! grep -qF 'apt-get install -y nodejs' "$dockerfile"
+  grep -qF 'COPY . .' "$dockerfile"
+}

@@ -79,3 +79,15 @@ setup() {
   assert_success
   assert_output --partial 'changed=0'
 }
+
+@test "Docker exercises mise-first bootstrap twice" {
+  local compose="$REPO_ROOT/docker-compose.yml"
+  [ "$(grep -cF './bootstrap.sh' "$compose")" -eq 2 ]
+  grep -qF '/tmp/second-converge.log' "$compose"
+  grep -qE "changed=\[1-9\]" "$compose" || grep -qF 'changed=[1-9]' "$compose"
+
+  ! grep -qF 'https://mise.run' "$REPO_ROOT/Dockerfile"
+  ! grep -qF 'ansible-core' "$REPO_ROOT/Dockerfile"
+  ! grep -qF 'setup_24.x' "$REPO_ROOT/Dockerfile"
+  ! grep -qF 'nvim-linux' "$REPO_ROOT/Dockerfile"
+}
