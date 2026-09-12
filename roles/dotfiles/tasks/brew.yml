@@ -1,6 +1,8 @@
 ---
 - name: Detect Homebrew on macOS
-  ansible.builtin.command: command -v brew
+  ansible.builtin.shell:
+    cmd: command -v brew
+    executable: /bin/bash
   register: dotfiles_brew_check
   changed_when: false
   failed_when: false

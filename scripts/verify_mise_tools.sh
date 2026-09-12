@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MISE_BIN="${MISE_BIN:-$(command -v mise)}"
+MISE_BIN="${MISE_BIN:-}"
+if [ -z "$MISE_BIN" ]; then
+  MISE_BIN="$(command -v mise || true)"
+fi
+if [ -z "$MISE_BIN" ] || { [ ! -x "$MISE_BIN" ] && ! command -v "$MISE_BIN" >/dev/null 2>&1; }; then
+  printf 'error: mise executable not found; set MISE_BIN or install mise\n' >&2
+  exit 127
+fi
 
 case "$(uname -s)/$(uname -m)" in
   Darwin/arm64) export PATH="/opt/homebrew/bin:$PATH" ;;

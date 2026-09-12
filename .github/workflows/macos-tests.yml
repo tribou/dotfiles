@@ -37,6 +37,18 @@ jobs:
           "$HOME/.local/bin/mise" install --yes
           MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
 
+      - name: Install Ansible collections
+        shell: bash
+        run: "$HOME/.local/bin/mise" exec -- ansible-galaxy collection install -r requirements.yml
+
+      - name: Smoke-test Darwin Homebrew cask role
+        shell: bash
+        run: |
+          set -euo pipefail
+          ANSIBLE_CONFIG="$GITHUB_WORKSPACE/ansible.cfg" \
+            "$HOME/.local/bin/mise" exec -- ansible-playbook playbook.yml \
+            --tags brew_casks -e 'dotfiles_brew_macos_casks=[]'
+
       - name: Install just
         uses: extractions/setup-just@v3
 

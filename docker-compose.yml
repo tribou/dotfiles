@@ -37,5 +37,5 @@ services:
     tty: true
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust} && bash
+        ./bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} && bash
       "

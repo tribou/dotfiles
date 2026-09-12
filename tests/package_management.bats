@@ -59,10 +59,37 @@ setup() {
     grep -qE "^#[[:space:]]+${tool}[[:space:]]*=" "$mise_optional"
   done
   for formula in nmap tree dos2unix tidy-html5 ngrok tor rename renameutils vimpager; do
-    grep -qF "brew:${formula}" "$mise_optional" || grep -qF "$formula" "$mise_optional"
+    case "$formula" in
+      ngrok|tor|rename|renameutils|vimpager)
+        local key="${formula}"
+        [ "$formula" = ngrok ] && key="ngrok/ngrok/ngrok"
+        grep -qF "\"brew:${key}\" = { version = \"latest\", os = \"macos/arm64\" }" "$mise_optional"
+        ;;
+      *)
+        grep -qF "\"brew:${formula}\" = \"latest\"" "$mise_optional"
+        ;;
+    esac
   done
   ! grep -qE '^[[:space:]]*#?[[:space:]]*brew[[:space:]]+"' "$brew_optional"
   grep -qF '# cask ' "$brew_optional"
+}
+
+@test "macOS Homebrew detection uses a shell probe" {
+  local brew="$REPO_ROOT/roles/dotfiles/tasks/brew.yml"
+  grep -qF 'ansible.builtin.shell:' "$brew"
+  grep -qF 'command -v brew' "$brew"
+  ! grep -qF 'ansible.builtin.command: command -v brew' "$brew"
+}
+
+@test "mise package change detection checks both output streams" {
+  local mise="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
+  grep -qF 'dotfiles_mise_packages.stdout' "$mise"
+  grep -qF 'dotfiles_mise_packages.stderr' "$mise"
+}
+
+@test "architecture audit records the configured ansible pipx prerequisite" {
+  grep -qF '| `pipx` (ansible dependency) | mise `[tools]` | `pipx` / `ansible depends = ["pipx"]` |' \
+    "$REPO_ROOT/docs/ARCHITECTURE.md"
 }
 
 @test "repository never uses manager-wide brew prune" {
