@@ -29,6 +29,35 @@ setup() {
   [ "$install_line" -lt "$playbook_line" ]
 }
 
+@test "bootstrap exposes standalone mise to tool installers after the canonical brew prefix" {
+  local fixture_home="$BATS_TEST_TMPDIR/home"
+  local fixture_bin="$BATS_TEST_TMPDIR/bin"
+  local path_log="$BATS_TEST_TMPDIR/mise-install-path"
+  mkdir -p "$fixture_home/.local/bin" "$fixture_bin"
+
+  printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    'case "$1" in' \
+    '  -s) printf "Darwin\\n" ;;' \
+    '  -m) printf "arm64\\n" ;;' \
+    'esac' > "$fixture_bin/uname"
+  chmod +x "$fixture_bin/uname"
+
+  printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    'set -euo pipefail' \
+    'if [ "$*" = "install --yes" ]; then printf "%s\\n" "$PATH" > "$MISE_PATH_LOG"; fi' \
+    > "$fixture_home/.local/bin/mise"
+  chmod +x "$fixture_home/.local/bin/mise"
+
+  run env HOME="$fixture_home" PATH="$fixture_bin:/usr/bin:/bin" \
+    MISE_PATH_LOG="$path_log" bash "$REPO_ROOT/bootstrap.sh"
+
+  assert_success
+  run grep -qF "/opt/homebrew/bin:$fixture_home/.local/bin:$fixture_bin:/usr/bin:/bin" "$path_log"
+  assert_success
+}
+
 @test "Ansible convergence repeats explicit package and tool phases" {
   local file="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
   grep -qF 'bootstrap packages --help' "$file"

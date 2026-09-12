@@ -46,6 +46,7 @@ setup() {
     '    if [ ! -e "'$BATS_TEST_TMPDIR'/mise-installed" ]; then printf "Installing package\\n"; fi' \
     '    ;;' \
     '  "install --yes")' \
+    '    case ":$PATH:" in *":'$fixture_home'/.local/bin:"*) ;; *) printf "mise missing from PATH\\n" >&2; exit 1 ;; esac' \
     '    if [ ! -e "'$BATS_TEST_TMPDIR'/mise-installed" ]; then' \
     '      printf "mise ansible@14.4.0 [1/1] install\\n" >&2' \
     '      touch "'$BATS_TEST_TMPDIR'/mise-installed"' \
@@ -65,6 +66,10 @@ setup() {
     '  vars:' \
     '    dotfiles_home: "'$fixture_home'"' \
     '    dotfiles_repo_root: "'$REPO_ROOT'"' \
+    '    ansible_facts:' \
+    '      system: Linux' \
+    '      env:' \
+    '        PATH: "'$fixture_bin':/usr/bin:/bin"' \
     '  tasks:' \
     '    - ansible.builtin.include_tasks: "'$REPO_ROOT'/roles/dotfiles/tasks/mise.yml"' \
     > "$fixture_playbook"
