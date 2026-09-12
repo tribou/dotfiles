@@ -21,7 +21,10 @@ services:
       - ./.ci-cache/coc:/root/.config/coc
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust} &&
+        set -o pipefail &&
+        ./bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/first-converge.log &&
+        ./bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/second-converge.log &&
+        ! grep -Eq 'changed=[1-9][0-9]*' /tmp/second-converge.log &&
         source ~/.bash_profile &&
         DOTFILES=/dotfiles goss validate --format tap &&
         ./tests/test_helper/bats-core/bin/bats tests/integration/

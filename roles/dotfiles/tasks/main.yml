@@ -73,3 +73,5 @@
     path: "{{ dotfiles_home }}/.dotfiles-bootstrap-done"
     state: touch
     mode: "0644"
+    modification_time: preserve
+    access_time: preserve

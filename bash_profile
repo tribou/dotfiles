@@ -160,7 +160,7 @@ export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools
 
 # deno
 [ -d "$HOME/.deno" ] && export DENO_INSTALL="$HOME/.deno"
-[ -d "$DENO_INSTALL/bin" ] && export PATH="$DENO_INSTALL/bin:$PATH"
+[ -n "${DENO_INSTALL:-}" ] && [ -d "$DENO_INSTALL/bin" ] && export PATH="$DENO_INSTALL/bin:$PATH"
 
 # maestro
 [ -d "$HOME/.maestro/bin" ] && export PATH=$PATH:$HOME/.maestro/bin
