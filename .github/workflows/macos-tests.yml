@@ -13,7 +13,7 @@ jobs:
   test:
     name: Run bash function tests
     runs-on: macos-latest
-    timeout-minutes: 5
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
@@ -21,14 +21,40 @@ jobs:
         with:
           submodules: true
 
+      - name: Require Apple Silicon runner
+        run: test "$(uname -m)" = arm64
+
+      - name: Install and verify mise packages and tools
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin" "$HOME/.config/mise"
+          curl -fsSL https://mise.run | MISE_INSTALL_PATH="$HOME/.local/bin/mise" sh
+          ln -sfn "$GITHUB_WORKSPACE/mise-config.toml" "$HOME/.config/mise/config.toml"
+          "$HOME/.local/bin/mise" bootstrap packages apply --yes
+          "$HOME/.local/bin/mise" install --yes
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+          MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
+
+      - name: Install Ansible collections
+        shell: bash
+        run: '"$HOME/.local/bin/mise" exec -- ansible-galaxy collection install -r requirements.yml'
+
+      - name: Smoke-test Darwin Homebrew cask role
+        shell: bash
+        run: |
+          set -euo pipefail
+          ANSIBLE_CONFIG="$GITHUB_WORKSPACE/ansible.cfg" \
+            "$HOME/.local/bin/mise" exec -- ansible-playbook playbook.yml \
+            --tags brew_casks -e 'dotfiles_brew_macos_casks=[]'
+
       - name: Install just
         uses: extractions/setup-just@v3
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-
-      - name: Install shellcheck
-        run: brew install shellcheck
 
       - name: Run bash function tests
         run: just test-unit
