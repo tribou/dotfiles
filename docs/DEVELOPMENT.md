@@ -118,7 +118,7 @@ Select new machine-wide packages in this order:
 4. Use a tool-level `postinstall` when a library must be imported by its managed interpreter rather than run as a standalone executable.
 5. Use a `brew:` bootstrap package only after dual-platform tool qualification fails or when shared-prefix artifact semantics are required.
 
-Record each qualification failure and resulting owner in the package ownership table in [ARCHITECTURE.md](ARCHITECTURE.md#package-ownership-audit). Casks remain owned by the real Homebrew CLI on macOS, while native OS package managers retain bootstrap and system dependencies. Ansible executes mise convergence but must not mirror either `[tools]` or `[bootstrap.packages]`; `mise-config.toml` and optional mise drop-ins are the inventories.
+Casks remain owned by the real Homebrew CLI on macOS, while native OS package managers retain bootstrap and system dependencies. Ansible executes mise convergence but must not mirror either `[tools]` or `[bootstrap.packages]`; `mise-config.toml` and optional mise drop-ins are the inventories.
 
 ## Development Environment
 

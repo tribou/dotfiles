@@ -44,6 +44,16 @@ setup() {
   done
 }
 
+@test "package qualification workflows preserve their timeout budgets" {
+  local macos_timeout ubuntu_timeout
+
+  macos_timeout="$(awk '/timeout-minutes:/ { print $2; exit }' "$REPO_ROOT/.github/workflows/macos-tests.yml")"
+  ubuntu_timeout="$(awk '/timeout-minutes:/ { print $2; exit }' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml")"
+
+  [ "$macos_timeout" -eq 5 ]
+  [ "$ubuntu_timeout" -eq 15 ]
+}
+
 @test "macOS workflow smoke-tests the Darwin cask role through mise" {
   local workflow="$REPO_ROOT/.github/workflows/macos-tests.yml"
   grep -qF 'ansible-galaxy collection install -r requirements.yml' "$workflow"
