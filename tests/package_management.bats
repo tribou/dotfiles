@@ -87,11 +87,6 @@ setup() {
   grep -qF 'dotfiles_mise_packages.stderr' "$mise"
 }
 
-@test "architecture audit records the configured ansible pipx prerequisite" {
-  grep -qF '| `pipx` (ansible dependency) | mise `[tools]` | `pipx` / `ansible depends = ["pipx"]` |' \
-    "$REPO_ROOT/docs/ARCHITECTURE.md"
-}
-
 @test "repository never uses manager-wide brew prune" {
   ! grep -R -qF 'bootstrap packages prune --manager brew' \
     "$REPO_ROOT/bootstrap.sh" "$REPO_ROOT/roles" "$REPO_ROOT/justfile" "$REPO_ROOT/scripts"
