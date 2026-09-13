@@ -35,6 +35,7 @@ jobs:
           ln -sfn "$GITHUB_WORKSPACE/mise-config.toml" "$HOME/.config/mise/config.toml"
           "$HOME/.local/bin/mise" bootstrap packages apply --yes
           "$HOME/.local/bin/mise" install --yes
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
           MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
 
       - name: Install Ansible collections
