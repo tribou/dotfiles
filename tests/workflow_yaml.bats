@@ -8,3 +8,9 @@ setup() {
     "$REPO_ROOT/.github/workflows/macos-tests.yml"
   assert_success
 }
+
+@test "macOS workflow exports mise shims to later steps" {
+  run grep -qF 'echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"' \
+    "$REPO_ROOT/.github/workflows/macos-tests.yml"
+  assert_success
+}
