@@ -71,9 +71,68 @@ json_field() {
   [ "$(json_field session_id)" = "from-flag" ]
 }
 
-@test "probe: rejects an unknown stage" {
-  run bun "$SCRIPT" probe --stage not-a-stage
-  [ "$status" -ne 0 ]
+@test "probe: accepts a caller-defined kebab-case stage" {
+  run bun "$SCRIPT" probe --stage release-checklist
+  [ "$status" -eq 0 ]
+  [ "$(json_field stage)" = "release-checklist" ]
+}
+
+@test "probe: rejects a malformed stage slug" {
+  run bun "$SCRIPT" probe --stage not_a_stage
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--stage must be a kebab-case identifier"* ]]
+}
+
+@test "record: rejects a malformed stage slug before accessing GitHub" {
+  run bun "$SCRIPT" record --stage not_a_stage --target pr:1
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--stage must be a kebab-case identifier"* ]]
+}
+
+@test "record: rejects a malformed stage in an injected record before accessing GitHub" {
+  local rec="$FIXTURES/malformed-stage-record.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "not_a_stage",
+  "harness": "claude-code",
+  "session_id": "sess-malformed-stage",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-12T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" record --stage release-checklist --target pr:1 --record "$rec"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"record stage must match --stage"* ]]
+}
+
+@test "record: rejects an injected record for a different stage before accessing GitHub" {
+  local rec="$FIXTURES/mismatched-stage-record.json"
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-mismatched-stage",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 1, "output": 1, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 2 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-12T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" record --stage release-checklist --target pr:1 --record "$rec"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"record stage must match --stage"* ]]
 }
 
 @test "probe: invalid harness override falls back to the unknown harness" {
@@ -354,6 +413,134 @@ EOF
   [ "$(json_field records.1.stage)" = "plan-to-implementation" ]
 }
 
+@test "ledger merge: keeps established workflow order then sorts caller-defined stages by name" {
+  local existing="$FIXTURES/ledger-portable-stages.json"
+  local rec="$FIXTURES/rec-portable-stage.json"
+  cat > "$existing" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "stage": "zeta-check",
+      "harness": "claude-code",
+      "session_id": "sess-a",
+      "source": "builtin-claude-code",
+      "models": [],
+      "model_breakdowns": [],
+      "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    },
+    {
+      "schema": 1,
+      "stage": "plan-to-implementation",
+      "harness": "claude-code",
+      "session_id": "sess-implementation",
+      "source": "builtin-claude-code",
+      "models": [],
+      "model_breakdowns": [],
+      "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    },
+    {
+      "schema": 1,
+      "stage": "alpha-check",
+      "harness": "claude-code",
+      "session_id": "sess-z",
+      "source": "builtin-claude-code",
+      "models": [],
+      "model_breakdowns": [],
+      "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "issue-to-plan",
+  "harness": "claude-code",
+  "session_id": "sess-plan",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --existing "$existing" --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.0.stage)" = "issue-to-plan" ]
+  [ "$(json_field records.1.stage)" = "plan-to-implementation" ]
+  [ "$(json_field records.2.stage)" = "alpha-check" ]
+  [ "$(json_field records.3.stage)" = "zeta-check" ]
+}
+
+@test "ledger merge: tolerates existing records without a stage" {
+  local existing="$FIXTURES/ledger-missing-stages.json"
+  local rec="$FIXTURES/rec-valid-stage.json"
+  cat > "$existing" <<'EOF'
+{
+  "schema": 1,
+  "records": [
+    {
+      "schema": 1,
+      "harness": "unknown",
+      "session_id": "sess-z",
+      "source": "unavailable",
+      "models": [],
+      "model_breakdowns": [],
+      "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    },
+    {
+      "schema": 1,
+      "harness": "unknown",
+      "session_id": "sess-a",
+      "source": "unavailable",
+      "models": [],
+      "model_breakdowns": [],
+      "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+      "cost_usd": null,
+      "children": [],
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ]
+}
+EOF
+  cat > "$rec" <<'EOF'
+{
+  "schema": 1,
+  "stage": "release-checklist",
+  "harness": "claude-code",
+  "session_id": "sess-valid",
+  "source": "builtin-claude-code",
+  "models": [],
+  "model_breakdowns": [],
+  "tokens": { "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "total": 0 },
+  "cost_usd": null,
+  "children": [],
+  "updated_at": "2026-09-07T00:00:00Z"
+}
+EOF
+
+  run bun "$SCRIPT" merge --existing "$existing" --record "$rec"
+  [ "$status" -eq 0 ]
+  [ "$(json_field records.length)" = "3" ]
+}
+
 @test "render: single-model session renders one table row and correct totals" {
   local ledger="$FIXTURES/ledger-single.json"
   cat > "$ledger" <<'EOF'
@@ -529,7 +716,7 @@ EOF
   [ "$(json_field records.length)" = "0" ]
 }
 
-@test "record: creates new comment (POST) when no audit comment exists" {
+@test "record: accepts a caller-defined stage when creating a new comment" {
   local stubdir="$FIXTURES/bin"
   mkdir -p "$stubdir"
   local logfile="$FIXTURES/gh.log"
@@ -549,7 +736,7 @@ EOF
   cat > "$rec" <<'EOF'
 {
   "schema": 1,
-  "stage": "issue-to-plan",
+  "stage": "release-checklist",
   "harness": "claude-code",
   "session_id": "sess-post-test",
   "source": "builtin-claude-code",
@@ -567,7 +754,7 @@ EOF
 }
 EOF
 
-  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage issue-to-plan --target pr:181 --record "$rec"
+  run env PATH="$stubdir:$PATH" FIXTURES="$FIXTURES" bun "$SCRIPT" record --stage release-checklist --target pr:181 --record "$rec"
   [ "$status" -eq 0 ]
   run grep "POST repos/:owner/:repo/issues/181/comments" "$logfile"
   [ "$status" -eq 0 ]

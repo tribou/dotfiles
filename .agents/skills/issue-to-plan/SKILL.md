@@ -30,7 +30,7 @@ The plan lives in a PR comment, never the description. The description stays a c
    - Never write it under `docs/` and never commit it.
    - Never offer execution approaches and never start implementation.
 
-## Publish the Durable Handoff (all 8 steps, in order)
+## Publish the Durable Handoff (all 9 steps, in order)
 
 Pre-publish gate — before creating anything, confirm each check aloud:
 
@@ -46,9 +46,10 @@ Then, with the exact commands and shapes in `plan-and-publish.md`:
 3. Open a **draft** PR whose description carries `Closes #N`, the change summary, and the test plan.
 4. Publish the plan as a single PR comment containing the complete plan between `<!-- BEGIN PLAN -->` and `<!-- END PLAN -->`.
 5. Verify the published PR: state OPEN, `isDraft` true, and exactly one comment containing the ordered marker pair with the complete plan between them.
-6. Print the PR URL.
-7. Print exactly: `Run plan-to-implementation for PR #M in a fresh session.`
-8. **STOP.**
+6. **REQUIRED SUB-SKILL:** `agent-usage-audit` — record this stage with `--stage issue-to-plan --target pr:<M>`. Post it after the verification in step 5 so that check reads exactly one comment containing the ordered plan-marker pair. A failed audit is reported, never a reason to skip the handoff.
+7. Print the PR URL.
+8. Print exactly: `Run plan-to-implementation for PR #M in a fresh session.`
+9. **STOP.**
 
 The plan remains untracked scratch locally; its durable copy is the marked PR comment. When the plan later changes, that comment is edited in place by its comment ID — never reposted as a new comment. The empty seed commit contains no plan and disappears under squash merge.
 
@@ -61,6 +62,7 @@ The plan remains untracked scratch locally; its durable copy is the marked PR co
 | Branch | Pushed, anchored by empty seed commit |
 | PR | Open draft; description = `Closes #N` + summary + test plan, no markers |
 | Plan comment | Exactly one, holding the verbatim plan between markers |
+| Audit comment | Exactly one, posted after PR verification, carrying this stage's ledger row |
 | Terminal action | Print handoff, then stop |
 
 ## Common Mistakes
@@ -76,6 +78,7 @@ The plan remains untracked scratch locally; its durable copy is the marked PR co
 | Saving under `docs/superpowers/plans/` | Divert `writing-plans` output to `.superpowers/sdd/plan.md` |
 | Asking which execution approach to use | There is no execution in this skill |
 | Summarizing or trimming the plan to fit GitHub's 65k comment limit | Never compress the plan; stop, report the size, and split the source issue instead |
+| Printing the handoff without recording agent usage | Run `agent-usage-audit` with `--stage issue-to-plan --target pr:<M>` after PR verification, before printing the URL |
 
 ## Red Flags — STOP
 

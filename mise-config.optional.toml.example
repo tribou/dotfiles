@@ -5,12 +5,24 @@
 # (alphabetically) and merges [tools] additively over the core config.toml, so
 # `mise install` / `mise upgrade` provision these alongside the core runtimes.
 #
-# Each entry below was verified to have a working mise backend. Tools without a
-# mise backend (nmap, tree, dos2unix, tidy-html5) live in Brewfile.optional.example.
+# Each entry below is optional and additive to the core mise configuration. The
+# optional formulae also use mise's bootstrap package manager rather than the
+# retained macOS-only cask flow.
 
 [tools]
 # awscli = "latest"        # pipx backend (AWS CLI v2)
 # terraform-ls = "latest"  # ubi backend (HashiCorp terraform-ls GitHub releases)
-# ansible = "latest"       # pipx backend (note: bootstrap.sh also brew-installs ansible)
 # navi = "latest"          # ubi backend (cheatsheet tool)
 # tlrc = "latest"          # ubi/cargo backend (tldr client)
+# tfenv = "latest"
+
+[bootstrap.packages]
+# "brew:nmap" = "latest"
+# "brew:tree" = "latest"
+# "brew:dos2unix" = "latest"
+# "brew:tidy-html5" = "latest"
+# "brew:ngrok/ngrok/ngrok" = { version = "latest", os = "macos/arm64" }
+# "brew:tor" = { version = "latest", os = "macos/arm64" }
+# "brew:rename" = { version = "latest", os = "macos/arm64" }
+# "brew:renameutils" = { version = "latest", os = "macos/arm64" }
+# "brew:vimpager" = { version = "latest", os = "macos/arm64" }

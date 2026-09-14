@@ -22,8 +22,9 @@ import { homedir } from "node:os";
 import path from "node:path";
 
 const SCHEMA = 1;
-const STAGES = ["brainstorming-to-issue", "issue-to-plan", "plan-to-implementation"] as const;
-type Stage = (typeof STAGES)[number];
+const PREFERRED_STAGES = ["brainstorming-to-issue", "issue-to-plan", "plan-to-implementation"] as const;
+const STAGE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+type Stage = string;
 
 type Harness = "claude-code" | "opencode" | "agy" | "unknown";
 type Role = "orchestrator" | "subagent";
@@ -78,15 +79,25 @@ interface LedgerEnvelope {
 
 function sortRecords(records: UsageRecord[]): UsageRecord[] {
   return [...records].sort((a, b) => {
-    const stageIdxA = STAGES.indexOf(a.stage);
-    const stageIdxB = STAGES.indexOf(b.stage);
-    const stageOrderA = stageIdxA === -1 ? 999 : stageIdxA;
-    const stageOrderB = stageIdxB === -1 ? 999 : stageIdxB;
-    if (stageOrderA !== stageOrderB) return stageOrderA - stageOrderB;
+    const stageIdxA = PREFERRED_STAGES.indexOf(a.stage as (typeof PREFERRED_STAGES)[number]);
+    const stageIdxB = PREFERRED_STAGES.indexOf(b.stage as (typeof PREFERRED_STAGES)[number]);
+    if (stageIdxA !== stageIdxB) {
+      if (stageIdxA === -1) return 1;
+      if (stageIdxB === -1) return -1;
+      return stageIdxA - stageIdxB;
+    }
+    if (stageIdxA === -1) {
+      const stageCompare = (a.stage || "").localeCompare(b.stage || "");
+      if (stageCompare !== 0) return stageCompare;
+    }
     const timeCompare = (a.updated_at || "").localeCompare(b.updated_at || "");
     if (timeCompare !== 0) return timeCompare;
     return (a.session_id || "").localeCompare(b.session_id || "");
   });
+}
+
+function isStage(value: string): boolean {
+  return STAGE_PATTERN.test(value);
 }
 
 function mergeLedger(existingRecords: UsageRecord[], newRecord: UsageRecord): UsageRecord[] {
@@ -1029,6 +1040,9 @@ async function recordUsage(options: RecordOptions): Promise<number> {
   let record: UsageRecord;
   if (options.recordFile) {
     record = JSON.parse(readFileSync(options.recordFile, "utf-8"));
+    if (typeof record.stage !== "string" || !isStage(record.stage) || record.stage !== options.stage) {
+      throw new Error("record stage must match --stage");
+    }
   } else {
     record = await probe(options.stage, options.session);
   }
@@ -1172,13 +1186,13 @@ async function main(argv: string[]): Promise<number> {
       console.error("usage: agent-usage-audit record --stage <stage> [--session <id>] --target <issue:N|pr:M> [--dry-run] [--record <file>]");
       return 2;
     }
-    if (!STAGES.includes(args.stage as Stage)) {
-      console.error(`--stage must be one of: ${STAGES.join(", ")}`);
+    if (!isStage(args.stage)) {
+      console.error("--stage must be a kebab-case identifier");
       return 2;
     }
     try {
       return await recordUsage({
-        stage: args.stage as Stage,
+        stage: args.stage,
         session: args.session,
         target: args.target,
         dryRun: args.dryRun,
@@ -1193,19 +1207,19 @@ async function main(argv: string[]): Promise<number> {
     console.error("usage: agent-usage-audit probe --stage <stage> [--session <id>]");
     return 2;
   }
-  if (!STAGES.includes(args.stage as Stage)) {
-    console.error(`--stage must be one of: ${STAGES.join(", ")}`);
+  if (!isStage(args.stage)) {
+    console.error("--stage must be a kebab-case identifier");
     return 2;
   }
   try {
-    const record = await probe(args.stage as Stage, args.session);
+    const record = await probe(args.stage, args.session);
     console.log(JSON.stringify(record, null, 2));
     return 0;
   } catch (error) {
     const harness = detectHarness();
     const sessionId = args.session ?? detectSessionId(harness);
     const fallback = unavailableRecord(
-      args.stage as Stage,
+      args.stage,
       harness,
       sessionId,
       `unexpected probe error: ${error instanceof Error ? error.message : String(error)}`,

@@ -3,45 +3,28 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTFILES=/dotfiles
 
-# System deps — cached layer, only re-runs when this block changes
+# Native bootstrap prerequisites — cached layer, only re-runs when this block changes.
 RUN apt-get update && apt-get install -y \
-    tmux \
-    git \
+    ca-certificates \
     curl \
-    python3 \
-    python3-pip \
-    fzf \
-    fd-find \
-    bat \
-    git-delta \
+    git \
     build-essential \
     zlib1g-dev \
     xdg-utils \
     bash-completion \
-  && rm -rf /var/lib/apt/lists/* \
-  && pip3 install --break-system-packages pynvim \
-  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
-  && ln -s /usr/bin/batcat /usr/local/bin/bat
-
-# Install Node.js 24 via NodeSource (matches bootstrap.sh)
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
-  && apt-get install -y nodejs \
+    sudo \
+    file \
+    tar \
+    gzip \
+    bzip2 \
+    unzip \
+    zip \
+    xz-utils \
+    zstd \
+    python3-apt \
+    locales \
+  && locale-gen en_US.UTF-8 \
   && rm -rf /var/lib/apt/lists/*
-
-# Install neovim from official stable release — Ubuntu 24.04 apt ships 0.9.5
-# which is too old for plugins requiring vim.uv (needs 0.10+)
-RUN ARCH=$(uname -m | sed 's/aarch64/arm64/') \
-  && curl -fsSL "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${ARCH}.tar.gz" \
-      | tar xz -C /opt \
-  && ln -sf "/opt/nvim-linux-${ARCH}/bin/nvim" /usr/local/bin/nvim
-
-# Install mise (replaces rbenv + nvm for Ruby and Node version management)
-RUN bash -o pipefail -c "curl -fsSL https://mise.run | sh" \
-  && ln -sf /root/.local/bin/mise /usr/local/bin/mise
-
-# Install ansible-core so the role can provision the container in CI
-RUN pip3 install --break-system-packages ansible-core \
-  && ansible-galaxy collection install community.general community.crypto ansible.posix
 
 # Install goss for infrastructure assertions (v0.4.9+ ships versioned tarballs,
 # not bare binaries, so latest/download/goss-linux-amd64 404s)

@@ -1,6 +1,13 @@
 {
   "version": 1,
   "skills": {
+    "agent-usage-audit": {
+      "source": "tribou/dotfiles",
+      "ref": "feat-182-agent-usage-audit-skill",
+      "sourceType": "github",
+      "skillPath": "skills/agent-usage-audit/SKILL.md",
+      "computedHash": "9ce267b095109df9068dd504fecf060bc515e3269d8f695a6d1093064bd1a563"
+    },
     "brainstorming": {
       "source": "obra/superpowers",
       "sourceType": "github",

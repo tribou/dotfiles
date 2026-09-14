@@ -19,31 +19,6 @@
     cmd: nvim --headless -c "execute 'CocInstall -sync ' . join(g:coc_global_extensions)" -c "qall"
     creates: "{{ dotfiles_home }}/.config/coc/extensions/node_modules"
 
-- name: Check for packaging library in Ansible's target Python interpreter
-  ansible.builtin.command: "{{ ansible_facts.python.executable }} -c 'import packaging'"
-  register: dotfiles_python_packaging_check
-  changed_when: false
-  failed_when: false
-  check_mode: false
-
-- name: Install packaging library (required by ansible.builtin.pip)
-  ansible.builtin.command: "{{ ansible_facts.python.executable }} -m pip install --user --break-system-packages packaging"
-  when: dotfiles_python_packaging_check.rc != 0
-
-- name: Install pynvim (Python provider)
-  ansible.builtin.pip:
-    name: pynvim
-    extra_args: "--user --break-system-packages"
-    state: "{{ 'latest' if dotfiles_state == 'latest' else 'present' }}"
-
-- name: Install neovim gem (Ruby provider)
-  community.general.gem:
-    name: neovim
-    user_install: true
-    state: "{{ 'latest' if dotfiles_state == 'latest' else 'present' }}"
-  environment:
-    PATH: "{{ dotfiles_home }}/.local/share/mise/shims:{{ ansible_facts.env.PATH }}"
-
 - name: Check if gopls is installed
   ansible.builtin.command: which gopls
   register: dotfiles_gopls_check
