@@ -27,15 +27,19 @@
   ansible.builtin.import_tasks: rust.yml
   tags: [rust]
 
-- name: Include mise runtimes
+- name: Converge mise packages and tools
   ansible.builtin.import_tasks: mise.yml
   tags: [mise]
 
-- name: Include Homebrew formulae
-  ansible.builtin.import_tasks: brew.yml
-  tags: [brew]
+- name: Remove legacy Homebrew copies replaced by mise tools
+  ansible.builtin.import_tasks: brew_cleanup.yml
+  tags: [brew_cleanup]
 
-- name: Include macOS formulae and casks
+- name: Prepare Homebrew for retained macOS casks
+  ansible.builtin.import_tasks: brew.yml
+  tags: [brew_casks]
+
+- name: Install retained macOS casks
   ansible.builtin.import_tasks: brew_casks.yml
   tags: [brew_casks]
 
@@ -69,3 +73,5 @@
     path: "{{ dotfiles_home }}/.dotfiles-bootstrap-done"
     state: touch
     mode: "0644"
+    modification_time: preserve
+    access_time: preserve

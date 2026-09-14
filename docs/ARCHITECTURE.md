@@ -4,10 +4,11 @@
 
 ## Entry Points
 
-- **`bootstrap.sh`**: Thin bootstrapper that solves the chicken-and-egg problem of installing Homebrew + Ansible, then hands off to the Ansible role. Accepts `curl | bash` for zero-clone installs.
+- **`bootstrap.sh`**: Thin bootstrapper that solves the chicken-and-egg problem by installing standalone mise, then hands off to the Ansible role through mise. Accepts `curl | bash` for zero-clone installs.
   - Self-locates or self-clones the repo into `$HOME/dev/dotfiles`
-  - Installs brew (if missing) and ansible (if missing)
-  - Runs `ansible-playbook playbook.yml` — all actual provisioning lives in the role
+  - Installs native OS prerequisites needed to bootstrap mise packages
+  - Exposes the global mise config, applies packages, installs tools, and runs smoke verification
+  - Runs `mise exec -- ansible-playbook playbook.yml` — all repeatable provisioning lives in the role
 
 - **`playbook.yml`**: Top-level Ansible playbook that applies the `dotfiles` role to `localhost`
 - **`ansible.cfg`**: Configures `roles_path = roles`, disables retry files, sets YAML output format
@@ -28,8 +29,8 @@ roles/dotfiles/
 └── tasks/
     ├── main.yml         # Role entry point — includes all task files
     ├── prereqs.yml      # Pre-requisite packages
-    ├── brew.yml         # Homebrew formulae (core)
-    ├── brew_casks.yml   # macOS casks/formulae + global ~/.Brewfile hook
+    ├── brew.yml         # Real Homebrew discovery/install for macOS casks
+    ├── brew_casks.yml   # Retained macOS casks + global ~/.Brewfile hook
     ├── links.yml        # Symlink management
     ├── dirs.yml         # Directory structure
     ├── ssh.yml          # SSH key generation
@@ -42,7 +43,7 @@ roles/dotfiles/
     ├── terminfo.yml     # Terminal info DB
     ├── tools_cli.yml    # Additional CLI tools
     ├── beads.yml        # Beads issue tracking
-    ├── upgrade.yml      # Upgrade-only tasks (brew upgrade, mise upgrade, npm update)
+    ├── upgrade.yml      # Upgrade-only tasks (mise packages/tools + macOS casks)
     └── config files in the repo root
   ```
 
@@ -53,7 +54,7 @@ The `dotfiles_state` variable (defined in `roles/dotfiles/defaults/main.yml`) co
 | Value | Behavior |
 |-------|----------|
 | `present` (default) | Ensures tools/config are present but does not force the latest versions |
-| `latest` | Upgrades formulae, runtimes, and packages to their latest versions |
+| `latest` | Runs explicit package, tool, native-system, and retained-cask upgrades |
 
 Use `just upgrade` to run with `dotfiles_state=latest` and the `upgrade` tag (selectively targets only upgrade tasks).
 
@@ -66,21 +67,58 @@ into their home directory — nothing in the repo needs editing per machine.
 | Repo template | Copy to | Consumed by |
 |---|---|---|
 | `mise-config.optional.toml.example` | `~/.config/mise/conf.d/optional.toml` | un-scoped `mise install` (`tasks/mise.yml`) |
-| `Brewfile.optional.example` | `~/.Brewfile` | `brew bundle --global` (`tasks/brew_casks.yml`) |
+| `Brewfile.optional.example` | `~/.Brewfile` | macOS-only `brew bundle --global` (`tasks/brew_casks.yml`) |
 
 - Optional CLI tools **with a mise backend** live in the mise drop-in; mise
   auto-loads `~/.config/mise/conf.d/*.toml` (alphabetically) and merges
   `[tools]` additively over `config.toml`.
-- Optional **casks and brew-only formulae** live in the Brewfile. `brew bundle`
-  skips cask directives on Linux automatically, so the hook is not Darwin-gated
-  and optional formulae install on both platforms.
+- Optional formulae live under `[bootstrap.packages]` in the mise drop-in.
+- Optional **casks only** live in the Brewfile, which the retained real Homebrew
+  flow consumes on macOS.
 - Both are skipped silently when absent (a `stat` guard for the Brewfile), so a
   bare machine gets only the core set.
-- `just install` runs `brew bundle --global --no-upgrade`, which installs
-  newly-uncommented entries. `just upgrade` does **not** re-run `brew bundle`
-  (`brew_casks.yml` is not `upgrade`-tagged) — but its `brew upgrade` covers
-  already-installed Brewfile packages regardless of how they were installed.
-  Run `just install` after uncommenting new entries.
+- `just install` applies newly enabled mise entries and runs `brew bundle
+  --global --no-upgrade` for newly enabled macOS casks. `just upgrade` uses
+  `mise bootstrap packages upgrade` and `mise upgrade`, then upgrades retained
+  casks through Homebrew. Run `just install` after uncommenting new entries.
+
+### Mise-First Provisioning Flow
+
+```text
+native OS prerequisites
+        |
+        v
+standalone ~/.local/bin/mise
+        |
+        +--> global mise-config.toml
+        |       |
+        |       +--> bootstrap packages apply --> canonical brew prefix
+        |       +--> mise install -------------> versioned tools + shims
+        |
+        v
+smoke verification
+        |
+        +--> targeted cleanup of old [tools] formula copies, if brew already exists
+        |
+        v
+mise exec -- ansible-playbook
+        |
+        +--> repeat package/tool convergence and verification
+        +--> real Homebrew CLI on Apple Silicon macOS for casks only
+```
+
+`brew:` is a mise package backend, not a requirement for a `brew` executable. It writes formula artifacts and links into the canonical platform prefix: `/opt/homebrew` on Apple Silicon macOS and `/home/linuxbrew/.linuxbrew` on Linux. Bootstrap, verification, and shell startup add the applicable prefix to `PATH` explicitly. In the Linux greenfield result there is no `brew` executable, while package links such as `git` and `bash` resolve from `/home/linuxbrew/.linuxbrew/bin`.
+
+For bootstrap packages, `version = "latest"` accepts an already installed package; it does not upgrade that package during apply. Package upgrades are therefore an explicit `mise bootstrap packages upgrade` phase, separate from `mise upgrade` for `[tools]`. Manager-wide `mise bootstrap packages prune --manager brew` is prohibited because it can remove formulae installed manually outside this repository. Cleanup is limited to the explicit legacy formula list replaced by qualified mise tools.
+
+Only Apple Silicon macOS and Linux are supported by this ownership model; Intel macOS is unsupported. The Docker greenfield suite also passes two complete bootstrap convergences and requires the second convergence to report no changes.
+
+### Qualification Evidence
+
+Both platform workflows passed mise package apply, all 43 configured tool installs, and the shared smoke verifier after `[settings.npm] package_manager = "npm"` selected external npm. That setting avoids embedded aube aborts for three required npm packages on both platforms.
+
+- macOS arm64: [workflow run 34425518410, job 102709799798](https://github.com/tribou/dotfiles/actions/runs/34425518410/job/102709799798)
+- Ubuntu: [workflow run 34425518399, job 102709799806](https://github.com/tribou/dotfiles/actions/runs/34425518399/job/102709799806)
 
 - **`bash_profile`**: Main bash configuration loaded on shell startup
   - Sources all lib scripts via `lib/index.sh`
@@ -136,24 +174,34 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 [tools]
 node = "lts"
 ruby = "3"
+python = { version = "latest", postinstall = "python -m pip install --upgrade pynvim" }
 go = "latest"
 bun = "latest"
 tombi = "latest"
+# Portable tools and explicit npm:/gem: executables continue here.
+
+[bootstrap.packages]
+"brew:bash" = "latest"
+"brew:git" = "latest"
+# Shared-prefix and platform-selected formula artifacts continue here.
 
 [settings]
 legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
 ruby.compile = false        # precompiled ruby binaries, no source build
+
+[settings.npm]
+package_manager = "npm"     # use external npm instead of embedded aube
 ```
 
 - `legacy_version_file = true` means mise respects `.nvmrc`, `.node-version`, `.ruby-version` files automatically
 - Run `mise install` to install all configured tool versions
 - `mise which <tool>` to check which binary will be used
 
-`mise-config.toml` is the single source of truth for the **core** runtime set —
-there is no parallel list in the role. `mise.yml` runs an un-scoped `mise
-install`, which installs everything across every config file mise merges: this
-file plus any user drop-in under `~/.config/mise/conf.d/*.toml` (see
-[Opt-in packages](#opt-in-packages) below).
+`mise-config.toml` is the single source of truth for core `[tools]` and
+`[bootstrap.packages]`; there is no parallel inventory in the role. `mise.yml`
+runs un-scoped package apply and tool install commands, which converge this file
+plus any user drop-in under `~/.config/mise/conf.d/*.toml` (see [Opt-in
+packages](#opt-in-packages)).
 
 ## Environment Configuration
 

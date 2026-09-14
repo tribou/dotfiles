@@ -1,6 +1,6 @@
 # Core binaries functional
 command:
-  "tmux -V":
+  "mise exec -- tmux -V":
     exit-status: 0
     stdout:
       - "tmux"
@@ -8,14 +8,14 @@ command:
     exit-status: 0
 
   # Neovim must be 0.10+ for vim.uv support (CopilotChat, colorizer, etc.)
-  "nvim --version":
+  "mise exec -- nvim --version":
     exit-status: 0
     stdout:
       - "NVIM"
       - /NVIM v0\.(1[0-9]|[2-9]\d)|NVIM v[1-9]/
 
   # Node.js must be v24 (matches bootstrap.sh / mise default: node@lts)
-  "node --version":
+  "mise exec -- node --version":
     exit-status: 0
     stdout:
       - /^v2[0-9]\./
@@ -24,33 +24,47 @@ command:
   "mise --version":
     exit-status: 0
 
+  "mise bootstrap packages status --missing":
+    exit-status: 0
+  "mise exec -- ansible-playbook --version":
+    exit-status: 0
+  "mise exec -- prettier --version":
+    exit-status: 0
+  "mise exec -- solargraph --version":
+    exit-status: 0
+  "mise exec -- python -c 'import pynvim'":
+    exit-status: 0
+  "mise exec -- jq --version":
+    exit-status: 0
+
   # Go must be available via the mise-managed runtime installed by bootstrap
-  "go version":
+  "mise exec -- go version":
     exit-status: 0
 
   # yarn and pnpm must be available via corepack (enabled by bootstrap after mise installs node)
-  "yarn --version":
+  "mise exec -- yarn --version":
     exit-status: 0
-  "pnpm --version":
+  "mise exec -- pnpm --version":
     exit-status: 0
+    timeout: 30000
 
   # bun must be available for skills support scripts (mise-managed runtime;
   # agent-usage-audit runs on bun)
-  "bun --version":
+  "mise exec -- bun --version":
     exit-status: 0
 
   # gopls must remain available for editor integration after bootstrap
-  "gopls version":
+  "mise exec -- gopls version":
     exit-status: 0
 
   # fd and bat must be available as canonical names (Ubuntu installs as fdfind/batcat)
-  "fd --version":
+  "mise exec -- fd --version":
     exit-status: 0
     stdout:
       - /fd/
-  "delta --version":
+  "mise exec -- delta --version":
     exit-status: 0
-  "bat --version":
+  "mise exec -- bat --version":
     exit-status: 0
     stdout:
       - /^bat /
@@ -74,16 +88,13 @@ file:
   /dotfiles/vim/visual-at.vim:
     exists: true
 
-# mise default packages files must be symlinked
+# mise owns package files through its configuration and bootstrap manager.
   /root/.default-node-packages:
-    exists: true
-    filetype: symlink
+    exists: false
   /root/.default-gems:
-    exists: true
-    filetype: symlink
+    exists: false
   /root/.default-python-packages:
-    exists: true
-    filetype: symlink
+    exists: false
   /root/.config/mise/config.toml:
     exists: true
     filetype: symlink

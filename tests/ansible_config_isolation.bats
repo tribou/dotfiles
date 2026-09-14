@@ -15,7 +15,7 @@ setup() {
 # happens to export.
 @test "justfile: install pins ANSIBLE_CONFIG to this repo's ansible.cfg" {
   block="$(sed -n '/^install \*args:/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
-  echo "$block" | grep -q 'ansible-playbook playbook.yml'
+  echo "$block" | grep -q 'mise exec -- ansible-playbook playbook.yml'
   echo "$block" | grep -qE 'ANSIBLE_CONFIG=.*ansible\.cfg.*ansible-playbook playbook\.yml'
 }
 

@@ -1,29 +1,70 @@
 ---
 - name: Install mise version manager
   ansible.builtin.shell:
-    cmd: curl -fsSL https://mise.run | sh
+    cmd: curl -fsSL https://mise.run | MISE_INSTALL_PATH="{{ dotfiles_home }}/.local/bin/mise" sh
     creates: "{{ dotfiles_home }}/.local/bin/mise"
   environment:
     MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
     MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
   tags: [mise]
 
-# Un-scoped `mise install` reads every config file mise merges: the repo's
-# core config.toml (node/go/bun/ruby) PLUS any user drop-in under
-# ~/.config/mise/conf.d/*.toml (see mise-config.optional.toml.example). It is
-# inherently idempotent — when every tool is already installed mise prints
-# "mise all tools are installed" on stderr, which we treat as not-changed so
-# re-runs are clean. MISE_RUBY_COMPILE keeps ruby on a precompiled binary.
-- name: Install all mise-managed tools (core runtimes + optional conf.d drop-ins)
+- name: Probe mise bootstrap packages support
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise bootstrap packages --help"
+  register: dotfiles_mise_bootstrap_probe
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags: [mise]
+
+- name: Refresh mise when bootstrap packages are unavailable
   ansible.builtin.shell:
-    cmd: |
-      export MISE_DATA_DIR="{{ dotfiles_home }}/.local/share/mise"
-      export MISE_CACHE_DIR="{{ dotfiles_home }}/.cache/mise"
-      export MISE_RUBY_COMPILE="false"
-      "{{ dotfiles_home }}/.local/bin/mise" install
-    executable: /bin/bash
-  register: mise_install
-  changed_when: "'all tools are installed' not in mise_install.stderr"
+    cmd: curl -fsSL https://mise.run | MISE_INSTALL_PATH="{{ dotfiles_home }}/.local/bin/mise" sh
+  when: dotfiles_mise_bootstrap_probe.rc != 0
+  tags: [mise]
+
+- name: Verify mise bootstrap packages support after refresh
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise bootstrap packages --help"
+  register: dotfiles_mise_bootstrap_verify
+  changed_when: false
+  failed_when: dotfiles_mise_bootstrap_verify.rc != 0
+  check_mode: false
+  tags: [mise]
+
+- name: Apply mise-managed host packages
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise bootstrap packages apply --yes"
+  environment: &mise_environment
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+    PATH: "{{ (ansible_facts.system == 'Darwin') | ternary('/opt/homebrew/bin', '/home/linuxbrew/.linuxbrew/bin') }}:{{ dotfiles_home }}/.local/bin:{{ ansible_facts.env.PATH }}"
+  register: dotfiles_mise_packages
+  changed_when: >-
+    'Installing' in dotfiles_mise_packages.stdout
+    or 'Installing' in dotfiles_mise_packages.stderr
+  tags: [mise]
+
+- name: Install mise-managed tools
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise install --yes"
+  environment: *mise_environment
+  register: dotfiles_mise_tools_install
+  # Installing tools emits lines such as "mise ansible@14.4.0 [1/3] install";
+  # clean runs emit "mise all tools are installed" or no output.
+  changed_when: >-
+    dotfiles_mise_tools_install.stdout is search('\\[[0-9]+/[0-9]+\\] install')
+    or dotfiles_mise_tools_install.stderr is search('\\[[0-9]+/[0-9]+\\] install')
+  tags: [mise]
+
+- name: Verify mise-managed packages and tools
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_repo_root }}/scripts/verify_mise_tools.sh"
+  environment:
+    MISE_BIN: "{{ dotfiles_home }}/.local/bin/mise"
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  changed_when: false
   tags: [mise]
 
 - name: Activate mise shims and enable corepack
