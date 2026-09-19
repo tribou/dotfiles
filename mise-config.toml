@@ -1,6 +1,6 @@
 [tools]
 node = "lts"
-ruby = "3"
+ruby = "4"
 go = "latest"
 bun = "latest"
 tombi = "latest"
@@ -8,3 +8,9 @@ tombi = "latest"
 [settings]
 legacy_version_file = true
 ruby.compile = false
+
+[shell_alias]
+coi = "co $INTEGRATION_BRANCH"
+mi = "merge $INTEGRATION_BRANCH"
+fa = "fem; fed; fei"
+fei = "f origin $INTEGRATION_BRANCH:$INTEGRATION_BRANCH"
