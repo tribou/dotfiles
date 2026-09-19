@@ -61,6 +61,7 @@
 	tool = nvimdiff
 
 [credential "https://github.com"]
+	helper =
 	helper = !/usr/bin/env gh auth git-credential
 
 [checkout]
