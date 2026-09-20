@@ -12,9 +12,12 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --runtime) [[ -n ${2:-} ]] || { echo "--runtime needs a value" >&2; exit 2; }
                runtime=$2; shift 2 ;;
-    --runtime=*) runtime=${1#*=}; shift ;;
+    --runtime=*) runtime=${1#*=}
+                 [[ -n $runtime ]] || { echo "--runtime needs a value" >&2; exit 2; }
+                 shift ;;
     -h|--help) sed -n '2,4p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *) arg=$1; shift ;;
+    *) [[ -z $arg ]] || { echo "unexpected extra argument: $1" >&2; exit 2; }
+       arg=$1; shift ;;
   esac
 done
 

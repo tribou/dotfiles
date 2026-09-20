@@ -153,6 +153,27 @@ subagent() {
   assert_output --partial "--runtime needs a value"
 }
 
+@test "session-outline: --runtime= with an empty value reports the error" {
+  run "$SCRIPT" --runtime=
+  assert_failure
+  assert_output --partial "--runtime needs a value"
+}
+
+@test "session-outline: rejects a second positional argument" {
+  run "$SCRIPT" "$SESSION" extra
+  assert_failure
+  assert_output --partial "unexpected extra argument"
+}
+
+@test "session-outline: strips any extension from a transcript path's session header" {
+  printf '%s\n' '{"type":"user","message":{"content":"hi"}}' > "$TMPDIR_TEST/other.txt"
+
+  run "$SCRIPT" "$TMPDIR_TEST/other.txt"
+  assert_success
+  assert_output --partial "Session: other"
+  refute_output --partial "Session: other.txt"
+}
+
 @test "detect: picks claude-code when only a Claude Code transcript exists" {
   local work="$TMPDIR_TEST/work" slug
   mkdir -p "$work"
@@ -162,6 +183,54 @@ subagent() {
   mkdir -p "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug"
   printf '%s\n' '{"type":"user","message":{"content":"work"}}' \
     > "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/sess.jsonl"
+
+  cd "$work"
+  run "$REPO_ROOT/skills/session-outline/lib/detect.sh"
+  assert_success
+  assert_output "claude-code"
+}
+
+@test "detect: picks opencode when its session is newer than the transcript" {
+  local work="$TMPDIR_TEST/work" slug
+  mkdir -p "$work"
+  export SESSION_OUTLINE_CLAUDE_PROJECTS_DIR="$TMPDIR_TEST/projects"
+  export SESSION_OUTLINE_OPENCODE_DB="$TMPDIR_TEST/oc.db"
+  slug=$(printf '%s' "$work" | sed 's#[^A-Za-z0-9]#-#g')
+  mkdir -p "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug"
+  printf '%s\n' '{"type":"user","message":{"content":"work"}}' \
+    > "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/sess.jsonl"
+  touch -t 202401010000 "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/sess.jsonl"
+  sqlite3 "$SESSION_OUTLINE_OPENCODE_DB" "
+    CREATE TABLE project (id TEXT PRIMARY KEY, worktree TEXT NOT NULL, time_created INTEGER);
+    CREATE TABLE session (id TEXT PRIMARY KEY, project_id TEXT, parent_id TEXT, directory TEXT,
+                          title TEXT, agent TEXT, model TEXT, time_created INTEGER, time_updated INTEGER);
+    INSERT INTO project VALUES ('p', '$work', 1);
+    INSERT INTO session (id,project_id,parent_id,title,time_created,time_updated)
+      VALUES ('ses_new','p',NULL,'Newer work', 2000000000000, 2000000000000);"
+
+  cd "$work"
+  run "$REPO_ROOT/skills/session-outline/lib/detect.sh"
+  assert_success
+  assert_output "opencode"
+}
+
+@test "detect: picks claude-code when its transcript is newer than the opencode session" {
+  local work="$TMPDIR_TEST/work" slug
+  mkdir -p "$work"
+  export SESSION_OUTLINE_CLAUDE_PROJECTS_DIR="$TMPDIR_TEST/projects"
+  export SESSION_OUTLINE_OPENCODE_DB="$TMPDIR_TEST/oc.db"
+  slug=$(printf '%s' "$work" | sed 's#[^A-Za-z0-9]#-#g')
+  mkdir -p "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug"
+  printf '%s\n' '{"type":"user","message":{"content":"work"}}' \
+    > "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/sess.jsonl"
+  touch -t 203401010000 "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/sess.jsonl"
+  sqlite3 "$SESSION_OUTLINE_OPENCODE_DB" "
+    CREATE TABLE project (id TEXT PRIMARY KEY, worktree TEXT NOT NULL, time_created INTEGER);
+    CREATE TABLE session (id TEXT PRIMARY KEY, project_id TEXT, parent_id TEXT, directory TEXT,
+                          title TEXT, agent TEXT, model TEXT, time_created INTEGER, time_updated INTEGER);
+    INSERT INTO project VALUES ('p', '$work', 1);
+    INSERT INTO session (id,project_id,parent_id,title,time_created,time_updated)
+      VALUES ('ses_old','p',NULL,'Older work', 1704067200000, 1704067200000);"
 
   cd "$work"
   run "$REPO_ROOT/skills/session-outline/lib/detect.sh"

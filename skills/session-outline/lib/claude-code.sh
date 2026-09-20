@@ -25,7 +25,10 @@ backend_resolve() {
     require_plain_id "$arg"
     cc_file=$cc_proj/$arg.jsonl
   fi
+  # A transcript path may carry any extension; only the runtime's own ids are
+  # guaranteed to end in .jsonl.
   cc_dir=${cc_file%.jsonl}
+  [[ $cc_dir != "$cc_file" ]] || cc_dir=${cc_file%.*}
 }
 
 # Distinct models a transcript's assistant turns ran on, in first-seen order.
@@ -77,7 +80,7 @@ cc_emit() {
   while IFS=$rec_sep read -r depth kind text tool_id requested; do
     meta=; sub=; model=${requested:-}
     if [[ -n ${tool_id:-} && -d $cc_dir/subagents ]]; then
-      meta=$(grep -l "\"toolUseId\":\"$tool_id\"" "$cc_dir"/subagents/*.meta.json 2>/dev/null | head -1 || true)
+      meta=$(grep -Fl "\"toolUseId\":\"$tool_id\"" "$cc_dir"/subagents/*.meta.json 2>/dev/null | head -1 || true)
     fi
     if [[ -n $meta ]]; then
       sub=${meta%.meta.json}.jsonl

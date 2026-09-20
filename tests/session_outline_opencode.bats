@@ -190,6 +190,25 @@ part() { # id message session json time
   assert_output --partial "Title:   Quoted worktree"
 }
 
+@test "opencode: a record separator inside a prompt cannot shift fields" {
+  session ses_a p NULL 'Some work' 100
+  msg msg_1 ses_a user '' 101
+  part prt_1 msg_1 ses_a '{"type":"text","text":"clean\u001fprompt"}' 102
+  run "$SCRIPT" ses_a
+  assert_success
+  assert_output --partial "PROMPT clean prompt"
+}
+
+@test "opencode: a record separator inside an agent description cannot spoof fields" {
+  session ses_a p NULL 'Some work' 100
+  msg msg_1 ses_a assistant big-pickle 101
+  part prt_1 msg_1 ses_a '{"type":"tool","tool":"task","state":{"input":{"subagent_type":"general","description":"Fix\u001fauth"},"metadata":{"sessionId":"ses_kid","model":{"modelID":"gpt-6-astra"}}}}' 102
+  run "$SCRIPT" ses_a
+  assert_success
+  assert_output --partial "AGENT  [general] Fix auth (gpt-6-astra)"
+  refute_output --partial "Fix auth (ses_kid)"
+}
+
 @test "opencode: stops instead of looping when a subagent points back at its parent" {
   session ses_a p NULL 'Some work' 100
   msg msg_1 ses_a assistant big-pickle 101

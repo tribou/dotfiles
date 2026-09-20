@@ -20,6 +20,7 @@ oc_lit() { local v=${1//\'/\'\'}; printf "'%s'" "$v"; }
 backend_resolve() {
   local arg=$1
   [[ -f $oc_db ]] || { echo "No opencode database at $oc_db" >&2; exit 1; }
+  command -v sqlite3 >/dev/null 2>&1 || { echo "sqlite3 not found in PATH (the opencode backend needs it)" >&2; exit 1; }
   if [[ -n $arg ]]; then
     require_plain_id "$arg"
     oc_session=$arg
@@ -51,9 +52,10 @@ backend_header() {
 }
 
 # Emit "kind<TAB>text<TAB>model<TAB>child_session" rows for one session, in
-# message then part order. Whitespace is flattened in SQL so every row stays
-# on one line; synthetic parts are tool replay and compaction notices, not
-# anything the user typed.
+# message then part order. Whitespace and the record separator (US) are
+# flattened in SQL so every row stays on one line and no field can be spoofed
+# by a crafted prompt; synthetic parts are tool replay and compaction notices,
+# not anything the user typed.
 oc_scan() {
   oc_q "
     WITH rows AS (
@@ -62,12 +64,12 @@ oc_scan() {
         json_extract(p.data,'\$.type') AS ptype,
         COALESCE(json_extract(p.data,'\$.tool'),'') AS tool,
         COALESCE(json_extract(p.data,'\$.synthetic'),0) AS synthetic,
-        trim(replace(replace(replace(COALESCE(json_extract(p.data,'\$.text'),''),
-             char(10),' '), char(13),' '), char(9),' ')) AS text,
+        trim(replace(replace(replace(replace(COALESCE(json_extract(p.data,'\$.text'),''),
+             char(31),' '), char(10),' '), char(13),' '), char(9),' ')) AS text,
         COALESCE(json_extract(p.data,'\$.state.input.name'),'') AS skill,
         COALESCE(json_extract(p.data,'\$.state.input.subagent_type'),'') AS atype,
-        trim(replace(replace(replace(COALESCE(json_extract(p.data,'\$.state.input.description'),''),
-             char(10),' '), char(13),' '), char(9),' ')) AS descr,
+        trim(replace(replace(replace(replace(COALESCE(json_extract(p.data,'\$.state.input.description'),''),
+             char(31),' '), char(10),' '), char(13),' '), char(9),' ')) AS descr,
         COALESCE(json_extract(p.data,'\$.state.metadata.model.modelID'),'') AS amodel,
         COALESCE(json_extract(p.data,'\$.state.metadata.sessionId'),'') AS child
       FROM message m JOIN part p ON p.message_id = m.id

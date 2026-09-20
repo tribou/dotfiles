@@ -10,7 +10,12 @@ oc_db=${SESSION_OUTLINE_OPENCODE_DB:-$HOME/.local/share/opencode/opencode.db}
 cc_time=0
 for f in "$cc_proj"/*.jsonl; do
   [[ -f $f ]] || continue
-  t=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)
+  # GNU stat first: on BSD, -c fails with no stdout so the chain is safe both
+  # ways, while GNU stat -f (file-system mode) would dump the whole statx blob
+  # to stdout and still exit 1. A non-numeric result must not reach an
+  # arithmetic test, same guard as oc_time below.
+  t=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)
+  [[ $t =~ ^[0-9]+$ ]] || t=0
   [[ $t -gt $cc_time ]] && cc_time=$t
 done
 

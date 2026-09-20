@@ -13,13 +13,13 @@ The two runtimes store sessions completely differently, so the script has one ba
 
 ## Usage
 
-Run from the project directory the session belongs to:
+The script sits next to this SKILL.md — invoke it there, since each harness installs skills in its own directory (e.g. `~/.claude/skills/session-outline/` for Claude Code, `~/.config/opencode/skills/session-outline/` for opencode). Run from the project directory the session belongs to:
 
 ```bash
-~/.claude/skills/session-outline/session-outline.sh                     # most recent session here, either runtime
-~/.claude/skills/session-outline/session-outline.sh <session-id>         # a specific session
-~/.claude/skills/session-outline/session-outline.sh <path.jsonl>         # a Claude Code transcript file
-~/.claude/skills/session-outline/session-outline.sh --runtime opencode   # most recent opencode session here
+<SKILL_DIR>/session-outline.sh                     # most recent session here, either runtime
+<SKILL_DIR>/session-outline.sh <session-id>        # a specific session
+<SKILL_DIR>/session-outline.sh <path.jsonl>        # a Claude Code transcript file
+<SKILL_DIR>/session-outline.sh --runtime opencode  # most recent opencode session here
 ```
 
 Runtime is auto-detected: an `ses_`-prefixed id is opencode, a file path or UUID is Claude Code, and with no argument the runtime with the more recent session for this directory wins. `--runtime claude-code|opencode` forces the choice. The `Runtime:` header always states which backend ran.
