@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     xdg-utils \
     bash-completion \
+    jq \
     sqlite3 \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install --break-system-packages pynvim \
