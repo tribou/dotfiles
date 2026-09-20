@@ -7,7 +7,7 @@ description: Use when the user asks which agents or subagents ran, which skills 
 
 ## Overview
 
-Claude Code saves every session as a transcript. `session-outline.sh` (in this skill's directory) reads it and prints each user prompt in order, with the skills and agents that ran for it nested underneath. Each agent also gets its own skills and agents listed.
+Claude Code saves every session as a transcript. `session-outline.sh` (in this skill's directory) reads it and prints each user prompt in order, with the skills and agents that ran for it nested underneath. Each agent also gets its own skills and agents listed, and the model it ran on.
 
 ## Usage
 
@@ -28,12 +28,15 @@ Output lines:
 | `CMD` | Slash command the user typed (including skill commands such as `/brainstorming`) |
 | `PROMPT` | User prompt, truncated |
 | `SKILL` | Skill Claude loaded via the Skill tool |
-| `AGENT [type]` | Subagent launched, with its description; deeper-indented lines are that agent's own skills and agents |
+| `AGENT [type]` | Subagent launched, with its description and the model it ran on in parentheses; deeper-indented lines are that agent's own skills and agents |
+
+The `Models:` header lists the models the main session's own turns ran on, in first-seen order — more than one means the model changed mid-session. Each agent's model is read from its own transcript, falling back to the alias recorded when it was spawned (`sonnet`, `opus`, `haiku`) and then to the model the `Agent` call asked for.
 
 Show the output to the user as-is in a code block. Add a short summary only if they asked for one.
 
 ## Limits
 
 - Skills injected by hooks (for example a SessionStart hook pasting skill text) are not Skill tool calls and do not appear.
-- Agents still running have incomplete transcripts, so their nested activity may be missing.
+- Agents still running have incomplete transcripts, so their nested activity and resolved model may be missing; those lines fall back to the requested model alias.
+- The `Models:` header covers the whole session, not individual turns — it shows that a session used two models but not which turn used which.
 - Transcripts live under `~/.claude/projects/`; sessions from another project directory need the explicit path.
