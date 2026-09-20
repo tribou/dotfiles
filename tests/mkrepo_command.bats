@@ -33,6 +33,7 @@ setup() {
   assert_output --partial "--skill organize-ai-context"
   assert_output --partial "--skill plan-to-implementation"
   assert_output --partial "--skill prd"
+  assert_output --partial "--skill session-outline"
   refute_output --partial "blending-textured-backgrounds"
 }
 

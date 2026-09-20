@@ -7,7 +7,13 @@ set -euo pipefail
 proj=~/.claude/projects/$(pwd | sed 's#[/.]#-#g')
 arg=${1:-}
 if [[ -z $arg ]]; then
-  file=$(ls -t "$proj"/*.jsonl | head -1)
+  # Newest *.jsonl by mtime, without parsing ls output.
+  file=
+  for candidate in "$proj"/*.jsonl; do
+    [[ -f $candidate ]] || continue
+    [[ -z $file || $candidate -nt $file ]] && file=$candidate
+  done
+  [[ -n $file ]] || { echo "No session transcripts found in $proj" >&2; exit 1; }
 elif [[ -f $arg ]]; then
   file=$arg
 else
