@@ -25,8 +25,15 @@ Run from the project directory the session belongs to:
 Runtime is auto-detected: an `ses_`-prefixed id is opencode, a file path or UUID is Claude Code, and with no argument the runtime with the more recent session for this directory wins. `--runtime claude-code|opencode` forces the choice. The `Runtime:` header always states which backend ran.
 
 To find past sessions:
-- **Claude Code**: `ls -t ~/.claude/projects/<project-dir>/*.jsonl`, where `<project-dir>` is the absolute path with `/` and `.` replaced by `-`. The user can also browse with `/resume`.
-- **opencode**: `sqlite3 -readonly ~/.local/share/opencode/opencode.db "SELECT s.id, s.title FROM session s JOIN project p ON p.id=s.project_id WHERE p.worktree='$(pwd)' AND s.parent_id IS NULL ORDER BY s.time_updated DESC LIMIT 20;"`
+- **Claude Code**: `ls -t ~/.claude/projects/<project-dir>/*.jsonl`, where `<project-dir>` is the absolute path with every non-alphanumeric character replaced by `-`. The user can also browse with `/resume`.
+- **opencode**: double any quote in the path before it reaches the query — `sqlite3` runs every statement the string contains, and `-readonly` does not stop `readfile()`/`writefile()`:
+
+  ```bash
+  w=$(pwd); w=${w//\'/\'\'}
+  sqlite3 -readonly ~/.local/share/opencode/opencode.db \
+    "SELECT s.id, s.title FROM session s JOIN project p ON p.id=s.project_id
+     WHERE p.worktree='$w' AND s.parent_id IS NULL ORDER BY s.time_updated DESC LIMIT 20;"
+  ```
 
 Output lines:
 
@@ -50,7 +57,9 @@ lib/claude-code.sh      JSONL transcripts  -> records
 lib/opencode.sh         opencode.db SQLite -> records
 ```
 
-Backends share one contract. Each defines `backend_resolve <arg>`, `backend_header`, and `backend_records`, where `backend_records` emits tab-separated `depth`, `kind`, `text`, `model` and the entry script owns all formatting. To add a third runtime, add `lib/<name>.sh` implementing those three functions — no change to the renderer.
+Backends share one contract. Each defines `backend_resolve <arg>`, `backend_header`, and `backend_records`, where `backend_records` emits `depth`, `kind`, `text`, `model` separated by `rec_sep` (US, `0x1f`) and the entry script owns all formatting. The separator is deliberately not a tab: bash treats tab as IFS whitespace and collapses runs of it, so an empty field would vanish and shift every field after it. To add a third runtime, add `lib/<name>.sh` implementing those three functions — no change to the renderer.
+
+A session id given on the command line must be a plain identifier (`[A-Za-z0-9_-]+`); anything else is rejected rather than interpolated into a path or a query. `SESSION_OUTLINE_CLAUDE_PROJECTS_DIR` and `SESSION_OUTLINE_OPENCODE_DB` override the two session stores, which is how the tests drive the backends.
 
 Where each field comes from:
 
@@ -75,3 +84,4 @@ opencode is read with `sqlite3 -readonly` so a running opencode instance is neve
 - **opencode**: a skill whose body is injected as a user message (rather than called through the `skill` tool) appears as a `PROMPT` containing that skill's markdown. Only `skill` tool calls become `SKILL` lines.
 - **opencode**: the legacy JSON store under `~/.local/share/opencode/storage/` is not read. opencode migrated to SQLite; that tree is stale leftovers.
 - Sessions from another project directory need an explicit session id or path.
+- Nesting is followed 10 levels deep, so a transcript that links back into its own ancestry cannot recurse forever.

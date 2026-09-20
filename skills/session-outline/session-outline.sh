@@ -10,7 +10,8 @@ runtime=
 arg=
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --runtime) runtime=${2:-}; shift 2 ;;
+    --runtime) [[ -n ${2:-} ]] || { echo "--runtime needs a value" >&2; exit 2; }
+               runtime=$2; shift 2 ;;
     --runtime=*) runtime=${1#*=}; shift ;;
     -h|--help) sed -n '2,4p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) arg=$1; shift ;;
@@ -32,6 +33,18 @@ case $runtime in
   *) echo "Unknown runtime: $runtime (expected claude-code or opencode)" >&2; exit 2 ;;
 esac
 
+# Records are joined on a unit separator, not a tab: bash treats tab as IFS
+# whitespace and collapses runs of it, which silently swallows an empty field
+# and shifts every field after it left.
+rec_sep=$'\x1f'
+
+# A session id is an opaque identifier the runtime chose. Anything else is a
+# path escaping the transcript directory or an injection attempt, so refuse it
+# rather than interpolate it into a path or a query.
+require_plain_id() {
+  [[ $1 =~ ^[A-Za-z0-9_-]+$ ]] || { echo "Invalid session id: $1" >&2; exit 2; }
+}
+
 # shellcheck source=/dev/null
 . "$here/lib/$runtime.sh"
 
@@ -39,7 +52,7 @@ esac
 # the margin; skills and agents indent under them, once per nesting level.
 render() {
   local depth kind text model indent
-  while IFS=$'\t' read -r depth kind text model; do
+  while IFS=$rec_sep read -r depth kind text model; do
     indent=''
     [[ ${depth:-0} -gt 0 ]] && indent=$(printf '%*s' $((depth * 6)) '')
     case $kind in

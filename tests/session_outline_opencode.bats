@@ -23,7 +23,9 @@ db_init() {
       CREATE TABLE part (id TEXT PRIMARY KEY, message_id TEXT, session_id TEXT, time_created INTEGER, data TEXT);"
 }
 
-project() { db "INSERT INTO project VALUES ('$1','$2',1);"; }
+# Escape the worktree the same way the backend must: a fixture directory can
+# legitimately contain a quote.
+project() { db "INSERT INTO project VALUES ('$1','${2//\'/\'\'}',1);"; }
 
 session() { # id project parent title time
   db "INSERT INTO session (id,project_id,parent_id,directory,title,time_created,time_updated)
@@ -151,4 +153,63 @@ part() { # id message session json time
   run "$SCRIPT" --runtime opencode
   assert_failure
   assert_output --partial "No opencode sessions"
+}
+
+@test "opencode: rejects a session id that is not a plain identifier" {
+  session ses_a p NULL 'Some work' 100
+  msg msg_1 ses_a assistant claude-sonnet-5 101
+
+  run "$SCRIPT" "ses_a'; SELECT writefile('$TMPDIR_TEST/pwned.txt','OWNED');--"
+  assert_failure
+  assert_output --partial "Invalid session id"
+  [ ! -e "$TMPDIR_TEST/pwned.txt" ]
+}
+
+@test "opencode: a quote in the working directory cannot inject SQL" {
+  local work="$TMPDIR_TEST/x'; SELECT writefile('$TMPDIR_TEST/pwned.txt','OWNED'); --"
+  mkdir -p "$work"
+  session ses_a p NULL 'Some work' 100
+
+  cd "$work"
+  run "$SCRIPT" --runtime opencode
+  assert_failure
+  [ ! -e "$TMPDIR_TEST/pwned.txt" ]
+}
+
+@test "opencode: finds the newest top-level session for a quoted working directory" {
+  local work="$TMPDIR_TEST/it's here"
+  mkdir -p "$work"
+  project p "$work"
+  session ses_a p NULL 'Quoted worktree' 100
+  msg msg_1 ses_a assistant claude-sonnet-5 101
+
+  cd "$work"
+  run "$SCRIPT" --runtime opencode
+  assert_success
+  assert_output --partial "Session: ses_a"
+  assert_output --partial "Title:   Quoted worktree"
+}
+
+@test "opencode: stops instead of looping when a subagent points back at its parent" {
+  session ses_a p NULL 'Some work' 100
+  msg msg_1 ses_a assistant big-pickle 101
+  part prt_1 msg_1 ses_a '{"type":"tool","tool":"task","state":{"input":{"subagent_type":"general","description":"Loop"},"metadata":{"sessionId":"ses_a"}}}' 102
+
+  run timeout 20 "$SCRIPT" ses_a
+  assert_success
+  assert_output --partial "AGENT  [general] Loop"
+}
+
+@test "opencode: nests a subagent that recorded no model of its own" {
+  session ses_a p NULL 'Some work' 100
+  msg msg_1 ses_a assistant big-pickle 101
+  part prt_1 msg_1 ses_a '{"type":"tool","tool":"task","state":{"input":{"subagent_type":"general","description":"Fix auth"},"metadata":{"sessionId":"ses_kid"}}}' 102
+  session ses_kid p "'ses_a'" 'Fix auth (@general subagent)' 103
+  msg msg_k ses_kid assistant gpt-6-astra 104
+  part prt_k msg_k ses_kid '{"type":"tool","tool":"skill","state":{"input":{"name":"test-driven-development"}}}' 105
+
+  run "$SCRIPT" ses_a
+  assert_success
+  assert_line --regexp '^ {6,}SKILL  test-driven-development'
+  refute_output --partial "Fix auth (ses_kid)"
 }

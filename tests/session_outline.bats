@@ -98,3 +98,86 @@ subagent() {
   assert_output --partial "AGENT  [Explore] look around"
   refute_output --partial "look around ()"
 }
+
+@test "session-outline: skips a truncated trailing line in a live transcript" {
+  rec '{"type":"user","message":{"content":"first prompt"}}'
+  rec '{"type":"assistant","message":{"model":"claude-opus-5","content":[{"type":"text","text":"a"}]}}'
+  printf '%s' '{"type":"user","message":{"content":"half a line' >> "$SESSION"
+
+  run "$SCRIPT" "$SESSION"
+  assert_success
+  assert_output --partial "Models:  claude-opus-5"
+  assert_output --partial "PROMPT first prompt"
+}
+
+@test "session-outline: rejects a session id that escapes the projects directory" {
+  run "$SCRIPT" --runtime claude-code "../../etc/hosts"
+  assert_failure
+  assert_output --partial "Invalid session id"
+}
+
+@test "session-outline: resolves the newest transcript in the projects directory" {
+  local work="$TMPDIR_TEST/work" slug
+  mkdir -p "$work"
+  export SESSION_OUTLINE_CLAUDE_PROJECTS_DIR="$TMPDIR_TEST/projects"
+  slug=$(printf '%s' "$work" | sed 's#[^A-Za-z0-9]#-#g')
+  mkdir -p "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug"
+  printf '%s\n' '{"type":"user","message":{"content":"older work"}}' \
+    > "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/old.jsonl"
+  printf '%s\n' '{"type":"user","message":{"content":"newer work"}}' \
+    > "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/new.jsonl"
+  touch -t 202401010000 "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/old.jsonl"
+  touch -t 202501010000 "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/new.jsonl"
+
+  cd "$work"
+  run "$SCRIPT" --runtime claude-code
+  assert_success
+  assert_output --partial "Session: new"
+  assert_output --partial "PROMPT newer work"
+}
+
+@test "session-outline: reports when the projects directory holds no sessions" {
+  local work="$TMPDIR_TEST/empty"
+  mkdir -p "$work"
+  export SESSION_OUTLINE_CLAUDE_PROJECTS_DIR="$TMPDIR_TEST/projects"
+
+  cd "$work"
+  run "$SCRIPT" --runtime claude-code
+  assert_failure
+  assert_output --partial "No Claude Code sessions found"
+}
+
+@test "session-outline: --runtime without a value reports the error" {
+  run "$SCRIPT" --runtime
+  assert_failure
+  assert_output --partial "--runtime needs a value"
+}
+
+@test "detect: picks claude-code when only a Claude Code transcript exists" {
+  local work="$TMPDIR_TEST/work" slug
+  mkdir -p "$work"
+  export SESSION_OUTLINE_CLAUDE_PROJECTS_DIR="$TMPDIR_TEST/projects"
+  export SESSION_OUTLINE_OPENCODE_DB="$TMPDIR_TEST/absent.db"
+  slug=$(printf '%s' "$work" | sed 's#[^A-Za-z0-9]#-#g')
+  mkdir -p "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug"
+  printf '%s\n' '{"type":"user","message":{"content":"work"}}' \
+    > "$SESSION_OUTLINE_CLAUDE_PROJECTS_DIR/$slug/sess.jsonl"
+
+  cd "$work"
+  run "$REPO_ROOT/skills/session-outline/lib/detect.sh"
+  assert_success
+  assert_output "claude-code"
+}
+
+@test "detect: survives an opencode database it cannot read" {
+  local work="$TMPDIR_TEST/work"
+  mkdir -p "$work"
+  export SESSION_OUTLINE_CLAUDE_PROJECTS_DIR="$TMPDIR_TEST/projects"
+  export SESSION_OUTLINE_OPENCODE_DB="$TMPDIR_TEST/garbage.db"
+  printf 'not a database\n' > "$SESSION_OUTLINE_OPENCODE_DB"
+
+  cd "$work"
+  run "$REPO_ROOT/skills/session-outline/lib/detect.sh"
+  assert_success
+  assert_output "claude-code"
+}
