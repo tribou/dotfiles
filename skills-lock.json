@@ -7,12 +7,6 @@
       "skillPath": "skills/brainstorming/SKILL.md",
       "computedHash": "b58d55b64742ecd37923985ec7bdfbe678ffbcb9895562abd28c0a32dcacd7fb"
     },
-    "brainstorming-to-issue": {
-      "source": "tribou/dotfiles",
-      "sourceType": "github",
-      "skillPath": "skills/brainstorming-to-issue/SKILL.md",
-      "computedHash": "14da614e777af31bd052a79fca708bc1e9ecd39796991ba63da1e0bff0a4b394"
-    },
     "dispatching-parallel-agents": {
       "source": "obra/superpowers",
       "sourceType": "github",
@@ -30,30 +24,6 @@
       "sourceType": "github",
       "skillPath": "skills/finishing-a-development-branch/SKILL.md",
       "computedHash": "4f571e7befb8b0946d9d7770232c818812412e9ab1dfb811f847edfba1fc6275"
-    },
-    "issue-to-plan": {
-      "source": "tribou/dotfiles",
-      "sourceType": "github",
-      "skillPath": "skills/issue-to-plan/SKILL.md",
-      "computedHash": "262e840714afcb3a9e4262aaf57df9df795bc2ff8d79a8d7c5a1e9ab4e8e7eef"
-    },
-    "organize-ai-context": {
-      "source": "tribou/dotfiles",
-      "sourceType": "github",
-      "skillPath": "skills/organize-ai-context/SKILL.md",
-      "computedHash": "5107e5409c8b6fa15ba8929ed4eda977a03d2686564be486d3a8b5fd44e0f1d7"
-    },
-    "plan-to-implementation": {
-      "source": "tribou/dotfiles",
-      "sourceType": "github",
-      "skillPath": "skills/plan-to-implementation/SKILL.md",
-      "computedHash": "e9db1e54f847399fbea8dbfc76f3b49a38591e09be0584ec27c4b895867f46ad"
-    },
-    "prd": {
-      "source": "tribou/dotfiles",
-      "sourceType": "github",
-      "skillPath": "skills/prd/SKILL.md",
-      "computedHash": "ab7d861425cd85521dd8f5f45f323397f8dbee92fdff5889010e711dd875f7fc"
     },
     "receiving-code-review": {
       "source": "obra/superpowers",
