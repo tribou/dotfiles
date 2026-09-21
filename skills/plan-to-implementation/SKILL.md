@@ -7,6 +7,11 @@ description: Use when an open draft GitHub PR carries a marked implementation pl
 
 Resume a plan from an existing draft PR, execute it with SDD, and flip that same PR ready. The PR description, its single marked plan comment, and the pushed branch are the durable state. Never recreate the planning session and never call `gh pr create` from this skill. Exact commands: `rehydrate-and-finish.md`.
 
+Invoking this skill means the user has reviewed and approved the complete marked plan comment and selected this repository's SDD workflow.
+Do not ask for plan approval again before dispatch.
+Subagent-driven development is the sole execution mode.
+Never expose, recommend, or invoke Native superpowers:executing-plans from this workflow, even when upstream offers it or cost pressure favors it.
+
 ## Rehydrate (every fresh entry — all 6 steps, in order)
 
 1. Resolve the single open **draft** PR that closes the issue and has exactly one comment containing `<!-- BEGIN PLAN -->`. Zero or multiple matches — PRs or marker-bearing comments: stop and report; never guess or match by title.
