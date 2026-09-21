@@ -24,11 +24,14 @@ The plan lives in a PR comment, never the description. The description stays a c
 ## Generate the Plan (all 3 steps, in order)
 
 1. **REQUIRED SUB-SKILL:** `superpowers:using-git-worktrees` — create the execution worktree and branch first, before any plan is written. **Declared worktree preference — never ask:** always isolate. This is the user's standing answer to that skill's Step 0 consent question; prefer the native worktree tool (`EnterWorktree` or equivalent), else `git worktree add` under `.worktrees/<branch>`. If its Step 3 baseline tests fail, do not ask whether to proceed — stop and report the failures; never plan or implement on a red baseline.
-2. **REQUIRED SUB-SKILL:** `superpowers:writing-plans` — including its Self-Review, File Structure, Global Constraints, per-task Interfaces, and bite-sized TDD steps.
-3. Override inside `writing-plans` — its persistence and handoff only:
+2. **REQUIRED SUB-SKILL:** `superpowers:writing-plans` — require all of its File Structure, Global Constraints, per-task Interfaces, bite-sized TDD steps, and Self-Review sections, plus a Review Focus section with at most five highest-risk spec-implied failure modes.
+   - Every Review Focus line must have a concrete pinning test in the owning task, written in that task's own TDD step style.
+   - An empty Review Focus section means the check ran and found no uncovered failure modes; it does not mean the check was skipped.
+3. Override inside `writing-plans` — its persistence, generated header, and handoff:
    - Write the plan to `.superpowers/sdd/plan.md` in the execution worktree, protected by the nested scratch `.gitignore` convention.
    - Never write it under `docs/` and never commit it.
-   - Never offer execution approaches and never start implementation.
+   - The generated plan header and handoff name only `superpowers:subagent-driven-development`.
+   - Do not offer Native execution, ask for an execution choice, or start implementation.
 
 ## Publish the Durable Handoff (all 8 steps, in order)
 
@@ -51,6 +54,14 @@ Then, with the exact commands and shapes in `plan-and-publish.md`:
 8. **STOP.**
 
 The plan remains untracked scratch locally; its durable copy is the marked PR comment. When the plan later changes, that comment is edited in place by its comment ID — never reposted as a new comment. The empty seed commit contains no plan and disappears under squash merge.
+
+## Non-Interactive Review Boundary
+
+- This session performs the plan Self-Review before publishing.
+- It does not wait for human plan review after publishing.
+- The complete marked PR comment is the durable artifact the user reviews asynchronously.
+- A later invocation of `plan-to-implementation` means the user approved that published plan and selected the repository's SDD workflow.
+- The terminal output remains the PR URL and exact fresh-session handoff, followed by **STOP**.
 
 ## Quick Reference
 

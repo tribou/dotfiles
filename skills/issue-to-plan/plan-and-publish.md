@@ -11,6 +11,16 @@ git check-ignore -q .superpowers/sdd/plan.md || printf '*\n' > .superpowers/sdd/
 
 Write the generated plan to `.superpowers/sdd/plan.md`. Verify neither it nor `.superpowers/` is staged.
 
+## Review Focus and execution contract
+
+Run these checks before creating the PR:
+
+```bash
+test "$(grep -c '^## Review Focus$' .superpowers/sdd/plan.md)" -eq 1
+! awk '/^## Global Constraints$/{exit} {print}' .superpowers/sdd/plan.md | grep -q 'superpowers:executing-plans'
+awk '/^## Global Constraints$/{exit} {print}' .superpowers/sdd/plan.md | grep -q 'superpowers:subagent-driven-development'
+```
+
 ## Empty seed and push
 
 ```bash
