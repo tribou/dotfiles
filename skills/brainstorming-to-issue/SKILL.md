@@ -106,7 +106,7 @@ This skill deliberately uses **GitHub issues (`gh`)**. Do not route the spec to 
 
 ## Downstream (out of scope — do not do it here)
 
-Implementation happens later. When it does, any implementation **plan is optional, scope-gated, and lives in the PR description** — never in `docs/`, never in this issue. This skill does not produce or persist a plan.
+Implementation happens later. When it does, any implementation **plan is optional, scope-gated, and, if produced, lives in a single marked comment on the draft PR** — never in `docs/`, the PR description, or this issue. This skill does not produce or persist a plan.
 
 ## Common Mistakes
 

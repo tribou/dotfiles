@@ -51,7 +51,7 @@ awk '
 test -s .superpowers/sdd/plan.md
 ```
 
-Write only the bytes between those markers to `.superpowers/sdd/plan.md`. Preserve an existing `.superpowers/sdd/progress.md`; it is the crash-recovery ledger.
+Write only the bytes between those markers to `.superpowers/sdd/plan.md`. Preserve an existing `.superpowers/sdd/plan/progress.md`; it is the crash-recovery ledger.
 
 ## Update the existing PR
 

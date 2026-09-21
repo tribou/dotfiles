@@ -19,7 +19,7 @@ Never expose, recommend, or invoke Native superpowers:executing-plans from this 
 3. Verify that one PR comment contains exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair — not the PR description.
 4. Resolve the worktree from the PR's `headRefName`. **Never ask about worktrees — always isolate.** Exactly one worktree on that branch: enter it. No match: create one for that **existing** branch per `superpowers:using-git-worktrees` (native tool preferred, else `.worktrees/<branch>`), never a new feature branch, never a consent prompt. More than one match: stop and report — two worktrees on one branch is broken state, not a preference question. A failing baseline is likewise a stop, not a question. Run `gh pr checkout <M>` inside the resolved worktree.
 5. Extract only the marker-delimited text from that comment into `.superpowers/sdd/plan.md` — never stale local scratch, never surrounding comment prose, never the PR description.
-6. If `.superpowers/sdd/progress.md` exists, preserve it and resume from it; else start at Task 1.
+6. If `.superpowers/sdd/plan/progress.md` exists, preserve it and resume from it; else start at Task 1.
 
 ## Execute
 
