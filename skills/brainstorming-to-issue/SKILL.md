@@ -7,9 +7,9 @@ description: Use when brainstorming a feature or change whose spec should land i
 
 ## Overview
 
-Reuse the full `superpowers:brainstorming` dialogue, but persist the spec as a **GitHub issue** instead of a `docs/` file — and persist it **incrementally, across sittings**. The issue is created early with a `[DRAFT]` title prefix and rewritten after every answer, so you can walk away and resume anytime. On final approval the prefix is stripped and the issue becomes the durable "what/why" spec. This skill ends the moment the issue is finalized; implementation is a separate, later concern.
+Reuse the full `superpowers:brainstorming` dialogue, but persist the spec as a **GitHub issue** instead of a `docs/` file — and persist it **incrementally, across sittings**. The issue is created early with a `[DRAFT]` title prefix and rewritten after every answer, so you can walk away and resume anytime. After approval of the presented design, the prefix is stripped and the issue becomes the durable "what/why" spec. The finalized issue then receives its own written-issue review before this skill ends; implementation is a separate, later concern.
 
-**Core principle:** brainstorming's *dialogue* is medium-agnostic and reused unchanged. Only its *persistence* (steps 6-9) is overridden — and here that persistence is a **resumable draft lifecycle**, not a single end-of-session write.
+**Core principle:** brainstorming's *dialogue* is medium-agnostic and reused unchanged. Only its *persistence and terminal handoff* are overridden — and here that persistence is a **resumable draft lifecycle**, not a single end-of-session write.
 
 ## When to Use
 
@@ -66,8 +66,8 @@ digraph entry {
 
 ## The Draft Lifecycle (core loop — all 4 steps)
 
-1. **REQUIRED SUB-SKILL:** Run `superpowers:brainstorming` for the dialogue — steps 1-5 exactly as written: explore context, clarifying questions **one at a time**, propose 2-3 approaches, present the design in sections, get **user approval**. Do NOT collapse this into a single self-answered pass; the one-question-at-a-time HIL loop is the point.
-2. Override inside that sub-skill — its persistence only (brainstorming's own steps 6-9 are replaced by this skill):
+1. **REQUIRED SUB-SKILL:** Run `superpowers:brainstorming` for its shared-understanding and design dialogue. Delegate these semantic responsibilities to it: discover intent and success criteria; reflect the intended outcome, constraints, assumptions, and success criteria for correction; carry that shared understanding into the design; explore repository context; ask focused questions one at a time; compare approaches where applicable; present the design in sections; and obtain approval of the presented design. Do NOT collapse this into a single self-answered pass; the one-question-at-a-time HIL loop is the point.
+2. Override inside that sub-skill — its persistence and terminal handoff only:
    - Never write a spec file under `docs/` (no `docs/superpowers/specs/…`).
    - Never commit a spec doc.
    - Never invoke `writing-plans` — there is no plan step here.
@@ -78,13 +78,13 @@ digraph entry {
    3. Set the next `[ ]` question.
 
    Not batched, not deferred to the end: a hard interruption after any answer must leave the issue current. Build each update from the issue's *current* body — never regenerate it from conversation memory, and never drop, shorten, or paraphrase earlier answers.
-4. Repeat until the design is presented and approved.
+4. Repeat until the design is presented and approved. Approval of the presented design permits finalizing the issue text; it does not replace the separate written-issue review after finalization.
 
 The body is the living spec; a `## Brainstorm log` section (visible while draft) carries the checkboxed Q&A + the next open question, which IS the resume state.
 
 ## Finalize → Ready (all 5 steps, in order)
 
-Pre-finalize gate — when the design is approved, confirm each check aloud before editing:
+Pre-finalize gate — when the presented design is approved, confirm each check aloud before editing:
 
 1. The user explicitly approved the presented design.
 2. The issue body is current through the latest answer (nothing exists only in conversation).
@@ -95,7 +95,7 @@ Then:
 1. **Spec self-review** on the issue body: scan for placeholders/TBDs, internal contradictions, scope creep, ambiguous requirements. Fix inline.
 2. **Strip the `[DRAFT]` prefix** from the title.
 3. **Collapse `## Brainstorm log` into a `<details>` block** at the bottom so the spec reads clean by default while the decision trail stays recoverable.
-4. **Show the user the issue URL** and ask them to review. If they request changes, edit and re-run the self-review. This is the spec review gate — keep it.
+4. **Show the user the issue URL** and ask them to review the finalized written issue. If they request changes, edit and re-run the self-review. This written-issue review is separate from approval of the presented design — keep it.
 5. **STOP.** The issue is the handoff. Do not branch, plan, or implement.
 
 Exact commands for all of the above are in `issue-lifecycle.md`.
@@ -106,7 +106,7 @@ This skill deliberately uses **GitHub issues (`gh`)**. Do not route the spec to 
 
 ## Downstream (out of scope — do not do it here)
 
-Implementation happens later. When it does, any implementation **plan is optional, scope-gated, and lives in the PR description** — never in `docs/`, never in this issue. This skill does not produce or persist a plan.
+Implementation happens later. When it does, any implementation **plan is optional, scope-gated, and, if produced, lives in a single marked comment on the draft PR** — never in `docs/`, the PR description, or this issue. This skill does not produce or persist a plan.
 
 ## Common Mistakes
 
@@ -116,7 +116,7 @@ Implementation happens later. When it does, any implementation **plan is optiona
 | Batching persistence / holding answers in conversation only | Update the issue body after EVERY answer |
 | Silently reusing a found issue | Surface the match and ask before adopting |
 | Skipping the dedupe search when no number is given | Search open issues first — a placeholder may already exist |
-| Stopping when brainstorming's steps 6-9 are overridden | The override replaces those steps with THIS skill's Finalize → Ready — run it |
+| Stopping when brainstorming's persistence stages are overridden | The override replaces that terminal handoff with THIS skill's Finalize → Ready — run it |
 | Finalizing without stripping `[DRAFT]` | Ready = prefix stripped + log collapsed to `<details>` |
 | Following brainstorming to a `docs/` file + commit | Divert per the persistence override; the issue is the only artifact |
 | Invoking `writing-plans` | No plan step — stop at the issue |

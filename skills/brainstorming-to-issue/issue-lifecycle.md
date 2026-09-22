@@ -106,7 +106,7 @@ gh issue edit 47 --body-file /path/to/updated-body.md
 
 ## Finalize → Ready
 
-On final approval:
+After approval of the presented design:
 
 1. Self-review the body (placeholders, contradictions, scope, ambiguity) and fix inline.
 2. Collapse the log into a `<details>` block and drop the `← next` marker:
@@ -127,7 +127,7 @@ On final approval:
    gh issue edit 47 --title "<type(scope): summary>" --body-file /path/to/final-body.md
    ```
 
-4. Show the user the issue URL for the review gate. On requested changes, edit and re-review.
+4. Show the user the issue URL for the separate written-issue review gate. On requested changes, edit and re-review.
 5. STOP — no branch, no plan, no `writing-plans`.
 
 ## Guardrails
