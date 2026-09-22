@@ -192,6 +192,25 @@ end
 EOF
 endif
 
+" Tree-sitter highlighting for filetypes vim-polyglot doesn't cover
+if has('nvim-0.10')
+lua << EOF
+local _ts_ok, _ts = pcall(require, "nvim-treesitter")
+if _ts_ok then
+  _ts.install({ "prisma" })
+  -- vim-polyglot's filetype detection replaces nvim's and has no prisma rule
+  vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+    pattern = "*.prisma",
+    command = "setfiletype prisma",
+  })
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "prisma" },
+    callback = function() pcall(vim.treesitter.start) end,
+  })
+end
+EOF
+endif
+
 "" various settings
 silent !mkdir -p $HOME/.vim/swapfiles
 syntax enable
