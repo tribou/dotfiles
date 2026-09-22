@@ -39,6 +39,16 @@ command:
   "bun --version":
     exit-status: 0
 
+  # sqlite3 must be available for the session-outline skill, which reads
+  # opencode's session store (~/.local/share/opencode/opencode.db)
+  "sqlite3 --version":
+    exit-status: 0
+
+  # jq must be available for the session-outline skill, which reads Claude
+  # Code's JSONL session transcripts
+  "jq --version":
+    exit-status: 0
+
   # gopls must remain available for editor integration after bootstrap
   "gopls version":
     exit-status: 0

@@ -1,0 +1,87 @@
+---
+name: session-outline
+description: Use when the user asks which agents or subagents ran, which skills or slash commands were used, which models did the work, or for an outline, summary, or audit of tool activity in a current or past Claude Code or opencode session.
+---
+
+# Session Outline
+
+## Overview
+
+Claude Code and opencode both record every session. `session-outline.sh` (in this skill's directory) reads either one and prints each user prompt in order, with the skills and agents that ran for it nested underneath, plus the model each ran on.
+
+The two runtimes store sessions completely differently, so the script has one backend per runtime behind a shared renderer. It picks the backend for you.
+
+## Usage
+
+The script sits next to this SKILL.md — invoke it there, since each harness installs skills in its own directory (e.g. `~/.claude/skills/session-outline/` for Claude Code, `~/.config/opencode/skills/session-outline/` for opencode). Run from the project directory the session belongs to:
+
+```bash
+<SKILL_DIR>/session-outline.sh                     # most recent session here, either runtime
+<SKILL_DIR>/session-outline.sh <session-id>        # a specific session
+<SKILL_DIR>/session-outline.sh <path.jsonl>        # a Claude Code transcript file
+<SKILL_DIR>/session-outline.sh --runtime opencode  # most recent opencode session here
+```
+
+Runtime is auto-detected: an `ses_`-prefixed id is opencode, a file path or UUID is Claude Code, and with no argument the runtime with the more recent session for this directory wins. `--runtime claude-code|opencode` forces the choice. The `Runtime:` header always states which backend ran.
+
+To find past sessions:
+- **Claude Code**: `ls -t ~/.claude/projects/<project-dir>/*.jsonl`, where `<project-dir>` is the absolute path with every non-alphanumeric character replaced by `-`. The user can also browse with `/resume`.
+- **opencode**: double any quote in the path before it reaches the query — `sqlite3` runs every statement the string contains, and `-readonly` does not stop `readfile()`/`writefile()`:
+
+  ```bash
+  w=$(pwd); w=${w//\'/\'\'}
+  sqlite3 -readonly ~/.local/share/opencode/opencode.db \
+    "SELECT s.id, s.title FROM session s JOIN project p ON p.id=s.project_id
+     WHERE p.worktree='$w' AND s.parent_id IS NULL ORDER BY s.time_updated DESC LIMIT 20;"
+  ```
+
+Output lines:
+
+| Prefix | Meaning |
+|---|---|
+| `CMD` | Slash command the user typed (Claude Code only) |
+| `PROMPT` | User prompt, truncated |
+| `SKILL` | Skill loaded via the skill tool |
+| `AGENT [type]` | Subagent launched, with its description and the model it ran on in parentheses; deeper-indented lines are that agent's own skills and agents |
+
+The `Models:` header lists the models the main session's own turns ran on, in first-seen order — more than one means the model changed mid-session.
+
+Show the output to the user as-is in a code block. Add a short summary only if they asked for one.
+
+## Architecture
+
+```
+session-outline.sh      entry: parses args, picks runtime, renders
+lib/detect.sh           which runtime has the newer session for this directory
+lib/claude-code.sh      JSONL transcripts  -> records
+lib/opencode.sh         opencode.db SQLite -> records
+```
+
+Backends share one contract. Each defines `backend_resolve <arg>`, `backend_header`, and `backend_records`, where `backend_records` emits `depth`, `kind`, `text`, `model` separated by `rec_sep` (US, `0x1f`) and the entry script owns all formatting. The separator is deliberately not a tab: bash treats tab as IFS whitespace and collapses runs of it, so an empty field would vanish and shift every field after it. To add a third runtime, add `lib/<name>.sh` implementing those three functions — no change to the renderer.
+
+A session id given on the command line must be a plain identifier (`[A-Za-z0-9_-]+`); anything else is rejected rather than interpolated into a path or a query. `SESSION_OUTLINE_CLAUDE_PROJECTS_DIR` and `SESSION_OUTLINE_OPENCODE_DB` override the two session stores, which is how the tests drive the backends.
+
+Where each field comes from:
+
+| Record | Claude Code | opencode |
+|---|---|---|
+| Session store | `~/.claude/projects/<slug>/<id>.jsonl` | `~/.local/share/opencode/opencode.db` |
+| Locate by directory | path slug in the directory name | `project.worktree` → `session.project_id` |
+| Session model | `.message.model` on assistant records | `message.data.modelID` |
+| `SKILL` | `tool_use` where `name == "Skill"` → `.input.skill` | `part.data.tool == "skill"` → `state.input.name` |
+| `AGENT` | `tool_use` where `name == "Agent"` → `.input.subagent_type` | `part.data.tool == "task"` → `state.input.subagent_type` |
+| Agent's transcript | `subagents/*.meta.json` matched on `toolUseId` | `state.metadata.sessionId` → child `session.id` |
+| Agent's model | its transcript, else meta alias, else requested | `state.metadata.model.modelID` on the task part |
+
+opencode is read with `sqlite3 -readonly` so a running opencode instance is never disturbed.
+
+## Limits
+
+- Skills injected by hooks (a SessionStart hook pasting skill text) are not tool calls and do not appear.
+- Agents still running have incomplete transcripts, so their nested activity and resolved model may be missing.
+- The `Models:` header covers the whole session, not individual turns.
+- **opencode**: slash commands expand into ordinary user text before being stored, so they show as `PROMPT`, not `CMD`.
+- **opencode**: a skill whose body is injected as a user message (rather than called through the `skill` tool) appears as a `PROMPT` containing that skill's markdown. Only `skill` tool calls become `SKILL` lines.
+- **opencode**: the legacy JSON store under `~/.local/share/opencode/storage/` is not read. opencode migrated to SQLite; that tree is stale leftovers.
+- Sessions from another project directory need an explicit session id or path.
+- Nesting is followed 10 levels deep, so a transcript that links back into its own ancestry cannot recurse forever.
