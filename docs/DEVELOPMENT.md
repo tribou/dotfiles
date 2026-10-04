@@ -92,11 +92,31 @@ gpsu                           # git push -u origin current-branch
 ```
 
 - Commit separator configurable via `DOTFILES_COMMIT_SEPARATOR` (default: `:`)
-- Commit model override via `DOTFILES_COMMIT_MODEL` — set it to force a specific model for the active backend, overriding the per-backend default (visible in `commit status`)
+- Shared AI backend via `DOTFILES_AI_BACKEND` (`opencode` by default; also `claude` and `agy`).
+- Shared model override via `DOTFILES_AI_MODEL`; without it, each backend uses its built-in dotfiles default.
+- `DOTFILES_COMMIT_BACKEND` and `DOTFILES_COMMIT_MODEL` remain temporary fallbacks only when the matching `DOTFILES_AI_*` name is unset, and print a deprecation warning to stderr.
+- Commit timeout via `DOTFILES_COMMIT_TIMEOUT` (parser default `15`; this profile sets `30`).
+- QQ timeout via `DOTFILES_QQ_TIMEOUT` (default `60`; `0` disables the timeout).
 
 `commit` (no args) stages everything, asks the configured backend to draft the message, and commits — falling back to `c` (manual editor) if the backend is unavailable, errors, or times out. A spinner shows progress while waiting; Ctrl-C cancels the commit (changes stay staged) instead of falling back to `c`.
 
-- Commit backend timeout configurable via `DOTFILES_COMMIT_TIMEOUT` (seconds, default: `15`) — if the backend takes longer (hangs, or is stalled on a usage limit) it is killed and `commit` falls back to the manual `c` editor. Shown in `commit status`.
+- `commit backend X` changes the shared backend for both commands. `commit status` reports backend, model, commit timeout, qq timeout, and availability.
+
+## One-Off AI Questions
+
+````bash
+qq what does git rebase --onto do?
+qq
+qq> explain `git reset --soft HEAD~1`
+````
+
+`qq question...` reads the literal interactive history line, so `?`, `*`, `$VAR`, redirects, quotes, semicolons, ampersands, and pipes are sent as text instead of being interpreted by Bash. Bare `qq` reads one readline-enabled line at `qq> ` and is the fallback for inputs Bash cannot preserve.
+
+- Do not prefix the args form with a space: `HISTCONTROL=ignorespace` omits it from history, so `qq` rejects it rather than risk resending an older question.
+- `!word` is expanded by Bash before the alias comment and can fail with `event not found`; use bare `qq`.
+- A trailing `\` continuation is not supported in the args form; use bare `qq`.
+- In the args form, `| command` is literal question text, not a pipeline. Scripts can pipe answer-only stdout with `_dotfiles_qq "question" | command`; diagnostics stay on stderr.
+- `qq` is single-turn and context-free: it runs from an empty temporary directory and does not read a question from piped stdin.
 
 ## Package Management
 
