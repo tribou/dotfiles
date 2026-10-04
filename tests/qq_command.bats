@@ -6,6 +6,116 @@ setup() {
   common_setup
 }
 
+write_qq_rcfile() {
+  local rcfile="$1"
+  cat >"$rcfile" <<RCFILE
+PS1=
+PS2=
+HISTCONTROL=ignorespace
+HISTFILE='$BATS_TEST_TMPDIR/history'
+HISTSIZE=1000
+set -o history
+. '$REPO_ROOT/lib/ai.sh'
+export DOTFILES_AI_BACKEND=claude
+claude() {
+  printf '%s\n' "\${!#}" >>'$BATS_TEST_TMPDIR/prompts'
+  printf '%s\n' answer
+}
+RCFILE
+}
+
+run_interactive_qq() {
+  local rcfile="$1"
+  local input="$2"
+  run --separate-stderr bash -c \
+    'cd "$3" || exit 1; printf "%s" "$1" | bash --noprofile --rcfile "$2" -i' \
+    _ "$input" "$rcfile" "$BATS_TEST_TMPDIR"
+}
+
+@test "qq raw-history: metacharacters arrive literally" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  local question
+  while IFS= read -r question
+  do
+    : >"$BATS_TEST_TMPDIR/prompts"
+    run_interactive_qq "$rcfile" "qq $question
+exit
+"
+    assert_success
+    grep -qF "$question" "$BATS_TEST_TMPDIR/prompts"
+  done <<'QUESTIONS'
+what's up?
+what does * match?
+is $HOME expanded?
+a > b means what
+why use ; in shell
+is & background syntax
+what does | do
+say "quoted text"
+QUESTIONS
+  [ ! -e "$BATS_TEST_TMPDIR/b" ]
+}
+
+@test "qq: bare interactive invocation reads one readline line" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" "qq
+? * \$HOME > ; & | ' \"
+exit
+"
+  assert_success
+  grep -qF "? * \$HOME > ; & | ' \"" "$BATS_TEST_TMPDIR/prompts"
+}
+
+@test "qq: bare prompt empty input exits 1 without calling the backend" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" "qq
+
+echo status=\$?
+exit
+"
+  assert_output --partial "status=1"
+  [ ! -s "$BATS_TEST_TMPDIR/prompts" ]
+}
+
+@test "qq: bare prompt EOF exits 1 without calling the backend" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" "qq
+"
+  [ ! -s "$BATS_TEST_TMPDIR/prompts" ]
+}
+
+@test "qq: leading-space invocation rejects the previous qq history entry" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" "qq first question
+ qq second question
+exit
+"
+  assert_failure
+  [ "$(grep -Fc 'first question' "$BATS_TEST_TMPDIR/prompts")" -eq 1 ]
+  if grep -qF 'second question' "$BATS_TEST_TMPDIR/prompts"
+  then
+    false
+  fi
+  [ "$(printf '%s\n' "$stderr" | grep -Fc 'qq: question not in history (leading space?); run bare qq instead')" -eq 1 ]
+}
+
+@test "qq: leading-space invocation rejects a non-qq history entry" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" "echo prior
+ qq second question
+exit
+"
+  assert_failure
+  [ ! -s "$BATS_TEST_TMPDIR/prompts" ]
+  [ "$(printf '%s\n' "$stderr" | grep -Fc 'qq: question not in history (leading space?); run bare qq instead')" -eq 1 ]
+}
+
 @test "qq: non-interactive calls join real arguments with spaces" {
   run --separate-stderr bash -c '
     . "$REPO_ROOT/lib/ai.sh"

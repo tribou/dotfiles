@@ -128,9 +128,60 @@ function _dotfiles_ai_spinner_wait ()
   return "$status"
 }
 
+function _dotfiles_ai_track_history ()
+{
+  _DOTFILES_AI_PROMPT_HISTCMD="$HISTCMD"
+}
+
+function _dotfiles_qq_history_question ()
+{
+  if [ -z "${_DOTFILES_AI_PROMPT_HISTCMD+x}" ] || \
+    [ "$HISTCMD" != "$_DOTFILES_AI_PROMPT_HISTCMD" ]
+  then
+    return 2
+  fi
+
+  local had_histtimeformat=0 saved_histtimeformat history_line history_number command_line
+  if [ -n "${HISTTIMEFORMAT+x}" ]
+  then
+    had_histtimeformat=1
+    saved_histtimeformat="$HISTTIMEFORMAT"
+  fi
+  HISTTIMEFORMAT=
+  history_line=$(history 1)
+  if [ "$had_histtimeformat" -eq 1 ]
+  then
+    HISTTIMEFORMAT="$saved_histtimeformat"
+  else
+    unset HISTTIMEFORMAT
+  fi
+
+  history_number=$(printf '%s\n' "$history_line" | sed -E 's/^[[:space:]]*([0-9]+).*/\1/')
+  [ "$history_number" = "$HISTCMD" ] || return 2
+  command_line=$(printf '%s\n' "$history_line" | sed -E 's/^[[:space:]]*[0-9]+[[:space:]]+//')
+  case "$command_line" in
+    qq) return 0 ;;
+    qq[[:space:]]*) printf '%s' "${command_line#qq}" | sed -E 's/^[[:space:]]//' ;;
+    *) return 2 ;;
+  esac
+}
+
 function _dotfiles_qq ()
 {
-  local question="$*"
+  local question=""
+  if [[ $- == *i* ]] && [ "$#" -eq 0 ]
+  then
+    question=$(_dotfiles_qq_history_question)
+    local history_status=$?
+    if [ "$history_status" -eq 2 ]
+    then
+      printf '%s\n' 'qq: question not in history (leading space?); run bare qq instead' >&2
+      return 1
+    fi
+  else
+    question="$*"
+  fi
+
   if [ -z "$question" ]
   then
     IFS= read -e -r -p 'qq> ' question
@@ -238,6 +289,16 @@ $question"
   fi
   printf '%s\n' "$answer"
 }
+
+if [[ $- == *i* ]] && [[ ";${PROMPT_COMMAND:-};" != *";_dotfiles_ai_track_history;"* ]]
+then
+  if [ -n "${PROMPT_COMMAND:-}" ]
+  then
+    PROMPT_COMMAND="${PROMPT_COMMAND%;};_dotfiles_ai_track_history"
+  else
+    PROMPT_COMMAND=_dotfiles_ai_track_history
+  fi
+fi
 
 shopt -s expand_aliases
 alias qq='_dotfiles_qq #'
