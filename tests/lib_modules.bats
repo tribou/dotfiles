@@ -3,7 +3,7 @@ setup() {
   common_setup
 }
 
-@test "lib/index.sh sources all 8 command modules" {
+@test "lib/index.sh sources all command modules" {
   run bash -c "
     export DOTFILES=\"\$REPO_ROOT\"
     . \"\$REPO_ROOT/lib/index.sh\"
@@ -17,6 +17,7 @@ setup() {
     type mkrepo >/dev/null 2>&1 || exit 6      # repo.sh
     type claude-keepalive >/dev/null 2>&1 || exit 7 # agent.sh
     type bashcheck >/dev/null 2>&1 || exit 8   # commands.sh
+    type _dotfiles_ai_backend >/dev/null 2>&1 || exit 9 # ai.sh
   "
   assert_success
 }
@@ -28,7 +29,7 @@ setup() {
 }
 
 @test "each extracted module can be sourced cleanly without errors" {
-  for mod in agent.sh docker.sh tmux.sh cloud.sh repo.sh npm.sh git.sh commands.sh; do
+  for mod in agent.sh docker.sh tmux.sh cloud.sh repo.sh npm.sh ai.sh git.sh commands.sh; do
     run bash -c "
       export DOTFILES=\"\$REPO_ROOT\"
       . \"\$REPO_ROOT/lib/_shared.sh\"

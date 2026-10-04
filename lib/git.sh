@@ -62,103 +62,9 @@ function _dotfiles_commit_prompt ()
   fi
 }
 
-function _dotfiles_commit_backend ()
-{
-  local backend="${DOTFILES_COMMIT_BACKEND:-opencode}"
-  case "$backend" in
-    claude|opencode|agy) printf '%s' "$backend" ;;
-    *)
-      printf 'unknown DOTFILES_COMMIT_BACKEND=%s, using opencode\n' "$backend" >&2
-      printf '%s' 'opencode'
-      ;;
-  esac
-}
-
-function _dotfiles_commit_model ()
-{
-  local backend="$1"
-  if [ -n "${DOTFILES_COMMIT_MODEL:-}" ]
-  then
-    printf '%s' "$DOTFILES_COMMIT_MODEL"
-    return 0
-  fi
-  case "$backend" in
-    opencode) printf '%s' 'opencode-go/kimi-k2.7-code' ;;
-    agy)      printf '%s' 'gemini-3.7-flash-low' ;;
-    *)        printf '%s' 'haiku' ;;
-  esac
-}
-
 function _dotfiles_commit_timeout ()
 {
-  local timeout_secs="${DOTFILES_COMMIT_TIMEOUT:-15}"
-  case "$timeout_secs" in
-    ''|*[!0-9]*) timeout_secs=15 ;;
-  esac
-  printf '%s' "$timeout_secs"
-}
-
-function _dotfiles_spinner_wait ()
-{
-  local pid="$1"
-  local label="$2"
-  local timeout_secs="${3:-0}"
-  local interrupted=0
-  local is_tty=0
-  local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
-  local frame_index=0
-
-  # Enable a timeout only for a positive integer; anything else means "wait forever".
-  local max_iterations=0
-  if [ "$timeout_secs" -gt 0 ] 2> /dev/null
-  then
-    max_iterations=$(( timeout_secs * 10 ))
-  fi
-  local iterations=0
-
-  trap 'interrupted=1' INT
-
-  if [ -t 2 ]
-  then
-    is_tty=1
-  else
-    printf '%s\n' "$label" >&2
-  fi
-
-  while kill -0 "$pid" 2> /dev/null
-  do
-    if [ "$interrupted" -eq 1 ]
-    then
-      kill "$pid" 2> /dev/null
-      [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
-      trap - INT
-      return 130
-    fi
-
-    if [ "$max_iterations" -gt 0 ] && [ "$iterations" -ge "$max_iterations" ]
-    then
-      kill "$pid" 2> /dev/null
-      [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
-      trap - INT
-      return 124
-    fi
-
-    if [ "$is_tty" -eq 1 ]
-    then
-      printf '\r%s %s' "${frames[frame_index]}" "$label" >&2
-      frame_index=$(( (frame_index + 1) % 10 ))
-    fi
-
-    sleep 0.1
-    iterations=$(( iterations + 1 ))
-  done
-
-  [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
-
-  wait "$pid"
-  local status=$?
-  trap - INT
-  return "$status"
+  _dotfiles_ai_timeout DOTFILES_COMMIT_TIMEOUT 15
 }
 
 function _dotfiles_commit_generate_message ()
@@ -166,8 +72,8 @@ function _dotfiles_commit_generate_message ()
   local ticket="$1"
 
   local backend model timeout_secs
-  backend=$(_dotfiles_commit_backend)
-  model=$(_dotfiles_commit_model "$backend")
+  backend=$(_dotfiles_ai_backend)
+  model=$(_dotfiles_ai_model "$backend")
   timeout_secs=$(_dotfiles_commit_timeout)
 
   if ! command -v "$backend" > /dev/null 2>&1
@@ -199,7 +105,7 @@ function _dotfiles_commit_generate_message ()
 
   local backend_label
   backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"
-  _dotfiles_spinner_wait "$pid" "Asking ${backend_label} for a commit message..." "$timeout_secs"
+  _dotfiles_ai_spinner_wait "$pid" "Asking ${backend_label} for a commit message..." "$timeout_secs"
   local wait_status=$?
 
   if [ "$wait_status" -eq 130 ]
@@ -240,25 +146,26 @@ function commit ()
   case "$1" in
     status)
       local b m t avail=no
-      b=$(_dotfiles_commit_backend)
-      m=$(_dotfiles_commit_model "$b")
+      b=$(_dotfiles_ai_backend)
+      m=$(_dotfiles_ai_model "$b")
       t=$(_dotfiles_commit_timeout)
       command -v "$b" > /dev/null 2>&1 && avail=yes
-      printf 'backend:   %s\nmodel:     %s\ntimeout:   %ss\navailable: %s\n' "$b" "$m" "$t" "$avail"
+      printf 'backend:    %s\nmodel:      %s\ntimeout:    %ss\nqq timeout: %ss\navailable:  %s\n' \
+        "$b" "$m" "$t" "$(_dotfiles_qq_timeout)" "$avail"
       return 0
       ;;
     backend)
       shift
       if [ -z "$1" ]
       then
-        printf '%s\n' "$(_dotfiles_commit_backend)"
+        printf '%s\n' "$(_dotfiles_ai_backend)"
         return 0
       fi
       case "$1" in
         claude|opencode|agy)
-          export DOTFILES_COMMIT_BACKEND="$1"
+          export DOTFILES_AI_BACKEND="$1"
           printf 'commit backend set to %s (model: %s) for this shell\n' \
-            "$1" "$(_dotfiles_commit_model "$1")"
+            "$1" "$(_dotfiles_ai_model "$1")"
           return 0
           ;;
         *)
@@ -300,7 +207,7 @@ function commit ()
 
   if [ "$generate_status" -eq 124 ]
   then
-    echo "$(_dotfiles_commit_backend) timed out after $(_dotfiles_commit_timeout)s, falling back to manual commit" >&2
+    echo "$(_dotfiles_ai_backend) timed out after $(_dotfiles_commit_timeout)s, falling back to manual commit" >&2
     # shellcheck disable=SC2119 # commit() never forwards args to c
     c
     return
@@ -308,7 +215,7 @@ function commit ()
 
   if [ -z "$generated" ]
   then
-    echo "$(_dotfiles_commit_backend) unavailable, falling back to manual commit" >&2
+    echo "$(_dotfiles_ai_backend) unavailable, falling back to manual commit" >&2
     # shellcheck disable=SC2119 # commit() never forwards args to c
     c
     return
