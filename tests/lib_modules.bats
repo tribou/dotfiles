@@ -18,6 +18,7 @@ setup() {
     type claude-keepalive >/dev/null 2>&1 || exit 7 # agent.sh
     type bashcheck >/dev/null 2>&1 || exit 8   # commands.sh
     type _dotfiles_ai_backend >/dev/null 2>&1 || exit 9 # ai.sh
+    type qq >/dev/null 2>&1 || exit 10 # ai.sh
   "
   assert_success
 }

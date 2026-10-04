@@ -127,3 +127,117 @@ function _dotfiles_ai_spinner_wait ()
   trap - INT
   return "$status"
 }
+
+function _dotfiles_qq ()
+{
+  local question="$*"
+  if [ -z "$question" ]
+  then
+    IFS= read -e -r -p 'qq> ' question
+    local read_status=$?
+    if [ "$read_status" -ne 0 ]
+    then
+      [ "$read_status" -eq 130 ] && return 130
+      return 1
+    fi
+  fi
+  [ -n "$question" ] || return 1
+
+  local backend model timeout_secs wrapped_question
+  backend=$(_dotfiles_ai_backend)
+  model=$(_dotfiles_ai_model "$backend")
+  timeout_secs=$(_dotfiles_qq_timeout)
+  wrapped_question="Answer concisely for display in a terminal. Prefer short answers; use code blocks for commands.
+
+$question"
+
+  if ! command -v "$backend" >/dev/null 2>&1
+  then
+    printf 'qq: %s not found\n' "$backend" >&2
+    return 1
+  fi
+
+  local tmpdir workdir outfile
+  tmpdir=$(mktemp -d) || return 1
+  workdir="$tmpdir/work"
+  mkdir "$workdir" || { rm -rf "$tmpdir"; return 1; }
+  outfile="$tmpdir/answer"
+
+  case "$backend" in
+    opencode)
+      (
+        cd "$workdir" || exit 1
+        OPENCODE_PERMISSION='"deny"' \
+          opencode run --pure --model "$model" "$wrapped_question" \
+          >"$outfile" 2>/dev/null
+      ) &
+      ;;
+    agy)
+      (
+        cd "$workdir" || exit 1
+        agy -p "$wrapped_question" --model "$model" \
+          >"$outfile" 2>/dev/null
+      ) &
+      ;;
+    *)
+      (
+        cd "$workdir" || exit 1
+        claude -p --model "$model" --tools "" \
+          --disallowedTools 'mcp__*' --safe-mode --no-session-persistence \
+          -- "$wrapped_question" >"$outfile" 2>/dev/null
+      ) &
+      ;;
+  esac
+  local pid=$!
+
+  local backend_label
+  backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"
+  _dotfiles_ai_spinner_wait "$pid" "Asking ${backend_label}..." "$timeout_secs"
+  local wait_status=$?
+
+  case "$wait_status" in
+    130)
+      rm -rf "$tmpdir"
+      printf '%s\n' 'qq canceled' >&2
+      return 130
+      ;;
+    124)
+      rm -rf "$tmpdir"
+      printf 'qq: %s timed out after %ss\n' "$backend" "$timeout_secs" >&2
+      return 124
+      ;;
+    0) ;;
+    *)
+      rm -rf "$tmpdir"
+      printf 'qq: %s returned no answer\n' "$backend" >&2
+      return 1
+      ;;
+  esac
+
+  local answer
+  answer=$(awk '
+    {
+      lines[NR] = $0
+      if ($0 !~ /^[[:space:]]*$/) {
+        if (first == 0) first = NR
+        last = NR
+      }
+    }
+    END {
+      if (first != 0) {
+        for (i = first; i <= last; i++) print lines[i]
+      }
+    }
+  ' "$outfile")
+  rm -rf "$tmpdir"
+
+  if [ -z "$answer" ]
+  then
+    printf 'qq: %s returned no answer\n' "$backend" >&2
+    return 1
+  fi
+  printf '%s\n' "$answer"
+}
+
+shopt -s expand_aliases
+alias qq='_dotfiles_qq #'
