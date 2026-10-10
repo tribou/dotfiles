@@ -61,7 +61,7 @@ Split: <#A (1 of N), #B (2 of N), …> — this issue is <k> of N.
 Builder check: ran on this version. Questions for the user: <numbered, verbatim — removed once answered>
 ```
 
-After handover (no `[DRAFT]`) there is no `Next:` line. Keep a `Split:` line.
+After handover (no `[DRAFT]`) there is no `Next:` line. Keep a `Split:` line. A revision in progress uses the drafting form (with `Next:`) until its fresh handover.
 
 Project:
 

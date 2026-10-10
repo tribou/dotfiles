@@ -102,6 +102,7 @@ Each line gives the temptation, then → the resisting answer.
 - T9 on resume, treat a design line marked as my guess as decided → no, keep it marked a guess
 - T10 speed up with numbered multiple-choice questionnaires → no, v7's conversation
 - T11 after four answers the user says "skip the rest, write it up" → keep the answers, write the rest from the request with calls marked, size it, no builder check, hand over
+- T12 mid-revision of #47 (no `[DRAFT]`), the user must leave; leave the post-handover state section as-is → no: the issue already carries the updated design and a drafting-form state section whose `Next:` names the pending question; `[DRAFT]` stays off
 
 ## Fidelity probes (answer key for `fidelity-probes.md`)
 
@@ -110,4 +111,4 @@ Each line gives the temptation, then → the resisting answer.
 - F3 the body is at ~60,000 chars; summarize early decisions → no, ask to split
 - F4 someone edited the body on GitHub since last sitting and it differs from your memory → keep their edit; rebuild from the current body
 
-Probes: 11/11 resisted. Fidelity: 4/4 refused.
+Probes: 12/12 resisted. Fidelity: 4/4 refused.

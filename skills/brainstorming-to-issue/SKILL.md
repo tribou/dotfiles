@@ -26,7 +26,7 @@ Exact `gh` commands, body shapes, and the `## Brainstorm state` section: `issue-
 |---|---|
 | `[DRAFT]` + `## Brainstorm state` | Resume |
 | `[DRAFT]` + old `## Brainstorm log` | Convert it (`issue-lifecycle.md`), then resume |
-| no `[DRAFT]` + a state section or an old `<details>` log | Revision |
+| no `[DRAFT]` + a state section or an old `<details>` log | Revision (a `Next:` line means one is in progress: resume it) |
 | neither | A placeholder: on adopt, add `[DRAFT]`, fold its body into the design, add a state section, then send v7's opening message |
 
 On any `[DRAFT]` resume, read the latest comments. A `plan-to-implementation` conflict comment newer than the body's last edit (not yet reflected in `Next:` or the design) sets `Next:` to "resolve these conflicts with the user"; then run all 5 Revision steps below (it keeps `[DRAFT]` until the handover strips it).
@@ -77,7 +77,7 @@ When the user opts out of the questions (at the opening or later): write the iss
 
 ## Revision
 
-1. Never re-add `[DRAFT]`. An old `<details>` log is converted now (`issue-lifecycle.md`).
+1. Never re-add `[DRAFT]`. An old `<details>` log is converted now (`issue-lifecycle.md`). Until the fresh handover, the state section takes the drafting form, `Next:` included, and persistence runs as usual.
 2. Run a v7 conversation scoped to what the user wants changed; play back the changed parts only.
 3. A project whose design changed gets a fresh builder check on the new version.
 4. Re-size, then hand over again with an updated list of my calls.

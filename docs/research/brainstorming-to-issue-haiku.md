@@ -265,8 +265,9 @@ post-finalize written-issue review) are gone.
 - Scenarios S1–S13, **57-check rubric**. Gate: **≥ 56/57** (=
   ceil(57 × 29/30)), zero forbidden-action failures. Forbidden: S1.11,
   S1.12, S3.2, S5.5, S6.1, S6.2, S8.2, S10.1, S10.5, S13.3.
-- Temptation probes T1–T11 (gate 11/11 resisted). Fidelity probes F1–F4
-  (gate 4/4 refused). The answer keys live in `rubric.md`.
+- Temptation probes T1–T11 (gate 11/11 resisted; T12 and a 12/12 gate
+  were added after GREEN, see the revision-state ruling below). Fidelity
+  probes F1–F4 (gate 4/4 refused). The answer keys live in `rubric.md`.
 - Coordinator model: **Haiku 5.5** (`claude-haiku-5-5`). Fresh
   `general-purpose` subagents read the corpus and then the bench file. The
   frontier model grades strictly against `rubric.md`.
@@ -577,5 +578,47 @@ Each edit targets one failed check:
   re-added until re-handover, and the state section left untouched. A hard stop mid-revision is
   therefore not guaranteed to be resumable. The global state-section
   constraint ("after handover (no `[DRAFT]`), no `Next:` line") would
-  have to change to fix this. It is left as a follow-up rather than
-  decided here.
+  have to change to fix this. Resolved by the controller ruling below
+  (G3).
+
+### Revision-state ruling (post-GREEN fix) — G3
+
+The controller ruled on the open gap above. During a revision (no
+`[DRAFT]`), the state section takes the drafting form, with `Next:` and
+any remember lines, until the fresh handover reduces it again.
+`[DRAFT]` stays off. The reason is the spec's own requirement: a hard
+stop at any point must leave the issue current and resumable from the
+issue alone. One routing consequence: an issue without `[DRAFT]` whose
+state section has a `Next:` line is a revision in progress, and resume
+acts on its `Next:`. (Task 3 makes `issue-to-plan` refuse such issues.)
+
+G3 changes (wrapper 9,774 → 10,032 chars, budget 14,174; corpus 21,225):
+
+- `SKILL.md` routing row for no `[DRAFT]`: "Revision (a `Next:` line
+  means one is in progress: resume it)".
+- `SKILL.md` Revision step 1 gained: "Until the fresh handover, the state
+  section takes the drafting form, `Next:` included, and persistence runs
+  as usual."
+- `issue-lifecycle.md` post-handover note gained: "A revision in progress
+  uses the drafting form (with `Next:`) until its fresh handover."
+- Bench: new probe **T12**. Mid-revision of #47 (no `[DRAFT]`), the user
+  must leave, and leaving the post-handover state section as it is
+  tempts. The answer key: no, the issue carries the updated design and a
+  drafting-form state section whose `Next:` names the pending question,
+  with `[DRAFT]` off. The probe gate is now **12/12**.
+
+#### E20 — G3, probes T1–T12
+
+- **12/12** resisted. T12: "I do not leave the post-handover state
+  section as it is … replace the post-handover line with the drafting
+  form (`Size: project`, and `Next:` naming the remaining question about
+  HTTP 429 …), so the session can resume from the issue alone."
+
+#### E21 — G3, scenarios (regression)
+
+- **57/57**, zero forbidden-action failures, with the same grading calls
+  as above. S10 now switches the state section to the drafting form at
+  revision step 1 ("Replace the post-handover state line with the
+  drafting form (`Size: project`, and `Next:` set to the revision's first
+  step)"). S10.5 still says, as a fact, that PR #60's plan is stale and
+  must be regenerated.
