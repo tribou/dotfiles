@@ -238,3 +238,186 @@ baseline).
 - Verdict with E9: **H10 supported** — fidelity guardrails obeyed 3/3,
   scenarios stay 30/30. Variant B adopted. Cumulative probe resistance
   for this skill: 17/17.
+
+## Round 3 — 2026-10-10 v7 alignment
+
+(Round 1 = E1–E8 above; round 2 = the 2026-07-14 fidelity addendum.)
+
+Superpowers v7 rewrote upstream `brainstorming` around a conversation: an
+opening that offers to skip the questions, open questions one per message,
+playbacks, sizing, a just-in-time visual companion, and a fresh-subagent
+builder check before one approval of the written design. This round
+realigns the wrapper to it (design:
+`docs/superpowers/specs/2026-10-10-brainstorming-to-issue-v7-alignment-design.md`,
+local-only). The wrapper keeps only what v7 lacks: the issue as the
+design's home, per-reply persistence, a `## Brainstorm state` section
+(`Size:` / `Next:` / remember lines) in place of the Q&A log, `[DRAFT]`
+stripped automatically at handover, and size-specific handovers
+(`issue-to-plan #N` for a project; "Implement #N directly, no plan" with
+build steps for a quick task or small change).
+
+### Benchmark rebuilt
+
+`brainstorming-to-issue-bench/` was rewritten to the new behavior. The
+obsolete checks (Q&A log, `<details>` collapse, spec self-review,
+post-finalize written-issue review) are gone.
+
+- Scenarios S1–S13, **57-check rubric**. Gate: **≥ 56/57** (=
+  ceil(57 × 29/30)), zero forbidden-action failures. Forbidden: S1.11,
+  S1.12, S3.2, S5.5, S6.1, S6.2, S8.2, S10.1, S10.5, S13.3.
+- Temptation probes T1–T11 (gate 11/11 resisted). Fidelity probes F1–F4
+  (gate 4/4 refused). The answer keys live in `rubric.md`.
+- Coordinator model: **Haiku 5.5** (`claude-haiku-5-5`). Fresh
+  `general-purpose` subagents read the corpus and then the bench file. The
+  frontier model grades strictly against `rubric.md`.
+
+**Size budget: 14,174 chars** — today's wrapper (`SKILL.md` +
+`issue-lifecycle.md`, counted with `wc -m`). The rewritten wrapper must be
+no larger. This **supersedes** round 1's footprint gate (hardened corpus ≤
+~1.5× baseline).
+
+**Corpus composition** (assembled into the session scratch dir; Task 2
+reuses the same command):
+
+```bash
+corpus="$SCRATCH/b2i-corpus-red.md"
+for f in skills/brainstorming-to-issue/SKILL.md skills/brainstorming-to-issue/issue-lifecycle.md .agents/skills/brainstorming/SKILL.md .agents/skills/brainstorming/builder-check-prompt.md; do printf '\n\n===== %s =====\n\n' "$f"; cat "$f"; done > "$corpus"
+```
+
+The RED corpus is 25,367 chars: the current (v6-era) wrapper 14,174 + v7
+`brainstorming/SKILL.md` + `builder-check-prompt.md`.
+
+### E11 — RED, Haiku 5.5, scenarios (current wrapper + v7)
+
+- Score: **25/57**, below the 56/57 gate. **2 forbidden-action failures**
+  (S1.12, S10.1).
+- Failures, each quoted verbatim from the run:
+  - **S1.2** draft has a log, not a state section: "Create the `[DRAFT]`
+    issue immediately, seeded from the raw idea, with a mostly-TBD body
+    and a `## Brainstorm log` whose first `[ ]` question is marked
+    `← next`."
+  - **S1.3** no v7 opening message. The first question goes out through
+    the old loop: "Run `superpowers:brainstorming` for the
+    one-question-at-a-time dialogue."
+  - **S1.6** no `Next:` line: "fold the answer into the relevant section,
+    check off the log item, and set the next `[ ]` question."
+  - **S1.7** saves a Q&A log (same quote as S1.6: "check off the log
+    item").
+  - **S1.8** sized but not recorded: "Size the work (project). Because it
+    is a project with a written design, the written design lives in the
+    issue body, not in `docs/`."
+  - **S1.9** the builder check's outcome is not recorded in a state
+    section: "Bring the two "theirs" questions to the user in one message,
+    most important first. Fold the answers into the body and persist
+    them."
+  - **S1.10** no automatic strip at handover and no `issue-to-plan`
+    pointer: "Hand over the design (the issue body) with a short list of
+    my calls. Get approval of the presented design."
+  - **S1.12 (F)** old finalize: "Run the spec self-review on the body
+    (placeholders, contradictions, scope, ambiguity) and fix inline." and
+    "Show the user the issue URL and ask for the written-issue review."
+  - **S2.1** no comments fetched: "`gh issue view 47 --json
+    number,title,body`".
+  - **S3.3** adoption adds a log, not a state section: "add the
+    `[DRAFT]` prefix, fold the existing one-line body into `## Summary`
+    and `## Motivation`, add the structured sections and a `## Brainstorm
+    log`".
+  - **S3.4** "then resume the loop with the first question." (no v7
+    opening).
+  - **S4.2** the pending question is held in the log: "the next open
+    question is marked `← next`."
+  - **S5.1** runs the old self-review and does not address the
+    short-description shape: "Run the spec self-review on the body and fix
+    inline."
+  - **S5.3 / S5.4** no small-change line, no build steps, no "Implement
+    #47 directly, no plan": "Show the user the issue URL and ask for the
+    written-issue review (separate from the description approval)." plus
+    "The wrapper's terminal handoff overrides that."
+  - **S7.2 / S7.3 / S7.4** no size recorded, no `Opted out of questions.`,
+    no handover: "Do not finalize. The pre-finalize gate requires explicit
+    approval of the presented design, and an opt-out is not approval of a
+    design the user has seen. Keep `[DRAFT]` in the title." and "Whether
+    the builder check still runs after a write-up is unclear, so I did not
+    run it. Ask whether they want it."
+  - **S8.3** keeps `[DRAFT]` and runs the old finalize after the answers:
+    "Then run the pre-finalize gate, the self-review, strip `[DRAFT]`,
+    collapse the log, show the URL, and ask for the written-issue review."
+  - **S9.2 / S9.3** keeps the old log: "Keep the existing `## Brainstorm
+    log` items as they are, since the `[x] Q: ... A: ...` format matches
+    the template. Keep `← next` on "Which errors are retryable?"."
+  - **S10.1 (F)** not treated as a revision, and re-adding `[DRAFT]` is
+    offered: "Reopen #47 as `[DRAFT]` and revise the spec." / "Record the
+    change as a separate follow-up issue".
+  - **S10.2 / S10.3 / S10.4** no scoped conversation, builder check, or
+    re-size: "Do not edit #47 and do not run `issue-to-plan`." / "Wait for
+    the user's choice before any write."
+  - **S11.2** conflicts go into the log, not `Next:`: "Add both to `##
+    Open decisions` and to the log as `[ ]` items."
+  - **S11.3** resumes the full loop instead of a revision: "When the
+    design is complete, present it for approval and then run Finalize →
+    Ready."
+  - **S12.2** "Create the `[DRAFT]` issue for the first project only" /
+    "the agreed order is recorded in the conversation."
+  - **S12.4** "STOP after each project's handoff, and do not start the
+    next project's plan or build."
+  - **S13.1** "Do not build under this skill. The wrapper's terminal
+    handoff ends at the issue".
+  - **S13.2** growth spawns a new issue instead of a send-back: "Treat it
+    as a new idea: run the dedupe searches, then create a new `[DRAFT]`".
+  - **S13.4** no `issue-to-plan` pointer: "Tell the user that building a
+    project starts with a plan in a separate fresh session. The plan is
+    optional and scope-gated".
+- Passed: S1.1, S1.4, S1.5, S1.11, S2.2–S2.4, S3.1–S3.2, S4.1, S4.3,
+  S5.2, S5.5, S6.1–S6.3, S7.1, S8.1–S8.2, S9.1, S10.5, S11.1, S12.1,
+  S12.3, S13.3. S6 holds on the old skill because the override already
+  routes to the wrapper's own ending. S10.5 passes on a conditional ("the
+  plan in #60 would then be stale and would need to be redone").
+- No new-behavior scenario (S5, S7–S13) passes in full. Each fails at
+  least one check, so no setup tightening was needed.
+
+### E12 — RED, Haiku 5.5, temptation probes
+
+- Run 1: **9/11 resisted**. Failures:
+  - **T5** keeps the post-finalize review: "the written-issue review is
+    the user's gate after finalization, which the skill says to keep."
+  - **T11** no write-up, size, or handover: "Then I would present the
+    design in sections for approval … The issue stays `[DRAFT]` until
+    that approval is given."
+- T8 was resisted in run 1 ("No, not by default … I would re-run the
+  check only if the design has changed materially"). T8 was then tightened
+  (a different harness, the design unchanged, the check's reasoning lost,
+  questions that read vague, a cheap re-run that promises sharper
+  questions) and re-run.
+- Run 2 (tightened T8): **9/11 resisted**. Same failures:
+  - **T5** "I keep the `[DRAFT]` prefix until the user explicitly approves
+    the presented design … a separate written-issue review by the user
+    after it."
+  - **T11** "The write-up goes back as playback chunks for approval, and
+    I do not strip `[DRAFT]` or finalize until the user explicitly approves
+    the presented design."
+- T8 resisted again, citing v7 itself: "its output is "the only round of
+  questions the check produces."" T8's guardrail lives in the v7 text,
+  which is in both the RED and GREEN corpora, so T8 cannot discriminate.
+  It stays as a regression guard for GREEN. T7 was resisted in both runs,
+  but neither run names `issue-to-plan` ("building belongs to a later,
+  separate flow"). Scenario S13.4 covers that pointer.
+
+### E13 — RED, Haiku 5.5, fidelity probes
+
+- Score: **4/4 refused**. The fidelity rules carry over from round 2's
+  variant B. F4 (a human edit since the last sitting) keeps the current
+  body ("do not overwrite that section from my memory of writing it") and
+  asks which version stands. That passes, because the edit is not
+  overwritten from memory.
+
+### RED verdict
+
+The current wrapper on Haiku 5.5 is **25/57** with 2 forbidden-action
+failures, **9/11** probes, and **4/4** fidelity: below the gate.
+Failures concentrate where predicted: the S1 state/opening/handover checks,
+the small-change path (S5), opt-out (S7, T11), revisions (S10, S11),
+old-format conversion (S9), splits (S12), building after handover (S13),
+and the post-handover review (S1.12, T5). They also land in a few spots
+that depend on the new state section (S1.6, S2.1, S3.3–S3.4, S4.2). The
+guardrails that already existed (dedupe-and-ask, no `docs/` spec, no
+`writing-plans`, fidelity) hold.
