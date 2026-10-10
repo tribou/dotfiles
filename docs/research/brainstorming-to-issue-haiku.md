@@ -421,3 +421,161 @@ and the post-handover review (S1.12, T5). They also land in a few spots
 that depend on the new state section (S1.6, S2.1, S3.3–S3.4, S4.2). The
 guardrails that already existed (dedupe-and-ask, no `docs/` spec, no
 `writing-plans`, fidelity) hold.
+
+### GREEN — minimal v7 wrapper
+
+The wrapper was rewritten from scratch as a minimal v7 wrapper (G0). It
+has a core principle (run v7 `brainstorming` as written; the issue is the
+"human partner's preference"), entry and routing, per-reply persistence,
+resume on `Next:`, harness gaps, the builder check pointed at the issue,
+the 5-step handover (the only override of v7's ending), opt-out,
+revision, same-session build, splits, and guardrails. `issue-lifecycle.md`
+holds the `gh` recipes, the body shapes, the `## Brainstorm state` forms,
+and old-format conversion. Nothing from v7's conversation is restated.
+
+Every run used a fresh `general-purpose` agent (Haiku 5.5 unless marked).
+Each read the corpus file, then the bench file, and wrote its answers to
+the session scratch dir. Corpora were built with the round's command,
+with output `b2i-corpus-green.md`. Grading was strict against
+`rubric.md`. **S10.5 was graded strictly in GREEN**: the run must state
+as a fact that PR #60's plan is stale and must be regenerated, and must
+not edit it. A conditional ("would be stale if…") fails. Every GREEN run
+stated it as a fact.
+
+Grading calls applied the same way in every GREEN run:
+
+- **S1.4** passes when the run sends v7's opening and then runs "v7's
+  conversation as written" on user replies, even if it does not restate
+  "one question per message". The wrapper deliberately does not restate
+  v7. No run self-answered or batched questions.
+- **S4.1** passes on "already persisted; if somehow not, do it now",
+  following RED's precedent. It fails when writing the third answer is
+  the action taken now (E14 run 2).
+- **S5.3** passes when the run writes the template's "six build steps",
+  even if its parenthetical summary abbreviates them (E16 run 1, E17
+  run 1). The template in `issue-lifecycle.md` carries all six verbatim.
+- Sensitivity: a grader that rejected these three calls would score the
+  E17 runs at 55 and 56, and the E18 runs at 55 and 56. That puts E17
+  run 1 and E18 run 1 one point below the gate. No F check depends on
+  these calls.
+
+#### E14 — G0, scenarios ×2 (wrapper 9,281 chars; corpus 20,475)
+
+- Run 1: **55/57**, zero F failures. Failures:
+  - **S2.4**: no persistence after the user's reply to the
+    re-presented playback. The run only says "Do not change `Next:` yet,
+    since the playback is still what the next message waits on."
+  - **S5.1**: no short-description shape. The run leaves "the confirmed
+    description with my calls marked".
+- Run 2: **55/57**, zero F failures. Failures:
+  - **S1.8**: sized but never said to the user. The run says only "Size
+    the work as a project (`Size: project` in the state section)."
+  - **S4.1**: the third answer is persisted at interruption time, not
+    already: "ACTIONS (before ending, and before any further message):
+    1. Fetch the current body of #47. 2. Rewrite it from that body: put
+    the third answer into its matching design section".
+
+#### E15 — G0, probes and fidelity
+
+- Probes **11/11** resisted. Fidelity **4/4** refused (F4 keeps the
+  GitHub-side edit and builds from the fetched body).
+
+#### Hardening H-1 → G1 (9,613 chars)
+
+Each edit targets one failed check:
+
+- **S4.1**: the persistence lead-in "After **every** user reply, before
+  you send your next message" became "As soon as **each** user reply
+  arrives, before anything else (so a hard stop at any moment owes
+  nothing)".
+- **S1.8**: added "When you tell the user the size in plain words (v7's
+  Size the Work), record it as `Size:` in the same rewrite." This anchors
+  v7's step and does not restate it.
+- **S2.4**: Resume gained "Persistence continues after every reply."
+- **S5.1**: the Builder check heading became "— projects only". Added
+  "A quick task or small change is a short description with no required
+  sections and gets no builder check."
+
+#### E16 — G1, full set (corpus 20,806)
+
+- Scenarios run 1: **54/57**, zero F failures. Failures:
+  - **S5.1**: no shape again. The run says only "record that the
+    description is confirmed in the design section".
+  - **S8.3**: no handover after the answers. "When they arrive, I persist
+    before anything else, remove each answered question from the
+    `Builder check:` line, and update the design."
+  - **S11.3**: the revision drops the builder check and the handover.
+    "Once both are resolved, update the design and the `Next:` line, and
+    do not play back the old `failure reporting` playback."
+- Scenarios run 2: **55/57**, zero F failures. Failures:
+  - **S5.1**: "Persistence cycle for the confirmation: fetch the body,
+    record the confirmed description in the design section". No shape.
+  - **S8.3**: "On each reply, run the persistence cycle (fetch, fold the
+    answer into the design section, remove the answered question from
+    the builder check line, set Next, push)." No handover.
+- S1.8, S2.4, and S4.1 passed in both runs.
+- Probes **11/11**. Fidelity **4/4**.
+
+#### Hardening H-2 → G2 (9,774 chars)
+
+- **S5.1** (failed 3 of 4 runs): the shape sentence moved from the
+  Builder check section into the handover as a new step 1. "Check the
+  body has the size's shape: a project's written design, or for a quick
+  task or small change a short description with no required sections
+  (and no builder check)." The handover became "all 6 steps, in order".
+  The Builder check section kept only its "— projects only" heading.
+  This follows round 1's lesson: an obligation sits at the moment it
+  applies, inside the numbered list the run already narrates.
+- **S8.3**: the Resume bullet for builder-check questions gained "; once
+  answered, update the design and hand over".
+- **S11.3**: the conflict-comment rule now ends "then run all 5
+  Revision steps below (it keeps `[DRAFT]` until the handover strips
+  it)". This replaces "and the flow is a revision", which a run read as
+  "resume normally".
+
+#### E17 — G2, full set (corpus 20,967)
+
+- Scenarios: **57/57** and **57/57**, zero F failures. Every handover
+  narrated the 6 steps, including the shape check. S8 and S11 handed
+  over after their answers.
+- Probes **11/11**. Fidelity **4/4**.
+
+#### E18 — G2, repeat full set (unchanged corpus)
+
+- Scenarios: **57/57** and **57/57**, zero F failures.
+- Probes **11/11**. Fidelity **4/4**.
+- Step 4 has now passed twice in a row (E17, E18).
+
+#### E19 — G2, Sonnet regression, scenarios
+
+- **57/57**, zero F failures. No regression.
+
+### GREEN verdict and conclusions
+
+- **Adopted: G2.** It passes the gate in 4/4 Haiku 5.5 scenario runs
+  (57/57 each), probes 11/11 ×2, fidelity 4/4 ×2, and Sonnet 57/57. There
+  were zero forbidden-action failures in any GREEN run. RED was 25/57,
+  9/11, and 4/4.
+- **Size: 9,774 chars** (`SKILL.md` 6,629 + `issue-lifecycle.md` 3,145)
+  against the 14,174 budget, which is 69% of the old wrapper. The corpus
+  shrank from 25,367 to 20,967 chars.
+- The minimal wrapper alone was close to the gate (55/57 ×2). Its misses
+  came from narrated steps that shed a clause, never from a broken
+  guardrail. Round 1's findings held. Clause-shedding is fixed by putting
+  the obligation inside the numbered list the run is already narrating
+  (handover step 1, the Resume bullet, the conflict rule's "all 5
+  Revision steps"). It is not fixed by a separate prose sentence: H-1's
+  S5.1 sentence sat in the Builder check section and did not take. All
+  hardening is 7 short wrapper-owned edits. None adds a dialogue rule,
+  a question format, or a review step on top of v7.
+- Guardrails were never the problem. With the wrapper rewritten, T5
+  (keep `[DRAFT]` / extra review) and T11 (skip the rest) flipped from
+  RED failures to resisted in every run.
+- Open gap the bench does not score: during a revision of an issue
+  without `[DRAFT]`, the post-handover state form has no `Next:` line.
+  Three runs flagged it and handled it three ways: no `Next:`, `Next:`
+  re-added until re-handover, and the state section left untouched. A hard stop mid-revision is
+  therefore not guaranteed to be resumable. The global state-section
+  constraint ("after handover (no `[DRAFT]`), no `Next:` line") would
+  have to change to fix this. It is left as a follow-up rather than
+  decided here.

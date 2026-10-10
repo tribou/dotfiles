@@ -1,138 +1,97 @@
 ---
 name: brainstorming-to-issue
-description: Use when brainstorming a feature or change whose spec should land in a GitHub issue instead of a docs/ file — including starting, pausing, and resuming a brainstorm across multiple sittings. The issue is created early as a [DRAFT] and becomes the durable spec; implementation happens separately later. Triggers include "brainstorm this into an issue", "spec it out as a GitHub issue", "file an issue for this feature", "continue/resume brainstorming issue #N", "pick up the draft brainstorm".
+description: Use when brainstorming a feature or change whose written design should live in a GitHub issue instead of a docs/ file — including starting, pausing, and resuming a brainstorm across sittings or harnesses, and revising an issue already handed over. Triggers include "brainstorm this into an issue", "spec it out as a GitHub issue", "file an issue for this feature", "continue/resume brainstorming issue #N", "pick up the draft brainstorm", "brainstorming-to-issue #N".
 ---
 
 # Brainstorming Into a GitHub Issue
 
-## Overview
+## Core principle
 
-Reuse the full `superpowers:brainstorming` dialogue, but persist the spec as a **GitHub issue** instead of a `docs/` file — and persist it **incrementally, across sittings**. The issue is created early with a `[DRAFT]` title prefix and rewritten after every answer, so you can walk away and resume anytime. After approval of the presented design, the prefix is stripped and the issue becomes the durable "what/why" spec. The finalized issue then receives its own written-issue review before this skill ends; implementation is a separate, later concern.
+**REQUIRED SUB-SKILL:** run `superpowers:brainstorming` (v7) as written. This skill is the "human partner's preference" v7 allows: the written design lives in a GitHub issue, not `docs/`. It adds only what v7 lacks: persistence to the issue, resume from the issue alone (any session, any harness), the `[DRAFT]` title prefix ("still being brainstormed"), and splits. Do not restate or reinterpret v7's dialogue, playbacks, sizing, spikes, visual companion, design shape, or builder check — follow them.
 
-**Core principle:** brainstorming's *dialogue* is medium-agnostic and reused unchanged. Only its *persistence and terminal handoff* are overridden — and here that persistence is a **resumable draft lifecycle**, not a single end-of-session write.
+Exact `gh` commands, body shapes, and the `## Brainstorm state` section: `issue-lifecycle.md`.
 
-## When to Use
+## Entry
 
-- You want a spec captured somewhere trackable and linkable, not buried in `docs/`.
-- You want to brainstorm **over time** — start now, answer more questions later — without losing context between sittings.
-- Building will happen later or by someone/something else — the issue is the handoff.
+**No number given:**
+1. Search open issues by keywords.
+2. Search `[DRAFT] in:title`.
+3. Plausible match → show it and ask: adopt #N or start fresh? Never reuse or duplicate silently.
+4. No match (or "fresh") → create the `[DRAFT]` issue, ending in a state section, before the first question.
+5. Send v7's opening message.
 
-**When NOT to use:** you're about to implement immediately in this same session with no need for a durable spec artifact (use `superpowers:brainstorming` directly), or the spec belongs in a versioned design doc.
+**Number given:** load it with comments (`gh issue view N --comments`), then route:
 
-## State Model
-
-Two title states, no new labels:
-
-| Title | Meaning |
+| The issue has | Route |
 |---|---|
-| `[DRAFT] feat(scope): summary` | brainstorm in progress (resumable) |
-| `feat(scope): summary` | approved — reads like any normal repo spec issue |
+| `[DRAFT]` + `## Brainstorm state` | Resume |
+| `[DRAFT]` + old `## Brainstorm log` | Convert it (`issue-lifecycle.md`), then resume |
+| no `[DRAFT]` + a state section or an old `<details>` log | Revision |
+| neither | A placeholder: on adopt, add `[DRAFT]`, fold its body into the design, add a state section, then send v7's opening message |
 
-Find in-progress drafts with: `gh issue list --search "[DRAFT] in:title"`
+On any `[DRAFT]` resume, read the latest comments. A `plan-to-implementation` conflict comment newer than the body's last edit (not yet reflected in `Next:` or the design) sets `Next:` to "resolve these conflicts with the user"; then run all 5 Revision steps below (it keeps `[DRAFT]` until the handover strips it).
 
-## Entry: Start, Dedupe, or Resume
+## Persistence
 
-Determine which mode you're in **before asking any questions**. Exact `gh` commands are in `issue-lifecycle.md`.
+As soon as **each** user reply arrives, before anything else (so a hard stop at any moment owes nothing):
+1. Fetch the current body.
+2. Rewrite it from that body, never from conversation memory: put the outcome into the matching design section.
+3. Set `Next:` to exactly what your next message waits on.
+4. Push the body.
 
-```dot
-digraph entry {
-    "Issue number given?" [shape=diamond];
-    "Load issue, read body + Brainstorm log" [shape=box];
-    "Search open issues for a match" [shape=box];
-    "Plausible placeholder/draft found?" [shape=diamond];
-    "Ask user: adopt #N or start fresh?" [shape=box];
-    "Create [DRAFT] issue immediately" [shape=box];
-    "Resume the loop from next open question" [shape=doublecircle];
+When you tell the user the size in plain words (v7's Size the Work), record it as `Size:` in the same rewrite. Save outcomes only. The design sections carry v7's marks: a guess is marked as my guess, a choice I made as my call, and only what the user said goes in unmarked. Do not save playback text, Q&A logs, decision history, or quotes of the user. Redo cheap work instead of saving it mid-way: recon, an unfinished builder check, the companion server.
 
-    "Issue number given?" -> "Load issue, read body + Brainstorm log" [label="yes"];
-    "Issue number given?" -> "Search open issues for a match" [label="no"];
-    "Search open issues for a match" -> "Plausible placeholder/draft found?";
-    "Plausible placeholder/draft found?" -> "Ask user: adopt #N or start fresh?" [label="yes"];
-    "Plausible placeholder/draft found?" -> "Create [DRAFT] issue immediately" [label="no"];
-    "Ask user: adopt #N or start fresh?" -> "Load issue, read body + Brainstorm log" [label="adopt"];
-    "Ask user: adopt #N or start fresh?" -> "Create [DRAFT] issue immediately" [label="fresh"];
-    "Load issue, read body + Brainstorm log" -> "Resume the loop from next open question";
-    "Create [DRAFT] issue immediately" -> "Resume the loop from next open question";
-}
-```
+## Resume
 
-- **Issue number given** ("brainstorm gh issue 47") → this is the resume/adopt path. Load it. If it lacks the `[DRAFT]` prefix or the structured body, add them (fold any existing body text into Summary/Motivation) — see `issue-lifecycle.md`.
-- **No number** → dedupe first, with BOTH searches (you may have already logged a placeholder):
-  1. `gh issue list --state open --search "<keywords>"`
-  2. `gh issue list --search "[DRAFT] in:title"`
+Never re-ask anything settled; a line marked as my guess stays a guess until the user confirms it. Act on `Next:`:
+- a question → re-ask it verbatim
+- a playback → re-present it, rebuilt from the design sections
+- builder-check questions → re-ask them verbatim, in one message; never re-run the check; once answered, update the design and hand over
+- a handover step → redo it
 
-  If a plausible match exists, surface it and **ask before adopting**. Never silently reuse.
-- **No match** → create the `[DRAFT]` issue **immediately**, from the raw idea, with a mostly-TBD body. Do this *before* the dialogue so nothing is ever conversation-only.
+Honor the remember lines (`Opted out of questions.`, `Visual companion declined.`, `Split:`). Persistence continues after every reply.
 
-## The Draft Lifecycle (core loop — all 4 steps)
+## Harness gaps
 
-1. **REQUIRED SUB-SKILL:** Run `superpowers:brainstorming` for its shared-understanding and design dialogue. Delegate these semantic responsibilities to it: discover intent and success criteria; reflect the intended outcome, constraints, assumptions, and success criteria for correction; carry that shared understanding into the design; explore repository context; ask focused questions one at a time; compare approaches where applicable; present the design in sections; and obtain approval of the presented design. Do NOT collapse this into a single self-answered pass; the one-question-at-a-time HIL loop is the point.
-2. Override inside that sub-skill — its persistence and terminal handoff only:
-   - Never write a spec file under `docs/` (no `docs/superpowers/specs/…`).
-   - Never commit a spec doc.
-   - Never invoke `writing-plans` — there is no plan step here.
-   - The spec's only home is the GitHub issue. This override removes brainstorming's ending only — when the dialogue completes, continue with THIS skill's Finalize → Ready below.
-3. Persist after EVERY answer — all three parts, immediately, every round (see `issue-lifecycle.md`):
-   1. Fold the answer into the relevant spec section.
-   2. Check off the answered log item.
-   3. Set the next `[ ]` question.
+No subagent tool: read the issue as the builder yourself. No browser: describe the choices in text. Write visual-companion selections and spike lessons into the design in words.
 
-   Not batched, not deferred to the end: a hard interruption after any answer must leave the issue current. Build each update from the issue's *current* body — never regenerate it from conversation memory, and never drop, shorten, or paraphrase earlier answers.
-4. Repeat until the design is presented and approved. Approval of the presented design permits finalizing the issue text; it does not replace the separate written-issue review after finalization.
+## Builder check — projects only
 
-The body is the living spec; a `## Brainstorm log` section (visible while draft) carries the checkboxed Q&A + the next open question, which IS the resume state.
+Point `builder-check-prompt.md`'s document at the issue: "Read issue #N with `gh issue view N --json title,body`." Record the result in the state section (`Builder check: ran on this version. Questions for the user: …`); remove each question once answered.
 
-## Finalize → Ready (all 5 steps, in order)
+## Handover — the only override of v7's ending
 
-Pre-finalize gate — when the presented design is approved, confirm each check aloud before editing:
+No `docs/` spec, no commit, no `writing-plans`. Where v7 hands over the document (project) or has the description approved (quick task, small change), do all 6 steps, in order:
+1. Check the body has the size's shape: a project's written design, or for a quick task or small change a short description with no required sections (and no builder check).
+2. Strip `[DRAFT]` from the title.
+3. Reduce the state section to the post-handover form for the size.
+4. Give the issue link + the list of my calls.
+5. Give the size's handover line:
+   - project: "Run `issue-to-plan #N` in a fresh session."
+   - quick task / small change: "Implement #N directly, no plan", then the build steps from the state section.
+6. Stop. There is no further review; running the next step is the approval. Changes come back through `brainstorming-to-issue #N`.
 
-1. The user explicitly approved the presented design.
-2. The issue body is current through the latest answer (nothing exists only in conversation).
-3. No `docs/` spec file was written and `writing-plans` was never invoked.
+## Opt-out
 
-Then:
+When the user opts out of the questions (at the opening or later): write the issue from the request, keeping any answers so far; mark my calls; size it; add `Opted out of questions.`; hand over. No builder check, even for a project.
 
-1. **Spec self-review** on the issue body: scan for placeholders/TBDs, internal contradictions, scope creep, ambiguous requirements. Fix inline.
-2. **Strip the `[DRAFT]` prefix** from the title.
-3. **Collapse `## Brainstorm log` into a `<details>` block** at the bottom so the spec reads clean by default while the decision trail stays recoverable.
-4. **Show the user the issue URL** and ask them to review the finalized written issue. If they request changes, edit and re-run the self-review. This written-issue review is separate from approval of the presented design — keep it.
-5. **STOP.** The issue is the handoff. Do not branch, plan, or implement.
+## Revision
 
-Exact commands for all of the above are in `issue-lifecycle.md`.
+1. Never re-add `[DRAFT]`. An old `<details>` log is converted now (`issue-lifecycle.md`).
+2. Run a v7 conversation scoped to what the user wants changed; play back the changed parts only.
+3. A project whose design changed gets a fresh builder check on the new version.
+4. Re-size, then hand over again with an updated list of my calls.
+5. If an open draft PR carries a plan for the issue, say in the handover: that plan is now stale and must be regenerated before execution. Do not edit the PR or the plan.
 
-## Issue Backend: `gh`
+## Same-session build
 
-This skill deliberately uses **GitHub issues (`gh`)**. Do not route the spec to a non-GitHub tracker and do not hesitate — the whole purpose of this skill is a GitHub-issue spec. (If a caller genuinely wants a different tracker, they want a different skill, not this one.)
+A quick task or small change may be built in this session when the user asks, following the issue's build steps; starting the build counts as approval. Projects never are: point to `issue-to-plan #N` in a fresh session.
 
-## Downstream (out of scope — do not do it here)
+## Splits
 
-Implementation happens later. When it does, any implementation **plan is optional, scope-gated, and, if produced, lives in a single marked comment on the draft PR** — never in `docs/`, the PR description, or this issue. This skill does not produce or persist a plan.
+When v7 finds several independent projects and you agree an order: give each its own `[DRAFT]` issue with the `Split:` line on each, and brainstorm them one at a time. After a handover, offer the next sibling (the user may stop and resume it with `brainstorming-to-issue #next`). A real build dependency between siblings goes into each design as a constraint. Splitting a body for the 65k limit needs the user's agreement.
 
-## Common Mistakes
+## Guardrails
 
-| Mistake | Fix |
-|---|---|
-| Creating the issue only at the end | Create the `[DRAFT]` issue on start (or adopt one); persist every round |
-| Batching persistence / holding answers in conversation only | Update the issue body after EVERY answer |
-| Silently reusing a found issue | Surface the match and ask before adopting |
-| Skipping the dedupe search when no number is given | Search open issues first — a placeholder may already exist |
-| Stopping when brainstorming's persistence stages are overridden | The override replaces that terminal handoff with THIS skill's Finalize → Ready — run it |
-| Finalizing without stripping `[DRAFT]` | Ready = prefix stripped + log collapsed to `<details>` |
-| Following brainstorming to a `docs/` file + commit | Divert per the persistence override; the issue is the only artifact |
-| Invoking `writing-plans` | No plan step — stop at the issue |
-| Self-answering all clarifying questions in one pass | Run the real one-question-at-a-time dialogue with the user |
-| Ad-hoc issue structure that differs every run | Use the template in `issue-lifecycle.md` |
-| Hardcoding `--repo owner/name` | Run from the repo; let `gh` infer from the remote |
-| Compressing or summarizing recorded decisions as the body grows | Never — fidelity first; if the body nears GitHub's 65,536-character limit, surface it and ask the user to split the spec into multiple issues |
-
-## Red Flags — STOP
-
-- About to ask questions before the `[DRAFT]` issue exists (or is adopted)
-- Answers accumulating in the conversation but not on the issue
-- About to shorten or summarize recorded spec content (for any reason, including GitHub's 65k body limit) instead of asking the user to split the spec
-- About to reuse a found issue without asking
-- Finalizing with the `[DRAFT]` prefix still in the title
-- About to write anything under `docs/superpowers/specs/`
-- About to invoke `writing-plans`
-
-All of these mean: get the draft issue current first, with real HIL approval, before continuing.
+- GitHub issues via `gh` only; run from the repo; never `--repo`.
+- Never compress, drop, or paraphrase recorded content. If a body nears 65,536 characters, ask the user to split.
