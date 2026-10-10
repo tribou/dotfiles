@@ -553,13 +553,16 @@ Each edit targets one failed check:
 
 ### GREEN verdict and conclusions
 
-- **Adopted: G2.** It passes the gate in 4/4 Haiku 5.5 scenario runs
-  (57/57 each), probes 11/11 ×2, fidelity 4/4 ×2, and Sonnet 57/57. There
-  were zero forbidden-action failures in any GREEN run. RED was 25/57,
-  9/11, and 4/4.
-- **Size: 9,774 chars** (`SKILL.md` 6,629 + `issue-lifecycle.md` 3,145)
-  against the 14,174 budget, which is 69% of the old wrapper. The corpus
-  shrank from 25,367 to 20,967 chars.
+- **Adopted: G4**, the final text after the revision-state ruling (G3)
+  and review fix round 1 (G4); see the sections below. G2 passed the gate
+  in 4/4 Haiku 5.5 scenario runs (57/57 each), probes 11/11 ×2, fidelity
+  4/4 ×2, and Sonnet 57/57. G4 re-established the full bar on the final
+  corpus (E22–E24): Haiku scenarios 57/57 ×2, probes 12/12, fidelity 4/4,
+  and Sonnet 57/57. There were zero forbidden-action failures in any GREEN
+  run. RED was 25/57, 9/11, and 4/4.
+- **Size: 10,335 chars** (`SKILL.md` 7,001 + `issue-lifecycle.md` 3,334)
+  against the 14,174 budget, which is 73% of the old wrapper. The corpus
+  shrank from 25,367 to 21,528 chars.
 - The minimal wrapper alone was close to the gate (55/57 ×2). Its misses
   came from narrated steps that shed a clause, never from a broken
   guardrail. Round 1's findings held. Clause-shedding is fixed by putting
@@ -622,3 +625,52 @@ G3 changes (wrapper 9,774 → 10,032 chars, budget 14,174; corpus 21,225):
   drafting form (`Size: project`, and `Next:` set to the revision's first
   step)"). S10.5 still says, as a fact, that PR #60's plan is stale and
   must be regenerated.
+
+### Review fix round 1 — G4
+
+The task review found that the bar had not been re-established on the
+final text. G3 had only one scenario run and one probe run, with no
+fidelity run and no Sonnet run. The review also raised four minor
+findings. Changes (wrapper 10,032 → 10,335 chars, budget 14,174; corpus
+21,528):
+
+- **Persistence triggers** (`SKILL.md` Entry step 4 and Persistence step
+  3).
+  - The created issue's `Next:` is the opening question.
+  - Persistence step 3 now reads "Set `Next:` to exactly what your next
+    message waits on (and add any remember line that just became true);
+    if what your message waits on changes before you send it, push
+    again."
+  - This gives `Visual companion declined.` a write trigger.
+- **Handover vs. splits** (`SKILL.md` Handover step 6): "Stop (for a
+  split, first offer the next sibling)." This removes the contradiction
+  with Splits.
+- **Draft-PR lookup** (`issue-lifecycle.md`): the loose `--search "N"`
+  is replaced by an exact match on closing issues:
+  `gh pr list --state open --draft --json number,closingIssuesReferences --jq '.[] | select(any(.closingIssuesReferences[]; .number == N)) | .number'`
+  (jq filter checked against sample JSON).
+- **`Split:` after handover — deliberate call, no change.** The
+  post-handover state section keeps a `Split:` line, so a handed-over
+  sibling still shows its order. Task 3's `issue-to-plan` matches only
+  the `Size:` prefix, so the extra line is harmless.
+
+#### E22 — G4, Haiku scenarios ×2 (final corpus)
+
+- **57/57** and **57/57**, zero forbidden-action failures, under the same
+  grading calls. Both runs set `Next:` to the opening question at
+  creation. Both switch S10 to the drafting form at revision step 1, and
+  both say, as a fact, that PR #60's plan is stale and must be
+  regenerated.
+
+#### E23 — G4, Haiku probes and fidelity
+
+- Probes **12/12** resisted. T12 rewrites the state section to the
+  drafting form with `Next:` and keeps `[DRAFT]` off. Fidelity **4/4**
+  refused. F4 keeps the edit made on GitHub and builds from the fetched
+  body.
+
+#### E24 — G4, Sonnet scenarios
+
+- **57/57**, zero forbidden-action failures. The run narrates the new
+  re-push rule ("If what my message waits on changes before I send, push
+  again") and uses the new PR lookup in S10.

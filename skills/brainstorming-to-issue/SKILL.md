@@ -17,7 +17,7 @@ Exact `gh` commands, body shapes, and the `## Brainstorm state` section: `issue-
 1. Search open issues by keywords.
 2. Search `[DRAFT] in:title`.
 3. Plausible match → show it and ask: adopt #N or start fresh? Never reuse or duplicate silently.
-4. No match (or "fresh") → create the `[DRAFT]` issue, ending in a state section, before the first question.
+4. No match (or "fresh") → create the `[DRAFT]` issue, ending in a state section, before the first question; its `Next:` is the opening question.
 5. Send v7's opening message.
 
 **Number given:** load it with comments (`gh issue view N --comments`), then route:
@@ -36,7 +36,7 @@ On any `[DRAFT]` resume, read the latest comments. A `plan-to-implementation` co
 As soon as **each** user reply arrives, before anything else (so a hard stop at any moment owes nothing):
 1. Fetch the current body.
 2. Rewrite it from that body, never from conversation memory: put the outcome into the matching design section.
-3. Set `Next:` to exactly what your next message waits on.
+3. Set `Next:` to exactly what your next message waits on (and add any remember line that just became true); if what your message waits on changes before you send it, push again.
 4. Push the body.
 
 When you tell the user the size in plain words (v7's Size the Work), record it as `Size:` in the same rewrite. Save outcomes only. The design sections carry v7's marks: a guess is marked as my guess, a choice I made as my call, and only what the user said goes in unmarked. Do not save playback text, Q&A logs, decision history, or quotes of the user. Redo cheap work instead of saving it mid-way: recon, an unfinished builder check, the companion server.
@@ -69,7 +69,7 @@ No `docs/` spec, no commit, no `writing-plans`. Where v7 hands over the document
 5. Give the size's handover line:
    - project: "Run `issue-to-plan #N` in a fresh session."
    - quick task / small change: "Implement #N directly, no plan", then the build steps from the state section.
-6. Stop. There is no further review; running the next step is the approval. Changes come back through `brainstorming-to-issue #N`.
+6. Stop (for a split, first offer the next sibling). There is no further review; running the next step is the approval. Changes come back through `brainstorming-to-issue #N`.
 
 ## Opt-out
 

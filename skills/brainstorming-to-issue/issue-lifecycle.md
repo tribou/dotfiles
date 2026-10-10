@@ -23,7 +23,7 @@ gh issue edit N --body-file <scratch>/body.md
 gh issue edit N --title "<type(scope): summary>"
 
 # revision: an open draft PR with a plan for #N
-gh pr list --state open --draft --search "N"
+gh pr list --state open --draft --json number,closingIssuesReferences --jq '.[] | select(any(.closingIssuesReferences[]; .number == N)) | .number'
 ```
 
 Title: `[DRAFT] <type(scope): summary>` in the repo's commit convention.
