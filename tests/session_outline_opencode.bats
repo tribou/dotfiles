@@ -24,8 +24,9 @@ db_init() {
 }
 
 # Escape the worktree the same way the backend must: a fixture directory can
-# legitimately contain a quote.
-project() { db "INSERT INTO project VALUES ('$1','${2//\'/\'\'}',1);"; }
+# legitimately contain a quote. The doubled quote is held in a variable because
+# the \'\' escape form keeps its backslashes under bash 3.2 (macOS /bin/bash).
+project() { local q="''"; db "INSERT INTO project VALUES ('$1','${2//\'/$q}',1);"; }
 
 session() { # id project parent title time
   db "INSERT INTO session (id,project_id,parent_id,directory,title,time_created,time_updated)
@@ -214,7 +215,15 @@ part() { # id message session json time
   msg msg_1 ses_a assistant big-pickle 101
   part prt_1 msg_1 ses_a '{"type":"tool","tool":"task","state":{"input":{"subagent_type":"general","description":"Loop"},"metadata":{"sessionId":"ses_a"}}}' 102
 
-  run timeout 20 "$SCRIPT" ses_a
+  # macOS ships no `timeout`; fall back to coreutils' gtimeout, then to no
+  # wrapper -- the backend's own depth cap still bounds a runaway loop.
+  if command -v timeout >/dev/null 2>&1; then
+    run timeout 20 "$SCRIPT" ses_a
+  elif command -v gtimeout >/dev/null 2>&1; then
+    run gtimeout 20 "$SCRIPT" ses_a
+  else
+    run "$SCRIPT" ses_a
+  fi
   assert_success
   assert_output --partial "AGENT  [general] Loop"
 }

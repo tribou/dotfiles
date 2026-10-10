@@ -15,7 +15,10 @@ oc_q() { sqlite3 -readonly -noheader -separator "$rec_sep" "$oc_db" "$1"; }
 # string contains and can read and write files through readfile()/writefile(),
 # which -readonly does not prevent, so nothing reaches a query unescaped -- not
 # even a worktree path, which may legitimately contain a quote.
-oc_lit() { local v=${1//\'/\'\'}; printf "'%s'" "$v"; }
+# The doubled quote is held in a variable because the \'\' escape form is
+# parsed differently by bash 3.2 (macOS /bin/bash), which keeps the backslashes
+# in the output and corrupts the literal.
+oc_lit() { local q="''"; local v=${1//\'/$q}; printf "'%s'" "$v"; }
 
 backend_resolve() {
   local arg=$1
