@@ -71,7 +71,8 @@ EOF
      && npx --yes skills@latest add tribou/dotfiles \
         --skill brainstorming-to-issue --skill issue-to-plan \
         --skill organize-ai-context --skill plan-to-implementation \
-        --skill prd --agent opencode --agent claude-code -y; then
+        --skill prd --skill session-outline \
+        --agent opencode --agent claude-code -y; then
     git add -A
     git commit -m "Add AI agent skills"
     git push

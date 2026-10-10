@@ -42,6 +42,7 @@ setup() {
   printf '%s\n' "ssh remote" > "$BATS_TEST_TMPDIR/home/.history/2024/01/15.10.30.00_server"
 
   run --separate-stderr bash -c "
+    unset TMUX
     export HOME='$BATS_TEST_TMPDIR/home'
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
