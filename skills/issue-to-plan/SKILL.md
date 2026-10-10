@@ -17,7 +17,7 @@ The plan lives in a PR comment, never the description. The description stays a c
 
 1. Run `gh issue view <N> --json number,title,body,state`.
 2. If the title starts with `[DRAFT]`, or the body's `## Brainstorm state` section has a `Next:` line (a revision still in progress), stop and route to `brainstorming-to-issue #<N>`.
-3. If the body's `## Brainstorm state` section has a `Size:` line starting with `quick task` or `small change`, stop and say "Implement #<N> directly, no plan", following the issue's build steps. With no `## Brainstorm state` section, continue.
+3. If the `Size:` value in `## Brainstorm state` starts with `quick task` or `small change`, stop: say "Implement #<N> directly, no plan — follow the build steps in its `## Brainstorm state`." Do not claim, build, or plan here.
 4. If the entire change is one file, one behavior, and one red-green-commit review pass, use `superpowers:test-driven-development` directly. Uncertainty means it is not trivial.
 5. Claim the issue per repository rules: assign it and add the `in-progress` label.
 6. Retain `Closes #<N>` for the PR description.

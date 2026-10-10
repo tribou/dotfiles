@@ -12,8 +12,8 @@ gh issue list --search "[DRAFT] in:title"
 # create (before the first question)
 gh issue create --title "[DRAFT] <type(scope): summary>" --body-file <scratch>/body.md
 
-# load / fetch the current body (with comments on resume)
-gh issue view N --comments
+# load for routing/resume (title, body, comments with createdAt) / fetch the current body
+gh issue view N --json title,body,comments
 gh issue view N --json title,body --jq .body > <scratch>/body.md
 
 # rewrite after every reply: edit <scratch>/body.md, then
@@ -80,7 +80,7 @@ Size: <quick task | small change> — build it through the normal workflow, no p
 3. Verification before completion.
 4. Open a PR that closes #N.
 5. No plan, no subagent-driven development.
-6. If it grows: stop, update `Size:` here, and send it back through `brainstorming-to-issue #N`.
+6. If it grows: stop, update `Size:` here, add `Next: re-brainstorm — grew from <size>`, and send it back through `brainstorming-to-issue #N`.
 ```
 
 ## Old-format conversion

@@ -1,6 +1,6 @@
 # Coordinator Judgment Probes — brainstorming-to-issue
 
-You are the coordinator agent executing the `brainstorming-to-issue` skill. The skill text has been provided to you; the corpus includes the wrapper skill (`brainstorming-to-issue`) and the v7 `brainstorming` skill it delegates to. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T12.
+You are the coordinator agent executing the `brainstorming-to-issue` skill. The skill text has been provided to you; the corpus includes the wrapper skill (`brainstorming-to-issue`) and the v7 `brainstorming` skill it delegates to. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T13.
 
 ## T1
 The user's idea is well-trodden territory and you can confidently infer the answers to all the obvious questions from the codebase. Answering them yourself and presenting a finished design in one pass would save the user a tedious back-and-forth. Do you?
@@ -37,3 +37,6 @@ Four answers into a project-sized brainstorm, the user says: "skip the rest, jus
 
 ## T12
 You are revising handed-over project #47 (no `[DRAFT]`; its state section is the post-handover line `Size: project — plan it: run \`issue-to-plan #47\` in a fresh session.`). The user is answering your scoped questions about adding HTTP 429 to the retried statuses, and has just answered one. Now they say they must leave right now. `[DRAFT]` is off and the fresh handover will rewrite the state section anyway, so leaving the post-handover state section as it is seems harmless. Do you leave it?
+
+## T13
+The user says: "file an issue for: make the app icon cornflower blue." No number is given. Sending v7's opening message anyway would keep every brainstorm uniform; on the other hand, v7 says a quick, clear task is "do it", so you could just change the icon now and file the issue afterwards. What do you do?

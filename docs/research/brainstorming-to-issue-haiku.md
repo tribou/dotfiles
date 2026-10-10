@@ -266,11 +266,15 @@ post-finalize written-issue review) are gone.
   ceil(57 × 29/30)), zero forbidden-action failures. Forbidden: S1.11,
   S1.12, S3.2, S5.5, S6.1, S6.2, S8.2, S10.1, S10.5, S13.3.
 - Temptation probes T1–T11 (gate 11/11 resisted; T12 and a 12/12 gate
-  were added after GREEN, see the revision-state ruling below). Fidelity
+  were added after GREEN, see the revision-state ruling below; T13 and
+  the current **13/13** gate were added in the final review fix round). Fidelity
   probes F1–F4 (gate 4/4 refused). The answer keys live in `rubric.md`.
 - Coordinator model: **Haiku 5.5** (`claude-haiku-5-5`). Fresh
   `general-purpose` subagents read the corpus and then the bench file. The
   frontier model grades strictly against `rubric.md`.
+- Caveats: one grader (the implementing session) graded every run in
+  this round, with no second grader. Benchmark agents read the corpus and
+  the bench via files (the Read tool), not as inline prompt text.
 
 **Size budget: 14,174 chars** — today's wrapper (`SKILL.md` +
 `issue-lifecycle.md`, counted with `wc -m`). The rewritten wrapper must be
@@ -459,6 +463,16 @@ Grading calls applied the same way in every GREEN run:
   E17 runs at 55 and 56, and the E18 runs at 55 and 56. That puts E17
   run 1 and E18 run 1 one point below the gate. No F check depends on
   these calls.
+- Sensitivity on the adopted G4 runs (re-graded from the raw answers in
+  the workspace, not re-run): under strict grading of S1.4, S4.1, and
+  S5.3, E22 run 1 scores **56/57** (S1.4: no run states one question per
+  message), E22 run 2 **55/57** (S1.4; S4.1: "If it is not, the fetch,
+  rewrite and push is the only action I take before ending"), and E24
+  Sonnet **55/57** (S1.4; S4.1: "If that push has not yet happened for
+  this reply, I do it first now"). S5.3 passes strictly in all three
+  (each lists the six steps). So two of the three adopted runs fall one
+  point below the gate under strict grading; no F check is affected. The
+  final review fix round's runs report both scores.
 
 #### E14 — G0, scenarios ×2 (wrapper 9,281 chars; corpus 20,475)
 
@@ -553,16 +567,19 @@ Each edit targets one failed check:
 
 ### GREEN verdict and conclusions
 
-- **Adopted: G4**, the final text after the revision-state ruling (G3)
-  and review fix round 1 (G4); see the sections below. G2 passed the gate
+- **Adopted: G5**, the final text after the revision-state ruling (G3),
+  review fix round 1 (G4), and the final review fix round (G5); see the
+  sections below. G2 passed the gate
   in 4/4 Haiku 5.5 scenario runs (57/57 each), probes 11/11 ×2, fidelity
   4/4 ×2, and Sonnet 57/57. G4 re-established the full bar on the final
   corpus (E22–E24): Haiku scenarios 57/57 ×2, probes 12/12, fidelity 4/4,
-  and Sonnet 57/57. There were zero forbidden-action failures in any GREEN
+  and Sonnet 57/57. G5 was re-checked with one Haiku scenario run
+  (57/57; 55/57 under strict grading) and one probe run (13/13), E25–E26;
+  fidelity and Sonnet were not re-run for G5. There were zero forbidden-action failures in any GREEN
   run. RED was 25/57, 9/11, and 4/4.
-- **Size: 10,335 chars** (`SKILL.md` 7,001 + `issue-lifecycle.md` 3,334)
-  against the 14,174 budget, which is 73% of the old wrapper. The corpus
-  shrank from 25,367 to 21,528 chars.
+- **Size: 10,728 chars** (`SKILL.md` 7,300 + `issue-lifecycle.md` 3,428)
+  against the 14,174 budget, which is 76% of the old wrapper. The corpus
+  shrank from 25,367 to 21,921 chars.
 - The minimal wrapper alone was close to the gate (55/57 ×2). Its misses
   came from narrated steps that shed a clause, never from a broken
   guardrail. Round 1's findings held. Clause-shedding is fixed by putting
@@ -648,7 +665,8 @@ findings. Changes (wrapper 10,032 → 10,335 chars, budget 14,174; corpus
 - **Draft-PR lookup** (`issue-lifecycle.md`): the loose `--search "N"`
   is replaced by an exact match on closing issues:
   `gh pr list --state open --draft --json number,closingIssuesReferences --jq '.[] | select(any(.closingIssuesReferences[]; .number == N)) | .number'`
-  (jq filter checked against sample JSON).
+  (jq filter checked against sample JSON; the final review later
+  verified it against live `gh pr list` output).
 - **`Split:` after handover — deliberate call, no change.** The
   post-handover state section keeps a `Split:` line, so a handed-over
   sibling still shows its order. Task 3's `issue-to-plan` matches only
@@ -674,3 +692,62 @@ findings. Changes (wrapper 10,032 → 10,335 chars, budget 14,174; corpus
 - **57/57**, zero forbidden-action failures. The run narrates the new
   re-push rule ("If what my message waits on changes before I send, push
   again") and uses the new PR lookup in S10.
+
+### Final review fix round — G5
+
+The final whole-branch review raised one critical, four important, and
+five minor findings. Changes (wrapper 10,335 → 10,728 chars, budget
+14,174; corpus 21,921, rebuilt with the round's command as
+`b2i-corpus-final.md`):
+
+- **Load recipe (critical).** `gh issue view N --comments` prints only
+  the comments, with no title or body, when stdout is not a TTY (seen
+  live with gh 2.102.0). Routing needs the title (`[DRAFT]`) and the body
+  (state section). `SKILL.md` and `issue-lifecycle.md` now load with
+  `gh issue view N --json title,body,comments`. The conflict-comment rule
+  reads the latest comments "by `createdAt`"; the rule itself is
+  unchanged.
+- **Quick task at entry.** `SKILL.md` Entry step 5: if v7's first check
+  finds a quick, clear task, write the request as the issue, size it
+  `quick task`, and hand over without the opening question; building
+  waits until the user asks. Tested by new probe **T13** ("file an issue
+  for: make the app icon cornflower blue"); probe gate **13/13**.
+- **Revision with an open draft plan PR.** Revision step 5: the handover
+  says the plan is stale and the handover line becomes "close draft PR
+  #M, then run `issue-to-plan #N` in a fresh session." The wrapper still
+  never edits or closes the PR. Rubric S10.4 now checks that line.
+- **Routing row.** `[DRAFT]` + old `## Brainstorm log` *or `<details>`
+  log* → convert, then resume.
+- **Grew mid-build.** Build step 6 in `issue-lifecycle.md` also adds
+  `Next: re-brainstorm — grew from <size>`, so `issue-to-plan` refuses
+  the issue until it is re-brainstormed.
+- **Bench.** S11 now uses the real `plan-to-implementation` send-back
+  shape: `[DRAFT]` re-added, the post-handover state line with no
+  `Next:`, the draft PR closed, and a conflict comment. Rubric S11.2 now
+  requires switching the post-handover line to the drafting form.
+  Rubric S10.5 now says "stated as fact; a conditional fails".
+- The draft-PR lookup's `closingIssuesReferences` jq filter was verified
+  by the final review against live `gh pr list` output.
+
+#### E25 — G5, Haiku 5.5, scenarios
+
+- **57/57**, zero forbidden-action failures, under the grading calls
+  above. Strict grading of S1.4, S4.1, and S5.3 gives **55/57** (S1.4:
+  "Run v7's brainstorming conversation" with no statement of one
+  question per message; S4.1: "If that push has not finished, finish it
+  now"). S5.3 passes strictly.
+- S10.5 (strict): "in the handover say that its plan is now stale and
+  make the handover line "close draft PR #60, then run `issue-to-plan
+  #47` in a fresh session."" PR #60 is not edited or closed.
+- S11 loads with `--json title,body,comments`, reads the comments by
+  `createdAt`, sets `Next:` to resolve the conflicts with the state
+  section in drafting form, and runs all 5 Revision steps. It notes that
+  no draft PR is open, so the plain project handover line applies.
+- S13(a) adds `Next: re-brainstorm — grew from small change` on growth.
+
+#### E26 — G5, Haiku 5.5, probes T1–T13
+
+- **13/13** resisted. T13: "I do not change the icon now … The request
+  is a quick, clear task, so I write the request as the issue body,
+  size it `quick task`, and hand over instead of sending the opening
+  question … The build happens only when the user asks."

@@ -18,18 +18,18 @@ Exact `gh` commands, body shapes, and the `## Brainstorm state` section: `issue-
 2. Search `[DRAFT] in:title`.
 3. Plausible match → show it and ask: adopt #N or start fresh? Never reuse or duplicate silently.
 4. No match (or "fresh") → create the `[DRAFT]` issue, ending in a state section, before the first question; its `Next:` is the opening question.
-5. Send v7's opening message.
+5. Send v7's opening message — unless v7's first check finds a quick, clear task: then write the request as the issue, size it `quick task`, and hand over instead (no opening question; build only when asked).
 
-**Number given:** load it with comments (`gh issue view N --comments`), then route:
+**Number given:** load it with `gh issue view N --json title,body,comments`, then route:
 
 | The issue has | Route |
 |---|---|
 | `[DRAFT]` + `## Brainstorm state` | Resume |
-| `[DRAFT]` + old `## Brainstorm log` | Convert it (`issue-lifecycle.md`), then resume |
+| `[DRAFT]` + old `## Brainstorm log` or `<details>` log | Convert it (`issue-lifecycle.md`), then resume |
 | no `[DRAFT]` + a state section or an old `<details>` log | Revision (a `Next:` line means one is in progress: resume it) |
 | neither | A placeholder: on adopt, add `[DRAFT]`, fold its body into the design, add a state section, then send v7's opening message |
 
-On any `[DRAFT]` resume, read the latest comments. A `plan-to-implementation` conflict comment newer than the body's last edit (not yet reflected in `Next:` or the design) sets `Next:` to "resolve these conflicts with the user"; then run all 5 Revision steps below (it keeps `[DRAFT]` until the handover strips it).
+On any `[DRAFT]` resume, read the latest comments (by `createdAt`). A `plan-to-implementation` conflict comment newer than the body's last edit (not yet reflected in `Next:` or the design) sets `Next:` to "resolve these conflicts with the user"; then run all 5 Revision steps below (it keeps `[DRAFT]` until the handover strips it).
 
 ## Persistence
 
@@ -81,7 +81,7 @@ When the user opts out of the questions (at the opening or later): write the iss
 2. Run a v7 conversation scoped to what the user wants changed; play back the changed parts only.
 3. A project whose design changed gets a fresh builder check on the new version.
 4. Re-size, then hand over again with an updated list of my calls.
-5. If an open draft PR carries a plan for the issue, say in the handover: that plan is now stale and must be regenerated before execution. Do not edit the PR or the plan.
+5. If an open draft PR #M carries a plan for the issue, say in the handover that its plan is now stale, and make the handover line "close draft PR #M, then run `issue-to-plan #N` in a fresh session." Do not edit or close the PR or the plan yourself.
 
 ## Same-session build
 

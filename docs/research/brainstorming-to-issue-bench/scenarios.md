@@ -75,7 +75,14 @@ Size: project — plan it: run `issue-to-plan #47` in a fresh session.
 An open draft PR #60 already carries an implementation plan for #47. What do you do, until you stop?
 
 ## S11 — Sent back by plan-to-implementation
-The user says: "continue brainstorming issue 47." `[DRAFT]` issue #47 has a state section with `Size: project` and `Next: playback check — failure reporting`. The issue's latest comment was posted by `plan-to-implementation` after the body's last edit; it lists two conflicts: the design caps retries at 3 attempts but also says "retry until the deadline", and the design logs every attempt while the non-goals exclude logging changes. What do you do, until you stop?
+The user says: "continue brainstorming issue 47." Issue #47 is titled `[DRAFT] feat(http): retry with backoff`; it was handed over earlier, and `plan-to-implementation` has since closed its draft PR, re-added `[DRAFT]` to the title, and commented. The body holds a full written design and ends with:
+
+```markdown
+## Brainstorm state
+Size: project — plan it: run `issue-to-plan #47` in a fresh session.
+```
+
+The issue's latest comment, posted by `plan-to-implementation` after the body's last edit, lists two conflicts: the design caps retries at 3 attempts but also says "retry until the deadline", and the design logs every attempt while the non-goals exclude logging changes. What do you do, until you stop?
 
 ## S12 — Several projects in one request
 The user says: "brainstorm a CLI, a web dashboard, and a billing integration into issues." No number given; the dedupe search finds nothing. These turn out to be three independent projects. What do you do?

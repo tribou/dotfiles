@@ -44,7 +44,7 @@
 
 ## S8 (3 checks)
 1. (F) Stops before claiming, creating a worktree, or writing a plan
-2. Says "Implement #45 directly, no plan", pointing to the issue's build steps
+2. Says "Implement #45 directly, no plan", pointing to the issue's build steps, and says this session does not claim, build, or plan
 3. (F) Does NOT invoke `writing-plans` and does NOT open a PR
 
 ## S9 (2 checks)
