@@ -1,3 +1,5 @@
+bats_require_minimum_version 1.5.0
+
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -21,9 +23,11 @@ setup() {
 
 @test "generate_message: returns claude's sanitized output on success" {
   run --separate-stderr bash -c "
-    export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
+    export DOTFILES_AI_MODEL=my/custom-model
     git() { echo 'mock diff'; }
     claude() { echo 'fix(bootstrap): silence brew prompt'; }
     _dotfiles_commit_generate_message ''
@@ -38,9 +42,10 @@ setup() {
   empty_path="$(mktemp -d)"
   run bash -c "
     export PATH='$empty_path'
-    export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
     _dotfiles_commit_generate_message ''
   "
   assert_failure
@@ -50,9 +55,10 @@ setup() {
 
 @test "generate_message: fails when claude exits non-zero" {
   run --separate-stderr bash -c "
-    export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
     git() { echo 'mock diff'; }
     claude() { return 1; }
     _dotfiles_commit_generate_message ''
@@ -64,9 +70,10 @@ setup() {
 
 @test "generate_message: fails when claude returns empty output" {
   run --separate-stderr bash -c "
-    export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
     git() { echo ''; }
     claude() { echo ''; }
     _dotfiles_commit_generate_message ''
@@ -78,9 +85,10 @@ setup() {
 
 @test "generate_message: caps the diff sent to claude at 100000 bytes" {
   run --separate-stderr bash -c "
-    export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
     git() { yes a | head -c 200000; }
     claude() { wc -c | tr -d ' '; }
     _dotfiles_commit_generate_message ''
@@ -92,9 +100,10 @@ setup() {
 
 @test "generate_message: returns 130 and emits no stdout when interrupted" {
   run -130 --separate-stderr bash -c "
-    export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
     git() { echo 'mock diff'; }
     claude() { sleep 1; echo 'should not be seen'; }
     ( sleep 0.2; kill -INT \$\$ ) &
@@ -105,10 +114,11 @@ setup() {
 
 @test "generate_message: returns 124 and emits no stdout when the backend exceeds the timeout" {
   run -124 --separate-stderr bash -c "
-    export DOTFILES_COMMIT_BACKEND=claude
-    export DOTFILES_COMMIT_TIMEOUT=1
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
+    export DOTFILES_COMMIT_TIMEOUT=1
     git() { echo 'mock diff'; }
     claude() { command sleep 10; echo 'too late'; }
     _dotfiles_commit_generate_message ''
@@ -120,8 +130,9 @@ setup() {
 @test "generate_message: opencode backend invokes opencode run with the kimi model" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
-    export DOTFILES_COMMIT_BACKEND=opencode
+    export DOTFILES_AI_BACKEND=opencode
     git() { echo 'mock diff'; }
     opencode() { printf '%s' \"\$3\"; }
     _dotfiles_commit_generate_message ''
@@ -135,9 +146,10 @@ setup() {
   empty_path="$(mktemp -d)"
   run bash -c "
     export PATH='$empty_path'
-    export DOTFILES_COMMIT_BACKEND=opencode
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=opencode
     _dotfiles_commit_generate_message ''
   "
   assert_failure
@@ -148,8 +160,9 @@ setup() {
 @test "generate_message: agy backend invokes agy --print with the gemini model" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
-    export DOTFILES_COMMIT_BACKEND=agy
+    export DOTFILES_AI_BACKEND=agy
     git() { echo 'mock diff'; }
     agy() {
       while [ \"\$1\" != \"--model\" ]; do
@@ -168,9 +181,10 @@ setup() {
   empty_path="$(mktemp -d)"
   run bash -c "
     export PATH='$empty_path'
-    export DOTFILES_COMMIT_BACKEND=agy
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=agy
     _dotfiles_commit_generate_message ''
   "
   assert_failure
