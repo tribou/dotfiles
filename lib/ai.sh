@@ -142,6 +142,13 @@ function _dotfiles_qq_history_question ()
     return 2
   fi
 
+  # A frozen snapshot (hook removed from PROMPT_COMMAND) must fail closed:
+  # a stale line-change comparison could otherwise resend the previous qq.
+  case ";${PROMPT_COMMAND:-};" in
+    *";_dotfiles_ai_track_history;"*) ;;
+    *) return 2 ;;
+  esac
+
   # The current command was recorded only when it replaced the last entry.
   local history_line
   history_line="$(HISTTIMEFORMAT='' history 1 2>/dev/null)"

@@ -116,6 +116,23 @@ exit
   [ "$(printf '%s\n' "$stderr" | grep -Fc 'qq: question not in history (leading space?); run bare qq instead')" -eq 1 ]
 }
 
+@test "qq: clobbered prompt hook never resends the stale history entry" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" " PROMPT_COMMAND=true
+qq first question
+ qq second question
+exit
+"
+  assert_failure
+  [ ! -s "$BATS_TEST_TMPDIR/prompts" ]
+  if grep -qF 'first question' "$BATS_TEST_TMPDIR/prompts" 2>/dev/null
+  then
+    false
+  fi
+  [ "$(printf '%s\n' "$stderr" | grep -Fc 'qq: question not in history (leading space?); run bare qq instead')" -eq 2 ]
+}
+
 @test "qq: non-interactive calls join real arguments with spaces" {
   run --separate-stderr bash -c '
     . "$REPO_ROOT/lib/ai.sh"

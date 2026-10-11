@@ -113,6 +113,7 @@ qq> explain `git reset --soft HEAD~1`
 `qq question...` reads the literal interactive history line, so `?`, `*`, `$VAR`, redirects, quotes, semicolons, ampersands, and pipes are sent as text instead of being interpreted by Bash. Bare `qq` reads one readline-enabled line at `qq> ` and is the fallback for inputs Bash cannot preserve.
 
 - Do not prefix the args form with a space: `HISTCONTROL=ignorespace` omits it from history, so `qq` rejects it rather than risk resending an older question.
+- The args form must be the entire command line: `echo x && qq q` is recorded as one compound entry and rejected. `HISTCONTROL` values that deduplicate (`ignoredups`/`ignoreboth`) also reject an immediate repeat of the same question. In every case use bare `qq` instead.
 - `!word` is expanded by Bash before the alias comment and can fail with `event not found`; use bare `qq`.
 - A trailing `\` continuation is not supported in the args form; use bare `qq`.
 - In the args form, `| command` is literal question text, not a pipeline. Scripts can pipe answer-only stdout with `_dotfiles_qq "question" | command`; diagnostics stay on stderr.
