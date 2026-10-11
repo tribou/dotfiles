@@ -130,34 +130,27 @@ function _dotfiles_ai_spinner_wait ()
 
 function _dotfiles_ai_track_history ()
 {
-  _DOTFILES_AI_PROMPT_HISTCMD="$HISTCMD"
+  # HISTCMD is frozen in PROMPT_COMMAND on bash 3.2 (macOS /bin/bash),
+  # so snapshot the last recorded history line instead of the next number.
+  _DOTFILES_AI_PROMPT_HISTLINE="$(HISTTIMEFORMAT='' history 1 2>/dev/null)"
 }
 
 function _dotfiles_qq_history_question ()
 {
-  if [ -z "${_DOTFILES_AI_PROMPT_HISTCMD+x}" ] || \
-    [ "$HISTCMD" != "$_DOTFILES_AI_PROMPT_HISTCMD" ]
+  if [ -z "${_DOTFILES_AI_PROMPT_HISTLINE+x}" ]
   then
     return 2
   fi
 
-  local had_histtimeformat=0 saved_histtimeformat history_line history_number command_line
-  if [ -n "${HISTTIMEFORMAT+x}" ]
+  # The current command was recorded only when it replaced the last entry.
+  local history_line
+  history_line="$(HISTTIMEFORMAT='' history 1 2>/dev/null)"
+  if [ "$history_line" = "$_DOTFILES_AI_PROMPT_HISTLINE" ]
   then
-    had_histtimeformat=1
-    saved_histtimeformat="$HISTTIMEFORMAT"
-  fi
-  HISTTIMEFORMAT=
-  history_line=$(history 1)
-  if [ "$had_histtimeformat" -eq 1 ]
-  then
-    HISTTIMEFORMAT="$saved_histtimeformat"
-  else
-    unset HISTTIMEFORMAT
+    return 2
   fi
 
-  history_number=$(printf '%s\n' "$history_line" | sed -E 's/^[[:space:]]*([0-9]+).*/\1/')
-  [ "$history_number" = "$HISTCMD" ] || return 2
+  local command_line
   command_line=$(printf '%s\n' "$history_line" | sed -E 's/^[[:space:]]*[0-9]+[[:space:]]+//')
   case "$command_line" in
     qq) return 0 ;;
