@@ -116,6 +116,19 @@ exit
   [ "$(printf '%s\n' "$stderr" | grep -Fc 'qq: question not in history (leading space?); run bare qq instead')" -eq 1 ]
 }
 
+@test "qq: interactive run prints no bash job-control notices" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" "qq what is rebase
+exit
+"
+  assert_success
+  if printf '%s\n' "$stderr" | grep -qE '^\[[0-9]+\]'
+  then
+    false
+  fi
+}
+
 @test "qq: clobbered prompt hook never resends the stale history entry" {
   local rcfile="$BATS_TEST_TMPDIR/qqrc"
   write_qq_rcfile "$rcfile"

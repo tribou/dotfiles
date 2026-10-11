@@ -84,6 +84,7 @@ function _dotfiles_commit_generate_message ()
   local outfile
   outfile=$(mktemp)
 
+  _dotfiles_ai_bg_begin
   case "$backend" in
     opencode)
       git diff --cached | head -c 100000 \
@@ -102,6 +103,7 @@ function _dotfiles_commit_generate_message ()
       ;;
   esac
   local pid=$!
+  _dotfiles_ai_bg_end
 
   local backend_label
   backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"

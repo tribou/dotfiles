@@ -65,6 +65,21 @@ function _dotfiles_qq_timeout ()
   _dotfiles_ai_timeout DOTFILES_QQ_TIMEOUT 60
 }
 
+function _dotfiles_ai_bg_begin ()
+{
+  # Interactive bash prints "[1] <pid>" for background launches to the
+  # shell's own stderr, so hide fd 2 around the fork.
+  exec 7>&2 2>/dev/null
+}
+
+function _dotfiles_ai_bg_end ()
+{
+  # With job control bash also prints "[1]+ Done <command>" later; dropping
+  # the job from the table prevents it, and wait/kill still work by pid.
+  disown %+ 2>/dev/null
+  exec 2>&7 7>&-
+}
+
 function _dotfiles_ai_spinner_wait ()
 {
   local pid="$1"
@@ -214,6 +229,7 @@ $question"
   mkdir "$workdir" || { rm -rf "$tmpdir"; return 1; }
   outfile="$tmpdir/answer"
 
+  _dotfiles_ai_bg_begin
   case "$backend" in
     opencode)
       (
@@ -240,6 +256,7 @@ $question"
       ;;
   esac
   local pid=$!
+  _dotfiles_ai_bg_end
 
   local backend_label
   backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"
