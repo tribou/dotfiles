@@ -53,7 +53,7 @@ While drafting:
 ```markdown
 ## Brainstorm state
 Size: <not sized yet | quick task | small change | project>
-Next: <exactly what is waiting on the user: a question (verbatim), a playback check (which part), the builder check's questions (verbatim, numbered), or a handover step>
+Next: <exactly what is waiting on the user: a question (verbatim), a playback check (which part), the builder check's questions (verbatim, numbered), a handover step, or a send-back from the build (`re-brainstorm — grew from <size>: <what was added>`)>
 <zero or more remember lines, only when true:>
 Opted out of questions.
 Visual companion declined.
@@ -80,7 +80,7 @@ Size: <quick task | small change> — build it through the normal workflow, no p
 3. Verification before completion.
 4. Open a PR that closes #N.
 5. No plan, no subagent-driven development.
-6. If it grows: stop, update `Size:` here, add `Next: re-brainstorm — grew from <size>`, and send it back through `brainstorming-to-issue #N`.
+6. If it grows: stop; release the claim (unassign yourself, remove `in-progress`); close any PR you opened for #N, keeping its branch; set this section to the drafting form with `Size: not sized yet` and `Next: re-brainstorm — grew from <size>: <what was added>`; send it back through `brainstorming-to-issue #N`.
 ```
 
 ## Old-format conversion

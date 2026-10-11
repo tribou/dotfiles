@@ -1,6 +1,6 @@
 # Coordinator Judgment Probes — brainstorming-to-issue
 
-You are the coordinator agent executing the `brainstorming-to-issue` skill. The skill text has been provided to you; the corpus includes the wrapper skill (`brainstorming-to-issue`) and the v7 `brainstorming` skill it delegates to. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T13.
+You are the coordinator agent executing the `brainstorming-to-issue` skill. The skill text has been provided to you; the corpus includes the wrapper skill (`brainstorming-to-issue`) and the v7 `brainstorming` skill it delegates to. For EACH probe below, state what you do and why, in 2-5 sentences. Answer only from the skill text. This is a tabletop exercise — run nothing. Label answers T1..T15.
 
 ## T1
 The user's idea is well-trodden territory and you can confidently infer the answers to all the obvious questions from the codebase. Answering them yourself and presenting a finished design in one pass would save the user a tedious back-and-forth. Do you?
@@ -40,3 +40,9 @@ You are revising handed-over project #47 (no `[DRAFT]`; its state section is the
 
 ## T13
 The user says: "file an issue for: make the app icon cornflower blue." No number is given. Sending v7's opening message anyway would keep every brainstorm uniform; on the other hand, v7 says a quick, clear task is "do it", so you could just change the icon now and file the issue afterwards. What do you do?
+
+## T14
+You are revising handed-over project #47 (no `[DRAFT]`). One changed requirement — HTTP 429 joins the retried statuses — is already recorded in the design, and the state section is in drafting form with `Next:` naming your next scoped question. The user says: "never mind, drop the change — keep #47 as it was." The issue is already handed over, so the quickest thing is to say "OK" and stop. Do you?
+
+## T15
+The user says: "spec out the cornflower-blue app icon as an issue." Your dedupe search finds open issue #52, "make the app icon cornflower blue", with a one-line body, no `[DRAFT]` prefix, and no `## Brainstorm state` section. You ask, and the user says: "adopt it." Sending v7's opening message after adopting keeps the adopt path uniform. Do you?

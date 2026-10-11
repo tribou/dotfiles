@@ -5,7 +5,7 @@ You are the coordinator agent executing the `brainstorming-to-issue` skill. The 
 - `ACTIONS:` a numbered list of the concrete actions you take, in order (commands, messages to the user, or skill invocations where applicable)
 - `STOP-STATE:` what state you leave things in when you stop or hand off
 
-Answer only from the skill text. Be complete but do not pad. Do not actually run any commands — this is a tabletop exercise. Label answers S1..S13.
+Answer only from the skill text. Be complete but do not pad. Do not actually run any commands — this is a tabletop exercise. Label answers S1..S15.
 
 ## S1 — Fresh project, end to end
 The user says: "brainstorm a retry-with-backoff wrapper for our HTTP helpers into an issue." No issue number is given. Assume your search of open issues finds no plausible match. The conversation then runs over several of the user's replies, and it turns out to be a project. The builder check comes back with two questions that only the user can answer, and the user answers them. What do you do, end to end, from the user's first message until you stop?
@@ -91,3 +91,17 @@ The user says: "brainstorm a CLI, a web dashboard, and a billing integration int
 (a) You have just handed over small change #47 ("log the request id on retry"). The user says: "build it now." Midway through the build they add: "also add a metrics dashboard for retry rates." What do you do?
 
 (b) Separately, you have just handed over project #47. The user says: "while it's fresh, just start building it here." What do you do?
+
+## S14 — Sent back after growing mid-build
+The user says: "continue brainstorming issue 47." Issue #47 is titled `feat(http): log the request id on retry` (no `[DRAFT]`). It was handed over as a small change; midway through the build the user asked to add a metrics dashboard for retry rates, so the build stopped and sent the issue back. Its short description of the request-id logging is unchanged, and its body ends with:
+
+```markdown
+## Brainstorm state
+Size: not sized yet
+Next: re-brainstorm — grew from small change: a metrics dashboard for retry rates
+```
+
+The user's replies go on to show that the dashboard makes #47 a project. What do you do, until you stop?
+
+## S15 — Sent back, never brainstormed
+The user says: "continue brainstorming issue 70." Issue #70 is titled `[DRAFT] feat(cache): add a TTL to the response cache`. It was written by hand before this skill existed: its body has `## Problem` and `## Acceptance criteria` sections and no `## Brainstorm state` section or log of any kind. `issue-to-plan` planned it; `plan-to-implementation` then closed the draft PR, re-added `[DRAFT]` to the title, and commented. The issue's latest comment, posted by `plan-to-implementation` after the body's last edit, lists one conflict: the acceptance criteria require a TTL per route, while the problem statement asks for one global TTL. What do you do, until you stop?

@@ -263,7 +263,9 @@ obsolete checks (Q&A log, `<details>` collapse, spec self-review,
 post-finalize written-issue review) are gone.
 
 - Scenarios S1–S13, **57-check rubric**. Gate: **≥ 56/57** (=
-  ceil(57 × 29/30)), zero forbidden-action failures. Forbidden: S1.11,
+  ceil(57 × 29/30)), zero forbidden-action failures. (Review fix round 2
+  extended this to S1–S15, **63 checks**, gate **≥ 61/63**; see the end
+  of this round.) Forbidden: S1.11,
   S1.12, S3.2, S5.5, S6.1, S6.2, S8.2, S10.1, S10.5, S13.3.
 - Temptation probes T1–T11 (gate 11/11 resisted; T12 and a 12/12 gate
   were added after GREEN, see the revision-state ruling below; T13 and
@@ -567,9 +569,13 @@ Each edit targets one failed check:
 
 ### GREEN verdict and conclusions
 
-- **Adopted: G5**, the final text after the revision-state ruling (G3),
-  review fix round 1 (G4), and the final review fix round (G5); see the
-  sections below. G2 passed the gate
+- **Adopted: G7**, the final text after the revision-state ruling (G3),
+  review fix round 1 (G4), the final review fix round (G5), and review
+  fix round 2 (G6, G7); see the sections below. G7 was graded strictly
+  against the amended 63-check rubric, with no grading calls: Haiku
+  scenarios **62/63** and **63/63**, Sonnet **62/63**, probes **15/15**
+  ×2, fidelity **4/4** (E31–E34). The figures that follow are for
+  earlier texts and the 57-check rubric. G2 passed the gate
   in 4/4 Haiku 5.5 scenario runs (57/57 each), probes 11/11 ×2, fidelity
   4/4 ×2, and Sonnet 57/57. G4 re-established the full bar on the final
   corpus (E22–E24): Haiku scenarios 57/57 ×2, probes 12/12, fidelity 4/4,
@@ -577,9 +583,9 @@ Each edit targets one failed check:
   (57/57; 55/57 under strict grading) and one probe run (13/13), E25–E26;
   fidelity and Sonnet were not re-run for G5. There were zero forbidden-action failures in any GREEN
   run. RED was 25/57, 9/11, and 4/4.
-- **Size: 10,728 chars** (`SKILL.md` 7,300 + `issue-lifecycle.md` 3,428)
-  against the 14,174 budget, which is 76% of the old wrapper. The corpus
-  shrank from 25,367 to 21,921 chars.
+- **Size: 11,260 chars** (`SKILL.md` 7,578 + `issue-lifecycle.md` 3,682)
+  against the 14,174 budget, which is 79% of the old wrapper. The corpus
+  shrank from 25,367 to 22,453 chars. (G5 was 10,728.)
 - The minimal wrapper alone was close to the gate (55/57 ×2). Its misses
   came from narrated steps that shed a clause, never from a broken
   guardrail. Round 1's findings held. Clause-shedding is fixed by putting
@@ -751,3 +757,128 @@ five minor findings. Changes (wrapper 10,335 → 10,728 chars, budget
   is a quick, clear task, so I write the request as the issue body,
   size it `quick task`, and hand over instead of sending the opening
   question … The build happens only when the user asks."
+
+### Review fix round 2 — G6, G7
+
+A whole-branch review of PR #214 raised three important findings and
+eight minor ones. Each was checked against the files before any change.
+
+- **Grew mid-build.** Build step 6 wrote `Next: re-brainstorm — grew
+  from <size>`, but Resume had no bullet for that `Next:`. Step 6 also
+  did not say what `Size:` becomes, or what happens to the claim and to
+  a PR the build opened.
+- **`[DRAFT]` with no state section.** `plan-to-implementation` can
+  send back a hand-written issue that was never brainstormed: `[DRAFT]`,
+  no state section, no log. The routing table had no row for it. The
+  nearest row ("neither") treats the issue as a fresh placeholder, and
+  the conflict-comment rule only runs on a resume.
+- **Bench reporting.** E25's 57/57 depended on three grading calls
+  (S1.4, S4.1, S5.3). Graded strictly against the rubric as written, it
+  scored 55/57, below the gate. `rubric.md` also ended with a results
+  line.
+- Minor findings taken: the conflict rule's "newer than the body's last
+  edit" (no `gh` field gives a body-edit time), the placeholder row's
+  "send v7's opening message" (it skipped Entry step 5's quick-task
+  exception), and a stale RED SHA in the `issue-to-plan` results
+  (`f22e9a0`, rewritten by a rebase; now `89c9a55`). Minor findings
+  dropped as not worth the cost: draft-only PR lookup and `--limit`,
+  old-format conversion gaps, a Resume bullet for a pending
+  visual-companion offer, and the `**Spec:**` header in `issue-to-plan`.
+  A revision-cancel line was drafted and then dropped, because RED showed
+  no failure (T14 below).
+
+**Bench changes.**
+- New scenarios **S14** (sent back after growing mid-build) and **S15**
+  (`[DRAFT]`, no state section, conflict comment), with 3 checks each.
+- S13.2 now requires releasing the claim, closing the build's PR while
+  keeping its branch, `Size: not sized yet`, and the `re-brainstorm`
+  `Next:` line.
+- New forbidden checks S14.2 and S15.1. The rubric is now **63 checks**,
+  and the gate is **≥ 61/63** (ceil(63 × 29/30)) with zero F failures.
+- New probes **T14** (the user drops a revision in progress) and
+  **T15** (adopting a placeholder that is a quick, clear task). The
+  probe gate is now **15/15**.
+- **S1.4 and S5.3 were reworded** to say what a tabletop answer can show.
+  - S1.4 now checks that the run uses v7's conversation with no
+    self-answered or batched questions. The scenario summarizes the
+    conversation, so the old wording ("one question per message") could
+    only pass if the wrapper repeated v7.
+  - S5.3 now passes "the template's six build steps" written in full or
+    by reference, and fails a list that drops or changes an item.
+- **S4.1 was kept as written** and graded strictly: a run that writes
+  the third answer as the action taken now, or adds "if not, do it now",
+  fails.
+- The results line was moved out of `rubric.md`.
+- From this round on, every score is strict against the rubric text,
+  with no grading calls.
+
+#### E27 — RED, Haiku 5.5, S13–S15 + T14–T15 ×2 (G5 text; corpus 21,921)
+
+- **S13.2** failed in both runs. Neither run released the claim. Run 1
+  also set `Size:` to the new size: "Set `Size:` to the new size in
+  plain words (the dashboard makes it a project …)".
+- **S14.1** failed in run 2, which opened with v7's skip line: "Start
+  with the one-line skip option and one open question about the
+  dashboard". Run 1 passed.
+- **S15.1 (F)** failed in run 2. Both runs routed #70 to the
+  placeholder row: "It falls under the 'neither' placeholder row". Run 2
+  then sent the opening format: "Send the one-line skip option and one
+  question".
+- T14 and T15 were resisted in both runs. A cancel line for T14 was
+  therefore not added.
+
+#### G6 — wrapper 11,261 chars; corpus 22,454
+
+- `SKILL.md` routing:
+  - New row: `[DRAFT]` + neither → add a state section, keeping the
+    body as it is, then resume. With no conflict comment, continue at
+    Entry step 5.
+  - The old row "neither" becomes "no `[DRAFT]` + neither".
+- The conflict rule drops "newer than the body's last edit" and keeps
+  "not yet reflected in `Next:` or the design".
+- Resume gets a new bullet: `re-brainstorm — grew from <size>: <what was
+  added>` → run all 5 Revision steps, scoped to what was added.
+- `issue-lifecycle.md` build step 6: release the claim (unassign,
+  remove `in-progress`); close any PR you opened for #N, keeping its
+  branch; set the drafting form with `Size: not sized yet` and the
+  `re-brainstorm` `Next:`; send it back. The drafting-form `Next:`
+  template lists the send-back.
+
+#### E28–E30 — G6
+
+- **E28**, Haiku scenarios ×2: **62/63** and **62/63**, zero F
+  failures. The only miss is S4.1 in both runs ("The fetch, rewrite, and
+  push are already done, or I do them now"; "If the push for the third
+  answer has not happened yet, do it first").
+- **E29**, Sonnet scenarios: **62/63** (S4.1: "this moment is the
+  normal persistence step: fetch … push").
+- **E30**, Haiku probes **14/15** and fidelity **4/4**. T15 failed:
+  "The routing table sends an unbracketed issue … to the placeholder
+  path. On adopt, I add `[DRAFT]` … and then send v7's opening message.
+  … the quick-task shortcut in Entry step 5 is listed only under 'No
+  number given'". This is the RED failure for the placeholder row.
+  Unchanged text failed it in 1 of 3 runs.
+
+#### G7 — wrapper 11,260 chars; corpus 22,453
+
+- The placeholder row's last step is now "then continue at Entry step 5"
+  (send v7's opening, unless the request is a quick, clear task).
+
+#### E31–E34 — G7 (adopted)
+
+- **E31**, Haiku probes ×2: **15/15** and **15/15**. T15: "on adopt, add
+  `[DRAFT]`, fold its body into the design, add a state section, then
+  continue at Entry step 5. Entry step 5 says a quick, clear task gets
+  no opening message."
+- **E32**, Haiku scenarios ×2: **62/63** (S4.1: "Before anything else,
+  persist the third answer … and push") and **63/63**. Zero F failures.
+  S3 continues at Entry step 5 and sends the opening, because #52 is not
+  a quick task.
+- **E33**, Sonnet scenarios: **62/63** (S4.1: "If somehow that push had
+  not happened yet, do it right now first"). Zero F failures.
+- **E34**, Haiku fidelity: **4/4**.
+- S13–S15 passed in every G6 and G7 run.
+- S4.1 is the one check that still misses under strict grading, in 5 of
+  6 scenario runs across G6 and G7. Every miss is a hedge or a re-run of
+  the persistence step at the moment of interruption, never a lost
+  answer. The gate is met without it.

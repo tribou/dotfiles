@@ -26,10 +26,11 @@ Exact `gh` commands, body shapes, and the `## Brainstorm state` section: `issue-
 |---|---|
 | `[DRAFT]` + `## Brainstorm state` | Resume |
 | `[DRAFT]` + old `## Brainstorm log` or `<details>` log | Convert it (`issue-lifecycle.md`), then resume |
+| `[DRAFT]` + neither (sent back before it was ever brainstormed) | Add a state section, keeping the body as it is, then resume; with no conflict comment (below), continue at Entry step 5 |
 | no `[DRAFT]` + a state section or an old `<details>` log | Revision (a `Next:` line means one is in progress: resume it) |
-| neither | A placeholder: on adopt, add `[DRAFT]`, fold its body into the design, add a state section, then send v7's opening message |
+| no `[DRAFT]` + neither | A placeholder: on adopt, add `[DRAFT]`, fold its body into the design, add a state section, then continue at Entry step 5 |
 
-On any `[DRAFT]` resume, read the latest comments (by `createdAt`). A `plan-to-implementation` conflict comment newer than the body's last edit (not yet reflected in `Next:` or the design) sets `Next:` to "resolve these conflicts with the user"; then run all 5 Revision steps below (it keeps `[DRAFT]` until the handover strips it).
+On any `[DRAFT]` resume, read the latest comments (by `createdAt`). A `plan-to-implementation` conflict comment not yet reflected in `Next:` or the design sets `Next:` to "resolve these conflicts with the user"; then run all 5 Revision steps below (it keeps `[DRAFT]` until the handover strips it).
 
 ## Persistence
 
@@ -48,6 +49,7 @@ Never re-ask anything settled; a line marked as my guess stays a guess until the
 - a playback → re-present it, rebuilt from the design sections
 - builder-check questions → re-ask them verbatim, in one message; never re-run the check; once answered, update the design and hand over
 - a handover step → redo it
+- `re-brainstorm — grew from <size>: <what was added>` → run all 5 Revision steps, scoped to what was added
 
 Honor the remember lines (`Opted out of questions.`, `Visual companion declined.`, `Split:`). Persistence continues after every reply.
 
