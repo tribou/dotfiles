@@ -15,7 +15,7 @@ Never expose, recommend, or invoke Native superpowers:executing-plans from this 
 ## Rehydrate (every fresh entry — all 6 steps, in order)
 
 1. Resolve the single open **draft** PR that closes the issue and has exactly one comment containing `<!-- BEGIN PLAN -->`. Zero or multiple matches — PRs or marker-bearing comments: stop and report; never guess or match by title.
-2. Verify the linked issue is finalized (no `[DRAFT]` prefix); if not, stop and report.
+2. Verify the linked issue is finalized: no `[DRAFT]` prefix, and no `Next:` line in its `## Brainstorm state` section (a revision still in progress). If not, stop and report — route it back to `brainstorming-to-issue #N`.
 3. Verify that one PR comment contains exactly one ordered `BEGIN PLAN`/`END PLAN` marker pair — not the PR description.
 4. Resolve the worktree from the PR's `headRefName`. **Never ask about worktrees — always isolate.** Exactly one worktree on that branch: enter it. No match: create one for that **existing** branch per `superpowers:using-git-worktrees` (native tool preferred, else `.worktrees/<branch>`), never a new feature branch, never a consent prompt. More than one match: stop and report — two worktrees on one branch is broken state, not a preference question. A failing baseline is likewise a stop, not a question. Run `gh pr checkout <M>` inside the resolved worktree.
 5. Extract only the marker-delimited text from that comment into `.superpowers/sdd/plan.md` — never stale local scratch, never surrounding comment prose, never the PR description.
@@ -25,7 +25,7 @@ Never expose, recommend, or invoke Native superpowers:executing-plans from this 
 
 Pre-dispatch gate — before dispatching any task, confirm each check aloud:
 
-1. Linked issue is finalized (no `[DRAFT]` prefix).
+1. Linked issue is finalized (no `[DRAFT]` prefix, no `Next:` line in `## Brainstorm state`).
 2. The plan comment had exactly one ordered marker pair.
 3. Plan compared against the issue — conflicts take the conflict path below.
 
