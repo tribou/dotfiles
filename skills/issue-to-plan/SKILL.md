@@ -1,6 +1,6 @@
 ---
 name: issue-to-plan
-description: Use when a finalized non-[DRAFT] GitHub issue needs an implementation plan published for execution in a separate fresh context. Not for refining the specification or for a one-file, one-behavior change.
+description: Use when a finalized non-[DRAFT] GitHub issue needs an implementation plan published for execution in a separate fresh context. Not for refining the specification, for a one-file, one-behavior change, or an issue sized as a quick task or small change.
 ---
 
 # Issue to Plan
@@ -13,19 +13,20 @@ Turn a finalized issue into a draft PR plus a single marked plan comment, then s
 
 The plan lives in a PR comment, never the description. The description stays a concise, reviewer-facing summary (`Closes #N` + change summary + test plan): the simplest merge path — squash-merging from the GitHub web UI, which prefills the commit message from the PR body — then produces a clean commit message instead of a multi-kilobyte plan.
 
-## Entry Gate (all 5 steps, in order)
+## Entry Gate (all 6 steps, in order)
 
 1. Run `gh issue view <N> --json number,title,body,state`.
-2. If the title starts with `[DRAFT]`, stop and route to `brainstorming-to-issue`.
-3. If the entire change is one file, one behavior, and one red-green-commit review pass, use `superpowers:test-driven-development` directly. Uncertainty means it is not trivial.
-4. Claim the issue per repository rules: assign it and add the `in-progress` label.
-5. Retain `Closes #<N>` for the PR description.
+2. If the title starts with `[DRAFT]`, or the body's `## Brainstorm state` section has a `Next:` line (a revision still in progress), stop and route to `brainstorming-to-issue #<N>`.
+3. If the `Size:` value in `## Brainstorm state` starts with `quick task` or `small change`, stop: say "Implement #<N> directly, no plan — follow the build steps in its `## Brainstorm state`." Do not claim, build, or plan here.
+4. If the entire change is one file, one behavior, and one red-green-commit review pass, use `superpowers:test-driven-development` directly. Uncertainty means it is not trivial.
+5. Claim the issue per repository rules: assign it and add the `in-progress` label.
+6. Retain `Closes #<N>` for the PR description.
 
 ## Generate the Plan (all 3 steps, in order)
 
 1. **REQUIRED SUB-SKILL:** `superpowers:using-git-worktrees` — create the execution worktree and branch first, before any plan is written. **Declared worktree preference — never ask:** always isolate. This is the user's standing answer to that skill's Step 0 consent question; prefer the native worktree tool (`EnterWorktree` or equivalent), else `git worktree add` under `.worktrees/<branch>`. If its Step 3 baseline tests fail, do not ask whether to proceed — stop and report the failures; never plan or implement on a red baseline.
-2. **REQUIRED SUB-SKILL:** `superpowers:writing-plans` — require all of its File Structure, Global Constraints, per-task Interfaces, bite-sized TDD steps, and Self-Review sections, plus a Review Focus section with at most five highest-risk spec-implied failure modes.
-   - Every Review Focus line must have a concrete pinning test in the owning task, written in that task's own TDD step style.
+2. **REQUIRED SUB-SKILL:** `superpowers:writing-plans` — require all of its File Structure, Global Constraints, per-task Interfaces, steps written per its "What a Step Contains", and Self-Review sections including its Proportion check, plus a Review Focus section with at most five highest-risk spec-implied failure modes.
+   - Every Review Focus line must have a concrete pinning test in the owning task, written in that task's own step style.
    - An empty Review Focus section means the check ran and found no uncovered failure modes; it does not mean the check was skipped.
 3. Override inside `writing-plans` — its persistence, generated header, and handoff:
    - Write the plan to `.superpowers/sdd/plan.md` in the execution worktree, protected by the nested scratch `.gitignore` convention.

@@ -1,137 +1,93 @@
-# Issue Lifecycle: Templates & `gh` Recipes
+# Issue Lifecycle: `gh` Recipes & Body Shapes
 
-Exact commands for the draft lifecycle in `SKILL.md`. Run all `gh` commands **from inside the repo** so `gh` infers the target from the git remote — never hardcode `--repo`.
+Run every `gh` command from inside the repo so `gh` infers the target from the git remote — never `--repo`. Write body files in the scratchpad directory.
 
-## Body Template (the living spec)
+## Recipes
 
-While a draft is in progress the body looks like this. Sections firm up over time; unknowns stay marked `TBD`. The `## Brainstorm log` is visible and carries the resume state.
+```bash
+# dedupe (no number given) — both searches
+gh issue list --state open --search "<keywords>"
+gh issue list --search "[DRAFT] in:title"
+
+# create (before the first question)
+gh issue create --title "[DRAFT] <type(scope): summary>" --body-file <scratch>/body.md
+
+# load for routing/resume (title, body, comments with createdAt) / fetch the current body
+gh issue view N --json title,body,comments
+gh issue view N --json title,body --jq .body > <scratch>/body.md
+
+# rewrite after every reply: edit <scratch>/body.md, then
+gh issue edit N --body-file <scratch>/body.md
+
+# title changes ([DRAFT] on; stripped at handover)
+gh issue edit N --title "<type(scope): summary>"
+
+# revision: an open draft PR with a plan for #N
+gh pr list --state open --draft --json number,closingIssuesReferences --jq '.[] | select(any(.closingIssuesReferences[]; .number == N)) | .number'
+```
+
+Title: `[DRAFT] <type(scope): summary>` in the repo's commit convention.
+
+## Body shapes
+
+**Project** — v7's written design, in sections:
 
 ```markdown
-## Summary
-<1-3 sentences: what and why — TBD until known>
+## Intent and why
+## Goals, non-goals, anti-goals
+## Constraints
+## How — the parts the user decided
+## Left to the builder
 
-## Motivation / Context
-<the problem, existing overlap, why now — TBD until known>
-
-## Requirements
-- <testable requirements as they're decided>
-- TBD: <open requirement>
-
-## Non-goals
-- <explicit YAGNI exclusions>
-
-## Testing
-<how it will be verified — TBD until known>
-
-## Open decisions
-<anything still undecided, or "none">
-
-## Brainstorm log
-- [x] Q: <question>? A: <answer>
-- [ ] Q: <next question>?   ← next
+## Brainstorm state
 ```
 
-Title while drafting: `[DRAFT] <type(scope): concise summary>` using the repo's commit-message convention (e.g. conventional commits).
+**Quick task / small change** — a short description, no required sections, then `## Brainstorm state`.
 
-## Entry Recipes
+A new draft starts from the raw idea, every section empty or one line, with `Size: not sized yet`.
 
-### Resume / adopt a given issue number
+## `## Brainstorm state` — always the last section
 
-```bash
-gh issue view 47 --json number,title,body
+While drafting:
+
+```markdown
+## Brainstorm state
+Size: <not sized yet | quick task | small change | project>
+Next: <exactly what is waiting on the user: a question (verbatim), a playback check (which part), the builder check's questions (verbatim, numbered), a handover step, or a send-back from the build (`re-brainstorm — grew from <size>: <what was added>`)>
+<zero or more remember lines, only when true:>
+Opted out of questions.
+Visual companion declined.
+Split: <#A (1 of N), #B (2 of N), …> — this issue is <k> of N.
+Builder check: ran on this version. Questions for the user: <numbered, verbatim — removed once answered>
 ```
 
-Read the body and the `## Brainstorm log`. Find the first unchecked `- [ ]` item — that's where you resume.
+After handover (no `[DRAFT]`) there is no `Next:` line. Keep a `Split:` line. A revision in progress uses the drafting form (with `Next:`) until its fresh handover.
 
-If the issue lacks the `[DRAFT]` prefix or the structured body (e.g. a placeholder you logged manually), normalize it: add the prefix and fold any existing free-text body into `## Summary` / `## Motivation`, then add a `## Brainstorm log`.
+Project:
 
-```bash
-gh issue edit 47 --title "[DRAFT] <type(scope): summary>"
-gh issue edit 47 --body-file /path/to/normalized-body.md
+```markdown
+## Brainstorm state
+Size: project — plan it: run `issue-to-plan #N` in a fresh session.
 ```
 
-### Dedupe search (no number given)
+Quick task / small change:
 
-Search open issues by keywords from the idea before creating anything:
-
-```bash
-gh issue list --state open --search "<keywords>"
-# also check existing drafts specifically:
-gh issue list --search "[DRAFT] in:title"
+```markdown
+## Brainstorm state
+Size: <quick task | small change> — build it through the normal workflow, no plan:
+1. Claim the issue: assign yourself and add the `in-progress` label.
+2. Test-driven development.
+3. Verification before completion.
+4. Open a PR that closes #N.
+5. No plan, no subagent-driven development.
+6. If it grows: stop; release the claim (unassign yourself, remove `in-progress`); close any PR you opened for #N, keeping its branch; set this section to the drafting form with `Size: not sized yet` and `Next: re-brainstorm — grew from <size>: <what was added>`; send it back through `brainstorming-to-issue #N`.
 ```
 
-If a plausible placeholder/draft matches, **show it to the user and ask** whether to adopt `#N` or start fresh. Never silently reuse.
+## Old-format conversion
 
-### Create the draft immediately (no match)
+Old drafts end in `## Brainstorm log` (`- [x] Q: … A: …` items, `← next` marker). On resume:
+1. Confirm every `[x]` answer is in the design sections; add any that is missing, unchanged.
+2. The first unchecked `[ ]` item becomes `Next:`.
+3. Delete the log and add the state section.
 
-Do this before asking questions, seeded from the raw idea:
-
-```bash
-gh issue create --title "[DRAFT] <type(scope): concise summary>" --body "$(cat <<'EOF'
-## Summary
-TBD
-
-## Motivation / Context
-<the raw idea in the user's words>
-
-## Requirements
-- TBD
-
-## Non-goals
-- TBD
-
-## Testing
-TBD
-
-## Open decisions
-TBD
-
-## Brainstorm log
-- [ ] Q: <first clarifying question>?   ← next
-EOF
-)"
-```
-
-Capture the returned issue number/URL — every subsequent round edits this issue.
-
-## Per-Answer Update (every round)
-
-After each answer, rewrite the body: fold the answer into the relevant spec section, check off the log item, and set the next `[ ]` question. Editing the whole body is the reliable path — assemble the new body and pass it via `--body-file`. Assemble it from the issue's **current** body (`gh issue view` it first) plus the new answer, never from conversation memory: earlier answers and decisions are never dropped, shortened, or paraphrased.
-
-```bash
-gh issue edit 47 --body-file /path/to/updated-body.md
-```
-
-(Use the scratchpad directory for the temp body file.) Do this **every round** — a hard interruption after any answer must leave the issue current.
-
-## Finalize → Ready
-
-After approval of the presented design:
-
-1. Self-review the body (placeholders, contradictions, scope, ambiguity) and fix inline.
-2. Collapse the log into a `<details>` block and drop the `← next` marker:
-
-   ```markdown
-   <details>
-   <summary>Brainstorm log</summary>
-
-   - [x] Q: <question>? A: <answer>
-   - [x] Q: <question>? A: <answer>
-
-   </details>
-   ```
-
-3. Strip the `[DRAFT]` prefix and push the finalized body:
-
-   ```bash
-   gh issue edit 47 --title "<type(scope): summary>" --body-file /path/to/final-body.md
-   ```
-
-4. Show the user the issue URL for the separate written-issue review gate. On requested changes, edit and re-review.
-5. STOP — no branch, no plan, no `writing-plans`.
-
-## Guardrails
-
-- No `--repo` hardcoding — run from the repo.
-- Add `--label`/`--assignee`/`--milestone` only if the repo actually uses them.
-- Never write under `docs/` and never invoke `writing-plans`.
+A finalized issue from before this change with a collapsed `<details>` log keeps that log until its first revision, which converts it the same way.
