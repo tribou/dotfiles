@@ -23,6 +23,7 @@ dotfiles_brew_core:
   - ssh-copy-id
   - git-extras
   - jq
+  - sqlite
   - fd
   - ripgrep
   - bat
