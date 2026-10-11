@@ -9,6 +9,7 @@ A run is one fresh `general-purpose` Agent with `model: "sonnet"`, no repo acces
 - RED prompt: `You are asked to write a work item. Output only the final artifact as markdown, as you would file it. No tracker or repo is available. Input:\n<scenario input>`
 - GREEN prompt: the RED prompt preceded by `Follow the skill at <absolute path>/skills/write-spec/SKILL.md; read it and any file it points to. Do not read anything else.`
 - Inputs that name an issue are fetched with `gh issue view <N> --json title,body -q ...` and pasted verbatim.
+- Inputs fetched from issues are saved to files in `$SCRATCH/in`; the agent is told to read its input file and write its artifact to `$SCRATCH/<arm>/<ID>.md`. Both arms use identical inputs and instructions.
 - Run each check as a shell one-liner with `OUT` set, for example `OUT=$SCRATCH/red/S1.md; ! grep -qi 'localstorage' $OUT`. A check passes when the command exits 0. A `Judge:` line is evaluated by reading the output.
 - RED runs only S1-S8, S10, S11, and S12 (each of its four inputs). S9, S13, and S14 need the skill's own file and filing rules, so they run only in GREEN.
 
@@ -43,8 +44,8 @@ Judge: the title's first word is a verb.
 ```bash
 [ $(wc -w < $OUT) -le 45 ]
 ! grep -q '^## ' $OUT
-grep -q 'dminit' $OUT
-grep -q 'new-docker-generic' $OUT
+grep -q 'docker-machine' $OUT
+grep -q 'commands.sh' $OUT
 ```
 
 ## S3 - Title only, no stated reason (#141)
@@ -69,9 +70,11 @@ Judge: no unlabeled statement of a reason, benefit, or user pain.
 
 ```bash
 ! grep -qi 'ForwardAgent' $OUT   # unless under Decisions as user-decided
-grep -q 'Unknown:.*trusted' $OUT
+grep -qE 'Unknown:.*(trusted|host)' $OUT
 grep -q '^## Acceptance' $OUT
 ```
+
+Judge: the `Unknown:` line concerns which hosts are trusted or need agent access.
 
 ## S5 - Stale current-state claim (#42)
 
@@ -212,11 +215,11 @@ grep -qi 'zoxide' $OUT
 
 ## S14 - Skill-selection micro-test
 
-**Input:** list the repo's skill descriptions (`grep -h '^description:' skills/*/SKILL.md`), then give six prompts, one at a time: "file an issue for X", "write up a bug for Y", "draft an ADR for Z", "spike ticket for W", "write a project brief for V", "brainstorm this feature with me".
+**Input:** list the repo's skills with their descriptions (`grep -h '^description:' skills/*/SKILL.md .agents/skills/*/SKILL.md`, deduplicated by skill name, since `.agents/skills/` includes symlinks to `skills/`), then give six prompts, one at a time: "file an issue for X", "write up a bug for Y", "draft an ADR for Z", "spike ticket for W", "write a project brief for V", "brainstorm this feature with me".
 
 **Checks:**
 
 - `write-spec` is chosen for the first five prompts.
-- `brainstorming` is chosen for the last.
+- `write-spec` is not chosen for the last ("brainstorm this feature with me"); `brainstorming` or `brainstorming-to-issue` are both acceptable.
 
 Judge: 3 reps each; the reps must converge on the same choice.
