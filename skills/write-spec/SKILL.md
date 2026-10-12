@@ -72,13 +72,13 @@ Read only the chosen artifact's reference file: `issue.md`, `bug.md`, `investiga
 
 1. Copy decided identifiers verbatim (commands, flags, file paths, CLI syntax, config keys, schema and table names, marker strings), in the input's own words; compress by deleting, never by paraphrasing (`which gopls`, never "look for the installed binary"; `--target issue:N|pr:M`, never "serves both issues and PRs").
 2. Put costly evidence nothing links to in **Evidence**, compact, with source and date, worded as things to recheck; otherwise link it.
-3. Keep a chosen test approach as one Decision line ("tests replay a recorded HTTP fixture"); cut test lists and generic gates (tests pass, lint, CI, docs, review).
+3. Keep a chosen test approach as one Decision line ("tests replay a recorded HTTP fixture"); cut test lists and generic gates.
 4. Use a project brief only for work that still needs shaping; when upstream settled the approach and the user wants one piece, write one issue with Decisions, even if large.
-5. Apply word targets to prose only; never trim a decision (one line: the choice, not how it plays out) or unlinked evidence to meet them. In every section, cut narrative, brainstorm logs, rejected options, step-by-step flows, message and exit-code tables, file and test lists, repetition, and counts that go stale.
+5. Apply word targets to prose only; never trim a decision (one line: the choice, not how it plays out) or unlinked evidence to meet them. In every section, cut narrative, brainstorm logs, rejected options, step-by-step flows, messages, exit codes, doc, file and test lists, even if settled, repetition, and counts that go stale.
 
 ## Compression pass and final lint
 
-Run this internally before showing anything; the user sees only the edited artifact. It deletes; it never rewords a decided identifier and never removes a decision or unlinked evidence.
+Run this internally before showing anything; the user sees only the edited artifact. It deletes; it never rewords a decided identifier and never removes a decided choice or unlinked evidence.
 
 Remove repeated intent, generic benefits, inferred implementation, Definition-of-Done items, requested extras with no stated purpose (cut them; don't turn them into `Unknown:` lines), obvious acceptance criteria, speculative edge cases, empty headings, background available via a link, and prose that doesn't change a decision.
 
