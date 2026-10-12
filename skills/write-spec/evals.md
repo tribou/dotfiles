@@ -141,22 +141,29 @@ Judge: Deliverable is learning or a recommendation, not "implement stacked PRs".
 
 ## S9 - ADR (#170 decision)
 
-**Input:** `gh issue view 170 --json title,body`, plus the instruction "record the decision". Run in a scratch git repo.
+**Input:** `gh issue view 170 --json title,body`, plus the instruction "record the decision". Run in a scratch git repo: `REPO=$SCRATCH/repos/S9`, created with `git init` and an untracked `README.md`, no commits, no `docs/`. The prompt replaces "No tracker or repo is available." with "No tracker is available. Your working directory is the git repository at `$REPO`. Nobody is available to answer questions." and asks the agent to save everything it says to the user to `$SCRATCH/<arm>/S9-reply.md`. `$OUT` is the ADR file the run writes.
 
 **Checks:**
 
 ```bash
+[ $(ls $REPO/docs/adr/*.md 2>/dev/null | wc -l) -eq 1 ] && OUT=$(ls $REPO/docs/adr/*.md)
+[ -z "$(git -C $REPO rev-list --all 2>/dev/null)" ]
+! git -C $REPO status --porcelain | grep -q '^A'
 grep -q '^Status:' $OUT
 grep -n '^## ' $OUT | grep -oE 'Context|Decision|Consequences|Alternatives' | tr '\n' ',' | grep -q 'Context,Decision,Consequences,Alternatives,'
 grep -qF '## Execution order' $OUT
 grep -qi 'general availability' $OUT
 ```
 
-Also: the run writes `docs/adr/<slug>.md` in the scratch repo and issues no git commit. In the scratch repo, `git log` is empty (`[ -z "$(git log --oneline 2>/dev/null)" ]`).
+The first line asserts the run wrote exactly one `docs/adr/<slug>.md`; the next two assert no commit and nothing staged.
 
 ## S10 - Project brief from an unshaped idea (#192)
 
-**Input:** the Summary and Motivation / Context sections only of `gh issue view 192 --json title,body`.
+**Input:** the title plus the `## Summary` and `## Motivation / Context` sections only of #192: everything before the body's third `## ` heading (`## Architecture / Ownership`). Both arms slice the same way:
+
+```bash
+gh issue view 192 --json title,body -q '"Title: " + .title + "\n\nBody:\n" + .body' | awk '/^## /{n++} n<=2' > $SCRATCH/in/S10.txt
+```
 
 **Checks:**
 
@@ -205,6 +212,22 @@ grep -qi 'zoxide' $OUT
 ## S13 - Filing behaviors
 
 **Input:** four sub-cases: (a) an interactive issue request with a GitHub remote described in context; (b) a request needing independent outcomes plus "just file it"; (c) any request with no tracker described; (d) an ADR request.
+
+Each sub-case's context and request is a file in `$SCRATCH/in` (`S13a.txt`–`S13d.txt`; `S13b.txt` is a GitHub-remote context, "write this up. Just file it.", then `S10.txt`). The agent has no tracker tools: it writes each tracker command it would run now as a line `ACTION: <command>`, and saves its whole reply to the user to `$OUT`. (d) runs in a scratch git repo (`$REPO`, as in S9) and states that nobody is available to answer.
+
+```bash
+# (a)
+! grep -qE '^ACTION:.*(create|new)' $OUT
+# (b)
+[ $(grep -cE '^ACTION:.*(create|new)' $OUT) -eq 1 ]
+# (c)
+! grep -q '^ACTION:' $OUT
+# (d)
+[ $(ls $REPO/docs/adr/*.md 2>/dev/null | wc -l) -eq 1 ]
+grep -qi 'uncommitted' $OUT
+[ -z "$(git -C $REPO rev-list --all 2>/dev/null)" ]
+! git -C $REPO status --porcelain | grep -q '^A'
+```
 
 **Checks (read the run's output and tool calls):**
 
