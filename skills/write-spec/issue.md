@@ -21,7 +21,7 @@
 **Decisions**, named exactly that:
 
 - Only implementation choices settled upstream (a discovery session, a required constraint, or the user calling it decided); a bare request or title settles nothing.
-- One line per decision, under 25 words: the choice, not how to carry it out, even if settled upstream. Never repeat Acceptance or Bounds. Add a "because" only when the reason is non-obvious and a builder might undo it.
+- One sentence per decision, under 25 words: the choice, not how to carry it out, even if settled upstream. Never repeat Acceptance or Bounds. Add a "because" only when the reason is non-obvious and a builder might undo it.
 - A decision is a choice ("do X", "put Y in Z"), never a claim about the current code ("the loader is broken", "X sorts 10th"). Such claims go stale: put them in Problem (Observed, for a bug) or Evidence with their source, worded for the builder to check, not obey.
 - A choice that fixes or presumes a claim about current code, even one settled in a linked issue, opens with that claim as its condition: "if `_shared.sh` still loads late, fix the order first".
 - A suggested approach is not a decision: omit it, or end the item with one `Suggested: …` line.
