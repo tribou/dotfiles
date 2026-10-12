@@ -47,17 +47,17 @@ Detail is proportional to the cost of being wrong:
 - Cross-cutting or uncertain → an issue or a project brief.
 - Hard-to-reverse API, data, security, or architecture → a deeper brief; write it and offer an ADR, never both silently.
 
-Read only the chosen artifact's reference file: `issue.md`, `bug.md`, `investigation.md`, `project-brief.md`, or `adr.md`. Use its headings, in order; render a heading only if it has content.
+Read only the chosen artifact's file: `issue.md`, `bug.md`, `investigation.md`, `project-brief.md`, or `adr.md`. Use its headings, in order; render a heading only if it has content (an `Unknown:` line counts).
 
 ## Writing rules
 
 - The title starts with a concrete verb or an observable behavior.
-- Write as a strong staff engineer for teammates, not a consultant: direct, active voice, the team's own nouns, sentences under about 25 words.
+- Write as a strong staff engineer not a consultant: direct, active voice, the team's own nouns, sentences under about 25 words.
 - Problem before solution: state what's wrong and for whom.
-- A solution in the request or title is a proposal, however firmly phrased ("enable Y in the config", "probably make a helper"). Write the problem it serves and leave the solution out entirely, not parked in References or an `Unknown:` line ("add Redis caching" → slow account history). It is decided only when a discovery session settled it, a constraint requires it, or the user calls it non-negotiable.
-- When the change carries an obvious risk (e.g., security exposure), bound it with a checkable limit and mark what you can't settle `Unknown:`.
-- Write acceptance as plain, checkable bullets unique to this change; Given/When/Then only for genuinely confusing state.
-- Never write: a repeat of the title, an executive summary, generic background, "Requirements" that restate Acceptance, Definition-of-Done items, a forced "As a user…", exhaustive edge cases, or rollout, analytics, security, or observability sections unless the work materially requires one.
+- A solution in the request or title is a proposal, however phrased ("enable Y in the config", "probably make a helper"). Write the problem it serves and leave the solution out entirely, not parked in References or an `Unknown:` line ("add Redis caching" → slow account history). It is decided only when a discovery session settled it, a constraint requires it, or the user calls it non-negotiable.
+- When a requested mechanism exposes keys, credentials, or access, or reaches destructively, record what you can't settle as `Unknown:` and bound it with a checkable limit.
+- Write acceptance as plain, checkable bullets unique to this change; Given/When/Then only for confusing state.
+- Never write: a repeat of the title, an executive summary, generic background, "Requirements" that restate Acceptance, Definition-of-Done items, an "As a user…", exhaustive edge cases, or rollout, analytics, security, or observability sections unless the work requires one.
 - No estimates; appetite only when it shapes the solution.
 - Implementation detail appears only when an architecture decision exists, compatibility, security, compliance, or a repo convention requires it, prior investigation resolved it, or it avoids a known rabbit hole. Mark it required or suggested. Never prescribe undecided classes, files, schemas, libraries, or algorithms.
 

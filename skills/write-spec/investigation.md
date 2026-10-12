@@ -5,7 +5,7 @@ Use when the primary output is learning or a decision, not a change.
 ## Sections, in this order
 
 - **Question**: the one question to answer, in the request's own nouns. When it is a choice, name what is compared.
-- **Why now**: what makes this worth answering today. Only a trigger the input states. With none, omit the heading; never invent one.
+- **Why now**: what makes this worth answering today. Always renders: the trigger the input states, else `Unknown: why now.` Never invent one.
 - **Timebox**: how long to spend. When not stated: `Unknown.` Never invent a duration.
 - **Deliverable**: the form of the answer, such as a recommendation, optionally recorded as an ADR. It names what the answer must settle.
 
@@ -30,7 +30,7 @@ Use when the primary output is learning or a decision, not a change.
 <The one question, with the options named.>
 
 ## Why now
-<The stated trigger, with a link.>
+<The stated trigger, with a link; else `Unknown: why now.`>
 
 ## Timebox
 Unknown.
