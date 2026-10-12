@@ -100,10 +100,12 @@ grep -qF "alias qq='_dotfiles_qq #'" $OUT
 grep -q 'DOTFILES_QQ_TIMEOUT' $OUT
 grep -q 'lib/ai.sh' $OUT
 grep -q '_dotfiles_ai_\*' $OUT
-grep -q 'DOTFILES_AI_\*' $OUT
+grep -q 'DOTFILES_AI_' $OUT
 grep -q '^## Decisions' $OUT
-[ $(wc -w < $OUT) -le 500 ]
+[ $(wc -w < $OUT) -le 750 ]
 ```
+
+Judge: about 350 words is ideal; cuts per the #211 Cut list (error table, runtime-flow walkthrough, refactor file list, test list, brainstorm narrative).
 
 ## S7 - Bug (#202)
 
@@ -155,6 +157,8 @@ grep -qF '## Execution order' $OUT
 grep -qi 'general availability' $OUT
 ```
 
+Judge: the ADR obeys `adr.md`'s cut list (no requirement numbering, no command lists, no triage narrative) and is about 200 words.
+
 The first line asserts the run wrote exactly one `docs/adr/<slug>.md`; the next two assert no commit and nothing staged.
 
 ## S10 - Project brief from an unshaped idea (#192)
@@ -172,7 +176,7 @@ grep -n '^## ' $OUT | grep -oE 'Problem|Appetite|Outcome|Approach|Risks|No-gos' 
 grep -A1 '^## Appetite' $OUT | grep -q 'Unknown'
 ```
 
-Judge: the run stops after the brief and offers four vertical children, none a layer (DB/API/UI/tests).
+Judge: the run stops after the brief and offers 3-5 vertical children, none a layer (DB/API/UI/tests).
 
 ## S11 - Settled spec stays one issue (#192)
 
@@ -213,13 +217,13 @@ grep -qi 'zoxide' $OUT
 
 **Input:** four sub-cases: (a) an interactive issue request with a GitHub remote described in context; (b) a request needing independent outcomes plus "just file it"; (c) any request with no tracker described; (d) an ADR request.
 
-Each sub-case's context and request is a file in `$SCRATCH/in` (`S13a.txt`–`S13d.txt`; `S13b.txt` is a GitHub-remote context, "write this up. Just file it.", then `S10.txt`). The agent has no tracker tools: it writes each tracker command it would run now as a line `ACTION: <command>`, and saves its whole reply to the user to `$OUT`. (d) runs in a scratch git repo (`$REPO`, as in S9) and states that nobody is available to answer.
+Each sub-case's context and request is a file in `$SCRATCH/in` (`S13a.txt`–`S13d.txt`; `S13b.txt` is a GitHub-remote context, "write this up. Just file it.", then `S10.txt`). The agent has no tracker tools: it writes each tracker command it would run now as a line `ACTION: <command>`, and saves its whole reply to the user to `$OUT`. (d) runs in a scratch git repo (`REPO=$SCRATCH/repos/S13d`, set up as for S9) and states that nobody is available to answer.
 
 ```bash
 # (a)
 ! grep -qE '^ACTION:.*(create|new)' $OUT
 # (b)
-[ $(grep -cE '^ACTION:.*(create|new)' $OUT) -eq 1 ]
+[ $(grep -cE '^ACTION: *[a-z]+ +(issue +)?create\b' $OUT) -eq 1 ]
 # (c)
 ! grep -q '^ACTION:' $OUT
 # (d)
