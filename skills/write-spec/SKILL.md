@@ -8,12 +8,13 @@ description: Use when asked to write, draft, or file a work item (an issue, tick
 > Give the team enough context to understand the problem, enough bounds to make good trade-offs, and enough checkable criteria to know when it's done, then leave room for the team to solve it.
 
 Good work items are contextual, bounded, testable, small, and negotiable. You are a strict editor: write the minimum durable context needed for the next good decision.
+
 ## Input and what you may claim
 
 - Input is whatever is in context, from a rough idea to a discovery session's output. Do not read the codebase or interview the user at length to ground content. The only repo reading is finding the tracker.
 - What the user decided is fact and constraint. Anything unsettled becomes an `Unknown: …` line.
 - Never invent the why. When the input gives no reason for the work (e.g., a bare title), Problem is exactly `Unknown: why this is wanted.` When a reason is strongly implied, write it as `Assumption: …`.
-- Epistemic rules: known fact → state it plainly; existing decision → a constraint; evidence, including any claim about current code → link it, or summarize it with its source, worded to check; a choice whose point is reversing that claimed state → conditional on it; a decided mechanism working whatever the code does → unconditional; reasonable option → label it an option; unknown → `Unknown: …`; assumption → `Assumption: …`; missing detail that doesn't block the work → omit it.
+- Epistemic rules: known fact → state it plainly; existing decision → a constraint; evidence, including any claim about current code → link it, or summarize it with its source, worded to check; a choice whose point is reversing that claimed state → conditional on it; a decided mechanism working whatever the code does → unconditional; reasonable option → `Suggested: …`; unknown → `Unknown: …`; assumption → `Assumption: …`; missing detail that doesn't block the work → omit it.
 - Never invent evidence, reproduction steps, metrics, requirements, edge cases, or names.
 - Link a prior session's document (design spec, notes); never copy it.
 - Write first. Stop to ask only when the answer would change which artifact this is or what it is for (e.g., a "fix" that may be a new feature). Every other gap is an `Unknown:` line.
@@ -46,17 +47,17 @@ Detail is proportional to the cost of being wrong:
 - Cross-cutting or uncertain → an issue or a project brief.
 - Hard-to-reverse API, data, security, or architecture → a deeper brief; write it and offer an ADR, never both silently.
 
-Read only the chosen artifact's file: `issue.md`, `bug.md`, `investigation.md`, `project-brief.md`, or `adr.md`. Use its headings, in order; render a heading only if it has content (an `Unknown:` line counts).
+Read only the chosen artifact's file and files it names: `issue.md`, `bug.md`, `investigation.md`, `project-brief.md`, or `adr.md`. Use its headings, in order; render a heading only if it has content (an `Unknown:` line counts).
 
 ## Writing rules
 
 - The title starts with a concrete verb or an observable behavior.
-- Write as a strong staff engineer not a consultant: direct, active voice, the team's own nouns, sentences under about 25 words.
+- Write as a strong staff engineer, not a consultant: direct, active voice, the team's own nouns, sentences under about 25 words.
 - Problem before solution: state what's wrong and for whom.
 - A solution in the request or title is a proposal, however phrased ("enable Y in the config", "probably make a helper"). Write the problem it serves and leave the solution out entirely, not parked in References or an `Unknown:` line ("add Redis caching" → slow account history). It is decided only when a discovery session settled it, a constraint requires it, or the user calls it non-negotiable.
-- When a requested mechanism exposes keys, credentials, or access, or reaches destructively, record what you can't settle as `Unknown:` and bound it with a checkable limit.
+- When a requested mechanism exposes keys, credentials, or access, or deletes data, record what you can't settle as `Unknown:` and bound it with a checkable limit.
 - Write acceptance as plain, checkable bullets unique to this change; Given/When/Then only for confusing state.
-- Never write: a repeat of the title, an executive summary, generic background, "Requirements" that restate Acceptance, an "As a user…", or rollout, analytics, security, or observability sections unless the work requires one.
+- Never write: a repeat of the title, an executive summary, generic background, "Requirements" that restate Acceptance, a forced "As a user…", or rollout, analytics, security, or observability sections unless the work requires one.
 - No estimates; appetite only when it shapes the solution.
 - Implementation detail appears only when an architecture decision exists, compatibility, security, compliance, or a repo convention requires it, prior investigation resolved it, or it avoids a known rabbit hole. Mark it required or suggested. Never prescribe undecided classes, files, schemas, libraries, or algorithms.
 
@@ -69,11 +70,11 @@ Read only the chosen artifact's file: `issue.md`, `bug.md`, `investigation.md`, 
 
 ## Cut the writing, never the decisions
 
-1. Copy decided identifiers verbatim (commands, flags, file paths, CLI syntax, config keys, schema and table names, marker strings) and decided shapes ("single script"), in the input's own words; compress by deleting, never by paraphrasing (`which gopls`, never "look for the installed binary").
+1. Copy decided identifiers verbatim (commands, flags, file paths, CLI syntax, config keys, schema and table names, marker strings) and decided shapes ("one process"), in the input's own words; compress by deleting, never by paraphrasing (`which gopls`, never "look for the installed binary").
 2. Put costly evidence nothing links to in **Evidence**, compact, with source and date, worded as things to recheck; otherwise link it.
 3. Keep a chosen test approach as one Decision line ("tests replay a recorded HTTP fixture"); cut test lists and generic gates.
 4. Use a project brief only for work that still needs shaping; when upstream settled the approach and the user wants one piece, write one issue with Decisions, even if large.
-5. Apply word targets to prose only; never trim a decision (one line: the choice, not how it plays out) or unlinked evidence to meet them. In every section, cut narrative, brainstorm logs, rejected options, step-by-step flows, messages, exit codes, doc-update, file, test and gate lists, even if settled, repetition, and counts that go stale.
+5. Apply word targets to prose only; never trim a decision (one line: the choice, not how it plays out) or unlinked evidence to meet them. In every section, cut narrative, brainstorm logs, rejected options outside ADRs, step-by-step flows, error tables, doc-update, file, test and gate lists, even if settled, repetition, and counts that go stale.
 
 ## Compression pass and final lint
 
@@ -97,4 +98,3 @@ Final lint:
 
 Before filing, follow `filing.md`: find the tracker, show the artifact and destination, and wait for approval unless context skips it.
 A brief files alone; children wait until the user accepts its shape.
-No tracker → the markdown is the final output.

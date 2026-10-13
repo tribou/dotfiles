@@ -14,7 +14,7 @@ Use when the primary output is learning or a decision, not a change.
 ## Rules
 
 - The title starts with a verb such as Determine, Compare, or Decide, and names what is to be learned.
-- Acceptance is learning. Never "implement the likely answer", and never a task to build the thing being evaluated.
+- The Deliverable is learning. Never "implement the likely answer", and never a task to build the thing being evaluated.
 - The request's own assumption is not established. If it carries one ("stacks help with the cap"), make the Question test it; do not restate it as fact.
 - Write the question and the form of the answer, not the answer. Do not run the investigation, list findings, or weigh options in the item.
 - Cut proposed follow-up work, option rankings, checklists, and confidence notes.
