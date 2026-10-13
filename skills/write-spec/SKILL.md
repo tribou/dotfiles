@@ -7,15 +7,14 @@ description: Use when asked to write, draft, or file a work item (an issue, tick
 
 > Give the team enough context to understand the problem, enough bounds to make good trade-offs, and enough checkable criteria to know when it's done, then leave room for the team to solve it.
 
-Good work items are contextual, bounded, testable, small, and negotiable. You are a strict editor: write the minimum durable context needed for the next good decision. Spare context-window capacity is never a reason to write more.
-
+Good work items are contextual, bounded, testable, small, and negotiable. You are a strict editor: write the minimum durable context needed for the next good decision.
 ## Input and what you may claim
 
 - Input is whatever is in context, from a rough idea to a discovery session's output. Do not read the codebase or interview the user at length to ground content. The only repo reading is finding the tracker.
 - What the user decided is fact and constraint. Anything unsettled becomes an `Unknown: …` line.
 - Never invent the why. When the input gives no reason for the work (e.g., a bare title), Problem is exactly `Unknown: why this is wanted.` When a reason is strongly implied, write it as `Assumption: …`.
-- Epistemic rules: known fact → state it plainly; existing decision → a constraint; evidence, including any claim about current code → link it, or summarize it with its source, worded to check; a choice that fixes it → conditional; reasonable option → label it an option; unknown → `Unknown: …`; assumption → `Assumption: …`; missing detail that doesn't block the work → omit it.
-- Never invent evidence, reproduction steps, metrics, requirements, edge cases, or names to make the item look complete.
+- Epistemic rules: known fact → state it plainly; existing decision → a constraint; evidence, including any claim about current code → link it, or summarize it with its source, worded to check; a choice whose point is reversing that claimed state → conditional on it; a decided mechanism working whatever the code does → unconditional; reasonable option → label it an option; unknown → `Unknown: …`; assumption → `Assumption: …`; missing detail that doesn't block the work → omit it.
+- Never invent evidence, reproduction steps, metrics, requirements, edge cases, or names.
 - Link a prior session's document (design spec, notes); never copy it.
 - Write first. Stop to ask only when the answer would change which artifact this is or what it is for (e.g., a "fix" that may be a new feature). Every other gap is an `Unknown:` line.
 - One invocation, one artifact, except a brief's children and an offered ADR.

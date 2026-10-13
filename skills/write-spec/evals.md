@@ -208,6 +208,7 @@ grep -qF 'stubbed `gh`' $OUT
 grep -qF '~/.local/share/opencode/opencode.db' $OUT
 grep -qF '~/.gemini/antigravity-cli/conversations/<uuid>.db' $OUT
 grep -q '^## Evidence' $OUT
+grep -qiE 'single|one (executable )?(TypeScript )?script' $OUT
 # #154
 grep -qF 'just upgrade' $OUT
 grep -qi 'zoxide' $OUT
