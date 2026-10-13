@@ -21,9 +21,9 @@
 **Decisions**, named exactly that:
 
 - Only implementation choices settled upstream (a discovery session, a required constraint, or the user calling it decided); a bare request or title settles nothing.
-- One sentence per decision, under 25 words: the choice, not how to carry it out, even if settled upstream. Add a "because" only when non-obvious and likely to be undone.
+- One sentence per decision, under 25 words: the choice, not how to carry it out, even if settled upstream. Never repeat Acceptance or Bounds. Add a "because" only when non-obvious and likely to be undone.
 - A decision is a choice ("do X", "put Y in Z"), never a claim about the current code ("the loader is broken", "X runs last"). Claims go stale: put them in Problem or Evidence with their source, worded to check, not obey.
-- A choice whose point is reversing a claimed state of the current code, even one settled in a linked issue, opens with that claim as its condition: "if the token still expires early, fix the TTL first". A decided mechanism (a command, flag, or check) working whatever the code does stays unconditional and verbatim, even if it cures a claimed defect.
+- A choice whose point is reversing a claimed state of the current code, even one settled in a linked issue, opens with that claim as its condition: "if the token still expires early, fix the TTL first". A decided mechanism (a command, flag, or check) working whatever the code does stays unconditional and verbatim, even if it cures a defect.
 - A suggested approach is not a decision: omit it, or end the item with one `Suggested: …` line.
 - A hard-to-reverse settled detail goes in an offered ADR, not here.
 

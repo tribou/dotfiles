@@ -7,7 +7,7 @@ description: Use when asked to write, draft, or file a work item (an issue, tick
 
 > Give the team enough context to understand the problem, enough bounds to make good trade-offs, and enough checkable criteria to know when it's done, then leave room for the team to solve it.
 
-Good work items are contextual, bounded, testable, small, and negotiable. You are a strict editor: write the minimum durable context needed for the next good decision.
+Good work items are contextual, bounded, testable, small, and negotiable. You are a strict editor: write the minimum durable context needed for the next good decision. Spare capacity is no reason to write more.
 
 ## Input and what you may claim
 
@@ -52,12 +52,12 @@ Read only the chosen artifact's file and files it names: `issue.md`, `bug.md`, `
 ## Writing rules
 
 - The title starts with a concrete verb or an observable behavior.
-- Write as a strong staff engineer, not a consultant: direct, active voice, the team's own nouns, sentences under about 25 words.
+- Write as a strong staff engineer, not a consultant: direct, active voice, the team's own nouns, sentences under 25 words.
 - Problem before solution: state what's wrong and for whom.
 - A solution in the request or title is a proposal, however phrased ("enable Y in the config", "probably make a helper"). Write the problem it serves and leave the solution out entirely, not parked in References or an `Unknown:` line ("add Redis caching" → slow account history). It is decided only when a discovery session settled it, a constraint requires it, or the user calls it non-negotiable.
 - When a requested mechanism exposes keys, credentials, or access, or deletes data, record what you can't settle as `Unknown:` and bound it with a checkable limit.
 - Write acceptance as plain, checkable bullets unique to this change; Given/When/Then only for confusing state.
-- Never write: a repeat of the title, an executive summary, generic background, "Requirements" that restate Acceptance, a forced "As a user…", or rollout, analytics, security, or observability sections unless the work requires one.
+- Never write: a repeat of the title, an executive summary, "Requirements" that restate Acceptance, a forced "As a user…", or rollout, analytics, security, or observability sections unless the work requires one.
 - No estimates; appetite only when it shapes the solution.
 - Implementation detail appears only when an architecture decision exists, compatibility, security, compliance, or a repo convention requires it, prior investigation resolved it, or it avoids a known rabbit hole. Mark it required or suggested. Never prescribe undecided classes, files, schemas, libraries, or algorithms.
 
