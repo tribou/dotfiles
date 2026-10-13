@@ -89,6 +89,32 @@ grep -q '_shared.sh' $OUT
 
 Judge: the claim sits in Problem or Evidence with its source (#153) and is worded as something to check; any ordering fix is conditional ("if ...").
 
+## S5b - Held-out claim plus decided mechanism (invented; no wording of it appears in the skill)
+
+**Input:** this text verbatim.
+
+```text
+Title: Let the CLI pick its profile from the environment
+
+Body:
+The config loader (`src/config/load.ts`) ignores the `--profile` flag, so `app --profile staging` still reads the prod settings. Checked last sprint on v2.3.
+
+From the platform sync we decided to read the profile from `$APP_PROFILE` rather than add more flag parsing. The loader should also fail with `profile file not found: config/<profile>.yaml` when that file is missing. Once the flag works, `--profile` should win over `$APP_PROFILE`.
+
+Staging deploys keep reading prod credentials, which is why this matters.
+```
+
+**Checks:**
+
+```bash
+grep -qF '$APP_PROFILE' $OUT
+grep -qF 'profile file not found: config/<profile>.yaml' $OUT
+! grep -qiE '^- if .*APP_PROFILE' $OUT
+! awk '/^## Decisions/{f=1;next}/^## /{f=0}f' $OUT | grep -qi 'ignores'
+```
+
+Judge: the `$APP_PROFILE` choice and the missing-file error are unconditional Decisions; "ignores the `--profile` flag" sits in Problem or Evidence with its source (last sprint, v2.3) and is worded to recheck; any choice whose point is making `--profile` work (including its precedence over `$APP_PROFILE`) is conditional ("if the loader still ignores `--profile` ...").
+
 ## S6 - Post-brainstorm compression (#211)
 
 **Input:** `gh issue view 211 --json title,body`
