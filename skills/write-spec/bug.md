@@ -15,6 +15,8 @@ Use when behavior differs from an established expectation.
 
 Bounds, Decisions, and Evidence follow `issue.md`.
 
+`Unknown: …` and `Assumption: …` lines go at the end, or inside the section they qualify.
+
 ## Rules
 
 - The title names the observable failure, not the fix.

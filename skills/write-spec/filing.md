@@ -6,10 +6,10 @@ In this order:
 
 1. Project instructions (CLAUDE.md, AGENTS.md, and similar) naming where issues go.
 2. Otherwise, what is available: a GitHub remote with working `gh`, a Linear or Jira/Atlassian connection, or `bd` (beads).
-3. Several candidates and no instruction → ask once.
+3. Several candidates and no instruction → ask once; with nobody to ask, output the markdown.
 4. Nothing → the markdown artifact is the final output.
 
-This is the only repo reading the skill does.
+Besides an ADR's directory (`adr.md`), this is the only repo reading.
 
 ## How each artifact lands
 
@@ -28,7 +28,6 @@ Per tracker, use what it supports:
 ## When one request needs more than one item
 
 - Split only when the parts each deliver something useful on their own. Parts that depend on each other stay one issue.
-- When upstream settled the approach and the user wants one piece, it stays one issue with Decisions.
 - A request needing independent outcomes becomes one project brief, never parentless sibling issues.
 - The run stops after filing the brief and offers to derive the children. If the user accepts, draft them all, show them for one batch approval, then file them linked to the parent.
 - Hard-to-reverse work yields the primary artifact plus an offer to write an ADR, never both silently.
@@ -45,6 +44,6 @@ Skip the wait only when:
 
 When unclear, wait. Skipping approval never accepts a brief's shape: with "just file it" or a non-interactive run, file the brief and stop.
 
-Writing an ADR file follows the same approval rules.
+Writing an ADR file follows the same approval rules, tracker or not.
 
-With no tracker, the markdown is the final output; there is no approval step.
+With no tracker, any other artifact's markdown is the final output; there is no approval step.
