@@ -1,6 +1,6 @@
 # write-spec scenarios (RED/GREEN)
 
-Scenario IDs `S1`-`S14` (plus the held-out `S5b`) and their checks for `skills/write-spec`. Later work cites scenarios by ID. This file is not part of the skill's runtime instructions.
+Scenario IDs `S1`-`S14` (plus the held-out `S5b` and the repo-backed `S5r`) and their checks for `skills/write-spec`. Later work cites scenarios by ID. This file is not part of the skill's runtime instructions.
 
 ## Shared harness
 
@@ -11,8 +11,9 @@ A run is one fresh `general-purpose` Agent with `model: "sonnet"`, no repo acces
 - Inputs that name an issue come from the frozen snapshot `inputs/<N>.json` next to this file (`gh issue view <N> --json title,body`, captured 2026-10-14 and identical to the inputs of the PR #216 runs), never a live fetch. Render one as `jq -r '"Title: " + .title + "\n\nBody:\n" + .body' inputs/<N>.json` and paste it verbatim.
 - Inputs fetched from issues are saved to files in `$SCRATCH/in`; the agent is told to read its input file and write its artifact to `$SCRATCH/<arm>/<ID>.md`. Both arms use identical inputs and instructions.
 - Run each check as a shell one-liner with `OUT` set, for example `OUT=$SCRATCH/red/S1.md; ! grep -qi 'localstorage' $OUT`. A check passes when the command exits 0. A `Judge:` line is evaluated by reading the output.
-- Size guards on the skill: `SKILL.md` at most 1350 words (raised from 1300 in the PR #216 review fixes), each other file in `skills/write-spec/` at most 450 (`wc -w`).
-- RED runs only S1-S8, S10, S11, and S12 (each of its four inputs). S9, S13, and S14 need the skill's own file and filing rules, so they run only in GREEN. S5b is a held-out GREEN check of the claim rule; it has no RED arm.
+- Size guards on the skill: `SKILL.md` at most 1400 words (raised from 1300 in the PR #216 review fixes, then to 1400 for the claim check), each other file in `skills/write-spec/` at most 450 (`wc -w`).
+- RED runs only S1-S8, S10, S11, S12 (each of its four inputs), and S5r-stale. S9, S13, and S14 need the skill's own file and filing rules, so they run only in GREEN. S5b is a held-out GREEN check of the claim rule; it has no RED arm.
+- Only S5r, S9, and S13 give the agent a repo; every other scenario has none.
 
 ---
 
@@ -114,10 +115,36 @@ Staging deploys keep reading prod credentials, which is why this matters.
 grep -qF '$APP_PROFILE' $OUT
 grep -qF 'profile file not found: config/<profile>.yaml' $OUT
 ! grep -iE '^- if' $OUT | grep -qiE 'from .?\$APP_PROFILE|rather than'
-! awk '/^## Decisions/{f=1;next}/^## /{f=0}f' $OUT | grep -qi 'ignores'
+! awk '/^## Decisions/{f=1;next}/^## /{f=0}f' $OUT | grep -i 'ignores' | grep -qviE '^- if'
 ```
 
+Check 4 allows "ignores" only inside a Decision that opens with "if", the conditional form the Judge asks for (amended 2026-10-14; the old check failed a correct conditional).
+
 Judge: the `$APP_PROFILE` choice and the missing-file error are unconditional Decisions; "ignores the `--profile` flag" sits in Problem or Evidence with its source (last sprint, v2.3) and is worded to recheck; any choice whose point is making `--profile` work (including its precedence over `$APP_PROFILE`) is conditional ("if the loader still ignores `--profile` ...").
+
+## S5r - Claim checked against the code (#42, fixture repos)
+
+**Input:** `inputs/42.json`, as for S5, in three runs: each of two fixture repos built by `bash build-fixtures.sh $SCRATCH/repos`, plus a drift guard. The prompt replaces "No tracker or repo is available." with "No tracker is available. Your working directory is the git repository at `$REPO`; read it only as the skill allows. Nobody is available to answer questions." and asks the agent to reply with the repo files it read.
+
+- `S5r-stale` (`REPO=$SCRATCH/repos/S5-stale`): `lib/index.sh` already sources `_*.sh` first, with a test. The claim is no longer true.
+- `S5r-true` (`REPO=$SCRATCH/repos/S5-true`): `lib/index.sh` still sources by plain glob; under `en_US.UTF-8`, `_shared.sh` sorts 10th of 11. The claim holds.
+- `S5r-drift` (`REPO=$SCRATCH/repos/S1-repo`, S1's input): the repo has `src/hooks/usePersistentState.ts` and `src/search/SearchPage.tsx`. The input makes no claim about current code.
+
+**Checks:**
+
+```bash
+# S5r-stale
+! awk '/^## Decisions/{f=1;next}/^## /{f=0}f' $OUT | grep -qE 'index\.sh|_\*\.sh'
+awk '/^## Evidence/{f=1;next}/^## /{f=0}f' $OUT | grep -i 'index.sh' | grep -qi 'checked'
+# S5r-true
+awk '/^## Decisions/{f=1;next}/^## /{f=0}f' $OUT | grep -qE 'index\.sh|_\*\.sh'
+# S5r-drift
+! grep -qiE 'usePersistentState|SearchPage|filters\.ts|src/' $OUT
+```
+
+Judge: S5r-stale's Evidence says the ordering fix is already in place, marked `(checked)`; S5r-true keeps the fix, unconditional only when its Evidence marks the state the fix reverses (`lib/index.sh` sources by plain glob, with no explicit order) `(checked)`; the locale-specific "10th of 11" may stay worded to recheck; S5r-drift reads no repo file. In no run does the artifact add a file, name, or approach found only by reading the repo.
+
+RED runs S5r-stale with the pre-change skill (commit 1fee233), which forbade reading code.
 
 ## S6 - Post-brainstorm compression (#211)
 

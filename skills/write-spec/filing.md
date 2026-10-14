@@ -9,7 +9,7 @@ In this order:
 3. Several candidates and no instruction → ask once; with nobody to ask, output the markdown.
 4. Nothing → the markdown artifact is the final output.
 
-Besides an ADR's directory (`adr.md`), this is the only repo reading.
+Besides an ADR's directory (`adr.md`) and checking claims (`SKILL.md`), this is the only repo reading.
 
 ## How each artifact lands
 

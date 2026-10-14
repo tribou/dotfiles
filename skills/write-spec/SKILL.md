@@ -11,10 +11,11 @@ Good work items are contextual, bounded, testable, small, and negotiable. You ar
 
 ## Input and what you may claim
 
-- Input is whatever is in context, from a rough idea to a discovery session's output. Never read the codebase or interview the user at length to ground content; the only repo reading finds the tracker and an ADR's directory.
+- Input is whatever is in context, from a rough idea to a discovery session's output. Never explore the codebase or interview the user at length to ground content. Repo reading only finds the tracker and an ADR's directory, and checks claims (below).
 - What the user decided is fact and constraint. Anything unsettled becomes an `Unknown: …` line.
 - Never invent the why. When the input gives no reason for the work (e.g., a bare title), Problem is exactly `Unknown: why this is wanted.` When a reason is strongly implied, write it as `Assumption: …`.
-- Epistemic rules: known fact → state it plainly; existing decision → a constraint; evidence, including any claim about current code → link it, or summarize it with its source, worded to check; a choice whose point is reversing that claimed state → conditional on it; a decided mechanism working whatever the code does → unconditional; reasonable option → `Suggested: …`; unknown → `Unknown: …`; assumption → `Assumption: …`; missing detail that doesn't block the work → omit it.
+- Epistemic rules: known fact → state it plainly; existing decision → a constraint; evidence, including an unchecked claim about current code → link it, or summarize it with its source, worded to check; a choice reversing an unchecked claim → conditional on it; a decided mechanism working whatever the code does → unconditional; reasonable option → `Suggested: …`; unknown → `Unknown: …`; assumption → `Assumption: …`; missing detail that doesn't block the work → omit it.
+- Check claims about current code. When the input says what the code does now (a load order, an ignored flag) and that code is in the working directory, read only the files the claim names. Confirmed → a fact marked `(checked)`; a choice reversing it is unconditional. No longer true → drop that choice; one Evidence line says so. Can't tell, or no code → unchecked. Add nothing else you read: no new files, names, or approach.
 - Never invent evidence, reproduction steps, metrics, requirements, edge cases, or names.
 - Link a prior session's document (design spec, notes); never copy it.
 - Write first. Stop to ask only when the answer would change which artifact this is or what it is for (e.g., a "fix" that may be a new feature). Every other gap is an `Unknown:` line.
