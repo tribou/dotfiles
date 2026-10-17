@@ -1,0 +1,106 @@
+{
+  "key": "192",
+  "source": "S11",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "constraint",
+      "need": "must",
+      "text": "Single mise-config.toml is source of truth; Ansible must not duplicate, generate, or split the tool list.",
+      "exact": "mise-config.toml"
+    },
+    {
+      "id": "k2",
+      "type": "requirement",
+      "need": "must",
+      "text": "Canonical registry names for CLIs; npm:/gem: for executables; pipx: for Python CLIs; pynvim via Python postinstall."
+    },
+    {
+      "id": "k3",
+      "type": "constraint",
+      "need": "must",
+      "text": "Residual formulae go in [bootstrap.packages] with brew: keys; casks stay in Brewfile, no brew-cask: entries."
+    },
+    {
+      "id": "k4",
+      "type": "constraint",
+      "need": "must",
+      "text": "Homebrew CLI installed/invoked only for the macOS cask flow; Linux formula provisioning must not need Homebrew."
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "Move formula to [tools] only after mise install and version smoke check pass on macOS and Linux."
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "Greenfield bootstrap: standalone mise before Homebrew, config linked globally, Ansible via mise, playbook through mise exec."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "must",
+      "text": "Check mise supports `mise bootstrap packages` first; otherwise update via verified standalone install path."
+    },
+    {
+      "id": "k8",
+      "type": "identifier",
+      "need": "must",
+      "text": "Explicit phases in bootstrap and Ansible: `mise bootstrap packages apply --yes` then `mise install --yes`.",
+      "exact": "mise bootstrap packages apply --yes"
+    },
+    {
+      "id": "k9",
+      "type": "requirement",
+      "need": "must",
+      "text": "Optional formulae go to mise optional-config example [bootstrap.packages]; optional Brewfile keeps only casks."
+    },
+    {
+      "id": "k10",
+      "type": "constraint",
+      "need": "must",
+      "text": "Cleanup removes only formulae moved to [tools], after all phases and smoke checks succeed, and only if Homebrew already exists."
+    },
+    {
+      "id": "k11",
+      "type": "constraint",
+      "need": "must",
+      "text": "Never run `mise bootstrap packages prune --manager brew`; report blocked removals as warnings and skip cleanup if phases fail.",
+      "exact": "mise bootstrap packages prune --manager brew"
+    },
+    {
+      "id": "k12",
+      "type": "requirement",
+      "need": "must",
+      "text": "Put /opt/homebrew/bin (macOS) and /home/linuxbrew/.linuxbrew/bin (Linux) on PATH directly, without brew shellenv."
+    },
+    {
+      "id": "k13",
+      "type": "requirement",
+      "need": "must",
+      "text": "Delete three legacy default-package files and their symlink/goss checks; doctor.sh points to mise install or packages apply."
+    },
+    {
+      "id": "k14",
+      "type": "constraint",
+      "need": "must",
+      "text": "Keep floating channels: Node lts, Ruby 3, other CLIs and language packages latest; no exact-version locks."
+    },
+    {
+      "id": "k15",
+      "type": "constraint",
+      "need": "must",
+      "text": "Support Apple Silicon macOS only, with no Intel formula path; CI must assert the macOS runner is arm64."
+    },
+    {
+      "id": "k16",
+      "type": "requirement",
+      "need": "must",
+      "text": "`just upgrade` sends formula and tool upgrades through mise and leaves only cask upgrades to Homebrew."
+    }
+  ]
+}

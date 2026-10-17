@@ -4,6 +4,8 @@ Scenario IDs `S1`-`S14` (plus the held-out `S5b` and the repo-backed `S5r`) and 
 
 ## Shared harness
 
+`run.sh`, `score.sh`, `fidelity.sh`, and `review.sh` automate this harness as headless `claude -p` runs (see [README.md](README.md)); the subagent form below remains the reference for S13 and S14, whose inputs are not frozen yet.
+
 A run is one fresh `general-purpose` Agent with `model: "sonnet"`, no repo access beyond the stated skill directory. Scratch outputs go to `$SCRATCH/<arm>/<ID>.md` where `$SCRATCH` is the session scratchpad and `<arm>` is `red` or `green`. `$OUT` in every check is that output file.
 
 - RED prompt: `You are asked to write a work item. Output only the final artifact as markdown, as you would file it. No tracker or repo is available. Input:\n<scenario input>`
@@ -255,18 +257,18 @@ Judge: one issue, not a brief.
 **Checks:**
 
 ```bash
-# #187
+# S12-187
 grep -qF 'which gopls' $OUT
-# #181
+# S12-181
 grep -qF 'issue:N' $OUT
 grep -qF 'pr:M' $OUT
 grep -qF 'stubbed `gh`' $OUT
-# #180
+# S12-180
 grep -qF '~/.local/share/opencode/opencode.db' $OUT
 grep -qF '~/.gemini/antigravity-cli/conversations/<uuid>.db' $OUT
 grep -q '^## Evidence' $OUT
 grep -qiE 'single|one (executable )?(TypeScript )?script' $OUT
-# #154
+# S12-154
 grep -qF 'just upgrade' $OUT
 grep -qi 'zoxide' $OUT
 ```
@@ -277,25 +279,27 @@ grep -qi 'zoxide' $OUT
 
 Each sub-case's context and request is a file in `$SCRATCH/in` (`S13a.txt`–`S13f.txt`; `S13b.txt` is a GitHub-remote context, "write this up. Just file it.", then `S10.txt`; `S13e.txt` and `S13f.txt` reuse the requests of `S13d.txt` and `S13a.txt`). The agent has no tracker tools: it writes each tracker command it would run now as a line `ACTION: <command>`, and saves its whole reply to the user to `$OUT`. (d) runs in a scratch git repo (`REPO=$SCRATCH/repos/S13d`, set up as for S9) and states that nobody is available to answer. (e) runs in its own scratch repo (`REPO=$SCRATCH/repos/S13e`) and saves only the first turn's reply.
 
+**Checks:**
+
 ```bash
-# (a)
+# S13a
 ! grep -qE '^ACTION:.*(create|new)' $OUT
-# (b)
+# S13b
 [ $(grep -cE '^ACTION: *[a-z]+ +(issue +)?create\b' $OUT) -eq 1 ]
-# (c)
+# S13c
 ! grep -q '^ACTION:' $OUT
-# (d)
+# S13d
 [ $(ls $REPO/docs/adr/*.md 2>/dev/null | wc -l) -eq 1 ]
 grep -qi 'uncommitted' $OUT
 [ -z "$(git -C $REPO rev-list --all 2>/dev/null)" ]
 ! git -C $REPO status --porcelain | grep -q '^A'
-# (e)
+# S13e
 [ $(ls $REPO/docs/adr/*.md 2>/dev/null | wc -l) -eq 0 ]
-# (f)
+# S13f
 ! grep -q '^ACTION:' $OUT
 ```
 
-**Checks (read the run's output and tool calls):**
+Judge (read the run's output and tool calls):
 
 - (a) The output shows the artifact plus its destination and asks for approval; it runs no create command.
 - (b) It files one parent brief; it derives and files no children.

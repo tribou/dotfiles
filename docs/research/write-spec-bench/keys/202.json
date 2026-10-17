@@ -1,0 +1,99 @@
+{
+  "key": "202",
+  "source": "S7",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "evidence",
+      "need": "may",
+      "text": "Over SSH, histgrep fails with this error because xclip is chosen whenever installed, ignoring DISPLAY.",
+      "exact": "Error: Can't open display: (null)"
+    },
+    {
+      "id": "k2",
+      "type": "requirement",
+      "need": "must",
+      "text": "Over SSH without X display, histgrep copies selection to local clipboard via OSC 52, not xclip."
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "lib/commands.sh _dotfiles_clipboard_write_cmd/copy_to_clipboard order: pbcopy → xclip -selection clipboard if DISPLAY → OSC 52."
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "_dotfiles_clipboard_read_cmd: pbpaste → xclip -o -sel clipboard if DISPLAY set → return empty."
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "scripts/tmux-copy.sh stays in scope: pbcopy → xclip if DISPLAY → tmux load-buffer -w - with buffer."
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "No path prints an error when no clipboard mechanism is reachable; fallback fails silently."
+    },
+    {
+      "id": "k7",
+      "type": "non-goal",
+      "need": "must",
+      "text": "No wl-copy/wl-paste native Wayland support, and no OSC 52 clipboard read."
+    },
+    {
+      "id": "k8",
+      "type": "non-goal",
+      "need": "must",
+      "text": "No changes to tmux mouse copy-pipe copy_to_clipboard bindings or scripts/tmux-paste.sh."
+    },
+    {
+      "id": "k9",
+      "type": "non-goal",
+      "need": "must",
+      "text": "No change to histgrep itself, including its tmux send-keys branch."
+    },
+    {
+      "id": "k10",
+      "type": "constraint",
+      "need": "must",
+      "text": "xclip used only when DISPLAY is set; WAYLAND_DISPLAY alone does not qualify."
+    },
+    {
+      "id": "k11",
+      "type": "identifier",
+      "need": "must",
+      "text": "New helper _dotfiles_osc52_copy reads stdin, base64-encodes with newlines stripped (GNU/BSD portable).",
+      "exact": "_dotfiles_osc52_copy"
+    },
+    {
+      "id": "k12",
+      "type": "requirement",
+      "need": "must",
+      "text": "In tmux: pipe to tmux load-buffer -w -; else write \\e]52;c;<b64>\\a to /dev/tty, target overridable; no-op if unwritable."
+    },
+    {
+      "id": "k13",
+      "type": "requirement",
+      "need": "must",
+      "text": "TDD with failing tests first in tests/clipboard.bats: write/read helper DISPLAY cases, OSC 52 writer in/out of tmux."
+    },
+    {
+      "id": "k14",
+      "type": "requirement",
+      "need": "must",
+      "text": "tests/tmux_copy.bats: xclip present, DISPLAY unset → uses tmux load-buffer -w - instead of xclip."
+    },
+    {
+      "id": "k15",
+      "type": "requirement",
+      "need": "must",
+      "text": "Quality gates must pass: just test-unit and just test."
+    }
+  ]
+}
