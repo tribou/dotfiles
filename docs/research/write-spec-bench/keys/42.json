@@ -1,0 +1,92 @@
+{
+  "key": "42",
+  "source": "S5",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "evidence",
+      "need": "may",
+      "text": "lib/commands.sh is 1,384 lines with 61 functions and 135 aliases across unrelated domains."
+    },
+    {
+      "id": "k2",
+      "type": "constraint",
+      "need": "must",
+      "text": "Follow #153's lib module rules for boundaries, size, naming, and load order."
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "Split into lib/git.sh, lib/npm.sh, lib/docker.sh, lib/tmux.sh by domain; tmux is large (~71 hits)."
+    },
+    {
+      "id": "k4",
+      "type": "constraint",
+      "need": "must",
+      "text": "lib/cloud.sh holds AWS/DigitalOcean/terraform/SSH as one file; don't pre-split terraform/ssh pieces."
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "lib/repo.sh gets the .gitignore generator (~L712–745) and mkrepo, not the general bucket."
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "lib/agent.sh gets the Claude keep-alive loop (~L375–388) and related agent-state helpers."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "must",
+      "text": "lib/commands.sh keeps only general shell utilities that fit no other module."
+    },
+    {
+      "id": "k8",
+      "type": "evidence",
+      "need": "may",
+      "text": "lib/index.sh globs lib/*.sh (excluding index.sh), so new files are sourced automatically."
+    },
+    {
+      "id": "k9",
+      "type": "requirement",
+      "need": "must",
+      "text": "Before splitting, index.sh must explicitly source _*.sh first, with a test; _shared.sh precedes all others."
+    },
+    {
+      "id": "k10",
+      "type": "evidence",
+      "need": "may",
+      "text": "Under en_US.UTF-8, current glob order sorts _shared.sh 10th of 11, not first."
+    },
+    {
+      "id": "k11",
+      "type": "identifier",
+      "need": "must",
+      "text": "Verify with `just test-unit` and `just test`."
+    },
+    {
+      "id": "k12",
+      "type": "constraint",
+      "need": "must",
+      "text": "Each lib/*.sh file at or under ~300 lines by wc -l (soft cap per #153)."
+    },
+    {
+      "id": "k13",
+      "type": "constraint",
+      "need": "must",
+      "text": "Don't change function signatures or alias names; all must still work in a new shell."
+    },
+    {
+      "id": "k14",
+      "type": "identifier",
+      "need": "must",
+      "text": "Run bashcheck (project linter, not bash -n) on each new file.",
+      "exact": "bashcheck"
+    }
+  ]
+}
