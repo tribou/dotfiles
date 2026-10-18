@@ -94,7 +94,7 @@ Judge: the `Unknown:` line concerns which hosts are trusted or need agent access
 grep -q '_shared.sh' $OUT
 ```
 
-Judge: the claim sits in Problem or Evidence with its source (#153) and is worded as something to check; any ordering fix is conditional ("if ...").
+Judge: the claim sits in Problem or Evidence with its source (#153) and is worded as something to check; any ordering fix is conditional ("if ..."). Inspect the entire artifact, including Outcome, Acceptance, Bounds, and Decisions. A conditional Decision does not pass if another section reinstates the same specific ordering remedy unconditionally. The two mechanical checks alone do not establish this semantic requirement.
 
 ## S5b - Held-out claim plus decided mechanism (invented; no wording of it appears in the skill)
 
@@ -122,7 +122,7 @@ grep -qF 'profile file not found: config/<profile>.yaml' $OUT
 
 Check 4 allows "ignores" only inside a Decision that opens with "if", the conditional form the Judge asks for (amended 2026-10-14; the old check failed a correct conditional).
 
-Judge: the `$APP_PROFILE` choice and the missing-file error are unconditional Decisions; "ignores the `--profile` flag" sits in Problem or Evidence with its source (last sprint, v2.3) and is worded to recheck; any choice whose point is making `--profile` work (including its precedence over `$APP_PROFILE`) is conditional ("if the loader still ignores `--profile` ...").
+Judge: the `$APP_PROFILE` choice and the missing-file error are unconditional Decisions; "ignores the `--profile` flag" sits in Problem or Evidence with its source (last sprint, v2.3) and is worded to recheck; any choice whose point is making `--profile` work (including its precedence over `$APP_PROFILE`) is conditional ("if the loader still ignores `--profile` ..."). Inspect every section for the prerequisite; a conditional Acceptance bullet does not pass alongside unconditional precedence in Outcome or Decisions.
 
 ## S5r - Claim checked against the code (#42, fixture repos)
 

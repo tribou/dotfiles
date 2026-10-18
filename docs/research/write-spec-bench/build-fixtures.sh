@@ -49,7 +49,8 @@ cat > "$R/tests/index_order.bats" <<'EOF'
 #!/usr/bin/env bats
 @test "index.sh sources _shared.sh before every other module" {
   run bash -c 'set -x; source lib/index.sh' 2>&1
-  first=$(grep -o 'source [^ ]*\.sh' <<<"$output" | head -1)
+  [ "$status" -eq 0 ]
+  first=$(grep -o 'source [^ ]*\.sh' <<<"$output" | grep -vE '(^|/)index\.sh$' | head -1)
   [[ "$first" == *"_shared.sh" ]]
 }
 EOF
@@ -61,5 +62,5 @@ printf 'export function usePersistentState(key, initial) { /* wraps localStorage
 printf 'export const DEFAULT_FILTERS = { sort: "relevance" };\n' > "$R/src/search/filters.ts"
 printf 'import { DEFAULT_FILTERS } from "./filters";\nexport function SearchPage() { /* filters live in component state */ }\n' > "$R/src/search/SearchPage.tsx"
 
-for d in "$ROOT"/*/; do git -C "$d" init -q; done
-echo "built: $(ls "$ROOT")"
+for name in S5-true S5-stale S1-repo; do git -C "$ROOT/$name" init -q; done
+echo "built: S5-true S5-stale S1-repo"

@@ -21,9 +21,9 @@ Bounds, Decisions, and Evidence follow `issue.md`.
 
 - The title names the observable failure, not the fix.
 - Observed is a fact about what happened. It never prescribes the fix.
-- When the request names the fix, write the failure it serves and leave the fix out.
+- When the request merely proposes a fix, write the failure it serves and omit the proposal. Settled choices remain.
 - Do not guess a root cause the input did not state. An unconfirmed cause is an `Unknown: …` line.
-- Per `issue.md`, a Decision is a choice, one line, under 25 words. Cut encoding flags, write order, version notes, test lists, and brainstorm logs, even when settled.
+- Per `issue.md`, a Decision is a settled choice. Extract required flags, ordering, compatibility limits, failure behavior, and chosen test seams before cutting their surrounding narrative or lists.
 - Keep decided identifiers verbatim (commands, env vars, paths, protocol names); delete around them, never paraphrase.
 
 ## Skeleton

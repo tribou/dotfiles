@@ -4,7 +4,7 @@ Use for work that still needs shaping, where several issues share a problem, app
 
 ## Sections, in this order
 
-- **Problem**: what is wrong and for whom, with checkable facts and their sources.
+- **Problem**: supplied purpose or observation and its stated consequence, with sources. A desired capability starts `Need:` rather than an invented current defect.
 - **Appetite**: how much time the work is worth. When not given: `Unknown.` Never invent one.
 - **Outcome**: the observable state once all of it ships.
 - **Approach**: deliberately rough, a few sentences. It absorbs decided detail (named tools, backends, ordering) a clause each; no steps, requirements, or file lists.
@@ -32,7 +32,7 @@ Use for work that still needs shaping, where several issues share a problem, app
 # <Verb + the outcome>
 
 ## Problem
-<What is wrong, for whom, with sources.>
+<Supplied purpose/observation and stated consequence, with sources; Need: for desired capability.>
 
 ## Appetite
 Unknown.

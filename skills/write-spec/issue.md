@@ -2,10 +2,10 @@
 
 ## Sections, in this order
 
-- **Problem**: what is wrong and for whom, with no solution. With no stated reason: `Unknown: why this is wanted.`
+- **Problem**: closest supplied purpose/observation, then stated consequence. A need starts `Need: <desired capability>`, not a current-state negation. No reason → `Unknown: why this is wanted.`
 - **Evidence**: optional.
-- **Outcome**: the observable state once this is done.
-- **Acceptance**: 2–5 checkable bullets unique to this change.
+- **Outcome**: observable result; a claim-dependent result retains its verification prerequisite.
+- **Acceptance**: 2–5 checkable user-visible results, not duplicate methods. Dependent results retain `Verify <claim>; only if confirmed, <result>.` Independent requirements stay unconditional.
 - **Bounds**: scope limits and non-goals.
 - **Decisions**: optional.
 - **References**: links to related items or design documents.
@@ -16,14 +16,14 @@
 
 **Bounds**: scope limits and non-goals that stop the likeliest scope creep, never implementation choices.
 
-**Evidence**: costly findings the builder needs that nothing links to (research results, data locations, schemas, field maps), compact. Give each its source and date, worded to recheck; with a link, link instead.
+**Evidence**: costly unlinked findings (research, data locations, schemas, field maps), compact, with supplied source/date and wording to recheck. Never fabricate provenance; a relevant link replaces copying.
 
 **Decisions**, named exactly that:
 
-- Only implementation choices settled upstream (a discovery session, a required constraint, or the user calling it decided); a bare request or title settles nothing.
-- One sentence per decision, under 25 words: the choice, not how to carry it out, even if settled upstream. Never repeat Acceptance or Bounds. Add a "because" only when non-obvious and likely to be undone.
-- A decision is a choice ("do X", "put Y in Z"), never a claim about the current code ("the loader is broken", "X runs last"). Claims go stale: check them, then put them in Problem or Evidence with their source, worded to check, not obey.
-- A choice reversing an unchecked claim about the current code, even one settled in a linked issue, opens with that claim as its condition: "if the token still expires early, fix the TTL first". A decided mechanism (a command, flag, or check) working whatever the code does stays unconditional and verbatim, even if it cures a defect.
+- Only settled implementation choices; a bare request or title settles nothing.
+- One compact sentence per choice, under 25 words where practical. Preserve required semantics, not its walkthrough. Avoid repeating Acceptance/Bounds; add "because" only when otherwise likely to be undone.
+- Current-code claims belong in Problem/Evidence with supplied provenance and check status, never as instructions.
+- A remedy justified by a current-code claim is dependent, even if approved. Render it once: `Verify <claim>; only if confirmed, <choice>.` Independently supplied mechanisms stay unconditional and verbatim.
 - A suggested approach is not a decision: omit it, or end the item with one `Suggested: …` line.
 - A hard-to-reverse settled detail goes in an offered ADR, not here.
 
@@ -43,23 +43,24 @@ Bounds and References should often disappear.
 # <Concrete verb + observable outcome>
 
 ## Problem
-<What is wrong, and for whom.>
+<Closest supplied purpose/observation; use Need: for desired capability.>
+<Stated consequence, or Unknown: why this is wanted.>
 
 ## Evidence
 - <Finding> (source, date; recheck).
 
 ## Outcome
-<The observable state once this is done.>
+<Observable result, with its verification prerequisite if claim-dependent.>
 
 ## Acceptance
-- <A checkable behavior unique to this change.>
+- <Independent requirement, or: Verify the claim; only if confirmed, the required result.>
 - <Another one.>
 
 ## Bounds
 - No <likeliest scope creep>.
 
 ## Decisions
-- <A choice settled upstream.>
+- <Independent choice, or: Verify the claim; only if confirmed, the dependent choice.>
 
 ## References
 - <link>
