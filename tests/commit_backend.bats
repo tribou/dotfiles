@@ -48,10 +48,10 @@ setup() {
   assert_output "opencode-go/kimi-k2.7-code"
 }
 
-@test "commit_model: agy backend uses Gemini 3.7 Flash (Low)" {
+@test "commit_model: agy backend uses Gemini 3.8 Flash (Low)" {
   run _dotfiles_commit_model agy
   assert_success
-  assert_output "gemini-3.7-flash-low"
+  assert_output "gemini-3.8-flash-low"
 }
 
 @test "commit_model: DOTFILES_COMMIT_MODEL overrides the opencode default" {
@@ -131,7 +131,7 @@ setup() {
   "
   assert_success
   assert_output --partial "backend:   agy"
-  assert_output --partial "model:     gemini-3.7-flash-low"
+  assert_output --partial "model:     gemini-3.8-flash-low"
   assert_output --partial "available: yes"
 }
 

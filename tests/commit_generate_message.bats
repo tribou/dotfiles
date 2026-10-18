@@ -160,7 +160,7 @@ setup() {
     _dotfiles_commit_generate_message ''
   "
   assert_success
-  assert_output "gemini-3.7-flash-low"
+  assert_output "gemini-3.8-flash-low"
 }
 
 @test "generate_message: agy backend fails when agy is not on PATH" {
