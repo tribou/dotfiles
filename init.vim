@@ -13,7 +13,8 @@ endfunction
 
 " Python
 " https://neovim.io/doc/user/provider.html
-let g:python3_host_prog = exepath('python3')
+" Leave g:python3_host_prog unset so Neovim auto-detects an interpreter that
+" has pynvim; pinning exepath('python3') breaks on python3 minor upgrades.
 
 " Ruby
 let g:ruby_host_prog = exepath('neovim-ruby-host')
