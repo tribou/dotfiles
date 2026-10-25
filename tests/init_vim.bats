@@ -1,3 +1,4 @@
+# covers: init.vim
 setup() {
   load 'test_helper/common_setup'
   common_setup

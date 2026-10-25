@@ -1,3 +1,4 @@
+# covers: lib/git.sh bash_profile
 setup() {
   load 'test_helper/common_setup'
   common_setup

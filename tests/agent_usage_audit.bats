@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# covers: skills/agent-usage-audit/* tests/fixtures/agent-usage-audit/*
 
 setup() {
   load 'test_helper/common_setup'

@@ -1,3 +1,4 @@
+# covers: lib/fzf.sh tmux/tmux-conf
 # tests/fzf_lib.bats
 setup() {
   load 'test_helper/common_setup'

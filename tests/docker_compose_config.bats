@@ -1,3 +1,4 @@
+# covers: docker-compose.yml .github/workflows/ubuntu-tests.yml
 setup() {
   load 'test_helper/common_setup'
   common_setup

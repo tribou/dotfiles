@@ -1,3 +1,4 @@
+# covers: scripts/tmux-copy.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup

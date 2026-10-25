@@ -1,3 +1,4 @@
+# covers: roles/dotfiles/tasks/main.yml
 setup() {
   load 'test_helper/common_setup'
   common_setup

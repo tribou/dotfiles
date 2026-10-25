@@ -1,3 +1,4 @@
+# covers: lib/git.sh
 # tests/co_command.bats
 setup() {
   load 'test_helper/common_setup'

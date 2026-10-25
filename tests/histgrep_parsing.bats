@@ -1,3 +1,4 @@
+# covers: lib/commands.sh
 # tests/histgrep_parsing.bats
 bats_require_minimum_version 1.5.0
 

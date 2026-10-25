@@ -1,3 +1,4 @@
+# covers: justfile ansible.cfg
 setup() {
   load 'test_helper/common_setup'
   common_setup

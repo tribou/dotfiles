@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# covers: scripts/dotfiles_local_browser_helper.sh
 
 setup() {
   load 'test_helper/common_setup'

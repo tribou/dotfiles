@@ -1,3 +1,4 @@
+# covers: lib/repo.sh
 # tests/mkrepo_command.bats
 setup() {
   load 'test_helper/common_setup'

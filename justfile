@@ -55,6 +55,11 @@ test-unit *args="tests/*.bats":
     fi
     ./tests/test_helper/bats-core/bin/bats ${jobs_args[@]+"${jobs_args[@]}"} {{args}}
 
+# Run only the tests affected by changes since origin's default branch
+# (unit tests via covers headers, plus `just test` when the Docker suite is affected)
+test-changed *args:
+    ./scripts/test_changed.sh {{args}}
+
 # Install/repair dotfiles on an already-bootstrapped machine (default: present)
 # ANSIBLE_CONFIG is pinned to this repo's ansible.cfg so a stale/unrelated
 # ANSIBLE_CONFIG in the user's shell env (it has the highest precedence in

@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# covers: scripts/doctor.sh
 
 setup() {
     # Project root is the current working directory when bats is run

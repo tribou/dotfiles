@@ -1,3 +1,4 @@
+# covers: roles/dotfiles/tasks/prereqs.yml roles/dotfiles/tasks/nvim.yml
 setup() {
   load 'test_helper/common_setup'
   common_setup

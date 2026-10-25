@@ -1,3 +1,4 @@
+# covers: bootstrap.sh playbook.yml roles/* Brewfile.optional.example mise-config.toml mise-config.optional.toml.example
 setup() {
   load 'test_helper/common_setup'
   common_setup

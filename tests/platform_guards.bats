@@ -1,3 +1,4 @@
+# covers: lib/docker.sh
 # tests/platform_guards.bats
 setup() {
   load 'test_helper/common_setup'
