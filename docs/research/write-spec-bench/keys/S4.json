@@ -1,0 +1,27 @@
+{
+  "key": "S4",
+  "source": "S4",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "requirement",
+      "need": "must",
+      "text": "Enable ForwardAgent in the macOS SSH config only.",
+      "exact": "ForwardAgent"
+    },
+    {
+      "id": "k2",
+      "type": "requirement",
+      "need": "must",
+      "text": "On Linux, add a stable symlink for SSH_AUTH_SOCK so the socket path stays the same.",
+      "exact": "SSH_AUTH_SOCK"
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "tmux sessions must keep working agent forwarding after SSH reconnects."
+    }
+  ]
+}

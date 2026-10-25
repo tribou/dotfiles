@@ -1,0 +1,99 @@
+{
+  "key": "187",
+  "source": "S12-187",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "evidence",
+      "need": "may",
+      "text": "just test baseline ~3m42s: Homebrew ~89s, uncached mise ~41s, apt update ~26s, gopls recompile ~15s."
+    },
+    {
+      "id": "k2",
+      "type": "evidence",
+      "need": "must",
+      "text": "From linked worktrees, test fails at 'dotfiles : Clone TPM' with 'fatal: not a git repository'; only .:/dotfiles mounted."
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "Cached local just test must finish under 45 seconds, target ~25s–35s."
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "Fix gopls check in roles/dotfiles/tasks/nvim.yml to test real binary (which gopls), not nonexistent creates path."
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "Add cache_valid_time: 86400 to apt task in roles/dotfiles/tasks/prereqs.yml.",
+      "exact": "cache_valid_time: 86400"
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "Mount persistent .ci-cache/ volumes in docker-compose.yml for mise runtimes/cache, tmux plugins, go/coc."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "must",
+      "text": "Default DOTFILES_ANSIBLE_EXTRA_ARGS to \"--skip-tags brew,rust\" in docker-compose.yml, matching ubuntu-tests.yml."
+    },
+    {
+      "id": "k8",
+      "type": "requirement",
+      "need": "must",
+      "text": "just test-unit runs ansible-playbook --syntax-check covering all task files, including skipped brew.yml/rust.yml."
+    },
+    {
+      "id": "k9",
+      "type": "requirement",
+      "need": "must",
+      "text": "New justfile recipe just test-clean wipes .ci-cache/ and runs full cold test without --skip-tags."
+    },
+    {
+      "id": "k10",
+      "type": "requirement",
+      "need": "must",
+      "text": "justfile resolves git common dir and bind-mounts it read-only for test, test-clean, dev recipes.",
+      "exact": "git rev-parse --path-format=absolute --git-common-dir"
+    },
+    {
+      "id": "k11",
+      "type": "requirement",
+      "need": "must",
+      "text": "Configure git safe.directory \"*\" in container via both docker-compose.yml and Dockerfile."
+    },
+    {
+      "id": "k12",
+      "type": "requirement",
+      "need": "must",
+      "text": "Add .worktrees/, .claude/, and .ci-cache/ to .dockerignore."
+    },
+    {
+      "id": "k13",
+      "type": "non-goal",
+      "need": "must",
+      "text": "Don't rewrite Docker base image to bake in user runtimes."
+    },
+    {
+      "id": "k14",
+      "type": "non-goal",
+      "need": "must",
+      "text": "No remote CI workflow changes beyond flag alignment; no changes to macOS dotfiles install logic."
+    },
+    {
+      "id": "k15",
+      "type": "requirement",
+      "need": "must",
+      "text": "All 54 Goss and 25 Bats tests pass in just test, from primary checkout and .worktrees/ worktree."
+    }
+  ]
+}
