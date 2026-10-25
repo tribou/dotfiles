@@ -55,3 +55,22 @@ setup() {
   assert_output "ssh remote"
   assert_equal "$stderr" ""
 }
+
+@test "histgrep warns instead of erroring when ~/.history target is unavailable" {
+  mkdir -p "$BATS_TEST_TMPDIR/home"
+  ln -s "$BATS_TEST_TMPDIR/unmounted-drive/.history" "$BATS_TEST_TMPDIR/home/.history"
+
+  run --separate-stderr bash -c "
+    unset TMUX
+    export HOME='$BATS_TEST_TMPDIR/home'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    fzf() { cat; }
+    copy_to_clipboard() { :; }
+    histgrep remote
+  "
+
+  assert_success
+  assert_output ""
+  assert_equal "$stderr" "histgrep: no saved history in ~/.history (is Google Drive mounted?); searching current shell history only"
+}

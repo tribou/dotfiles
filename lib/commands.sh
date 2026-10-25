@@ -37,20 +37,32 @@ function copy_to_clipboard ()
 
 
 
-function histgrep ()
+function _dotfiles_grep_history_files ()
 {
+  # ~/.history may be a cloud-synced symlink whose target isn't mounted yet
+  if ! compgen -G "$HOME/.history/20*/*" >/dev/null
+  then
+    echo "histgrep: no saved history in ~/.history (is Google Drive mounted?); searching current shell history only" >&2
+    return 0
+  fi
+
   # Remove histfile directory prefix during fzf search
   local AWK_REMOVE_HISTDIR='^/.*/[.]history/'
 
+  # shellcheck disable=SC2012
+  ls -d "$HOME"/.history/20*/* \
+    | sort -r -n \
+    | xargs grep -r "$1" \
+    | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}'
+}
+
+function histgrep ()
+{
   # Pipe results from two history sources into cat
   local RESULT
-  # shellcheck disable=SC2012
   RESULT=$(cat \
     <(history | grep "$1") \
-    <(ls -d "$HOME"/.history/20*/* \
-      | sort -r -n \
-      | xargs grep -r "$1" \
-      | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}') \
+    <(_dotfiles_grep_history_files "$1") \
     | fzf --tmux="70%,80%" \
     | awk -F "$DOTFILES_HISTFILE_DELIM" '{print $NF}' \
     | awk -F "$DOTFILES_HISTORY_DELIM" '{print $NF}')
