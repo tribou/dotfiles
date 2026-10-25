@@ -50,3 +50,8 @@ setup() {
   echo "$block" | grep -q -- '--jobs'
   echo "$block" | grep -q 'DOTFILES_TEST_JOBS'
 }
+
+@test "justfile: default picker matches recipe names, not descriptions" {
+  block="$(sed -n '/^default:/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
+  echo "$block" | grep -q -- 'fzf .*--nth=1'
+}

@@ -1,6 +1,6 @@
-# Interactive command picker (requires fzf)
+# Interactive command picker (requires fzf; matches recipe names only, not descriptions)
 default:
-    @just --list --unsorted | tail -n +2 | fzf --height=40% --reverse | awk '{print $1}' | xargs -r just
+    @just --list --unsorted | tail -n +2 | fzf --height=40% --reverse --nth=1 | awk '{print $1}' | xargs -r just
 
 # Run full test suite in Docker (goss infrastructure + bats integration tests)
 test:
@@ -55,8 +55,7 @@ test-unit *args="tests/*.bats":
     fi
     ./tests/test_helper/bats-core/bin/bats ${jobs_args[@]+"${jobs_args[@]}"} {{args}}
 
-# Run only the tests affected by changes since origin's default branch
-# (unit tests via covers headers, plus `just test` when the Docker suite is affected)
+# Run only the unit tests (and Docker suite, if needed) affected by your changes
 test-changed *args:
     ./scripts/test_changed.sh {{args}}
 
