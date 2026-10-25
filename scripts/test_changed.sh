@@ -15,8 +15,11 @@ set -euo pipefail
 CORE_PATTERNS=(lib/_shared.sh lib/index.sh lib/platform.sh 'tests/test_helper/*')
 # Files no unit test exercises, unless a covers header claims them.
 NO_UNIT_PATTERNS=('*.md' 'docs/*' LICENSE goss.yaml 'tests/integration/*' '.github/*')
-# Files the Docker suite (`just test`) never touches; any other change runs it.
-DOCKER_SKIP_PATTERNS=('*.md' 'docs/*' LICENSE justfile 'lib/*' 'scripts/*' 'skills/*' 'agent/*' 'tests/fixtures/*' '.github/*')
+# Files the Docker suite (`just test`) always exercises: integration tests,
+# their helpers, and the lib files bash_profile runs to set up the environment.
+DOCKER_PATTERNS=('tests/integration/*' 'tests/test_helper/*' lib/index.sh lib/path.sh lib/platform.sh)
+# Files the Docker suite never touches; any change not listed here or above runs it.
+DOCKER_SKIP_PATTERNS=('*.md' 'docs/*' LICENSE 'lib/*' scripts/doctor.sh scripts/perf_report.sh scripts/test_changed.sh 'skills/*' 'agent/*' 'tests/fixtures/*' '.github/*')
 
 note() { printf 'test-changed: %s\n' "$1" >&2; }
 
@@ -49,20 +52,38 @@ load_covers() {
 
 is_unit_test_file() { [[ "$1" == tests/*.bats && "$1" != tests/*/* ]]; }
 
-changed_files() {
-    local base="${DOTFILES_TEST_BASE:-}" ref
-    if [[ -z "$base" ]]; then
-        for ref in origin/HEAD origin/main; do
-            if git rev-parse --verify -q "$ref" >/dev/null; then
-                base="$(git merge-base HEAD "$ref")"
-                break
-            fi
-        done
+# Print the commit to diff against, or fail when it can't be determined.
+resolve_base() {
+    local ref
+    if [[ -n "${DOTFILES_TEST_BASE:-}" ]]; then
+        if ! git rev-parse --verify -q "${DOTFILES_TEST_BASE}^{commit}" >/dev/null; then
+            note "DOTFILES_TEST_BASE '$DOTFILES_TEST_BASE' is not a commit"
+            return 1
+        fi
+        echo "$DOTFILES_TEST_BASE"
+        return
     fi
-    {
-        git diff --name-only --no-renames "${base:-HEAD}" 2>/dev/null || true
-        git ls-files --others --exclude-standard
-    } | sort -u
+    for ref in origin/HEAD origin/main; do
+        if git rev-parse --verify -q "$ref" >/dev/null; then
+            if ! git merge-base HEAD "$ref"; then
+                note "no merge-base between HEAD and $ref; set DOTFILES_TEST_BASE"
+                return 1
+            fi
+            return
+        fi
+    done
+    note "no origin/HEAD or origin/main; checking only uncommitted changes (set DOTFILES_TEST_BASE to include commits)"
+    echo HEAD
+}
+
+changed_files() {
+    local base
+    base="$(resolve_base)" || return 1
+    if ! git diff --name-only --no-renames "$base"; then
+        note "git diff against $base failed"
+        return 1
+    fi
+    git ls-files --others --exclude-standard
 }
 
 check_headers() {
@@ -108,7 +129,11 @@ main() {
     if [[ $# -gt 0 ]]; then
         changed=("$@")
     else
-        while IFS= read -r file; do changed+=("$file"); done < <(changed_files)
+        local files
+        files="$(changed_files)" || return 1
+        while IFS= read -r file; do
+            if [[ -n "$file" ]]; then changed+=("$file"); fi
+        done < <(sort -u <<< "$files")
     fi
     if [[ ${#changed[@]} -eq 0 ]]; then
         note "no changes found; nothing to test"
@@ -116,7 +141,7 @@ main() {
     fi
 
     for file in "${changed[@]}"; do
-        if matches_any "$file" 'tests/integration/*' 'tests/test_helper/*' ||
+        if matches_any "$file" "${DOCKER_PATTERNS[@]}" ||
             ! { is_unit_test_file "$file" || matches_any "$file" "${DOCKER_SKIP_PATTERNS[@]}"; }; then
             [[ $docker -eq 0 ]] && note "$file -> Docker suite"
             docker=1

@@ -65,8 +65,11 @@ The test must fail before the fix and pass after. Re-introducing the bug must ca
 ## Change-Based Test Selection
 
 `just test-changed` (`scripts/test_changed.sh`) collects changed files (since
-the merge-base with `origin/HEAD`, plus uncommitted and untracked files;
-override the base with `DOTFILES_TEST_BASE`) and maps them to tests:
+the merge-base with `origin/HEAD`, else `origin/main`, plus uncommitted and
+untracked files; override the base with `DOTFILES_TEST_BASE`) and maps them to
+tests. It exits non-zero when the base can't be resolved (a bad
+`DOTFILES_TEST_BASE`, or no merge-base with origin), and warns when there is no
+origin to diff against, since only uncommitted changes are checked then.
 
 - Each `tests/*.bats` declares what it exercises on a `# covers:` line of
   space-separated globs, where `*` also matches `/`
@@ -77,8 +80,12 @@ override the base with `DOTFILES_TEST_BASE`) and maps them to tests:
   Unclaimed docs, `.github/*`, `goss.yaml`, and integration tests need no unit
   tests.
 - The Docker suite runs unless every changed file is in a known
-  Docker-irrelevant area (`lib/`, `skills/`, `scripts/`, `agent/`, unit tests,
-  docs, `justfile`, `.github/`).
+  Docker-irrelevant area (`lib/`, `skills/`, `agent/`, unit tests and their
+  fixtures, docs, `.github/`, and the dev-only `scripts/doctor.sh`,
+  `scripts/perf_report.sh`, `scripts/test_changed.sh`). The exceptions in
+  `lib/` are `index.sh`, `path.sh`, and `platform.sh`: `bash_profile` runs them
+  in the container to set up the environment goss checks, so they always run
+  it. Other `lib/` files rely on CI to catch Linux-only breaks.
 
 `just test-changed --list` prints the plan without running it. When adding a
 test file, add its `# covers:` header; `tests/test_changed.bats` fails if a

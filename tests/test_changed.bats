@@ -36,7 +36,6 @@ fixture_plan() {
   assert_line "unit tests/fzf_lib.bats"
   refute_line "unit tests/commit_command.bats"
   refute_line "unit all"
-  assert_line "docker no"
 }
 
 @test "test_changed: a shared lib file runs the full unit suite" {
@@ -134,4 +133,64 @@ fixture_plan() {
   run bash -c 'cd "$1" && "$0"' "$SCRIPT" "$FIXTURE"
   assert_success
   assert_output --partial "nothing to test"
+}
+
+@test "test_changed: startup lib, justfile, and ansible-linked script changes run the Docker suite" {
+  for file in lib/index.sh lib/path.sh lib/platform.sh justfile scripts/dotfiles_remote_browser_open.sh scripts/dotfiles_local_browser_helper.sh; do
+    plan_for "$file"
+    assert_success
+    assert_line "docker yes"
+  done
+}
+
+@test "test_changed: other lib files and scripts the Docker suite never uses skip it" {
+  plan_for lib/fzf.sh lib/commands.sh scripts/test_changed.sh scripts/perf_report.sh
+  assert_success
+  assert_line "docker no"
+}
+
+@test "test_changed: detects committed changes since the merge-base with origin/main" {
+  make_fixture_repo
+  (
+    cd "$FIXTURE" &&
+      git update-ref refs/remotes/origin/main HEAD &&
+      echo '# edit' >> lib/b.sh &&
+      git -c user.name=t -c user.email=t@example.com commit -qam edit
+  )
+  fixture_plan
+  assert_success
+  assert_line "unit tests/b.bats"
+  refute_line "unit tests/a.bats"
+}
+
+@test "test_changed: fails when DOTFILES_TEST_BASE is not a commit" {
+  make_fixture_repo
+  echo '# edit' >> "$FIXTURE/lib/a.sh"
+  run bash -c 'cd "$1" && DOTFILES_TEST_BASE=nope "$0" --list' "$SCRIPT" "$FIXTURE"
+  assert_failure
+  assert_output --partial "DOTFILES_TEST_BASE 'nope' is not a commit"
+  refute_output --partial "nothing to test"
+}
+
+@test "test_changed: fails when HEAD shares no history with origin" {
+  make_fixture_repo
+  (
+    cd "$FIXTURE" &&
+      unrelated="$(git -c user.name=t -c user.email=t@example.com commit-tree "$(git mktree </dev/null)" -m other)" &&
+      git update-ref refs/remotes/origin/main "$unrelated"
+  )
+  echo '# edit' >> "$FIXTURE/lib/a.sh"
+  fixture_plan
+  assert_failure
+  assert_output --partial "no merge-base"
+  refute_output --partial "nothing to test"
+}
+
+@test "test_changed: warns that committed changes are skipped without an origin remote" {
+  make_fixture_repo
+  echo '# edit' >> "$FIXTURE/lib/a.sh"
+  fixture_plan
+  assert_success
+  assert_line "unit tests/a.bats"
+  assert_output --partial "checking only uncommitted changes"
 }
