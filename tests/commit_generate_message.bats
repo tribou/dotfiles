@@ -91,7 +91,7 @@ setup() {
 }
 
 @test "generate_message: returns 130 and emits no stdout when interrupted" {
-  run -130 --separate-stderr bash -c "
+  run -130 --separate-stderr with_default_sigint bash -c "
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/git.sh'

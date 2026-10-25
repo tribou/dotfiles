@@ -21,3 +21,10 @@ common_setup() {
     export -f "$_fn" 2>/dev/null || true
   done < <(declare -F | awk '{print $3}' | grep '^_dotfiles_')
 }
+
+# Run a command with SIGINT restored to its default disposition. Under
+# `bats --jobs`, tests run as background jobs that inherit an ignored SIGINT,
+# which bash cannot re-enable; an interactive terminal never ignores it.
+with_default_sigint() {
+  perl -e '$SIG{INT} = "DEFAULT"; exec @ARGV or die "exec failed: $!"' -- "$@"
+}

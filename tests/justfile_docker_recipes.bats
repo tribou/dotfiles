@@ -41,3 +41,11 @@ setup() {
   assert_success
 }
 
+
+@test "justfile: test-unit runs bats in parallel only when GNU parallel is available" {
+  block="$(sed -n '/^test-unit/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
+  echo "$block" | grep -q 'parallel --version'
+  echo "$block" | grep -q 'GNU parallel'
+  echo "$block" | grep -q -- '--jobs'
+  echo "$block" | grep -q 'DOTFILES_TEST_JOBS'
+}

@@ -27,6 +27,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Install GNU parallel
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq parallel
+
       - name: Run bash function tests
         run: just test-unit
 
