@@ -1,4 +1,27 @@
 #!/bin/bash
+# Log in via SSO. Without a local browser (SSH/remote session, or a Linux box
+# with no display) fall back to the device code flow: open the printed URL on
+# any device and enter the code. AWS_SSO_NO_BROWSER=1|0 forces the choice.
+function _aws_sso_login() {
+  local -a flags=()
+  local no_browser=0
+  if [[ -n ${AWS_SSO_NO_BROWSER:-} ]]; then
+    [[ $AWS_SSO_NO_BROWSER == 1 ]] && no_browser=1
+  elif [[ -n ${SSH_CONNECTION:-} || -n ${SSH_TTY:-} ]]; then
+    no_browser=1
+  elif [[ $(uname -s) == Linux && -z ${DISPLAY:-} && -z ${WAYLAND_DISPLAY:-} ]]; then
+    no_browser=1
+  fi
+  if ((no_browser)); then
+    flags=(--use-device-code --no-browser)
+  fi
+  aws sso login "$@" ${flags[@]+"${flags[@]}"}
+}
+
+function sso() {
+  _aws_sso_login --sso-session tribou "$@"
+}
+
 function aws-profile() {
   local profile
   profile=$(aws configure list-profiles | fzf) && export AWS_PROFILE="$profile"
@@ -10,7 +33,7 @@ function aws-profile() {
   fi
 
   if ! aws sts get-caller-identity | grep -q "SSO"; then
-    aws sso login
+    _aws_sso_login
   fi
 }
 
@@ -124,4 +147,3 @@ alias sb='supabase'
 alias setdotglob='shopt -s dotglob'
 alias survey='sudo nmap -sP 10.0.1.1/24'
 alias sb-profile='supabase-profile'
-alias sso='aws sso login --sso-session tribou'
