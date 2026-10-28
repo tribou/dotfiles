@@ -15,6 +15,7 @@ PS2=
 HISTCONTROL=ignorespace
 HISTFILE='$BATS_TEST_TMPDIR/history'
 HISTSIZE=1000
+HISTTIMEFORMAT='%F %T '
 set -o history
 . '$REPO_ROOT/lib/ai.sh'
 export DOTFILES_AI_BACKEND=claude
@@ -139,12 +140,72 @@ qq first question
 exit
 "
   assert_failure
-  [ ! -s "$BATS_TEST_TMPDIR/prompts" ]
-  if grep -qF 'first question' "$BATS_TEST_TMPDIR/prompts" 2>/dev/null
+  [ "$(grep -Fc 'first question' "$BATS_TEST_TMPDIR/prompts")" -eq 1 ]
+  if grep -qF 'second question' "$BATS_TEST_TMPDIR/prompts"
   then
     false
   fi
-  [ "$(printf '%s\n' "$stderr" | grep -Fc 'qq: question not in history (leading space?); run bare qq instead')" -eq 2 ]
+  [ "$(printf '%s\n' "$stderr" | grep -Fc 'qq: question not in history (leading space?); run bare qq instead')" -eq 1 ]
+}
+
+@test "qq: args form works when PROMPT_COMMAND entries are newline-joined" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  printf '%s\n' "PROMPT_COMMAND=\$'true\n_dotfiles_ai_track_history'" >>"$rcfile"
+  run_interactive_qq "$rcfile" "qq what is rebase
+exit
+"
+  assert_success
+  grep -qF 'what is rebase' "$BATS_TEST_TMPDIR/prompts"
+}
+
+@test "qq: whitespace-only args fall through to the prompt" {
+  local rcfile="$BATS_TEST_TMPDIR/qqrc"
+  write_qq_rcfile "$rcfile"
+  run_interactive_qq "$rcfile" "qq
+typed at the prompt
+exit
+"
+  assert_success
+  grep -qF 'typed at the prompt' "$BATS_TEST_TMPDIR/prompts"
+}
+
+@test "qq: sourced script can call qq with real arguments" {
+  run --separate-stderr bash -c '
+    . "$REPO_ROOT/lib/ai.sh"
+    export DOTFILES_AI_BACKEND=claude
+    claude() { printf "answer for: %s\n" "${!#}"; }
+    qq what is rebase
+  '
+  assert_success
+  assert_output --partial "what is rebase"
+}
+
+@test "qq: keeps a stopped job in the job table" {
+  run --separate-stderr bash -c '
+    . "$REPO_ROOT/lib/ai.sh"
+    export DOTFILES_AI_BACKEND=claude
+    claude() { printf answer; }
+    set -m
+    sleep 100 &
+    kill -STOP $!
+    _dotfiles_qq question
+    jobs
+    kill -9 %1
+  '
+  assert_output --partial "answer"
+  assert_output --partial "Stopped"
+}
+
+@test "qq: backend stdin is not the caller's stdin" {
+  run --separate-stderr bash -c '
+    . "$REPO_ROOT/lib/ai.sh"
+    export DOTFILES_AI_BACKEND=claude
+    claude() { IFS= read -r line; printf "answer read:%s\n" "$line"; }
+    printf "secret\n" | _dotfiles_qq question
+  '
+  assert_success
+  refute_output --partial "secret"
 }
 
 @test "qq: non-interactive calls join real arguments with spaces" {
@@ -319,6 +380,42 @@ printf ok
   assert_output ""
   refute_output --partial "noisy-backend-error"
   echo "$stderr" | grep -qF "qq: claude returned no answer"
+}
+
+@test "qq: backend output with a nonzero exit is not treated as an answer" {
+  run --separate-stderr bash -c '
+    . "$REPO_ROOT/lib/ai.sh"
+    export DOTFILES_AI_BACKEND=claude
+    claude() { printf "Credit balance is too low\n"; return 1; }
+    _dotfiles_qq question
+  '
+  assert_failure
+  assert_output ""
+  echo "$stderr" | grep -qF "qq: claude returned no answer"
+}
+
+@test "qq: timeout stops the backend process, not only its wrapper" {
+  mkdir -p "$BATS_TEST_TMPDIR/bin"
+  cat >"$BATS_TEST_TMPDIR/bin/claude" <<STUB
+#!/bin/bash
+printf '%s' "\$\$" >'$BATS_TEST_TMPDIR/backend.pid'
+exec sleep 10
+STUB
+  chmod +x "$BATS_TEST_TMPDIR/bin/claude"
+  run -124 --separate-stderr bash -c '
+    PATH="$1:$PATH"
+    . "$REPO_ROOT/lib/ai.sh"
+    export DOTFILES_AI_BACKEND=claude DOTFILES_QQ_TIMEOUT=1
+    _dotfiles_qq question
+  ' _ "$BATS_TEST_TMPDIR/bin"
+  local backend_pid
+  backend_pid=$(cat "$BATS_TEST_TMPDIR/backend.pid")
+  sleep 0.2
+  if kill -0 "$backend_pid" 2>/dev/null
+  then
+    kill "$backend_pid"
+    false
+  fi
 }
 
 @test "qq: timeout reports 124 and the resolved timeout" {

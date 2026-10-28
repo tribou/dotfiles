@@ -65,21 +65,6 @@ function _dotfiles_qq_timeout ()
   _dotfiles_ai_timeout DOTFILES_QQ_TIMEOUT 60
 }
 
-function _dotfiles_ai_bg_begin ()
-{
-  # Interactive bash prints "[1] <pid>" for background launches to the
-  # shell's own stderr, so hide fd 2 around the fork.
-  exec 7>&2 2>/dev/null
-}
-
-function _dotfiles_ai_bg_end ()
-{
-  # With job control bash also prints "[1]+ Done <command>" later; dropping
-  # the job from the table prevents it, and wait/kill still work by pid.
-  disown %+ 2>/dev/null
-  exec 2>&7 7>&-
-}
-
 function _dotfiles_ai_spinner_wait ()
 {
   local pid="$1"
@@ -107,37 +92,43 @@ function _dotfiles_ai_spinner_wait ()
     printf '%s\n' "$label" >&2
   fi
 
-  while kill -0 "$pid" 2> /dev/null
-  do
-    if [ "$interrupted" -eq 1 ]
-    then
-      kill "$pid" 2> /dev/null
-      [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
-      trap - INT
-      return 130
-    fi
+  # Interactive bash reports "[1]+ Done ..." on the shell's stderr while this
+  # loop runs; silence fd 2 here and draw the spinner on a saved copy (fd 9).
+  {
+    while kill -0 "$pid" 2> /dev/null
+    do
+      if [ "$interrupted" -eq 1 ]
+      then
+        kill "$pid" 2> /dev/null
+        wait "$pid"
+        [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&9
+        trap - INT
+        return 130
+      fi
 
-    if [ "$max_iterations" -gt 0 ] && [ "$iterations" -ge "$max_iterations" ]
-    then
-      kill "$pid" 2> /dev/null
-      [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
-      trap - INT
-      return 124
-    fi
+      if [ "$max_iterations" -gt 0 ] && [ "$iterations" -ge "$max_iterations" ]
+      then
+        kill "$pid" 2> /dev/null
+        wait "$pid"
+        [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&9
+        trap - INT
+        return 124
+      fi
 
-    if [ "$is_tty" -eq 1 ]
-    then
-      printf '\r%s %s' "${frames[frame_index]}" "$label" >&2
-      frame_index=$(( (frame_index + 1) % 10 ))
-    fi
+      if [ "$is_tty" -eq 1 ]
+      then
+        printf '\r%s %s' "${frames[frame_index]}" "$label" >&9
+        frame_index=$(( (frame_index + 1) % 10 ))
+      fi
 
-    sleep 0.1
-    iterations=$(( iterations + 1 ))
-  done
+      sleep 0.1
+      iterations=$(( iterations + 1 ))
+    done
 
-  [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&2
+    [ "$is_tty" -eq 1 ] && printf '\r\033[K' >&9
 
-  wait "$pid"
+    wait "$pid"
+  } 9>&2 2> /dev/null
   local status=$?
   trap - INT
   return "$status"
@@ -156,13 +147,6 @@ function _dotfiles_qq_history_question ()
   then
     return 2
   fi
-
-  # A frozen snapshot (hook removed from PROMPT_COMMAND) must fail closed:
-  # a stale line-change comparison could otherwise resend the previous qq.
-  case ";${PROMPT_COMMAND:-};" in
-    *";_dotfiles_ai_track_history;"*) ;;
-    *) return 2 ;;
-  esac
 
   # The current command was recorded only when it replaced the last entry.
   local history_line
@@ -193,6 +177,9 @@ function _dotfiles_qq ()
       printf '%s\n' 'qq: question not in history (leading space?); run bare qq instead' >&2
       return 1
     fi
+    # Mark this entry used so a later unrecorded qq can never resend it, even
+    # if the prompt hook stops refreshing the snapshot.
+    _dotfiles_ai_track_history
   else
     question="$*"
   fi
@@ -229,34 +216,34 @@ $question"
   mkdir "$workdir" || { rm -rf "$tmpdir"; return 1; }
   outfile="$tmpdir/answer"
 
-  _dotfiles_ai_bg_begin
-  case "$backend" in
-    opencode)
-      (
-        cd "$workdir" || exit 1
-        OPENCODE_PERMISSION='"deny"' \
-          opencode run --pure --model "$model" "$wrapped_question" \
-          >"$outfile" 2>/dev/null
-      ) &
-      ;;
-    agy)
-      (
-        cd "$workdir" || exit 1
-        agy -p "$wrapped_question" --model "$model" \
-          >"$outfile" 2>/dev/null
-      ) &
-      ;;
-    *)
-      (
-        cd "$workdir" || exit 1
-        claude -p --model "$model" --tools "" \
-          --disallowedTools 'mcp__*' --safe-mode --no-session-persistence \
-          -- "$wrapped_question" >"$outfile" 2>/dev/null
-      ) &
-      ;;
-  esac
+  # The group redirect hides interactive bash's "[1] <pid>" launch notice.
+  {
+    (
+      cd "$workdir" || exit 1
+      # Run the backend as this subshell's child and forward TERM to it, so a
+      # timeout or Ctrl-C stops the backend itself, not just this wrapper.
+      case "$backend" in
+        opencode)
+          OPENCODE_PERMISSION='"deny"' \
+            opencode run --pure --model "$model" "$wrapped_question" \
+            >"$outfile" 2>/dev/null </dev/null &
+          ;;
+        agy)
+          agy -p "$wrapped_question" --model "$model" \
+            >"$outfile" 2>/dev/null </dev/null &
+          ;;
+        *)
+          claude -p --model "$model" --tools "" \
+            --disallowedTools 'mcp__*' --safe-mode --no-session-persistence \
+            -- "$wrapped_question" >"$outfile" 2>/dev/null </dev/null &
+          ;;
+      esac
+      local backend_pid=$!
+      trap 'kill "$backend_pid" 2>/dev/null' TERM
+      wait "$backend_pid"
+    ) &
+  } 2>/dev/null
   local pid=$!
-  _dotfiles_ai_bg_end
 
   local backend_label
   backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"
@@ -317,5 +304,10 @@ then
   fi
 fi
 
-shopt -s expand_aliases
-alias qq='_dotfiles_qq #'
+if [[ $- == *i* ]]
+then
+  alias qq='_dotfiles_qq #'
+else
+  # Scripts don't expand aliases or keep history, so pass real arguments.
+  function qq () { _dotfiles_qq "$@"; }
+fi

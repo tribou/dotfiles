@@ -84,26 +84,28 @@ function _dotfiles_commit_generate_message ()
   local outfile
   outfile=$(mktemp)
 
-  _dotfiles_ai_bg_begin
-  case "$backend" in
-    opencode)
-      git diff --cached | head -c 100000 \
-        | opencode run --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
-          > "$outfile" 2> /dev/null &
-      ;;
-    agy)
-      git diff --cached | head -c 100000 \
-        | agy --add-dir "$PWD" --model "$model" --print "$(_dotfiles_commit_prompt "$ticket")" \
-          > "$outfile" &
-      ;;
-    *)
-      git diff --cached | head -c 100000 \
-        | claude -p --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
-          > "$outfile" &
-      ;;
-  esac
+  # The group redirect hides interactive bash's "[1] <pid>" launch notice;
+  # backends that report errors on stderr get the real stderr back via fd 9.
+  {
+    case "$backend" in
+      opencode)
+        git diff --cached | head -c 100000 \
+          | opencode run --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
+            > "$outfile" 2> /dev/null &
+        ;;
+      agy)
+        git diff --cached | head -c 100000 \
+          | agy --add-dir "$PWD" --model "$model" --print "$(_dotfiles_commit_prompt "$ticket")" \
+            > "$outfile" 2>&9 9>&- &
+        ;;
+      *)
+        git diff --cached | head -c 100000 \
+          | claude -p --model "$model" "$(_dotfiles_commit_prompt "$ticket")" \
+            > "$outfile" 2>&9 9>&- &
+        ;;
+    esac
+  } 9>&2 2> /dev/null
   local pid=$!
-  _dotfiles_ai_bg_end
 
   local backend_label
   backend_label="$(printf '%s' "$backend" | head -c 1 | tr '[:lower:]' '[:upper:]')$(printf '%s' "$backend" | tail -c +2)"

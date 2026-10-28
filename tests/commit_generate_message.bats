@@ -69,6 +69,54 @@ setup() {
   echo "$stderr" | grep -qF 'Asking Claude for a commit message...'
 }
 
+@test "generate_message: fails when claude prints output but exits non-zero" {
+  run --separate-stderr bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
+    . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
+    git() { echo 'mock diff'; }
+    claude() { echo 'Credit balance is too low'; return 1; }
+    _dotfiles_commit_generate_message ''
+  "
+  assert_failure
+  assert_output ""
+}
+
+@test "generate_message: shows claude's stderr to the user" {
+  run --separate-stderr bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
+    . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
+    git() { echo 'mock diff'; }
+    claude() { echo 'not logged in' >&2; echo 'feat: thing'; }
+    _dotfiles_commit_generate_message ''
+  "
+  assert_success
+  assert_output "feat: thing"
+  echo "$stderr" | grep -qF 'not logged in'
+}
+
+@test "generate_message: keeps a stopped job in the job table" {
+  run --separate-stderr bash -c "
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/ai.sh'
+    . '$REPO_ROOT/lib/git.sh'
+    export DOTFILES_AI_BACKEND=claude
+    git() { echo 'mock diff'; }
+    claude() { echo 'feat: thing'; }
+    set -m
+    sleep 100 &
+    kill -STOP \$!
+    _dotfiles_commit_generate_message ''
+    jobs
+    kill -9 %1
+  "
+  assert_output --partial "feat: thing"
+  assert_output --partial "Stopped"
+}
+
 @test "generate_message: fails when claude returns empty output" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
