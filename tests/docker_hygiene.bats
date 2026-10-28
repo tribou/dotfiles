@@ -1,3 +1,4 @@
+# covers: Dockerfile docker-compose.yml .dockerignore
 setup() {
   load 'test_helper/common_setup'
   common_setup

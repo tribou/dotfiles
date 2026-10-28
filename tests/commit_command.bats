@@ -1,3 +1,4 @@
+# covers: lib/git.sh lib/ai.sh
 bats_require_minimum_version 1.5.0
 
 setup() {

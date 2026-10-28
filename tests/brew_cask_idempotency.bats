@@ -1,3 +1,4 @@
+# covers: roles/dotfiles/tasks/brew_casks.yml
 setup() {
   load 'test_helper/common_setup'
   common_setup

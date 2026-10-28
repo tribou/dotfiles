@@ -1,3 +1,4 @@
+# covers: lib/git.sh lib/ai.sh
 bats_require_minimum_version 1.5.0
 
 setup() {
@@ -99,7 +100,7 @@ setup() {
 }
 
 @test "generate_message: returns 130 and emits no stdout when interrupted" {
-  run -130 --separate-stderr bash -c "
+  run -130 --separate-stderr with_default_sigint bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/ai.sh'
     . '$REPO_ROOT/lib/git.sh'
@@ -173,7 +174,7 @@ setup() {
     _dotfiles_commit_generate_message ''
   "
   assert_success
-  assert_output "gemini-3.7-flash-low"
+  assert_output "gemini-3.8-flash-low"
 }
 
 @test "generate_message: agy backend fails when agy is not on PATH" {

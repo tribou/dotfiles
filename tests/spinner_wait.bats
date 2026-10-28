@@ -1,3 +1,4 @@
+# covers: lib/ai.sh
 bats_require_minimum_version 1.5.0
 
 setup() {
@@ -73,7 +74,7 @@ setup() {
 }
 
 @test "spinner_wait: SIGINT kills the watched pid and returns 130 with no stdout output" {
-  run -130 --separate-stderr bash -c "
+  run -130 --separate-stderr with_default_sigint bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/ai.sh'
     sleep 5 &

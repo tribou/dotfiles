@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# covers: skills/agent-usage-audit/* tests/fixtures/agent-usage-audit/*
 
 setup() {
   load 'test_helper/common_setup'
@@ -996,10 +997,13 @@ EOF
 }
 
 stub_ccusage_timeout() {
+  # Sleeps past the shortened timeout, then prints a valid payload: if the
+  # timeout is not enforced, ccusage wins and the fallback assertion fails.
   mkdir -p "$BATS_TEST_TMPDIR/bin"
   cat > "$BATS_TEST_TMPDIR/bin/ccusage" <<'EOF'
 #!/usr/bin/env bash
-sleep 31
+sleep 3
+echo '{"sessions":[{"sessionId":"sess-cc-0001","inputTokens":1,"outputTokens":2,"cacheReadTokens":3,"cacheCreationTokens":4,"totalCost":1.25,"modelsUsed":["claude-opus-5"]}]}'
 EOF
   chmod +x "$BATS_TEST_TMPDIR/bin/ccusage"
   export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
@@ -1168,6 +1172,7 @@ EOF
 
   run env AGENT_USAGE_AUDIT_HARNESS="claude-code" \
     AGENT_USAGE_AUDIT_SESSION_ID="sess-cc-0001" \
+    AGENT_USAGE_AUDIT_CCUSAGE_TIMEOUT_MS=200 \
     bun "$SCRIPT" probe --stage issue-to-plan
   [ "$status" -eq 0 ]
   [ "$(json_field source)" = "builtin-claude-code" ]

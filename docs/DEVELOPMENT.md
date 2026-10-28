@@ -146,7 +146,7 @@ Many commands use fzf for interactive selection when called without arguments:
 - `gbd` — delete branch
 - `npm-run` / `nr` — select npm script
 - `nu` — upgrade npm package
-- `aws-profile` — select AWS profile
+- `aws-profile` — select AWS profile and SSO login; over SSH or with no display it uses the device code flow (`--use-device-code --no-browser`: open the printed URL on any device and enter the code); `AWS_SSO_NO_BROWSER=1|0` forces the choice, and `sso` follows the same logic
 
 ## Tmux-Aware Execution
 

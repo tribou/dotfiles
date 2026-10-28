@@ -1,3 +1,4 @@
+# covers: lib/replace.sh
 # tests/replace.bats
 
 setup() {

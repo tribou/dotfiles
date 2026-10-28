@@ -1,3 +1,4 @@
+# covers: agent/setup-user.sh lib/agent.sh gitconfig
 # tests/agent_setup_user.bats
 setup() {
   load 'test_helper/common_setup'

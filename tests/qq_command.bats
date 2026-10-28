@@ -1,4 +1,5 @@
 # shellcheck disable=SC2016
+# covers: lib/ai.sh
 bats_require_minimum_version 1.5.0
 
 setup() {
@@ -233,7 +234,7 @@ arg=<-->"
   assert_success
   assert_output --partial "arg=-p"
   assert_output --partial "arg=--model
-arg=gemini-3.7-flash-low"
+arg=gemini-3.8-flash-low"
   refute_output --partial "arg=--add-dir"
   caller=$(printf '%s\n' "$output" | sed -n 's/^caller=//p')
   cwd=$(printf '%s\n' "$output" | sed -n 's/^cwd=//p')
@@ -332,7 +333,7 @@ printf ok
 }
 
 @test "qq: Ctrl-C reports canceled and returns 130" {
-  run -130 --separate-stderr bash -c '
+  run -130 --separate-stderr with_default_sigint bash -c '
     . "$REPO_ROOT/lib/ai.sh"
     export DOTFILES_AI_BACKEND=claude
     claude() { command sleep 10; printf late; }

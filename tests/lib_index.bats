@@ -1,3 +1,4 @@
+# covers: lib/* tests/test_helper/*
 # tests/lib_index.bats
 setup() {
   load 'test_helper/common_setup'

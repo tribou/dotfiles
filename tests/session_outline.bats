@@ -1,3 +1,4 @@
+# covers: skills/session-outline/*
 setup() {
   load 'test_helper/common_setup'
   common_setup

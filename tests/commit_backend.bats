@@ -1,3 +1,4 @@
+# covers: lib/git.sh lib/ai.sh bash_profile
 bats_require_minimum_version 1.5.0
 
 setup() {
@@ -74,10 +75,10 @@ setup() {
   assert_output "opencode-go/kimi-k2.7-code"
 }
 
-@test "ai_model: agy backend uses Gemini 3.7 Flash (Low)" {
+@test "ai_model: agy backend uses Gemini 3.8 Flash (Low)" {
   run _dotfiles_ai_model agy
   assert_success
-  assert_output "gemini-3.7-flash-low"
+  assert_output "gemini-3.8-flash-low"
 }
 
 @test "ai_model: deprecated commit model warns on stderr only" {
@@ -194,7 +195,7 @@ setup() {
   "
   assert_success
   assert_output --partial "backend:    agy"
-  assert_output --partial "model:      gemini-3.7-flash-low"
+  assert_output --partial "model:      gemini-3.8-flash-low"
   assert_output --partial "available:  yes"
 }
 

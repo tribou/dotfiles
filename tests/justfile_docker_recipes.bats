@@ -1,3 +1,4 @@
+# covers: justfile
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -41,3 +42,16 @@ setup() {
   assert_success
 }
 
+
+@test "justfile: test-unit runs bats in parallel only when GNU parallel is available" {
+  block="$(sed -n '/^test-unit/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
+  echo "$block" | grep -q 'parallel --version'
+  echo "$block" | grep -q 'GNU parallel'
+  echo "$block" | grep -q -- '--jobs'
+  echo "$block" | grep -q 'DOTFILES_TEST_JOBS'
+}
+
+@test "justfile: default picker matches recipe names, not descriptions" {
+  block="$(sed -n '/^default:/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
+  echo "$block" | grep -q -- 'fzf .*--nth=1'
+}

@@ -44,7 +44,7 @@ function _dotfiles_ai_model ()
 
   case "$backend" in
     opencode) printf '%s' 'opencode-go/kimi-k2.7-code' ;;
-    agy) printf '%s' 'gemini-3.7-flash-low' ;;
+    agy) printf '%s' 'gemini-3.8-flash-low' ;;
     *) printf '%s' 'haiku' ;;
   esac
 }

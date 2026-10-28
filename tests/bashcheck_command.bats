@@ -1,3 +1,4 @@
+# covers: lib/commands.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup
