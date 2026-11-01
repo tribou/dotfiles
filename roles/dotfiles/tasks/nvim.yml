@@ -26,14 +26,27 @@
   failed_when: false
   check_mode: false
 
+# Interpreter discovery can land on Apple's /usr/bin/python3 (pip 21.x), whose
+# pip predates --break-system-packages (pip 23.0.1) and rejects it. That Python
+# isn't externally managed, so the flag is only needed where pip knows it.
+- name: Check whether the target pip supports --break-system-packages
+  ansible.builtin.command: "{{ ansible_facts.python.executable }} -m pip install --help"
+  register: dotfiles_pip_help
+  changed_when: false
+  check_mode: false
+
+- name: Set pip user-install args
+  ansible.builtin.set_fact:
+    dotfiles_pip_user_args: "--user{{ ' --break-system-packages' if '--break-system-packages' in dotfiles_pip_help.stdout else '' }}"
+
 - name: Install packaging library (required by ansible.builtin.pip)
-  ansible.builtin.command: "{{ ansible_facts.python.executable }} -m pip install --user --break-system-packages packaging"
+  ansible.builtin.command: "{{ ansible_facts.python.executable }} -m pip install {{ dotfiles_pip_user_args }} packaging"
   when: dotfiles_python_packaging_check.rc != 0
 
 - name: Install pynvim (Python provider)
   ansible.builtin.pip:
     name: pynvim
-    extra_args: "--user --break-system-packages"
+    extra_args: "{{ dotfiles_pip_user_args }}"
     state: "{{ 'latest' if dotfiles_state == 'latest' else 'present' }}"
 
 - name: Install neovim gem (Ruby provider)
