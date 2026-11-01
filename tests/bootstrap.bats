@@ -78,7 +78,7 @@ setup() {
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*lazygit[[:space:]]*$'
 }
 
-@test "role: macOS formulae keep only core (alacritty, reattach, tmux-mem-cpu-load, bash-completion)" {
+@test "role: macOS formulae keep only core (reattach, tmux-mem-cpu-load, bash-completion)" {
   local block
   block="$(awk '/^dotfiles_brew_macos_formulae:/,/^dotfiles_brew_macos_casks:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
   for opt in rename ngrok tfenv tor vimpager renameutils; do
@@ -86,7 +86,11 @@ setup() {
       fail "optional macOS formula '$opt' must not be in dotfiles_brew_macos_formulae"
     fi
   done
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'
+  # Homebrew disabled the alacritty cask on 2026-09-01 (fails_gatekeeper_check),
+  # so installing it fails the whole macOS formulae task and halts the play.
+  if echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'; then
+    fail "alacritty must not be in dotfiles_brew_macos_formulae (Homebrew cask disabled)"
+  fi
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*reattach-to-user-namespace[[:space:]]*$'
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux-mem-cpu-load[[:space:]]*$'
   echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*bash-completion[[:space:]]*$'

@@ -48,9 +48,10 @@ dotfiles_brew_linux:
   - gcc
 
 # macOS-only brew formulae
+# alacritty is intentionally absent: Homebrew disabled its cask on 2026-09-01
+# (fails_gatekeeper_check). alacritty.toml is still linked for existing installs.
 dotfiles_brew_macos_formulae:
   - bash-completion
-  - alacritty
   - reattach-to-user-namespace
   - tmux-mem-cpu-load
 
