@@ -221,6 +221,8 @@ syntax enable
 " Opt in to OSC 52 explicitly and route both + and * through the clipboard
 " selection; paste reads the local yank register instead of round-tripping
 " through the terminal, which avoids nvim's multi-second OSC 52 read timeout.
+" Paste must return [lines, regtype]: a bare list makes nvim guess the type, and
+" a single line guesses charwise, so yy + p would paste at the cursor.
 set clipboard=unnamedplus
 let g:clipboard = {
   \ 'name': 'OSC 52',
@@ -229,8 +231,8 @@ let g:clipboard = {
   \    '*': v:lua.require'vim.ui.clipboard.osc52'.copy('+'),
   \  },
   \ 'paste': {
-  \    '+': {-> getreg('0', 1, 1)},
-  \    '*': {-> getreg('0', 1, 1)},
+  \    '+': {-> [getreg('0', 1, 1), getregtype('0')]},
+  \    '*': {-> [getreg('0', 1, 1), getregtype('0')]},
   \  },
   \ }
 set conceallevel=0
