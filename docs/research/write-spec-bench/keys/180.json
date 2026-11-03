@@ -1,0 +1,98 @@
+{
+  "key": "180",
+  "source": "S12-180",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "identifier",
+      "need": "must",
+      "text": "Executable bun TypeScript script at skills/agent-usage-audit/scripts/agent-usage-audit emitting one normalized JSON audit record on stdout.",
+      "exact": "skills/agent-usage-audit/scripts/agent-usage-audit"
+    },
+    {
+      "id": "k2",
+      "type": "requirement",
+      "need": "must",
+      "text": "Never fabricate or estimate numbers; failures (missing store/session, unreadable, dropped rows) emit source \"unavailable\" with honest reason."
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "Probe order: `ccusage session --id <id> --json` if installed, then built-in adapters, then unavailable record."
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "agy: usage at gen_metadata.data→#1→#4 (#2,#3,#5,#9,#10); model #1→#19 fallback #21; drop rows where #3≠#9+#10; zero verified→unavailable."
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "Claude Code adapter dedups assistant turns by (message.id, requestId) pair; real transcript had 75 lines for 32 pairs."
+    },
+    {
+      "id": "k6",
+      "type": "identifier",
+      "need": "must",
+      "text": "Stores: ~/.local/share/opencode/opencode.db session table; ~/.claude/projects/<slug>/<session>.jsonl; ~/.gemini/antigravity-cli/conversations/<uuid>.db."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "may",
+      "text": "Detect harness via env markers (OPENCODE=1, Claude Code markers) and store presence; skills hold no harness logic."
+    },
+    {
+      "id": "k8",
+      "type": "requirement",
+      "need": "must",
+      "text": "model_breakdowns array [{model, tokens, cost_usd}] per model; opencode extracts id from JSON model strings; map ccusage modelBreakdowns."
+    },
+    {
+      "id": "k9",
+      "type": "constraint",
+      "need": "must",
+      "text": "Bun + TypeScript only, no build step; no npm, pip, jq, or sqlite3 binary; use bun:sqlite, open stores read-only."
+    },
+    {
+      "id": "k10",
+      "type": "requirement",
+      "need": "must",
+      "text": "Subagent usage rolled into parent totals with per-child `children` array: Claude isSidechain turns, opencode parent_id sessions."
+    },
+    {
+      "id": "k11",
+      "type": "requirement",
+      "need": "must",
+      "text": "Shared record fields: schema, stage, harness, session id, source, models, model_breakdowns, tokens, cost passthrough, children, timestamp."
+    },
+    {
+      "id": "k12",
+      "type": "requirement",
+      "need": "must",
+      "text": "Tokens: input, output, cache_read, cache_write, reasoning, total; output includes reasoning; total = input+output+cache_read+cache_write."
+    },
+    {
+      "id": "k13",
+      "type": "requirement",
+      "need": "must",
+      "text": "Environment overrides for harness, session id, and every store path so adapters are testable against fixtures."
+    },
+    {
+      "id": "k14",
+      "type": "non-goal",
+      "need": "must",
+      "text": "No price-list cost computation (passthrough only), no hook capture, no GitHub posting/ledger/rendering (#181), no skill wiring (#182)."
+    },
+    {
+      "id": "k15",
+      "type": "requirement",
+      "need": "must",
+      "text": "bats tests: committed bun generator builds fixture DBs (*.db gitignored); dedup, sidechain, drift, model_breakdowns, unavailable per harness; just test-unit/test."
+    }
+  ]
+}

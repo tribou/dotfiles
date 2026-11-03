@@ -1,0 +1,39 @@
+{
+  "key": "S3",
+  "source": "S3",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "identifier",
+      "need": "must",
+      "text": "The new command is named ghv.",
+      "exact": "ghv"
+    },
+    {
+      "id": "k2",
+      "type": "constraint",
+      "need": "must",
+      "text": "The browsing interface must use fzf.",
+      "exact": "fzf"
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "Show all issues and PRs together in one combined list in fzf."
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "Selecting an entry runs the view command for that item's type (issue or PR)."
+    },
+    {
+      "id": "k5",
+      "type": "open",
+      "need": "may",
+      "text": "It's unclear what 'all' covers: open vs closed states, which repo, and any result limits."
+    }
+  ]
+}
