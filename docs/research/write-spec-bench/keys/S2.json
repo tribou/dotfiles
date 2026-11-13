@@ -1,0 +1,26 @@
+{
+  "key": "S2",
+  "source": "S2",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "requirement",
+      "need": "must",
+      "text": "Remove the old docker-machine functions from commands.sh."
+    },
+    {
+      "id": "k2",
+      "type": "identifier",
+      "need": "must",
+      "text": "Target file is commands.sh.",
+      "exact": "commands.sh"
+    },
+    {
+      "id": "k3",
+      "type": "evidence",
+      "need": "may",
+      "text": "docker-machine was archived in 2021, so the functions are obsolete."
+    }
+  ]
+}

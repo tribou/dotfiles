@@ -1,0 +1,98 @@
+{
+  "key": "181",
+  "source": "S12-181",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "constraint",
+      "need": "must",
+      "text": "Consumes #180's normalized usage record shape; no harness-specific logic here, that stays in #180 adapters."
+    },
+    {
+      "id": "k2",
+      "type": "requirement",
+      "need": "must",
+      "text": "One '🤖 Agent usage' comment, found only by <!-- BEGIN/END AGENT USAGE --> markers; never by position, --edit-last, or plan comment."
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "Never write usage into issue bodies, PR descriptions, or the plan comment."
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "One ledger record per (session_id, stage), refreshed in place; never delete others; order by stage, then timestamp."
+    },
+    {
+      "id": "k5",
+      "type": "identifier",
+      "need": "must",
+      "text": "Table columns: Stage, Session, Harness, Model, Input, Output, Cache Read, Cache Write, Total, Source.",
+      "exact": "| Stage | Session | Harness | Model | Input | Output | Cache Read | Cache Write | Total | Source |"
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "Multi-model sessions (from model_breakdowns) render one table row per model with that model's divided tokens."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "must",
+      "text": "Table shows rolled-up subagent tokens; JSON keeps a children array (session id, model, tokens)."
+    },
+    {
+      "id": "k8",
+      "type": "requirement",
+      "need": "must",
+      "text": "Table plus totals row above a collapsed <details> holding ledger JSON in a ```json fence; table regenerated from JSON."
+    },
+    {
+      "id": "k9",
+      "type": "requirement",
+      "need": "must",
+      "text": "Rows with source 'unavailable' render em-dashes, not zeros, and are left out of totals."
+    },
+    {
+      "id": "k10",
+      "type": "requirement",
+      "need": "must",
+      "text": "Ledger JSON parses back out of the rendered body; missing or unparseable JSON gives an empty ledger, not an error."
+    },
+    {
+      "id": "k11",
+      "type": "constraint",
+      "need": "must",
+      "text": "Create or PATCH via gh api repos/{owner}/{repo}/issues/{n}/comments for issue:N and pr:M; no local ledger state."
+    },
+    {
+      "id": "k12",
+      "type": "requirement",
+      "need": "must",
+      "text": "--dry-run mode prints the comment body without posting."
+    },
+    {
+      "id": "k13",
+      "type": "constraint",
+      "need": "must",
+      "text": "GitHub's 65,536-character comment limit is a reported hard error; never trim or summarize the ledger."
+    },
+    {
+      "id": "k14",
+      "type": "non-goal",
+      "need": "must",
+      "text": "No price-list cost computation (pass through reported cost only); no aggregation dashboard."
+    },
+    {
+      "id": "k15",
+      "type": "requirement",
+      "need": "must",
+      "text": "Tests: ledger, table, round-trip, and stubbed gh on PATH (create, PATCH, skip plan comment, dry-run); run just test-unit and just test."
+    }
+  ]
+}

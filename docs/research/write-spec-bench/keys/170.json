@@ -1,0 +1,99 @@
+{
+  "key": "170",
+  "source": "S9",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "requirement",
+      "need": "must",
+      "text": "Decision: don't adopt GitHub stacked PRs; use native sub-issues plus an ordered index in the parent issue."
+    },
+    {
+      "id": "k2",
+      "type": "constraint",
+      "need": "must",
+      "text": "This issue is a decision record that constrains #163's R5 split recipe; it implements nothing itself."
+    },
+    {
+      "id": "k3",
+      "type": "non-goal",
+      "need": "may",
+      "text": "Stacked PRs don't raise or work around GitHub's 65,536-character body cap; the cap only triggers splitting."
+    },
+    {
+      "id": "k4",
+      "type": "evidence",
+      "need": "must",
+      "text": "Only real pain is losing plan→PR mapping; waiting, hand-rebasing, and blocked reviewers aren't pain points."
+    },
+    {
+      "id": "k5",
+      "type": "evidence",
+      "need": "may",
+      "text": "Stacks: public preview, needs gh-stack extension, strict bottom-up merge, merge-queue support still rolling out."
+    },
+    {
+      "id": "k6",
+      "type": "constraint",
+      "need": "may",
+      "text": "Assumes split layers are largely independent; code-dependent layers would strengthen the case for stacks."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "must",
+      "text": "R1: From the parent issue, all implementing PRs, their execution order, and open/closed state are discoverable."
+    },
+    {
+      "id": "k8",
+      "type": "requirement",
+      "need": "must",
+      "text": "R2: Split recipe files N sub-issues parented to the original issue, in execution order, via gh issue edit.",
+      "exact": "gh issue edit <parent> --add-sub-issue"
+    },
+    {
+      "id": "k9",
+      "type": "requirement",
+      "need": "must",
+      "text": "R3: Parent body has an authoritative '## Execution order' checklist listing sub-issues in order with their PRs.",
+      "exact": "## Execution order"
+    },
+    {
+      "id": "k10",
+      "type": "requirement",
+      "need": "must",
+      "text": "R4: Each sub-issue gets a normal draft PR based on main with 'Closes #<sub-issue>'; no PR-to-PR targeting."
+    },
+    {
+      "id": "k11",
+      "type": "constraint",
+      "need": "must",
+      "text": "R5: No dependency on github/gh-stack, stacks REST/GraphQL, or stack webhooks; no gh extension install in bootstrap."
+    },
+    {
+      "id": "k12",
+      "type": "requirement",
+      "need": "must",
+      "text": "R6: Record revisit trigger: stacks GA AND (dependent layering routine OR wait/rebase costs seen); only reopens evaluation."
+    },
+    {
+      "id": "k13",
+      "type": "non-goal",
+      "need": "must",
+      "text": "No bespoke stacking substitute; not implementing #163 R1/R5/R10 or fixing the wc -c defect."
+    },
+    {
+      "id": "k14",
+      "type": "non-goal",
+      "need": "may",
+      "text": "Not changing dotfiles-repo PR practice; decision targets portable skills used in other repos."
+    },
+    {
+      "id": "k15",
+      "type": "requirement",
+      "need": "must",
+      "text": "Verify in #163 R5 work via tabletop benches (docs/research/*-bench/): order, checklist mismatch detected, gh-stack use fails."
+    }
+  ]
+}

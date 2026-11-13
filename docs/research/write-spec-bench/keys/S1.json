@@ -1,0 +1,80 @@
+{
+  "key": "S1",
+  "source": "S1",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "requirement",
+      "need": "must",
+      "text": "Persist search page filters in localStorage so users don't lose them."
+    },
+    {
+      "id": "k2",
+      "type": "identifier",
+      "need": "must",
+      "text": "Use browser localStorage as the storage mechanism.",
+      "exact": "localStorage"
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "Store all filters every time any filter changes."
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "Restore saved filters when the user returns to the search page."
+    },
+    {
+      "id": "k5",
+      "type": "constraint",
+      "need": "may",
+      "text": "Probably implement as a reusable hook (suggested, not decided)."
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "Add unit tests for the filter persistence."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "must",
+      "text": "Add end-to-end tests for the filter persistence."
+    },
+    {
+      "id": "k8",
+      "type": "requirement",
+      "need": "must",
+      "text": "Add analytics for the feature; events and details unspecified."
+    },
+    {
+      "id": "k9",
+      "type": "requirement",
+      "need": "must",
+      "text": "Write documentation for the feature."
+    },
+    {
+      "id": "k10",
+      "type": "requirement",
+      "need": "must",
+      "text": "Add error handling, e.g. for storage failures; specifics unspecified."
+    },
+    {
+      "id": "k11",
+      "type": "open",
+      "need": "must",
+      "text": "'Works everywhere' is undefined: which browsers, devices, or environments must be supported?"
+    },
+    {
+      "id": "k12",
+      "type": "open",
+      "need": "may",
+      "text": "Which analytics events to track, and what docs location and format to use, are unspecified."
+    }
+  ]
+}

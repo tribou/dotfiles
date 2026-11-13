@@ -1,0 +1,99 @@
+{
+  "key": "S10",
+  "source": "S10",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "requirement",
+      "need": "must",
+      "text": "Make mise the primary package manager for runtimes, language-level global packages, and Homebrew-managed formulae."
+    },
+    {
+      "id": "k2",
+      "type": "constraint",
+      "need": "must",
+      "text": "Use mise tool backends for CLIs that need version switching."
+    },
+    {
+      "id": "k3",
+      "type": "constraint",
+      "need": "must",
+      "text": "Use mise's built-in Homebrew bootstrap manager for packages that still need Homebrew formula artifacts."
+    },
+    {
+      "id": "k4",
+      "type": "constraint",
+      "need": "must",
+      "text": "Keep the existing Homebrew cask flow; don't move casks to mise."
+    },
+    {
+      "id": "k5",
+      "type": "evidence",
+      "need": "must",
+      "text": "Default Node, Python, and Ruby packages are currently managed outside mise-config.toml."
+    },
+    {
+      "id": "k6",
+      "type": "identifier",
+      "need": "must",
+      "text": "The mise config file is mise-config.toml.",
+      "exact": "mise-config.toml"
+    },
+    {
+      "id": "k7",
+      "type": "evidence",
+      "need": "must",
+      "text": "Homebrew currently owns a broader package set and bootstraps Ansible before mise is installed."
+    },
+    {
+      "id": "k8",
+      "type": "requirement",
+      "need": "must",
+      "text": "Move default package behavior (Node/Python/Ruby global packages) into mise TOML config."
+    },
+    {
+      "id": "k9",
+      "type": "evidence",
+      "need": "may",
+      "text": "Mise deprecates default Python package files: warnings in 2026.11.0, removal in 2027.11.0."
+    },
+    {
+      "id": "k10",
+      "type": "requirement",
+      "need": "may",
+      "text": "Configured tool versions should be explicit, with less overlap in tool ownership."
+    },
+    {
+      "id": "k11",
+      "type": "identifier",
+      "need": "must",
+      "text": "Mise 2026.7.5 already exposes the `mise bootstrap packages` command.",
+      "exact": "mise bootstrap packages"
+    },
+    {
+      "id": "k12",
+      "type": "evidence",
+      "need": "must",
+      "text": "The mise `brew:` manager installs formulae into the canonical prefix without needing Homebrew installed."
+    },
+    {
+      "id": "k13",
+      "type": "evidence",
+      "need": "may",
+      "text": "Mise `brew-cask:` has narrower platform and lifecycle coverage."
+    },
+    {
+      "id": "k14",
+      "type": "requirement",
+      "need": "must",
+      "text": "Mise orchestrates the remaining Homebrew artifacts, replacing the separate Ansible Homebrew modules and Brewfile flows."
+    },
+    {
+      "id": "k15",
+      "type": "requirement",
+      "need": "may",
+      "text": "Bootstrap should be consolidated under mise."
+    }
+  ]
+}
