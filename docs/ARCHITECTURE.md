@@ -81,6 +81,10 @@ into their home directory — nothing in the repo needs editing per machine.
   --global --no-upgrade` for newly enabled macOS casks. `just upgrade` uses
   `mise bootstrap packages upgrade` and `mise upgrade`, then upgrades retained
   casks through Homebrew. Run `just install` after uncommenting new entries.
+- The play runs on mise's own `ansible` and `python`, so the in-play
+  `mise upgrade` skips them (`dotfiles_mise_upgrade_deferred`); the `just
+  upgrade` recipe upgrades them after the play exits. Replacing them mid-play
+  crashes Ansible with "Unknown profile name 'module_legacy_m2c'".
 
 ### Mise-First Provisioning Flow
 
@@ -173,8 +177,8 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 ```toml
 [tools]
 node = "lts"
-ruby = "3"
-python = { version = "latest", postinstall = "python -m pip install --upgrade pynvim" }
+ruby = "4"
+python = { version = "3.14", postinstall = "python -m pip install --upgrade pynvim" }
 go = "latest"
 bun = "latest"
 tombi = "latest"
@@ -193,6 +197,13 @@ ruby.compile = false        # precompiled ruby binaries, no source build
 package_manager = "npm"     # use external npm instead of embedded aube
 ```
 
+- The python `postinstall` only runs when mise installs that python, so
+  `bootstrap.sh` and `mise.yml` also run `pip install pynvim` explicitly before
+  `verify_mise_tools.sh`, and `just upgrade` runs `pip install --upgrade pynvim`.
+- `bootstrap.sh` links the global config through `scripts/link_mise_config.sh`
+  (backs up an existing regular file to `.backup`) and creates a missing
+  Homebrew prefix via `scripts/ensure_brew_prefix.sh` (sudo + chown) before
+  `mise bootstrap packages apply` pours `brew:` formulae into it.
 - `legacy_version_file = true` means mise respects `.nvmrc`, `.node-version`, `.ruby-version` files automatically
 - Run `mise install` to install all configured tool versions
 - `mise which <tool>` to check which binary will be used

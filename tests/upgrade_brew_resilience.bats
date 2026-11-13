@@ -10,7 +10,10 @@ setup() {
   echo "$block" | grep -qF 'community.general.homebrew_cask:'
   echo "$block" | grep -qE 'state: *latest'
   echo "$block" | grep -qE 'register: *dotfiles_brew_cask_upgrade'
-  echo "$block" | grep -qE 'failed_when: *false'
+  # failed_when: false rewrites failed=False, hiding homebrew_cask failures
+  # (which carry msg but no rc) from brew_manual_problems.
+  ! echo "$block" | grep -qE 'failed_when: *false'
+  echo "$block" | grep -qE 'ignore_errors: *true'
   echo "$block" | grep -qF "ansible_facts.system == 'Darwin'"
 }
 
@@ -34,6 +37,17 @@ setup() {
 
 @test "upgrade.yml: formula and tool upgrades use mise" {
   grep -qF 'bootstrap packages upgrade' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
-  grep -qF 'mise upgrade --yes' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
+  grep -qF "'upgrade', '--yes'" "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
   ! grep -qF 'upgrade_all: true' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
+}
+
+@test "upgrade.yml: bootstrap packages upgrade is non-interactive and uses the apply environment" {
+  local block
+  block="$(awk '/name: Upgrade mise-managed host packages/,/^$/' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml")"
+  [ -n "$block" ]
+  echo "$block" | grep -qF 'bootstrap packages upgrade --yes'
+  echo "$block" | grep -qF 'MISE_DATA_DIR'
+  echo "$block" | grep -qF '/opt/homebrew/bin'
+  echo "$block" | grep -qF '/home/linuxbrew/.linuxbrew/bin'
+  echo "$block" | grep -qF 'dotfiles_mise_package_upgrade.stderr'
 }

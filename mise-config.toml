@@ -3,12 +3,12 @@ min_version = "2026.7.5"
 [tools]
 node = "lts"
 ruby = "4"
-python = { version = "latest", postinstall = "python -m pip install --upgrade pynvim" }
-pipx = "latest"
+python = { version = "3.14", postinstall = "python -m pip install --upgrade pynvim" }
+uv = "latest"
 go = "latest"
 bun = "latest"
 tombi = "latest"
-ansible = { version = "latest", depends = ["pipx"] }
+ansible = { version = "latest", depends = ["python", "uv"] }
 neovim = "latest"
 jq = "latest"
 fd = "latest"

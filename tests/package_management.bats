@@ -36,11 +36,16 @@ setup() {
   done
 }
 
-@test "ansible declares its configured pipx install prerequisite" {
+# mise >= 2026.11 registers ansible as pypi:ansible with expose=["ansible-core"],
+# which requires uv. ansible-core also crashes on Python 3.15 (dataclasses._is_type
+# removed), so python stays on a supported minor instead of "latest".
+@test "ansible declares uv and a supported python as install prerequisites" {
   local config="$REPO_ROOT/mise-config.toml"
 
-  grep -qE '^pipx[[:space:]]*=[[:space:]]*"latest"$' "$config"
-  grep -qF 'ansible = { version = "latest", depends = ["pipx"] }' "$config"
+  grep -qE '^uv[[:space:]]*=[[:space:]]*"latest"$' "$config"
+  grep -qF 'ansible = { version = "latest", depends = ["python", "uv"] }' "$config"
+  grep -qE '^python = \{ version = "3\.14",' "$config"
+  ! grep -qE '^pipx[[:space:]]*=' "$config"
 }
 
 @test "legacy package files, links, and provider installers are removed" {
@@ -117,7 +122,7 @@ setup() {
   grep -qF 'uninstall --formula' "$cleanup"
   grep -qF 'failed_when: false' "$cleanup"
   grep -qF 'dotfiles_brew_cleanup_failures' "$cleanup"
-  grep -qF 'failure.item.item' "$cleanup"
+  grep -qF 'failure.item }}' "$cleanup"
   grep -qF 'failure.stderr' "$cleanup"
   ! grep -qF -- '--ignore-dependencies' "$cleanup"
   ! grep -qF 'bootstrap packages prune' "$cleanup"
@@ -149,7 +154,7 @@ setup() {
 
   {
     printf '%s\n' '#!/bin/sh'
-    printf '%s\n' 'if [ "$1" = "list" ] && [ "$2" = "--formula" ] && [ "$3" = "neovim" ]; then exit 0; fi'
+    printf '%s\n' 'if [ "$1" = "list" ] && [ "$2" = "--formula" ] && [ "$3" = "-1" ]; then printf "bash\\nneovim\\n"; exit 0; fi'
     printf '%s\n' 'if [ "$1" = "uninstall" ] && [ "$2" = "--formula" ]; then printf "cannot remove %s\\n" "$3" >&2; exit 1; fi'
     printf '%s\n' 'exit 1'
   } > "$fake_brew"
@@ -168,9 +173,50 @@ setup() {
     printf '%s\n' '        msg: continuation reached'
   } > "$fixture"
 
-  run env "PATH=$tmpdir:$PATH" "ANSIBLE_CONFIG=$REPO_ROOT/ansible.cfg" ansible-playbook "$fixture"
+  mkdir -p "$tmpdir/repo/scripts"
+  printf '#!/bin/sh\nexit 0\n' > "$tmpdir/repo/scripts/verify_mise_tools.sh"
+  chmod +x "$tmpdir/repo/scripts/verify_mise_tools.sh"
+
+  run env "PATH=$tmpdir:$PATH" "ANSIBLE_CONFIG=$REPO_ROOT/ansible.cfg" ansible-playbook "$fixture" \
+    -e "dotfiles_home=$tmpdir" -e "dotfiles_repo_root=$tmpdir/repo"
   assert_success
   assert_output --partial 'neovim: cannot remove neovim'
   assert_output --partial 'continuation reached'
+  rm -rf "$tmpdir"
+}
+
+@test "brew_cleanup: lists installed formulae once and verifies mise tools before uninstalling" {
+  local f="$REPO_ROOT/roles/dotfiles/tasks/brew_cleanup.yml"
+  # One brew invocation for the whole inventory, not one per formula.
+  ! grep -qE 'list --formula \{\{ item \}\}' "$f"
+  grep -qE 'list --formula -1' "$f"
+  # Running `--tags brew_cleanup` alone must not uninstall before mise is verified.
+  verify_line="$(grep -n 'verify_mise_tools.sh' "$f" | head -1 | cut -d: -f1)"
+  uninstall_line="$(grep -n 'uninstall --formula' "$f" | head -1 | cut -d: -f1)"
+  [ -n "$verify_line" ] && [ "$verify_line" -lt "$uninstall_line" ]
+}
+
+@test "brew_cleanup: a failed mise verification stops the play before any uninstall" {
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  {
+    printf '%s\n' '#!/bin/sh'
+    printf '%s\n' 'if [ "$1" = "list" ]; then printf "neovim\\n"; exit 0; fi'
+    printf '%s\n' "if [ \"\$1\" = uninstall ]; then echo uninstalled >> '$tmpdir/uninstall.log'; fi"
+    printf '%s\n' 'exit 0'
+  } > "$tmpdir/brew"
+  chmod +x "$tmpdir/brew"
+  mkdir -p "$tmpdir/repo/scripts"
+  printf '#!/bin/sh\nexit 1\n' > "$tmpdir/repo/scripts/verify_mise_tools.sh"
+  chmod +x "$tmpdir/repo/scripts/verify_mise_tools.sh"
+  {
+    printf '%s\n' '---' '- hosts: localhost' '  connection: local' '  gather_facts: false' '  tasks:'
+    printf '    - ansible.builtin.include_tasks: %s\n' "$REPO_ROOT/roles/dotfiles/tasks/brew_cleanup.yml"
+  } > "$tmpdir/play.yml"
+
+  run env "PATH=$tmpdir:$PATH" "ANSIBLE_CONFIG=$REPO_ROOT/ansible.cfg" ansible-playbook "$tmpdir/play.yml" \
+    -e "dotfiles_home=$tmpdir" -e "dotfiles_repo_root=$tmpdir/repo"
+  assert_failure
+  [ ! -e "$tmpdir/uninstall.log" ]
   rm -rf "$tmpdir"
 }

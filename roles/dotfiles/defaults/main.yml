@@ -10,8 +10,16 @@ dotfiles_repo_root: "{{ (role_path ~ '/../..') | realpath }}"
 dotfiles_ssh_key_email: "tribou@users.noreply.github.com"
 
 # macOS-only casks (core plus opt-in entries from ~/.Brewfile)
-dotfiles_brew_macos_casks:
-  - alacritty
+# alacritty is intentionally absent: Homebrew disabled its cask on 2026-09-01
+# (fails_gatekeeper_check). alacritty.toml is still linked for existing installs.
+dotfiles_brew_macos_casks: []
+
+# mise tools the play itself runs on. `just upgrade` upgrades these after the
+# play exits; replacing them mid-play crashes Ansible ("Unknown profile name
+# 'module_legacy_m2c'") because it lazily imports from the running install.
+dotfiles_mise_upgrade_deferred:
+  - ansible
+  - python
 
 # Core mise-managed runtimes are defined in mise-config.toml (symlinked to
 # ~/.config/mise/config.toml), not here: mise.yml runs an un-scoped

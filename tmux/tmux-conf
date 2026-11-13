@@ -9,7 +9,7 @@ bind C-f send-prefix
 
 set -s extended-keys on
 
-set-environment -g PATH "/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin:/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin"
+set-environment -g PATH "$HOME/.local/share/mise/shims:/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin:/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin"
 
 if-shell 'uname | grep -q Darwin' \
     'set-option -g default-command "reattach-to-user-namespace -l $SHELL"' \

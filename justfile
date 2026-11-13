@@ -69,8 +69,12 @@ install *args:
 # Upgrade everything (dotfiles_state=latest, upgrade-tagged tasks)
 alias update := upgrade
 
+# The play runs on mise's ansible + python, so it defers upgrading them
+# (dotfiles_mise_upgrade_deferred); upgrade them here after the play exits,
+# where replacing the interpreter is harmless.
 upgrade *args:
     ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ~/.local/bin/mise exec -- ansible-playbook playbook.yml -e dotfiles_state=latest --tags upgrade {{args}}
+    ~/.local/bin/mise upgrade --yes ansible python
 
 # Run local health checks (symlinks, tools)
 doctor:

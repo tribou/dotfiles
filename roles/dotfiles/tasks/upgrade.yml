@@ -15,16 +15,55 @@
 
 - name: Upgrade mise-managed host packages
   ansible.builtin.command:
-    cmd: "{{ dotfiles_home }}/.local/bin/mise bootstrap packages upgrade"
+    cmd: "{{ dotfiles_home }}/.local/bin/mise bootstrap packages upgrade --yes"
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+    PATH: "{{ (ansible_facts.system == 'Darwin') | ternary('/opt/homebrew/bin', '/home/linuxbrew/.linuxbrew/bin') }}:{{ dotfiles_home }}/.local/bin:{{ ansible_facts.env.PATH }}"
   register: dotfiles_mise_package_upgrade
-  changed_when: "'Upgrading' in dotfiles_mise_package_upgrade.stdout"
+  changed_when: >-
+    'Upgrading' in dotfiles_mise_package_upgrade.stdout
+    or 'Upgrading' in dotfiles_mise_package_upgrade.stderr
   tags: [upgrade]
 
+- name: List current mise tools
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise ls --current --json"
+    chdir: "{{ dotfiles_home }}"
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  register: dotfiles_mise_current_tools
+  changed_when: false
+  check_mode: false
+  tags: [upgrade]
+
+# ansible + python are deferred (see dotfiles_mise_upgrade_deferred); the
+# justfile upgrade recipe upgrades them after the play exits.
 - name: Upgrade mise-managed tools
   ansible.builtin.command:
-    cmd: "{{ dotfiles_home }}/.local/bin/mise upgrade --yes"
+    argv: >-
+      {{ [dotfiles_home ~ '/.local/bin/mise', 'upgrade', '--yes']
+         + (dotfiles_mise_current_tools.stdout | from_json | list
+            | difference(dotfiles_mise_upgrade_deferred) | sort) }}
+    chdir: "{{ dotfiles_home }}"
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
   register: dotfiles_mise_tool_upgrade
   changed_when: "'Installing' in dotfiles_mise_tool_upgrade.stdout or 'Updating' in dotfiles_mise_tool_upgrade.stdout"
+  # An empty tool list would turn this into an un-scoped `mise upgrade`.
+  when: dotfiles_mise_current_tools.stdout | from_json | list | difference(dotfiles_mise_upgrade_deferred) | length > 0
+  tags: [upgrade]
+
+- name: Upgrade pynvim in the mise Python
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_home }}/.local/bin/mise exec -- python -m pip install --upgrade pynvim"
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  register: dotfiles_pynvim_upgrade
+  changed_when: "'Successfully installed' in dotfiles_pynvim_upgrade.stdout"
   tags: [upgrade]
 
 - name: Upgrade retained macOS Homebrew casks
@@ -35,7 +74,9 @@
     path: "{{ (dotfiles_brew_bin | default('brew')) | dirname }}"
   loop: "{{ dotfiles_brew_macos_casks }}"
   register: dotfiles_brew_cask_upgrade
-  failed_when: false
+  # ignore_errors (not failed_when: false) keeps failed=true on the result so
+  # brew_manual_problems can report it; homebrew_cask failures carry no rc.
+  ignore_errors: true
   when: ansible_facts.system == 'Darwin'
 
 - name: Stat global Brewfile for upgrade

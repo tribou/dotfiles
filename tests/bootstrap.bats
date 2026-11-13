@@ -113,10 +113,12 @@ setup() {
   ! grep -qE '^dotfiles_brew_macos_formulae:' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"
 }
 
-@test "role: macOS casks retain core Alacritty" {
+# Homebrew disabled the alacritty cask on 2026-09-01 (fails_gatekeeper_check),
+# so installing or upgrading it fails on every macOS run.
+@test "role: macOS casks exclude disabled Alacritty cask" {
   local block
   block="$(awk '/^dotfiles_brew_macos_casks:/,/^dotfiles_tmux_plugins:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'
+  ! echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'
 }
 
 @test "role: dirs.yml creates ~/.config/mise/conf.d for opt-in drop-ins" {

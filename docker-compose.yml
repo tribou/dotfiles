@@ -11,9 +11,13 @@ services:
       service: base
     init: true
     environment:
-      DOTFILES_ANSIBLE_EXTRA_ARGS: ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust}
+      DOTFILES_ANSIBLE_EXTRA_ARGS: ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew_casks,brew_cleanup,rust}
+      # Lets mise install ~40 GitHub-hosted tools without the 60/hour anonymous limit.
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     volumes:
       - ./.ci-cache/nvim:/root/.local/share/nvim
+      # bootstrap.sh pours mise's brew: bootstrap packages here before Ansible.
+      - ./.ci-cache/linuxbrew:/home/linuxbrew/.linuxbrew
       - ./.ci-cache/mise:/root/.local/share/mise
       - ./.ci-cache/mise-cache:/root/.cache/mise
       - ./.ci-cache/tmux:/root/.tmux/plugins

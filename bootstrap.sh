@@ -45,15 +45,18 @@ if ! "$MISE_BIN" bootstrap packages --help >/dev/null 2>&1; then
   exit 1
 fi
 
-mkdir -p "$HOME/.config/mise"
-ln -sfn "$PWD/mise-config.toml" "$HOME/.config/mise/config.toml"
+./scripts/link_mise_config.sh "$PWD/mise-config.toml" "$HOME/.config/mise/config.toml"
 export PATH="$HOME/.local/bin:$PATH"
 case "$(uname -s)/$(uname -m)" in
   Darwin/arm64) export PATH="/opt/homebrew/bin:$PATH" ;;
   Linux/*) export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH" ;;
 esac
+./scripts/ensure_brew_prefix.sh
 "$MISE_BIN" bootstrap packages apply --yes
 "$MISE_BIN" install --yes
+# python's postinstall only runs when mise installs that python; converge
+# pynvim explicitly so an already-present python still gets it.
+"$MISE_BIN" exec -- python -m pip install --quiet pynvim
 MISE_BIN="$MISE_BIN" ./scripts/verify_mise_tools.sh
 "$MISE_BIN" exec -- ansible-galaxy collection install -r requirements.yml
 echo "==> Handing off to Ansible (mise exec -- ansible-playbook playbook.yml)"

@@ -19,13 +19,13 @@ setup() {
   assert_success
 }
 
-@test "docker-compose: sets default DOTFILES_ANSIBLE_EXTRA_ARGS to skip brew and rust" {
-  run grep -E 'DOTFILES_ANSIBLE_EXTRA_ARGS.*--skip-tags brew,rust' "$REPO_ROOT/docker-compose.yml"
+@test "docker-compose: sets default DOTFILES_ANSIBLE_EXTRA_ARGS to skip real brew tags and rust" {
+  run grep -E 'DOTFILES_ANSIBLE_EXTRA_ARGS.*--skip-tags brew_casks,brew_cleanup,rust' "$REPO_ROOT/docker-compose.yml"
   assert_success
 }
 
 @test "ci-workflow: aligns DOTFILES_ANSIBLE_EXTRA_ARGS with compose default" {
-  run grep -E 'DOTFILES_ANSIBLE_EXTRA_ARGS:\s*"--skip-tags brew,rust"' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml"
+  run grep -E 'DOTFILES_ANSIBLE_EXTRA_ARGS:\s*"--skip-tags brew_casks,brew_cleanup,rust"' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml"
   assert_success
 }
 
@@ -52,4 +52,14 @@ setup() {
   dev_block="$(awk '/^  dev:/,0' "$compose")"
   grep -qF './bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} && bash' <<< "$dev_block"
   ! grep -qF 'ansible-playbook -i localhost' <<< "$dev_block"
+}
+
+@test "docker-compose: caches the Linux Homebrew prefix mise pours brew packages into" {
+  grep -qE '\./\.ci-cache/linuxbrew:/home/linuxbrew/\.linuxbrew' "$REPO_ROOT/docker-compose.yml"
+}
+
+@test "docker-compose and CI forward GITHUB_TOKEN so mise installs avoid anonymous rate limits" {
+  awk '/^  ci:/,/^  dev:/' "$REPO_ROOT/docker-compose.yml" | grep -qE 'GITHUB_TOKEN: \$\{GITHUB_TOKEN:-\}'
+  awk '/name: Run Docker environment tests/,/run: just test/' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml" \
+    | grep -qF 'GITHUB_TOKEN: ${{ github.token }}'
 }
