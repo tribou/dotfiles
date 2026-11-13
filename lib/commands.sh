@@ -56,6 +56,27 @@ function _dotfiles_grep_history_files ()
     | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}'
 }
 
+# Run a "type this into my prompt" command (tmux send-keys, herdr send-text)
+# once readline owns the terminal. Sent while the calling function is still
+# the foreground job, the tty is in canonical mode and echoes the text, which
+# readline then draws a second time after the prompt.
+function _dotfiles_send_to_prompt ()
+{
+  local TTY
+  TTY=$(tty) || TTY=
+  # Double fork so an interactive shell prints no job-control notices
+  ( (
+    local _
+    for _ in $(seq 100)
+    do
+      [ -n "$TTY" ] || break
+      stty -a < "$TTY" 2>/dev/null | grep -q -- '-icanon' && break
+      sleep 0.02
+    done
+    "$@"
+  ) & )
+}
+
 function histgrep ()
 {
   # Pipe results from two history sources into cat
@@ -70,10 +91,10 @@ function histgrep ()
   # If in tmux or herdr, type the selection into the current pane's prompt
   if [ -n "$TMUX" ]
   then
-    tmux send-keys -t "$TMUX_PANE" "$RESULT"
+    _dotfiles_send_to_prompt tmux send-keys -t "$TMUX_PANE" "$RESULT"
   elif [ -n "$HERDR_PANE_ID" ]
   then
-    herdr pane send-text "$HERDR_PANE_ID" "$RESULT"
+    _dotfiles_send_to_prompt herdr pane send-text "$HERDR_PANE_ID" "$RESULT"
   else
     echo "$RESULT"
     printf '%s' "$RESULT" | copy_to_clipboard
