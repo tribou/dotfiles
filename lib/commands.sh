@@ -67,10 +67,13 @@ function histgrep ()
     | awk -F "$DOTFILES_HISTFILE_DELIM" '{print $NF}' \
     | awk -F "$DOTFILES_HISTORY_DELIM" '{print $NF}')
 
-  # If in tmux, we can use send-keys
+  # If in tmux or herdr, type the selection into the current pane's prompt
   if [ -n "$TMUX" ]
   then
     tmux send-keys -t "$TMUX_PANE" "$RESULT"
+  elif [ -n "$HERDR_PANE_ID" ]
+  then
+    herdr pane send-text "$HERDR_PANE_ID" "$RESULT"
   else
     echo "$RESULT"
     printf '%s' "$RESULT" | copy_to_clipboard

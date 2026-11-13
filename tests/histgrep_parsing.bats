@@ -43,7 +43,7 @@ setup() {
   printf '%s\n' "ssh remote" > "$BATS_TEST_TMPDIR/home/.history/2024/01/15.10.30.00_server"
 
   run --separate-stderr bash -c "
-    unset TMUX
+    unset TMUX HERDR_PANE_ID
     export HOME='$BATS_TEST_TMPDIR/home'
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
@@ -62,7 +62,7 @@ setup() {
   ln -s "$BATS_TEST_TMPDIR/unmounted-drive/.history" "$BATS_TEST_TMPDIR/home/.history"
 
   run --separate-stderr bash -c "
-    unset TMUX
+    unset TMUX HERDR_PANE_ID
     export HOME='$BATS_TEST_TMPDIR/home'
     . '$REPO_ROOT/lib/_shared.sh'
     . '$REPO_ROOT/lib/commands.sh'
@@ -74,4 +74,25 @@ setup() {
   assert_success
   assert_output ""
   assert_equal "$stderr" "histgrep: no saved history in ~/.history (is Google Drive mounted?); searching current shell history only"
+}
+
+@test "histgrep types the selection into the current herdr pane" {
+  mkdir -p "$BATS_TEST_TMPDIR/home/.history/2024/01"
+  printf '%s\n' "ssh remote" > "$BATS_TEST_TMPDIR/home/.history/2024/01/15.10.30.00_server"
+
+  run --separate-stderr bash -c "
+    unset TMUX
+    export HERDR_PANE_ID='w1:p2'
+    export HOME='$BATS_TEST_TMPDIR/home'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    fzf() { cat; }
+    copy_to_clipboard() { echo 'clipboard called' >&2; }
+    herdr() { printf 'herdr'; printf ' [%s]' \"\$@\"; echo; }
+    histgrep remote
+  "
+
+  assert_success
+  assert_output "herdr [pane] [send-text] [w1:p2] [ssh remote]"
+  assert_equal "$stderr" ""
 }
