@@ -22,7 +22,6 @@ run() {
   "$MISE_BIN" exec -- "$@"
 }
 
-run ansible-playbook --version
 run nvim --version
 run python --version
 run python -c 'import pynvim'

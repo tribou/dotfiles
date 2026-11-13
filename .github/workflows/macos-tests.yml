@@ -28,6 +28,8 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          # rust is slow to install and no test uses it
+          MISE_DISABLE_TOOLS: rust
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin" "$HOME/.config/mise"
@@ -38,17 +40,14 @@ jobs:
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
           MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
 
-      - name: Install Ansible collections
+      - name: Dry-run the full mise bootstrap on macOS
         shell: bash
-        run: '"$HOME/.local/bin/mise" exec -- ansible-galaxy collection install -r requirements.yml'
-
-      - name: Smoke-test Darwin Homebrew cask role
-        shell: bash
+        env:
+          MISE_DISABLE_TOOLS: rust
         run: |
           set -euo pipefail
-          ANSIBLE_CONFIG="$GITHUB_WORKSPACE/ansible.cfg" \
-            "$HOME/.local/bin/mise" exec -- ansible-playbook playbook.yml \
-            --tags brew_casks -e 'dotfiles_brew_macos_casks=[]'
+          "$HOME/.local/bin/mise" trust "$GITHUB_WORKSPACE/mise.toml"
+          "$HOME/.local/bin/mise" -C "$GITHUB_WORKSPACE" bootstrap --dry-run
 
       - name: Install just
         uses: extractions/setup-just@v3

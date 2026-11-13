@@ -12,7 +12,7 @@ test:
     fi
     docker compose run --rm -T "${git_mount[@]}" ci
 
-# Run clean test suite in Docker from scratch (wipes .ci-cache, runs cold without skip-tags)
+# Run clean test suite in Docker from scratch (wipes .ci-cache, runs cold with every tool, rust included)
 test-clean:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -22,7 +22,7 @@ test-clean:
     if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
         git_mount=(-v "${git_common_dir}:${git_common_dir}:ro")
     fi
-    DOTFILES_ANSIBLE_EXTRA_ARGS="" docker compose run --rm -T "${git_mount[@]}" ci
+    MISE_DISABLE_TOOLS="" docker compose run --rm -T "${git_mount[@]}" ci
 
 # Spin up interactive dev environment (manual tmux/plugin inspection)
 dev:
@@ -47,7 +47,6 @@ build-clean:
 test-unit *args="tests/*.bats":
     #!/usr/bin/env bash
     set -euo pipefail
-    if command -v ansible-playbook >/dev/null 2>&1; then ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ansible-playbook --syntax-check playbook.yml; fi
     jobs_args=()
     jobs="${DOTFILES_TEST_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)}"
     if [[ "$jobs" -gt 1 && "$(parallel --version 2>/dev/null || true)" == *"GNU parallel"* ]]; then
@@ -59,22 +58,18 @@ test-unit *args="tests/*.bats":
 test-changed *args:
     ./scripts/test_changed.sh {{args}}
 
-# Install/repair dotfiles on an already-bootstrapped machine (default: present)
-# ANSIBLE_CONFIG is pinned to this repo's ansible.cfg so a stale/unrelated
-# ANSIBLE_CONFIG in the user's shell env (it has the highest precedence in
-# Ansible's config search order) can't shadow this repo's inventory.
+# Install/repair dotfiles on an already-bootstrapped machine: `mise bootstrap`
+# applies mise.toml (dotfiles, repos, bootstrap task) and the global
+# mise-config.toml (packages, tools). Extra args pass through (e.g. --dry-run).
 install *args:
-    ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ~/.local/bin/mise exec -- ansible-playbook playbook.yml {{args}}
+    ~/.local/bin/mise -C {{justfile_directory()}} bootstrap --yes {{args}}
 
-# Upgrade everything (dotfiles_state=latest, upgrade-tagged tasks)
+# Upgrade everything: OS packages, mise packages and tools, repos, and plugins
+# (the `upgrade` task in mise.toml, scripts/upgrade.sh)
 alias update := upgrade
 
-# The play runs on mise's ansible + python, so it defers upgrading them
-# (dotfiles_mise_upgrade_deferred); upgrade them here after the play exits,
-# where replacing the interpreter is harmless.
-upgrade *args:
-    ANSIBLE_CONFIG={{justfile_directory()}}/ansible.cfg ~/.local/bin/mise exec -- ansible-playbook playbook.yml -e dotfiles_state=latest --tags upgrade {{args}}
-    ~/.local/bin/mise upgrade --yes ansible python
+upgrade:
+    ~/.local/bin/mise -C {{justfile_directory()}} run upgrade
 
 # Run local health checks (symlinks, tools)
 doctor:

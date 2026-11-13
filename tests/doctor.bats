@@ -38,7 +38,7 @@ setup() {
 @test "check_tools passes for available tool" {
     local tool_dir
     tool_dir="$(mktemp -d)"
-    for tool in mise node python ruby go bun tombi ansible-playbook nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph git bash; do
+    for tool in mise node python ruby go bun tombi nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph git bash; do
         touch "$tool_dir/$tool"
         chmod +x "$tool_dir/$tool"
     done
@@ -64,7 +64,6 @@ setup() {
         "go~run: mise install go" \
         "bun~run: mise install bun" \
         "tombi~run: mise install tombi" \
-        "ansible-playbook~run: mise install ansible" \
         "nvim~run: mise install neovim" \
         "jq~run: mise install jq" \
         "fd~run: mise install fd" \
@@ -93,7 +92,7 @@ setup() {
     grep -qF 'nvim~run: mise install neovim' scripts/doctor.sh
     grep -qF 'tmux~run: mise install tmux' scripts/doctor.sh
     grep -qF 'rg~run: mise install ripgrep' scripts/doctor.sh
-    grep -qF 'ansible-playbook~run: mise install ansible' scripts/doctor.sh
+    ! grep -qF 'ansible' scripts/doctor.sh
     grep -qF 'git~run: mise bootstrap packages apply --yes' scripts/doctor.sh
 }
 
@@ -108,7 +107,7 @@ setup() {
     export DOTFILES="$(mktemp -d)"
     local tool_dir
     tool_dir="$(mktemp -d)"
-    for tool in mise node python ruby go bun tombi ansible-playbook nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph git bash; do
+    for tool in mise node python ruby go bun tombi nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph git bash; do
         touch "$tool_dir/$tool"
         chmod +x "$tool_dir/$tool"
     done

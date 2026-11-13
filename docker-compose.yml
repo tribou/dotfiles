@@ -3,6 +3,8 @@ services:
     build: .
     environment:
       GIT_CONFIG_PARAMETERS: "'safe.directory=*'"
+      # bd would rewrite the bind-mounted checkout's tracked .beads files as root.
+      DOTFILES_SKIP_BEADS: "1"
     volumes:
       - .:/dotfiles
 
@@ -11,12 +13,16 @@ services:
       service: base
     init: true
     environment:
-      DOTFILES_ANSIBLE_EXTRA_ARGS: ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew_casks,brew_cleanup,rust}
+      # The rust toolchain is slow to install and nothing in goss or the
+      # integration tests uses it; `just test-clean` sets this empty.
+      MISE_DISABLE_TOOLS: ${MISE_DISABLE_TOOLS-rust}
+      # Any of these in the second converge's log means it was not idempotent.
+      DOTFILES_CHANGE_PATTERN: '^changed: |created symlink|repos: applied|\[[0-9]+/[0-9]+\] install|Installing'
       # Lets mise install ~40 GitHub-hosted tools without the 60/hour anonymous limit.
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     volumes:
       - ./.ci-cache/nvim:/root/.local/share/nvim
-      # bootstrap.sh pours mise's brew: bootstrap packages here before Ansible.
+      # mise pours its brew: bootstrap packages here.
       - ./.ci-cache/linuxbrew:/home/linuxbrew/.linuxbrew
       - ./.ci-cache/mise:/root/.local/share/mise
       - ./.ci-cache/mise-cache:/root/.cache/mise
@@ -26,9 +32,10 @@ services:
     command: >
       bash -c "
         set -o pipefail &&
-        ./bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/first-converge.log &&
-        ./bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} | tee /tmp/second-converge.log &&
-        ! grep -Eq 'changed=[1-9][0-9]*' /tmp/second-converge.log &&
+        ./bootstrap.sh | tee /tmp/first-converge.log &&
+        ./bootstrap.sh | tee /tmp/second-converge.log &&
+        ! grep -Eq "$$DOTFILES_CHANGE_PATTERN" /tmp/second-converge.log &&
+        /root/.local/bin/mise -C /dotfiles bootstrap status --missing &&
         source ~/.bash_profile &&
         DOTFILES=/dotfiles goss validate --format tap &&
         ./tests/test_helper/bats-core/bin/bats tests/integration/
@@ -41,5 +48,5 @@ services:
     tty: true
     command: >
       bash -c "
-        ./bootstrap.sh $${DOTFILES_ANSIBLE_EXTRA_ARGS:-} && bash
+        ./bootstrap.sh && bash
       "

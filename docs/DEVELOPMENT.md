@@ -8,9 +8,7 @@
 - **bats-core**: Bash unit testing framework
 - **goss**: Infrastructure/environment assertion testing
 - **just**: Command runner (`justfile`)
-- **mise**: Version manager (replaces nvm/rbenv/pyenv per-project)
-- **Ansible**: Declarative provisioning via the `dotfiles` role
-- **Molecule**: Ansible role testing framework (idempotence, multi-scenario)
+- **mise**: Version manager and machine provisioning (`mise bootstrap`: packages, dotfiles, repos, tools, tasks)
 
 ## Design Principles
 - Keep scripts modular by breaking them into `lib/` files
@@ -39,45 +37,29 @@ The root-level `lib/*.sh` files are shell modules loaded by `lib/index.sh`.
 - GPG signing required for commits — set `GIT_SIGNING_KEY` in `~/.ssh/api_keys`
 - New infrastructure dependencies (binaries, env vars) should have a `goss.yaml` assertion
 
-## Ansible Role Development
+## Provisioning Development
 
-### Molecule Dev Loop
-
-The `dotfiles` Ansible role uses Molecule for testing. The default scenario runs in a Docker container:
-
-```bash
-# Converge (apply the role inside the test container)
-molecule converge
-
-# Idempotence check (re-run and verify no changed tasks)
-molecule converge
-
-# Full test sequence: create → converge → idempotence → verify → destroy
-molecule test
-
-# Verify-only (goss assertions and custom verify.yml checks)
-molecule verify
-
-# Destroy the test container
-molecule destroy
-```
-
-### Running Tag Subsets
-
-The role's tasks are tagged for targeted runs. Common subsets:
+Provisioning is `mise bootstrap` driven by two files: the global
+`mise-config.toml` (tools, settings, host packages) and the repo's `mise.toml`
+(dotfiles, repos, hooks, the `bootstrap` and `upgrade` tasks). See
+[ARCHITECTURE.md](ARCHITECTURE.md#entry-points).
 
 ```bash
-# Just symlinks and SSH, skipping brew/npm/mise upgrades
-ansible-playbook playbook.yml --tags ssh,links
-
-# Dry-run with diff to preview changes without applying them
-ansible-playbook playbook.yml --check --diff
-
-# Combine both: preview what linking and SSH tasks would change
-ansible-playbook playbook.yml --check --diff --tags ssh,links
+just install --dry-run              # preview what bootstrap would change
+just install                        # converge (mise -C <repo> bootstrap --yes)
+just install --only dotfiles,repos  # apply selected parts
+just install --skip task            # everything except the bootstrap task
+mise -C ~/dev/dotfiles bootstrap status   # drift report
+mise -C ~/dev/dotfiles dot status         # dotfile links
 ```
 
-Available tags: `beads`, `brew`, `brew_casks`, `claude_opencode`, `dirs`, `gpg`, `links`, `mise`, `nvim`, `prereqs`, `rust`, `ssh`, `terminfo`, `tpm`, `upgrade`, `zoxide`. Use `ansible-playbook playbook.yml --list-tags` for the full list.
+Parts for `--only`/`--skip`: `packages`, `repos`, `dotfiles`, `tools`, `task`
+(and the other `mise bootstrap` parts, unused here).
+
+Hook and task scripts must stay idempotent and print `changed: ...` only when
+they change something: the Docker suite fails if the second converge prints a
+change. Steps in `scripts/bootstrap/converge.sh` are functions so tests can
+source the file and call one step with stubbed commands.
 
 ## Git Workflow with Ticket Numbers
 
@@ -114,11 +96,11 @@ Select new machine-wide packages in this order:
 
 1. Use the canonical mise registry tool when it qualifies on both macOS arm64 and Linux.
 2. Use an explicit `npm:` or `gem:` tool key when the package supplies the required executable.
-3. Use `pipx:` for an isolated Python application.
+3. Use `pipx:` (or `pypi:`) for an isolated Python application.
 4. Use a tool-level `postinstall` when a library must be imported by its managed interpreter rather than run as a standalone executable.
 5. Use a `brew:` bootstrap package only after dual-platform tool qualification fails or when shared-prefix artifact semantics are required.
 
-Casks remain owned by the real Homebrew CLI on macOS, while native OS package managers retain bootstrap and system dependencies. Ansible executes mise convergence but must not mirror either `[tools]` or `[bootstrap.packages]`; `mise-config.toml` and optional mise drop-ins are the inventories.
+macOS casks are `brew-cask:` bootstrap packages (installed by mise, no Homebrew needed), and OS prerequisites are `apt:`/`pacman:` bootstrap packages. Scripts must not mirror either `[tools]` or `[bootstrap.packages]`; `mise-config.toml` and optional mise drop-ins are the inventories.
 
 ## Development Environment
 

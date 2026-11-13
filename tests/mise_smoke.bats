@@ -10,10 +10,11 @@ setup() {
   grep -qF 'bootstrap packages status --missing' "$script"
   grep -qF '/opt/homebrew/bin' "$script"
   grep -qF '/home/linuxbrew/.linuxbrew/bin' "$script"
-  for command in ansible-playbook nvim python jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph; do
+  for command in nvim python jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux prettier solargraph; do
     grep -qE "(^|[[:space:]\"'])${command}([[:space:]\"']|$)" "$script"
   done
   grep -qF "python -c 'import pynvim'" "$script"
+  ! grep -qF 'ansible' "$script"
 }
 
 @test "mise verifier returns the first mise failure" {
@@ -55,11 +56,9 @@ setup() {
   [ "$ubuntu_timeout" -eq 15 ]
 }
 
-@test "macOS workflow smoke-tests the Darwin cask role through mise" {
+@test "macOS workflow dry-runs the full mise bootstrap" {
   local workflow="$REPO_ROOT/.github/workflows/macos-tests.yml"
-  grep -qF 'ansible-galaxy collection install -r requirements.yml' "$workflow"
-  grep -qF 'Smoke-test Darwin Homebrew cask role' "$workflow"
-  grep -qF 'exec -- ansible-playbook' "$workflow"
-  grep -qF 'playbook.yml' "$workflow"
-  grep -qF 'dotfiles_brew_macos_casks=[]' "$workflow"
+  grep -qF 'trust "$GITHUB_WORKSPACE/mise.toml"' "$workflow"
+  grep -qF -- '-C "$GITHUB_WORKSPACE" bootstrap --dry-run' "$workflow"
+  ! grep -qiE 'ansible|playbook' "$workflow"
 }

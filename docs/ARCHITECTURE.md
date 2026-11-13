@@ -4,118 +4,67 @@
 
 ## Entry Points
 
-- **`bootstrap.sh`**: Thin bootstrapper that solves the chicken-and-egg problem by installing standalone mise, then hands off to the Ansible role through mise. Accepts `curl | bash` for zero-clone installs.
+- **`bootstrap.sh`**: Thin bootstrapper that solves the chicken-and-egg problem by installing standalone mise, then hands off to `mise bootstrap`. Accepts `curl | bash` for zero-clone installs.
   - Self-locates or self-clones the repo into `$HOME/dev/dotfiles`
-  - Installs native OS prerequisites needed to bootstrap mise packages
-  - Exposes the global mise config, applies packages, installs tools, and runs smoke verification
-  - Runs `mise exec -- ansible-playbook playbook.yml` — all repeatable provisioning lives in the role
+  - Installs native OS prerequisites needed to install mise
+  - Installs `~/.local/bin/mise`, or self-updates one older than `min_version` in `mise-config.toml`
+  - Links `mise-config.toml` to `~/.config/mise/config.toml` (backing up an existing file) so the packages step sees it
+  - Trusts the repo's `mise.toml` and runs `mise -C <repo> bootstrap --yes`; extra arguments pass through (e.g. `--dry-run`, `--skip task`)
 
-- **`playbook.yml`**: Top-level Ansible playbook that applies the `dotfiles` role to `localhost`
-- **`ansible.cfg`**: Configures `roles_path = roles`, disables retry files, sets YAML output format
-- **`roles/dotfiles/`**: The single Ansible role containing all provisioning logic
+- **`mise-config.toml`** (global config): `[tools]`, `[settings]`, and `[bootstrap.packages]` (OS prerequisites via `apt:`/`pacman:`, formulae via `brew:`). Machine-wide, so it applies from any directory.
+- **`mise.toml`** (project config for this checkout): `[dotfiles]` symlinks, `[bootstrap.repos]` (TPM, vim-plug), the `pre-dotfiles` hook, and the `bootstrap` and `upgrade` tasks. Relative sources and `{{ config_root }}` resolve to the checkout.
+- **`scripts/bootstrap/pre_dotfiles.sh`**: the `pre-dotfiles` hook. Creates directories, keeps `~/.ssh` and `~/.gnupg` at `0700`, and moves a regular file at any `[dotfiles]` target to `<target>.backup` (mise refuses to replace files it did not write).
+- **`scripts/bootstrap/converge.sh`**: the `bootstrap` task, run last with `[tools]` on PATH. SSH keys, the macOS keychain block, terminfo, `~/.gnupg` file modes, Neovim/CoC and TPM plugins, the `~/.z` → zoxide migration, beads hydration, pynvim, corepack shims, legacy Homebrew cleanup (`scripts/brew_cleanup.sh`), verification, and the `~/.dotfiles-bootstrap-done` marker.
+- **`scripts/upgrade.sh`**: the `upgrade` task (`just upgrade`).
 
-### roles/dotfiles Layout
+Every declarative part (packages, repos, dotfiles, tools) skips what already matches, and the hook and task print `changed: ...` only when they change something, so re-running `just install` is safe and a second run is quiet.
 
-```
-roles/dotfiles/
-├── defaults/main.yml    # All variables and their defaults
-├── handlers/main.yml    # Handlers (restart services, etc.)
-├── meta/main.yml        # Role metadata, dependencies, collections
-├── molecule/            # Molecule test scenarios
-│   └── default/
-│       ├── converge.yml
-│       ├── molecule.yml
-│       └── verify.yml
-└── tasks/
-    ├── main.yml         # Role entry point — includes all task files
-    ├── prereqs.yml      # Pre-requisite packages
-    ├── brew.yml         # Real Homebrew discovery/install for macOS casks
-    ├── brew_casks.yml   # Retained macOS casks + global ~/.Brewfile hook
-    ├── links.yml        # Symlink management
-    ├── dirs.yml         # Directory structure
-    ├── ssh.yml          # SSH key generation
-    ├── gpg.yml          # GPG agent config
-    ├── mise.yml         # Version-managed runtimes
-    ├── rust.yml         # Rust toolchain
-    ├── nvim.yml         # Neovim plugin management
-    ├── tpm.yml          # Tmux plugin manager
-    ├── zoxide.yml       # zoxide init
-    ├── terminfo.yml     # Terminal info DB
-    ├── tools_cli.yml    # Additional CLI tools
-    ├── beads.yml        # Beads issue tracking
-    ├── upgrade.yml      # Upgrade-only tasks (mise packages/tools + macOS casks)
-    └── config files in the repo root
-  ```
+### Run order
 
-### dotfiles_state
+`mise bootstrap` applies, in order: packages (both configs) → repos → `pre-dotfiles` hook → dotfiles → tools → the `bootstrap` task. `mise bootstrap --dry-run` previews it; `mise bootstrap status` and `mise dot status` report drift.
 
-The `dotfiles_state` variable (defined in `roles/dotfiles/defaults/main.yml`) controls install vs upgrade mode:
+### Upgrades
 
-| Value | Behavior |
-|-------|----------|
-| `present` (default) | Ensures tools/config are present but does not force the latest versions |
-| `latest` | Runs explicit package, tool, native-system, and retained-cask upgrades |
-
-Use `just upgrade` to run with `dotfiles_state=latest` and the `upgrade` tag (selectively targets only upgrade tasks).
+`just upgrade` runs the `upgrade` task: a full OS upgrade (`apt-get upgrade` / `pacman -Syu`), `mise bootstrap packages upgrade`, `mise upgrade`, `mise bootstrap repos update` (fast-forwards TPM and vim-plug), a full `mise bootstrap` converge, then pynvim, rustup, Neovim and tmux plugin updates, and the claude/opencode/beads self-updaters when installed. With no Ansible there is no interpreter for an upgrade to replace mid-run.
 
 ### Opt-in packages
 
-The role installs a **core** package set on every machine. Everything else is
-opt-in via two commented templates shipped at the repo root that the user copies
-into their home directory — nothing in the repo needs editing per machine.
+The configs install a **core** set on every machine. Everything else is opt-in
+via `mise-config.optional.toml.example`, copied to
+`~/.config/mise/conf.d/optional.toml` — nothing in the repo needs editing per
+machine. mise auto-loads `conf.d/*.toml` and merges it over `config.toml`:
 
-| Repo template | Copy to | Consumed by |
-|---|---|---|
-| `mise-config.optional.toml.example` | `~/.config/mise/conf.d/optional.toml` | un-scoped `mise install` (`tasks/mise.yml`) |
-| `Brewfile.optional.example` | `~/.Brewfile` | macOS-only `brew bundle --global` (`tasks/brew_casks.yml`) |
+- optional tools under `[tools]`
+- optional formulae (`brew:`) and macOS casks (`brew-cask:`) under
+  `[bootstrap.packages]`. mise installs casks itself, without Homebrew, into
+  `/Applications`; on Linux it takes only font casks.
 
-- Optional CLI tools **with a mise backend** live in the mise drop-in; mise
-  auto-loads `~/.config/mise/conf.d/*.toml` (alphabetically) and merges
-  `[tools]` additively over `config.toml`.
-- Optional formulae live under `[bootstrap.packages]` in the mise drop-in.
-- Optional **casks only** live in the Brewfile, which the retained real Homebrew
-  flow consumes on macOS.
-- Both are skipped silently when absent (a `stat` guard for the Brewfile), so a
-  bare machine gets only the core set.
-- `just install` applies newly enabled mise entries and runs `brew bundle
-  --global --no-upgrade` for newly enabled macOS casks. `just upgrade` uses
-  `mise bootstrap packages upgrade` and `mise upgrade`, then upgrades retained
-  casks through Homebrew. Run `just install` after uncommenting new entries.
-- The play runs on mise's own `ansible` and `python`, so the in-play
-  `mise upgrade` skips them (`dotfiles_mise_upgrade_deferred`); the `just
-  upgrade` recipe upgrades them after the play exits. Replacing them mid-play
-  crashes Ansible with "Unknown profile name 'module_legacy_m2c'".
+Run `just install` after uncommenting entries. A `~/.Brewfile` from the old
+Homebrew cask flow is no longer applied; move its casks into the drop-in.
 
 ### Mise-First Provisioning Flow
 
 ```text
-native OS prerequisites
+native OS prerequisites (curl, git)
         |
         v
-standalone ~/.local/bin/mise
-        |
-        +--> global mise-config.toml
-        |       |
-        |       +--> bootstrap packages apply --> canonical brew prefix
-        |       +--> mise install -------------> versioned tools + shims
+standalone ~/.local/bin/mise  --> link global mise-config.toml, trust mise.toml
         |
         v
-smoke verification
-        |
-        +--> targeted cleanup of old [tools] formula copies, if brew already exists
-        |
-        v
-mise exec -- ansible-playbook
-        |
-        +--> repeat package/tool convergence and verification
-        +--> real Homebrew CLI on Apple Silicon macOS for casks only
+mise bootstrap
+        +--> packages: apt:/pacman: prerequisites, brew: formulae -> canonical brew prefix
+        +--> repos: TPM, vim-plug
+        +--> pre-dotfiles hook: dirs, private modes, .backup of conflicting files
+        +--> dotfiles: symlinks into this checkout
+        +--> tools: versioned tools + shims (rust, gopls, npm:, gem: included)
+        +--> bootstrap task: keys, plugins, migrations, verification
 ```
 
-`brew:` is a mise package backend, not a requirement for a `brew` executable. It writes formula artifacts and links into the canonical platform prefix: `/opt/homebrew` on Apple Silicon macOS and `/home/linuxbrew/.linuxbrew` on Linux. Bootstrap, verification, and shell startup add the applicable prefix to `PATH` explicitly. In the Linux greenfield result there is no `brew` executable, while package links such as `git` and `bash` resolve from `/home/linuxbrew/.linuxbrew/bin`.
+`brew:` is a mise package backend, not a requirement for a `brew` executable. It writes formula artifacts and links into the canonical platform prefix — `/opt/homebrew` on Apple Silicon macOS and `/home/linuxbrew/.linuxbrew` on Linux — creating the prefix with sudo when it is missing. Bootstrap, verification, and shell startup add the applicable prefix to `PATH` explicitly. In the Linux greenfield result there is no `brew` executable, while package links such as `git` and `bash` resolve from `/home/linuxbrew/.linuxbrew/bin`.
 
 For bootstrap packages, `version = "latest"` accepts an already installed package; it does not upgrade that package during apply. Package upgrades are therefore an explicit `mise bootstrap packages upgrade` phase, separate from `mise upgrade` for `[tools]`. Manager-wide `mise bootstrap packages prune --manager brew` is prohibited because it can remove formulae installed manually outside this repository. Cleanup is limited to the explicit legacy formula list replaced by qualified mise tools.
 
-Only Apple Silicon macOS and Linux are supported by this ownership model; Intel macOS is unsupported. The Docker greenfield suite also passes two complete bootstrap convergences and requires the second convergence to report no changes.
+Only Apple Silicon macOS and Linux are supported by this ownership model; Intel macOS is unsupported. The Docker greenfield suite runs two complete bootstraps and requires the second to report no changes and `mise bootstrap status --missing` to pass.
 
 ### Qualification Evidence
 
@@ -178,13 +127,17 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 [tools]
 node = "lts"
 ruby = "4"
-python = { version = "3.14", postinstall = "python -m pip install --upgrade pynvim" }
+python = { version = "latest", postinstall = "python -m pip install --upgrade pynvim" }
 go = "latest"
+"go:golang.org/x/tools/gopls" = "latest"
+rust = "stable"
 bun = "latest"
 tombi = "latest"
 # Portable tools and explicit npm:/gem: executables continue here.
 
 [bootstrap.packages]
+"apt:build-essential" = "latest"   # skipped where apt is unavailable
+"pacman:base-devel" = "latest"     # skipped where pacman is unavailable
 "brew:bash" = "latest"
 "brew:git" = "latest"
 # Shared-prefix and platform-selected formula artifacts continue here.
@@ -197,21 +150,16 @@ ruby.compile = false        # precompiled ruby binaries, no source build
 package_manager = "npm"     # use external npm instead of embedded aube
 ```
 
-- The python `postinstall` only runs when mise installs that python, so
-  `bootstrap.sh` and `mise.yml` also run `pip install pynvim` explicitly before
-  `verify_mise_tools.sh`, and `just upgrade` runs `pip install --upgrade pynvim`.
-- `bootstrap.sh` links the global config through `scripts/link_mise_config.sh`
-  (backs up an existing regular file to `.backup`) and creates a missing
-  Homebrew prefix via `scripts/ensure_brew_prefix.sh` (sudo + chown) before
-  `mise bootstrap packages apply` pours `brew:` formulae into it.
+- The python `postinstall` only runs when mise installs that python, so the
+  `bootstrap` task also runs `pip install pynvim`, and `just upgrade` runs
+  `pip install --upgrade pynvim`.
 - `legacy_version_file = true` means mise respects `.nvmrc`, `.node-version`, `.ruby-version` files automatically
 - Run `mise install` to install all configured tool versions
 - `mise which <tool>` to check which binary will be used
 
 `mise-config.toml` is the single source of truth for core `[tools]` and
-`[bootstrap.packages]`; there is no parallel inventory in the role. `mise.yml`
-runs un-scoped package apply and tool install commands, which converge this file
-plus any user drop-in under `~/.config/mise/conf.d/*.toml` (see [Opt-in
+`[bootstrap.packages]`. `mise bootstrap` applies packages and installs tools
+un-scoped, which converges this file plus any user drop-in under `~/.config/mise/conf.d/*.toml` (see [Opt-in
 packages](#opt-in-packages)).
 
 ## Environment Configuration

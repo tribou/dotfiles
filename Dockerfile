@@ -23,7 +23,6 @@ RUN apt-get update && apt-get install -y \
     zip \
     xz-utils \
     zstd \
-    python3-apt \
     locales \
   && locale-gen en_US.UTF-8 \
   && rm -rf /var/lib/apt/lists/*

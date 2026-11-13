@@ -26,7 +26,8 @@ command:
 
   "mise bootstrap packages status --missing":
     exit-status: 0
-  "mise exec -- ansible-playbook --version":
+  # every [dotfiles] entry in mise.toml is applied
+  "mise -C /dotfiles dot status --missing":
     exit-status: 0
   "mise exec -- prettier --version":
     exit-status: 0
@@ -41,7 +42,7 @@ command:
   "mise exec -- go version":
     exit-status: 0
 
-  # yarn and pnpm must be available via corepack (npm:corepack from mise; mise.yml enables its shims)
+  # yarn and pnpm must be available via corepack (npm:corepack from mise; the bootstrap task enables its shims)
   "mise exec -- yarn --version":
     exit-status: 0
   "mise exec -- pnpm --version":
@@ -135,9 +136,24 @@ file:
     exists: true
     filetype: directory
 
-  # vim-plug installed
+  # vim-plug cloned by [bootstrap.repos] and linked by [dotfiles]
   /root/.local/share/nvim/site/autoload/plug.vim:
     exists: true
+    filetype: symlink
+    linked-to: /root/.local/share/vim-plug/plug.vim
+
+  # Private dirs and the SSH keys the bootstrap task generates
+  /root/.ssh:
+    exists: true
+    filetype: directory
+    mode: "0700"
+  /root/.gnupg:
+    exists: true
+    filetype: directory
+    mode: "0700"
+  /root/.ssh/id_ed25519:
+    exists: true
+    mode: "0600"
 
   # Neovim plugins installed — includes CopilotChat which requires nvim 0.10+
   /root/.local/share/nvim/plugged:

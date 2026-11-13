@@ -1,14 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
-# Thin bootstrapper: install mise, then hand off to the Ansible role.
-# Everything else lives in roles/dotfiles/.
+# Thin bootstrapper: install mise, link its global config, then hand off to
+# `mise bootstrap`, which applies mise.toml (dotfiles, repos, hooks, the
+# bootstrap task) and mise-config.toml (packages and tools). Extra arguments
+# pass through to `mise bootstrap` (e.g. --skip task, --dry-run).
 
 REPO_URL="https://github.com/tribou/dotfiles.git"
 REPO_DIR="$HOME/dev/dotfiles"
 
 # 1. Self-locate or self-clone (supports curl|bash).
-if [ -f "$(dirname "${BASH_SOURCE[0]:-$0}")/playbook.yml" ]; then
+if [ -f "$(dirname "${BASH_SOURCE[0]:-$0}")/mise.toml" ]; then
   cd "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 else
   if [ "$(uname -s)" != "Darwin" ] && command -v apt-get >/dev/null 2>&1; then
@@ -19,7 +21,7 @@ else
   cd "$REPO_DIR"
 fi
 
-# 2. Linux brew-bootstrap prerequisites (C toolchain before brew can build).
+# 2. Linux prerequisites for installing mise and compiling tools.
 if [ "$(uname -s)" != "Darwin" ]; then
   if command -v apt-get >/dev/null 2>&1; then
     sudo apt-get update
@@ -29,44 +31,33 @@ if [ "$(uname -s)" != "Darwin" ]; then
   fi
 fi
 
-# 3. Install mise, apply its host packages, then install and verify tools.
+# 3. Install mise, or update one older than the config's min_version.
 MISE_BIN="$HOME/.local/bin/mise"
-
-install_mise() {
+if [ ! -x "$MISE_BIN" ]; then
   mkdir -p "$HOME/.local/bin"
   curl -fsSL https://mise.run | MISE_INSTALL_PATH="$MISE_BIN" sh
-}
-
-if [ ! -x "$MISE_BIN" ] || ! "$MISE_BIN" bootstrap packages --help >/dev/null 2>&1; then
-  install_mise
 fi
-if ! "$MISE_BIN" bootstrap packages --help >/dev/null 2>&1; then
-  printf 'error: mise does not support bootstrap packages after reinstall\n' >&2
-  exit 1
+required="$(awk -F'"' '/^min_version/ { print $2; exit }' mise-config.toml)"
+current="$("$MISE_BIN" version | awk '{ print $1 }')"
+if [ "$(printf '%s\n%s\n' "$required" "$current" | sort -V | head -1)" != "$required" ]; then
+  "$MISE_BIN" self-update --yes
 fi
 
+# 4. Link the global config first: the packages step reads it before the
+#    dotfiles step would link it.
 ./scripts/link_mise_config.sh "$PWD/mise-config.toml" "$HOME/.config/mise/config.toml"
 export PATH="$HOME/.local/bin:$PATH"
 case "$(uname -s)/$(uname -m)" in
   Darwin/arm64) export PATH="/opt/homebrew/bin:$PATH" ;;
   Linux/*) export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH" ;;
 esac
-./scripts/ensure_brew_prefix.sh
-"$MISE_BIN" bootstrap packages apply --yes
-"$MISE_BIN" install --yes
-# python's postinstall only runs when mise installs that python; converge
-# pynvim explicitly so an already-present python still gets it.
-"$MISE_BIN" exec -- python -m pip install --quiet pynvim
-MISE_BIN="$MISE_BIN" ./scripts/verify_mise_tools.sh
-"$MISE_BIN" exec -- ansible-galaxy collection install -r requirements.yml
-echo "==> Handing off to Ansible (mise exec -- ansible-playbook playbook.yml)"
-# Pin ANSIBLE_CONFIG to this repo's own config so a stale/unrelated
-# ANSIBLE_CONFIG in the invoking shell (highest precedence in Ansible's
-# config search order) can't shadow this repo's inventory.
-ANSIBLE_CONFIG="$PWD/ansible.cfg" "$MISE_BIN" exec -- ansible-playbook playbook.yml "$@"
+
+# 5. Converge.
+"$MISE_BIN" trust "$PWD/mise.toml"
+"$MISE_BIN" -C "$PWD" bootstrap --yes "$@"
 
 cat <<'EOF'
 
 Done. Open a new login shell (or: exec $SHELL -l) so mise/gpg-agent/brew/cargo
-PATH take effect. (This restart requirement is unchanged from the old bootstrap.)
+PATH take effect.
 EOF

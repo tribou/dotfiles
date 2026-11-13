@@ -5,9 +5,9 @@
 # (alphabetically) and merges [tools] additively over the core config.toml, so
 # `mise install` / `mise upgrade` provision these alongside the core runtimes.
 #
-# Each entry below is optional and additive to the core mise configuration. The
-# optional formulae also use mise's bootstrap package manager rather than the
-# retained macOS-only cask flow.
+# Each entry below is optional and additive to the core mise configuration.
+# Formulae and casks are installed by mise itself (no Homebrew needed); casks
+# are macOS-only (Linux takes only font casks) and install into /Applications.
 
 [tools]
 # awscli = "latest"        # pipx backend (AWS CLI v2)
@@ -26,3 +26,13 @@
 # "brew:rename" = { version = "latest", os = "macos/arm64" }
 # "brew:renameutils" = { version = "latest", os = "macos/arm64" }
 # "brew:vimpager" = { version = "latest", os = "macos/arm64" }
+# "brew-cask:firefox" = { version = "latest", os = "macos" }
+# "brew-cask:orbstack" = { version = "latest", os = "macos" }
+# "brew-cask:bruno" = { version = "latest", os = "macos" }
+# "brew-cask:balenaetcher" = { version = "latest", os = "macos" }
+# "brew-cask:appcleaner" = { version = "latest", os = "macos" }
+# "brew-cask:imageoptim" = { version = "latest", os = "macos" }
+# "brew-cask:cmake" = { version = "latest", os = "macos" }
+# "brew-cask:font-fira-code-nerd-font" = "latest"
+# "brew-cask:font-hack-nerd-font" = "latest"
+# "brew-cask:font-fontawesome" = "latest"

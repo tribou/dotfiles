@@ -77,7 +77,6 @@ check_tools() {
         "go~run: mise install go"
         "bun~run: mise install bun"
         "tombi~run: mise install tombi"
-        "ansible-playbook~run: mise install ansible"
         "nvim~run: mise install neovim"
         "jq~run: mise install jq"
         "fd~run: mise install fd"

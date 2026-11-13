@@ -28,15 +28,15 @@ Three ways to set up a machine:
 
 | Method | When to use |
 |--------|------------|
-| `curl -fsSL https://raw.githubusercontent.com/tribou/dotfiles/main/bootstrap.sh \| bash` | Greenfield machines — bootstraps standalone mise, packages, tools, and then runs the playbook |
+| `curl -fsSL https://raw.githubusercontent.com/tribou/dotfiles/main/bootstrap.sh \| bash` | Greenfield machines — installs standalone mise, then runs `mise bootstrap` |
 | `git clone https://github.com/tribou/dotfiles.git && cd dotfiles && ./bootstrap.sh` | Same as above with a local copy first |
-| `just install` | Already-bootstrapped machines — enters Ansible through mise to repair or sync changes |
+| `just install` | Already-bootstrapped machines — re-runs `mise bootstrap` to repair or sync changes |
 
-Greenfield bootstrap installs standalone `~/.local/bin/mise`, exposes the repository's `mise-config.toml` as the global config, runs `mise bootstrap packages apply --yes`, installs all configured tools, and performs smoke verification. It then invokes `mise exec -- ansible-playbook` so Ansible repeats and completes convergence from the environment mise just provisioned.
+Greenfield bootstrap installs standalone `~/.local/bin/mise`, links the repository's `mise-config.toml` as the global config, trusts the repository's `mise.toml`, and runs `mise bootstrap`: host packages, the TPM and vim-plug checkouts, dotfile symlinks (an existing file is moved to `<file>.backup` first), all configured tools, then the `bootstrap` task (SSH keys, plugins, verification).
 
-**`just install`** runs `mise exec -- ansible-playbook` with `dotfiles_state=present` (default), ensuring symlinks, packages, tools, and config are in place without upgrading installed versions.
+**`just install`** runs the same `mise bootstrap`, which changes only what differs from the config without upgrading installed versions. Arguments pass through: `just install --dry-run` previews, `just install --only dotfiles` applies one part.
 
-**`just upgrade`** uses the same mise-Ansible entry point with `dotfiles_state=latest` and the `upgrade` tag. Formula upgrades are explicit through `mise bootstrap packages upgrade`, versioned tool upgrades use `mise upgrade`, and the real Homebrew CLI handles retained macOS casks only.
+**`just upgrade`** runs the `upgrade` mise task: OS packages, `mise bootstrap packages upgrade` (formulae and casks), `mise upgrade` (tools), repository and plugin updates.
 
 After any run, open a new login shell (or `exec $SHELL -l`) so mise/gpg-agent/brew/cargo PATH changes take effect.
 
