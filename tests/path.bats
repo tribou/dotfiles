@@ -75,3 +75,9 @@ teardown() {
   _path_dedup
   assert_equal "$PATH" "/usr/bin"
 }
+
+@test "shell startup exposes canonical mise brew prefixes without brew shellenv" {
+  grep -qF '/opt/homebrew/bin' "$REPO_ROOT/bash_profile"
+  grep -qF '/home/linuxbrew/.linuxbrew/bin' "$REPO_ROOT/bash_profile"
+  ! grep -qF 'brew shellenv' "$REPO_ROOT/bash_profile"
+}

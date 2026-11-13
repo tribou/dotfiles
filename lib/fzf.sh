@@ -38,18 +38,6 @@ fo() {
 
 # Zoxide replaces custom fzf-z overrides natively with 'zi'
 
-# _dotfiles_beads_show - interactive beads issue browser with fzf
-# Aliases: bdr (beads read), bds (beads show)
-function _dotfiles_beads_show() {
-  local issue_id
-  issue_id=$(bd list --all | fzf --ansi --reverse \
-    --preview 'bd show {2}' \
-    --preview-window up:60%:wrap | awk '{print $2}')
-  [[ -n "$issue_id" ]] && bd show "$issue_id"
-}
-alias bdr='_dotfiles_beads_show'
-alias bds='_dotfiles_beads_show'
-
 # _dotfiles_ghv_show - interactive GitHub issue and PR browser with fzf
 # Aliases: ghv
 function _dotfiles_ghv_show() {

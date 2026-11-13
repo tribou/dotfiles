@@ -1,7 +1,31 @@
-# covers: bootstrap.sh playbook.yml roles/* Brewfile.optional.example mise-config.toml mise-config.optional.toml.example
+# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup
+  FIXTURE_HOME="$BATS_TEST_TMPDIR/home"
+  FIXTURE_BIN="$BATS_TEST_TMPDIR/bin"
+  CALLS="$BATS_TEST_TMPDIR/mise-calls"
+  mkdir -p "$FIXTURE_HOME/.local/bin" "$FIXTURE_BIN"
+  printf '#!/usr/bin/env bash\ncase "$1" in -s) echo Darwin ;; -m) echo arm64 ;; esac\n' > "$FIXTURE_BIN/uname"
+  chmod +x "$FIXTURE_BIN/uname"
+  fake_mise 2026.11.7
+}
+
+# fake_mise VERSION: a standalone mise that logs its args and PATH.
+fake_mise() {
+  printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    'printf "%s\n" "$*" >> "$MISE_CALLS"' \
+    'case "$1" in' \
+    "  version) echo \"$1 macos-arm64 (2026-11-12)\" ;;" \
+    '  -C) printf "PATH=%s\n" "$PATH" >> "$MISE_CALLS" ;;' \
+    'esac' > "$FIXTURE_HOME/.local/bin/mise"
+  chmod +x "$FIXTURE_HOME/.local/bin/mise"
+}
+
+run_bootstrap() {
+  run env HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
+    bash "$REPO_ROOT/bootstrap.sh" "$@"
 }
 
 @test "bootstrap: self-clones to ~/dev/dotfiles when run outside the repo" {
@@ -9,171 +33,54 @@ setup() {
   grep -q 'git clone "\$REPO_URL" "\$REPO_DIR"' "$REPO_ROOT/bootstrap.sh"
 }
 
-@test "bootstrap: installs minimal Linux brew prerequisites (curl git build-essential ca-certificates)" {
+@test "bootstrap: installs minimal Linux prerequisites (curl git build-essential ca-certificates)" {
   grep -q 'apt-get install -y curl git build-essential ca-certificates' "$REPO_ROOT/bootstrap.sh"
 }
 
-@test "bootstrap: installs Homebrew non-interactively when missing" {
-  grep -q 'NONINTERACTIVE=1' "$REPO_ROOT/bootstrap.sh"
-  grep -q 'Homebrew/install/HEAD/install.sh' "$REPO_ROOT/bootstrap.sh"
+@test "bootstrap: links the global config, trusts the repo, and hands off to mise bootstrap" {
+  run_bootstrap --skip task
+  assert_success
+  [ "$(readlink "$FIXTURE_HOME/.config/mise/config.toml")" = "$REPO_ROOT/mise-config.toml" ]
+  grep -qxF "trust $REPO_ROOT/mise.toml" "$CALLS"
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes --skip task" "$CALLS"
+  ! grep -q 'self-update' "$CALLS"
 }
 
-@test "bootstrap: installs ansible via brew if absent" {
-  grep -q 'brew install ansible' "$REPO_ROOT/bootstrap.sh"
+@test "bootstrap: exposes standalone mise after the canonical brew prefix" {
+  run_bootstrap
+  assert_success
+  grep -qF "PATH=/opt/homebrew/bin:$FIXTURE_HOME/.local/bin:$FIXTURE_BIN:/usr/bin:/bin" "$CALLS"
 }
 
-@test "bootstrap: hands off to ansible-playbook playbook.yml" {
-  grep -q 'ansible-playbook playbook.yml' "$REPO_ROOT/bootstrap.sh"
+@test "bootstrap: self-updates a mise older than the config's min_version" {
+  fake_mise 2026.9.11
+  run_bootstrap
+  assert_success
+  grep -qx 'self-update --yes' "$CALLS"
+  update_line="$(grep -nx 'self-update --yes' "$CALLS" | cut -d: -f1)"
+  bootstrap_line="$(grep -nF -- "-C $REPO_ROOT bootstrap" "$CALLS" | cut -d: -f1)"
+  [ "$update_line" -lt "$bootstrap_line" ]
 }
 
-# Regression: a leaked ANSIBLE_CONFIG in the invoking shell (highest precedence
-# in Ansible's config search order) would shadow this repo's own ansible.cfg,
-# same root cause as the justfile install/upgrade fix (see
-# tests/ansible_config_isolation.bats).
-@test "bootstrap: pins ANSIBLE_CONFIG to this repo's ansible.cfg before handing off" {
-  grep -qE 'ANSIBLE_CONFIG=.*ansible\.cfg.*ansible-playbook playbook\.yml' "$REPO_ROOT/bootstrap.sh"
-}
-
-@test "bootstrap: is thin (fewer than 60 lines)" {
-  run bash -c "grep -vcE '^\\s*(#|$)' '$REPO_ROOT/bootstrap.sh'"
-  [ "$output" -lt 60 ]
-}
-
-@test "role: playbook.yml targets localhost with connection local" {
-  grep -q 'hosts: localhost' "$REPO_ROOT/playbook.yml"
-  grep -q 'connection: local' "$REPO_ROOT/playbook.yml"
-}
-
-@test "role: tasks/main.yml includes all concern files" {
-  for f in dirs links terminfo gpg ssh prereqs rust mise brew brew_casks tools_cli nvim tpm zoxide beads upgrade; do
-    grep -q "$f.yml" "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
-  done
-}
-
-@test "role: mise default-node-packages is the sole global npm package source" {
-  [ ! -e "$REPO_ROOT/roles/dotfiles/tasks/npm.yml" ]
-  ! grep -q 'npm.yml' "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
-  ! grep -q 'dotfiles_npm_globals' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"
-}
-
-@test "role: upgrade tasks are gated on dotfiles_state == latest" {
-  grep -q "dotfiles_state == 'latest'" "$REPO_ROOT/roles/dotfiles/tasks/main.yml"
-}
-
-@test "role: core brew list includes tmux (installed via homebrew)" {
-  awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml" | grep -qE '^\s*-\s*tmux\s*$'
-}
-
-@test "role: core brew list excludes optional tools (moved to mise/Brewfile opt-in)" {
-  local block
-  block="$(awk '/^dotfiles_brew_core:/,/^dotfiles_brew_taps:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
-  for opt in nmap ansible tree awscli dos2unix tidy-html5 navi tlrc; do
-    if echo "$block" | grep -qE "^[[:space:]]*-[[:space:]]*${opt}[[:space:]]*$"; then
-      fail "optional tool '$opt' must not be in dotfiles_brew_core"
-    fi
-  done
-  # core keepers still present
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*beads[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*lazygit[[:space:]]*$'
-}
-
-@test "role: macOS formulae keep only core (reattach, tmux-mem-cpu-load, bash-completion)" {
-  local block
-  block="$(awk '/^dotfiles_brew_macos_formulae:/,/^dotfiles_brew_macos_casks:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
-  for opt in rename ngrok tfenv tor vimpager renameutils; do
-    if echo "$block" | grep -qE "^[[:space:]]*-[[:space:]]*[^[:space:]]*${opt}"; then
-      fail "optional macOS formula '$opt' must not be in dotfiles_brew_macos_formulae"
-    fi
-  done
-  # Homebrew disabled the alacritty cask on 2026-09-01 (fails_gatekeeper_check),
-  # so installing it fails the whole macOS formulae task and halts the play.
-  if echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*alacritty[[:space:]]*$'; then
-    fail "alacritty must not be in dotfiles_brew_macos_formulae (Homebrew cask disabled)"
-  fi
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*reattach-to-user-namespace[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*tmux-mem-cpu-load[[:space:]]*$'
-  echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*bash-completion[[:space:]]*$'
-}
-
-@test "role: macOS casks list is empty (casks are opt-in via ~/.Brewfile)" {
-  local block
-  block="$(awk '/^dotfiles_brew_macos_casks:/,/^dotfiles_tmux_plugins:/' "$REPO_ROOT/roles/dotfiles/defaults/main.yml")"
-  if echo "$block" | grep -qE '^[[:space:]]*-[[:space:]]*\S+'; then
-    fail "dotfiles_brew_macos_casks must be empty; found entries"
-  fi
-  echo "$block" | grep -qE '^[[:space:]]*dotfiles_brew_macos_casks:[[:space:]]*\[\][[:space:]]*$'
-}
-
-@test "role: dirs.yml creates ~/.config/mise/conf.d for opt-in drop-ins" {
-  grep -q '\.config/mise/conf\.d' "$REPO_ROOT/roles/dotfiles/tasks/dirs.yml"
-}
-
-@test "role: mise.yml installs all tools un-scoped (picks up conf.d drop-ins)" {
-  local f="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
-  grep -q '/.local/bin/mise" install' "$f"
-  ! grep -q 'mise install {{ item }}' "$f"
-  grep -q 'MISE_RUBY_COMPILE' "$f"
-  grep -q 'all tools are installed' "$f"
-}
-
-@test "role: upgrade.yml upgrades mise tools un-scoped" {
-  grep -qE 'mise upgrade( --yes)?($|[^[:alnum:]_-])' "$REPO_ROOT/roles/dotfiles/tasks/upgrade.yml"
-}
-
-@test "role: brew_casks.yml applies ~/.Brewfile on all platforms (present=install, latest=upgrade)" {
-  local f="$REPO_ROOT/roles/dotfiles/tasks/brew_casks.yml"
-  local block
-  block="$(awk '/name: Stat global Brewfile/,0' "$f")"
-  # The Brewfile hook must NOT be Darwin-only (formulae apply on Linux too).
-  ! echo "$block" | grep -q "ansible_facts.system == 'Darwin'"
-  # present path installs without upgrading; latest path forces upgrade.
-  grep -q '{{ dotfiles_brew_bin }} bundle --global --no-upgrade' "$f"
-  grep -q '{{ dotfiles_brew_bin }} bundle --global --upgrade' "$f"
-  grep -q "dotfiles_state == 'latest'" "$f"
+@test "bootstrap: is thin (fewer than 70 lines)" {
+  [ "$(wc -l < "$REPO_ROOT/bootstrap.sh")" -lt 70 ]
 }
 
 @test "repo: ships mise-config.optional.toml.example as a commented drop-in template" {
   local f="$REPO_ROOT/mise-config.optional.toml.example"
   [ -f "$f" ]
-  # every tool assignment is commented out (user uncomments what they want)
-  ! grep -qE '^[[:space:]]*[a-z0-9_-]+[[:space:]]*=' "$f"
-  # lists the verified-backend optional mise tools
-  for t in awscli terraform-ls ansible navi tlrc; do
-    grep -q "$t" "$f"
+  # every assignment is commented out (user uncomments what they want)
+  ! grep -qE '^[[:space:]]*"?[a-z0-9_:/@-]+"?[[:space:]]*=' "$f"
+  for t in awscli terraform-ls navi tlrc tfenv firefox orbstack bruno font-fira-code-nerd-font; do
+    grep -q "$t" "$f" || fail "optional template lacks $t"
   done
 }
 
-@test "repo: ships Brewfile.optional.example as a commented opt-in template" {
-  local f="$REPO_ROOT/Brewfile.optional.example"
-  [ -f "$f" ]
-  # every cask/brew directive is commented
-  ! grep -qE '^[[:space:]]*(cask|brew)[[:space:]]' "$f"
-  # includes no-mise-backend formulae, the optional macOS formulae, and casks
-  for t in nmap tree dos2unix tidy-html5 ngrok tfenv tor rename vimpager renameutils \
-           firefox orbstack bruno font-fira-code-nerd-font cmake; do
-    grep -q "$t" "$f"
-  done
-}
-
-@test "role: core mise runtimes come from mise-config.toml, not a role variable" {
-  # mise.yml installs un-scoped, so dotfiles_mise_tools no longer drives
-  # anything -- mise-config.toml is the single source of truth for the core
-  # runtime set. A stale list here reads as authoritative and isn't.
-  if grep -q '^dotfiles_mise_tools:' "$REPO_ROOT/roles/dotfiles/defaults/main.yml"; then
-    fail "dotfiles_mise_tools is dead config; core runtimes live in mise-config.toml"
-  fi
+@test "repo: core mise runtimes live in mise-config.toml" {
   grep -qE '^node[[:space:]]*=' "$REPO_ROOT/mise-config.toml"
 }
 
-# Node 25+ (node "lts" is 26) no longer bundles corepack: `corepack enable`
-# fails on a fresh machine, and the old `creates: corepack-enabled` marker hid
-# the missing yarn/pnpm on machines that enabled it under an older node.
-@test "role: corepack comes from mise and yarn/pnpm shims are checked, not marker-gated" {
+# Node 25+ (node "lts" is 26) no longer bundles corepack.
+@test "repo: corepack comes from mise" {
   grep -qF '"npm:corepack" = "latest"' "$REPO_ROOT/mise-config.toml"
-  local f="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
-  ! grep -qF 'corepack-enabled' "$f"
-  grep -qE 'mise"? which (yarn|pnpm)' "$f"
-  grep -qF 'corepack enable' "$f"
-  grep -qF 'reshim' "$f"
 }
