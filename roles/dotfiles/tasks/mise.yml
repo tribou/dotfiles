@@ -26,14 +26,30 @@
   changed_when: "'all tools are installed' not in mise_install.stderr"
   tags: [mise]
 
-- name: Activate mise shims and enable corepack
+# Node 25+ no longer bundles corepack; npm:corepack (mise-config.toml) provides
+# it. `corepack enable` links yarn/pnpm next to it and `mise reshim` exposes
+# them as shims. Check the shims each run instead of a one-time marker, so a
+# node major bump that drops them is repaired.
+- name: Check corepack yarn and pnpm shims
   ansible.builtin.shell:
     cmd: |
-      export PATH="{{ dotfiles_home }}/.local/share/mise/shims:$PATH"
-      corepack enable
-      touch "{{ dotfiles_home }}/.local/share/mise/corepack-enabled"
-    creates: "{{ dotfiles_home }}/.local/share/mise/corepack-enabled"
+      "{{ dotfiles_home }}/.local/bin/mise" which yarn && "{{ dotfiles_home }}/.local/bin/mise" which pnpm
   environment:
     MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
     MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  register: dotfiles_corepack_check
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags: [mise]
+
+- name: Enable corepack yarn and pnpm shims
+  ansible.builtin.shell:
+    cmd: |
+      "{{ dotfiles_home }}/.local/bin/mise" exec -- corepack enable
+      "{{ dotfiles_home }}/.local/bin/mise" reshim
+  environment:
+    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
+    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  when: dotfiles_corepack_check.rc != 0
   tags: [mise]

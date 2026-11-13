@@ -4,6 +4,7 @@ ruby = "4"
 go = "latest"
 bun = "latest"
 tombi = "latest"
+"npm:corepack" = "latest"
 
 [settings]
 legacy_version_file = true

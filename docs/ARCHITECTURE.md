@@ -135,10 +135,11 @@ The `scripts/` directory contains standalone utility scripts (not sourced; run d
 ```toml
 [tools]
 node = "lts"
-ruby = "3"
+ruby = "4"
 go = "latest"
 bun = "latest"
 tombi = "latest"
+"npm:corepack" = "latest"   # Node 25+ no longer bundles corepack (yarn/pnpm)
 
 [settings]
 legacy_version_file = true  # respects .nvmrc, .ruby-version, etc.
