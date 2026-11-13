@@ -1,4 +1,4 @@
-# covers: mise.toml mise-config.toml scripts/doctor.sh bootstrap.sh justfile
+# covers: mise.toml mise-config.toml scripts/doctor.sh bootstrap.sh justfile lib/fzf.sh scripts/bootstrap/converge.sh scripts/upgrade.sh docker-compose.yml .gitignore
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -93,4 +93,11 @@ dotfile_entries() {
   grep -qF '"brew-cask:' "$REPO_ROOT/mise-config.optional.toml.example"
   ! grep -qE '^[[:space:]]*"brew-cask:alacritty"' "$GLOBAL" "$REPO_ROOT/mise-config.optional.toml.example"
   ! grep -qE '^[^#]*"brew-cask:' "$REPO_ROOT/mise-config.optional.toml.example"
+}
+
+@test "no beads integration remains outside historical plans" {
+  run git -C "$REPO_ROOT" ls-files .beads
+  assert_output ''
+  run bash -c "cd '$REPO_ROOT' && git ls-files -z -- . ':!docs/superpowers/' ':!.gitignore' ':!tests/mise_bootstrap_config.bats' | xargs -0 grep -d skip -IliE 'beads|bd prime|bd -C|dolt' --"
+  assert_output ''
 }

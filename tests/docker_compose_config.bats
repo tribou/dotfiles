@@ -70,7 +70,3 @@ setup() {
   awk '/name: Run Docker environment tests/,/run: just test/' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml" \
     | grep -qF 'GITHUB_TOKEN: ${{ github.token }}'
 }
-
-@test "docker-compose: containers never run beads against the bind-mounted checkout" {
-  awk '/^  base:/,/^  ci:/' "$REPO_ROOT/docker-compose.yml" | grep -qF 'DOTFILES_SKIP_BEADS: "1"'
-}

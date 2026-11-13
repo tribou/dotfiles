@@ -22,7 +22,7 @@ setup() {
     grep -qF "\"gem:${package}\" = \"latest\"" "$config"
   done
 
-  for formula in bash git zlib htop gnupg editorconfig watchman ssh-copy-id git-extras lynx beads; do
+  for formula in bash git zlib htop gnupg editorconfig watchman ssh-copy-id git-extras lynx; do
     grep -qF "\"brew:${formula}\" = \"latest\"" "$config"
   done
   run grep -qF '"brew:gpg" = "latest"' "$config"

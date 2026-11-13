@@ -14,7 +14,7 @@
 - **`mise-config.toml`** (global config): `[tools]`, `[settings]`, and `[bootstrap.packages]` (OS prerequisites via `apt:`/`pacman:`, formulae via `brew:`). Machine-wide, so it applies from any directory.
 - **`mise.toml`** (project config for this checkout): `[dotfiles]` symlinks, `[bootstrap.repos]` (TPM, vim-plug), the `pre-dotfiles` hook, and the `bootstrap` and `upgrade` tasks. Relative sources and `{{ config_root }}` resolve to the checkout.
 - **`scripts/bootstrap/pre_dotfiles.sh`**: the `pre-dotfiles` hook. Creates directories, keeps `~/.ssh` and `~/.gnupg` at `0700`, and moves a regular file at any `[dotfiles]` target to `<target>.backup` (mise refuses to replace files it did not write).
-- **`scripts/bootstrap/converge.sh`**: the `bootstrap` task, run last with `[tools]` on PATH. SSH keys, the macOS keychain block, terminfo, `~/.gnupg` file modes, Neovim/CoC and TPM plugins, the `~/.z` → zoxide migration, beads hydration, pynvim, corepack shims, legacy Homebrew cleanup (`scripts/brew_cleanup.sh`), verification, and the `~/.dotfiles-bootstrap-done` marker.
+- **`scripts/bootstrap/converge.sh`**: the `bootstrap` task, run last with `[tools]` on PATH. SSH keys, the macOS keychain block, terminfo, `~/.gnupg` file modes, Neovim/CoC and TPM plugins, the `~/.z` → zoxide migration, pynvim, corepack shims, legacy Homebrew cleanup (`scripts/brew_cleanup.sh`), verification, and the `~/.dotfiles-bootstrap-done` marker.
 - **`scripts/upgrade.sh`**: the `upgrade` task (`just upgrade`).
 
 Every declarative part (packages, repos, dotfiles, tools) skips what already matches, and the hook and task print `changed: ...` only when they change something, so re-running `just install` is safe and a second run is quiet.
@@ -25,7 +25,7 @@ Every declarative part (packages, repos, dotfiles, tools) skips what already mat
 
 ### Upgrades
 
-`just upgrade` runs the `upgrade` task: a full OS upgrade (`apt-get upgrade` / `pacman -Syu`), `mise bootstrap packages upgrade`, `mise upgrade`, `mise bootstrap repos update` (fast-forwards TPM and vim-plug), a full `mise bootstrap` converge, then pynvim, rustup, Neovim and tmux plugin updates, and the claude/opencode/beads self-updaters when installed. With no Ansible there is no interpreter for an upgrade to replace mid-run.
+`just upgrade` runs the `upgrade` task: a full OS upgrade (`apt-get upgrade` / `pacman -Syu`), `mise bootstrap packages upgrade`, `mise upgrade`, `mise bootstrap repos update` (fast-forwards TPM and vim-plug), a full `mise bootstrap` converge, then pynvim, rustup, Neovim and tmux plugin updates, and the claude/opencode self-updaters when installed. With no Ansible there is no interpreter for an upgrade to replace mid-run.
 
 ### Opt-in packages
 
@@ -225,4 +225,4 @@ This repo uses **GitHub issues** for issue tracking. Issues live on the GitHub r
 - `gh issue create` — create a new issue
 - `gh issue close <n>` — close an issue
 
-Priority is tracked via `P1`/`P2`/`P3` labels. Bugs use the `bug` label; tasks/features use `enhancement`. This project previously used **bd (beads)** — an embedded Dolt database synced via a `refs/dolt/data` ref — but migrated to GitHub issues. The `.beads/` directory is gitignored and retained only as historical archive.
+Priority is tracked via `P1`/`P2`/`P3` labels. Bugs use the `bug` label; tasks/features use `enhancement`.

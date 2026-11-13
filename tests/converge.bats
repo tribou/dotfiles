@@ -157,24 +157,6 @@ stub() {
   ! grep -q '^corepack' "$LOG"
 }
 
-@test "converge: hydrates beads on a fresh clone with a sync remote" {
-  local repo="$BATS_TEST_TMPDIR/repo"
-  mkdir -p "$repo/.beads"
-  printf 'sync.remote: "https://example.test/beads"\n' > "$repo/.beads/config.yaml"
-  stub bd
-  DOTFILES_REPO="$repo" run step_beads
-  assert_success
-  grep -qF "bd -C $repo bootstrap --yes" "$LOG"
-}
-
-@test "converge: beads step is skipped when bd is not installed" {
-  local repo="$BATS_TEST_TMPDIR/repo"
-  mkdir -p "$repo/.beads"
-  printf 'sync.remote: "https://example.test/beads"\n' > "$repo/.beads/config.yaml"
-  PATH="$STUBS:/usr/bin:/bin" DOTFILES_REPO="$repo" run step_beads
-  assert_success
-}
-
 @test "converge: writes the bootstrap-done marker once" {
   run step_marker
   assert_output --partial 'changed: marked bootstrap complete'
@@ -185,22 +167,10 @@ stub() {
 
 @test "converge: main runs every step, verification before the marker" {
   run grep -nE '^ *step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
-  for step in ssh_keys macos_ssh terminfo gnupg_perms nvim_plugins tmux_plugins zoxide beads pynvim corepack brew_cleanup verify marker; do
+  for step in ssh_keys macos_ssh terminfo gnupg_perms nvim_plugins tmux_plugins zoxide pynvim corepack brew_cleanup verify marker; do
     echo "$output" | grep -qE ":? *step_${step}$" || fail "main does not run step_$step"
   done
   verify_line="$(echo "$output" | grep -E 'step_verify$' | cut -d: -f1)"
   marker_line="$(echo "$output" | grep -E 'step_marker$' | cut -d: -f1)"
   [ "$verify_line" -lt "$marker_line" ]
-}
-
-# The Docker suite bind-mounts the developer's checkout; `bd bootstrap` there
-# rewrites tracked .beads files as root.
-@test "converge: DOTFILES_SKIP_BEADS=1 leaves beads alone" {
-  local repo="$BATS_TEST_TMPDIR/repo"
-  mkdir -p "$repo/.beads"
-  printf 'sync.remote: "https://example.test/beads"\n' > "$repo/.beads/config.yaml"
-  stub bd
-  DOTFILES_SKIP_BEADS=1 DOTFILES_REPO="$repo" run step_beads
-  assert_success
-  [ ! -s "$LOG" ]
 }

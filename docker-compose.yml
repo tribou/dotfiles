@@ -3,8 +3,6 @@ services:
     build: .
     environment:
       GIT_CONFIG_PARAMETERS: "'safe.directory=*'"
-      # bd would rewrite the bind-mounted checkout's tracked .beads files as root.
-      DOTFILES_SKIP_BEADS: "1"
     volumes:
       - .:/dotfiles
 

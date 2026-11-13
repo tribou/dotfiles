@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The `upgrade` mise task (`just upgrade`): upgrade the OS, mise packages and
 # tools, bootstrap repos, then re-converge and update editor/tmux plugins.
-# Optional self-updaters (rustup, claude, opencode, beads) never abort the run.
+# Optional self-updaters (rustup, claude, opencode) never abort the run.
 set -euo pipefail
 
 DOTFILES_REPO="${DOTFILES_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -50,7 +50,3 @@ for cli in claude opencode; do
     optional "$cli" upgrade
   fi
 done
-if command -v bd >/dev/null 2>&1; then
-  step "beads"
-  optional bd -C "$DOTFILES_REPO" dolt pull
-fi

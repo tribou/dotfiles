@@ -10,7 +10,7 @@ setup() {
   export CALL_LOG="$LOG"
   printf '#!/usr/bin/env bash\necho "tpm update_plugins $*" >> "$CALL_LOG"\n' > "$HOME/.tmux/plugins/tpm/bin/update_plugins"
   chmod +x "$HOME/.tmux/plugins/tpm/bin/update_plugins"
-  for cmd in mise nvim tmux python sudo apt-get bd claude opencode rustup; do stub "$cmd"; done
+  for cmd in mise nvim tmux python sudo apt-get claude opencode rustup; do stub "$cmd"; done
   # sudo runs its command so apt-get is logged too
   stub sudo '"$@"'
   rm -f "$STUBS/pacman"
@@ -69,11 +69,6 @@ line_of() { grep -nF -- "$1" "$LOG" | head -1 | cut -d: -f1; }
   run_upgrade
   assert_success
   ! grep -qE '^(claude|opencode) ' "$LOG"
-}
-
-@test "upgrade: pulls beads issues when bd is installed" {
-  run_upgrade
-  grep -qF "bd -C $REPO_ROOT dolt pull" "$LOG"
 }
 
 @test "upgrade: a failing optional self-updater does not abort the run" {

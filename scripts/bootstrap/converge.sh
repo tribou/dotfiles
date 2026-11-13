@@ -106,22 +106,6 @@ step_zoxide() {
   fi
 }
 
-# DOTFILES_SKIP_BEADS=1 (set by docker-compose.yml) keeps containers from
-# rewriting the bind-mounted checkout's tracked .beads files.
-step_beads() {
-  [ "${DOTFILES_SKIP_BEADS:-}" = 1 ] && return 0
-  command -v bd >/dev/null 2>&1 || return 0
-  local remote
-  remote="$(awk -F'"' '/^sync\.remote:/ { print $2; exit }' "$DOTFILES_REPO/.beads/config.yaml" 2>/dev/null || true)"
-  [ -n "$remote" ] || return 0
-  if [ ! -e "$DOTFILES_REPO/.beads/embeddeddolt" ]; then
-    bd -C "$DOTFILES_REPO" bootstrap --yes && echo "changed: hydrated beads" || true
-  elif ! bd -C "$DOTFILES_REPO" dolt remote list 2>/dev/null | grep -qF "$remote"; then
-    bd -C "$DOTFILES_REPO" dolt remote remove origin >/dev/null 2>&1 || true
-    bd -C "$DOTFILES_REPO" dolt remote add origin "$remote" && echo "changed: registered beads remote" || true
-  fi
-}
-
 # python's postinstall only runs when mise installs that python, so converge
 # pynvim explicitly for an already-present python.
 step_pynvim() {
@@ -163,7 +147,6 @@ main() {
   step_nvim_plugins
   step_tmux_plugins
   step_zoxide
-  step_beads
   step_pynvim
   step_corepack
   step_brew_cleanup
