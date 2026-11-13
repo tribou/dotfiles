@@ -1,3 +1,4 @@
+# covers: .github/workflows/*.yml scripts/verify_mise_tools.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup

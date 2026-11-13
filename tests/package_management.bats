@@ -1,3 +1,4 @@
+# covers: mise-config.toml mise-config.optional.toml.example Brewfile.optional.example bootstrap.sh justfile ansible.cfg roles/* scripts/verify_mise_tools.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -7,7 +8,7 @@ setup() {
   local config="$REPO_ROOT/mise-config.toml"
   grep -qF 'min_version = "2026.7.5"' "$config"
   grep -qE '^node[[:space:]]*=[[:space:]]*"lts"$' "$config"
-  grep -qE '^ruby[[:space:]]*=[[:space:]]*"3"$' "$config"
+  grep -qE '^ruby[[:space:]]*=[[:space:]]*"4"$' "$config"
   grep -qF 'postinstall = "python -m pip install --upgrade pynvim"' "$config"
   grep -qF '[settings.npm]' "$config"
   grep -qF 'package_manager = "npm"' "$config"

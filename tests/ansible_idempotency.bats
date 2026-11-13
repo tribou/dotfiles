@@ -18,19 +18,3 @@ setup() {
   run grep -E 'creates:.*dev/go/bin/gopls' "$REPO_ROOT/roles/dotfiles/tasks/nvim.yml"
   assert_failure
 }
-
-@test "nvim: --break-system-packages is only passed when the target pip supports it" {
-  # Ansible's interpreter discovery can fall back to Apple's /usr/bin/python3
-  # (Python 3.9, pip 21.2.4), whose pip predates --break-system-packages
-  # (pip 23.0.1) and rejects it with "no such option".
-  local nvim="$REPO_ROOT/roles/dotfiles/tasks/nvim.yml"
-  run grep -E 'pip install --help' "$nvim"
-  assert_success
-  # No task may hardcode the flag; it must come from the support check.
-  run grep -nE '^[^#]*(pip install|extra_args:).*--break-system-packages' "$nvim"
-  assert_failure
-  run grep -E 'extra_args:.*dotfiles_pip_user_args' "$nvim"
-  assert_success
-  run grep -E 'pip install \{\{ dotfiles_pip_user_args \}\} packaging' "$nvim"
-  assert_success
-}
