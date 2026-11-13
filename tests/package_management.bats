@@ -220,3 +220,14 @@ setup() {
   [ ! -e "$tmpdir/uninstall.log" ]
   rm -rf "$tmpdir"
 }
+
+# Node 25+ (node "lts" is 26) no longer bundles corepack, and the old
+# `creates: corepack-enabled` marker hid that on machines that enabled it once.
+@test "corepack comes from mise and yarn/pnpm shims are checked, not marker-gated" {
+  grep -qF '"npm:corepack" = "latest"' "$REPO_ROOT/mise-config.toml"
+  local f="$REPO_ROOT/roles/dotfiles/tasks/mise.yml"
+  ! grep -qF 'corepack-enabled' "$f"
+  grep -qE 'mise"? which (yarn|pnpm)' "$f"
+  grep -qF 'corepack enable' "$f"
+  grep -qF 'reshim' "$f"
+}

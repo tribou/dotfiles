@@ -92,9 +92,7 @@
   ansible.builtin.shell:
     cmd: |
       "{{ dotfiles_home }}/.local/bin/mise" which yarn && "{{ dotfiles_home }}/.local/bin/mise" which pnpm
-  environment:
-    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
-    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  environment: *mise_environment
   register: dotfiles_corepack_check
   changed_when: false
   failed_when: false
@@ -106,8 +104,6 @@
     cmd: |
       "{{ dotfiles_home }}/.local/bin/mise" exec -- corepack enable
       "{{ dotfiles_home }}/.local/bin/mise" reshim
-  environment:
-    MISE_DATA_DIR: "{{ dotfiles_home }}/.local/share/mise"
-    MISE_CACHE_DIR: "{{ dotfiles_home }}/.cache/mise"
+  environment: *mise_environment
   when: dotfiles_corepack_check.rc != 0
   tags: [mise]

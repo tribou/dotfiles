@@ -53,7 +53,10 @@ setup() {
     '      touch "'$BATS_TEST_TMPDIR'/mise-installed"' \
     '    fi' \
     '    ;;' \
+    '  "exec -- corepack enable") touch "'$BATS_TEST_TMPDIR'/corepack-enabled" ;;' \
     '  "exec --"*) ;;' \
+    '  "which yarn"|"which pnpm") [ -e "'$BATS_TEST_TMPDIR'/corepack-enabled" ] ;;' \
+    '  "reshim") ;;' \
     '  *) printf "unexpected mise args: %s\\n" "$*" >&2; exit 1 ;;' \
     'esac' > "$fixture_home/.local/bin/mise"
   chmod +x "$fixture_home/.local/bin/mise"

@@ -41,7 +41,7 @@ command:
   "mise exec -- go version":
     exit-status: 0
 
-  # yarn and pnpm must be available via corepack (enabled by bootstrap after mise installs node)
+  # yarn and pnpm must be available via corepack (npm:corepack from mise; mise.yml enables its shims)
   "mise exec -- yarn --version":
     exit-status: 0
   "mise exec -- pnpm --version":
