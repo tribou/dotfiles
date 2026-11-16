@@ -62,3 +62,20 @@ setup() {
   grep -qF -- '-C "$GITHUB_WORKSPACE" bootstrap --dry-run' "$workflow"
   ! grep -qiE 'ansible|playbook' "$workflow"
 }
+
+@test "macOS workflow applies repos and the pre-dotfiles hook before the dry-run" {
+  # --dry-run does not clone repos or run hooks, so without this the dotfiles
+  # check fails on the missing vim-plug source and the runner's own
+  # ~/.bash_profile and ~/.gitconfig.
+  local block
+  block="$(awk '/- name: Dry-run the full mise bootstrap on macOS/{found=1} found && /- name: Install just/{exit} found' \
+    "$REPO_ROOT/.github/workflows/macos-tests.yml")"
+
+  run awk '
+    /bootstrap repos apply --yes/ { repos = NR }
+    /scripts\/bootstrap\/pre_dotfiles\.sh/ { hook = NR }
+    /bootstrap --dry-run/ { dry = NR }
+    END { exit !(repos && hook && dry && repos < dry && hook < dry) }
+  ' <<<"$block"
+  assert_success
+}

@@ -47,6 +47,11 @@ jobs:
         run: |
           set -euo pipefail
           "$HOME/.local/bin/mise" trust "$GITHUB_WORKSPACE/mise.toml"
+          # --dry-run neither clones repos nor runs hooks, so its dotfiles check
+          # would fail on the missing vim-plug source and the runner's own
+          # ~/.bash_profile and ~/.gitconfig. Apply those two phases for real.
+          "$HOME/.local/bin/mise" -C "$GITHUB_WORKSPACE" bootstrap repos apply --yes
+          "$GITHUB_WORKSPACE/scripts/bootstrap/pre_dotfiles.sh"
           "$HOME/.local/bin/mise" -C "$GITHUB_WORKSPACE" bootstrap --dry-run
 
       - name: Install just
