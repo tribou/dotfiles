@@ -1,4 +1,4 @@
-# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh
+# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -83,4 +83,63 @@ run_bootstrap() {
 # Node 25+ (node "lts" is 26) no longer bundles corepack.
 @test "repo: corepack comes from mise" {
   grep -qF '"npm:corepack" = "latest"' "$REPO_ROOT/mise-config.toml"
+}
+
+# mise bootstrap --dry-run neither clones repos nor runs the pre-dotfiles hook,
+# so its dotfiles check fails on a machine that was never bootstrapped (#226).
+@test "bootstrap --dry-run: previews everything but dotfiles with mise, then dotfiles without changing them" {
+  printf 'mine\n' > "$FIXTURE_HOME/.gitconfig"
+  run_bootstrap --dry-run
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes --dry-run --skip dotfiles" "$CALLS"
+  grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
+  assert_output --partial 'would back up ~/.gitconfig to ~/.gitconfig.backup'
+  [ "$(cat "$FIXTURE_HOME/.gitconfig")" = mine ]
+  [ ! -e "$FIXTURE_HOME/.gitconfig.backup" ]
+}
+
+@test "bootstrap -n: is the same as --dry-run" {
+  run_bootstrap -n --skip task
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes -n --skip task --skip dotfiles" "$CALLS"
+  grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
+}
+
+@test "bootstrap --dry-run --only dotfiles: previews only dotfiles" {
+  run_bootstrap --dry-run --only dotfiles
+  assert_success
+  ! grep -qF -- "-C $REPO_ROOT bootstrap" "$CALLS"
+  grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
+}
+
+@test "bootstrap --dry-run --only: keeps the other parts for mise" {
+  run_bootstrap --dry-run --only repos,dotfiles --only=tools
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes --dry-run --only repos --only=tools" "$CALLS"
+  grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
+}
+
+@test "bootstrap --dry-run --skip dotfiles: skips the dotfiles preview" {
+  run_bootstrap --dry-run --skip task,dotfiles
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes --dry-run --skip task,dotfiles" "$CALLS"
+  ! grep -qF 'dot diff' "$CALLS"
+  refute_output --partial 'would '
+}
+
+@test "just install --dry-run: previews like bootstrap.sh --dry-run" {
+  printf 'mine\n' > "$FIXTURE_HOME/.gitconfig"
+  run env HOME="$FIXTURE_HOME" PATH="$PATH" MISE_CALLS="$CALLS" \
+    just --justfile "$REPO_ROOT/justfile" install --dry-run
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes --dry-run --skip dotfiles" "$CALLS"
+  grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
+  [ ! -e "$FIXTURE_HOME/.gitconfig.backup" ]
+}
+
+@test "just install: applies with mise bootstrap" {
+  run env HOME="$FIXTURE_HOME" PATH="$PATH" MISE_CALLS="$CALLS" \
+    just --justfile "$REPO_ROOT/justfile" install --skip task
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes --skip task" "$CALLS"
 }

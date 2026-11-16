@@ -54,7 +54,7 @@ esac
 
 # 5. Converge.
 "$MISE_BIN" trust "$PWD/mise.toml"
-"$MISE_BIN" -C "$PWD" bootstrap --yes "$@"
+./scripts/bootstrap/run.sh "$MISE_BIN" "$@"
 
 cat <<'EOF'
 

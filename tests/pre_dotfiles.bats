@@ -53,3 +53,24 @@ setup() {
   assert_success
   refute_output --partial 'changed:'
 }
+
+@test "pre_dotfiles --dry-run: reports what it would do without changing anything" {
+  printf 'mine\n' > "$HOME/.bash_profile"
+  run "$SCRIPT" --dry-run
+  assert_success
+  assert_output --partial 'would create ~/.gnupg'
+  assert_output --partial 'would back up ~/.bash_profile to ~/.bash_profile.backup'
+  refute_output --partial 'changed:'
+  [ "$(cat "$HOME/.bash_profile")" = mine ]
+  [ ! -e "$HOME/.bash_profile.backup" ]
+  [ ! -e "$HOME/.gnupg" ]
+  [ ! -e "$HOME/.local" ]
+}
+
+@test "pre_dotfiles --dry-run: reports a world-readable ~/.gnupg without fixing it" {
+  mkdir -p "$HOME/.gnupg" && chmod 755 "$HOME/.gnupg"
+  run "$SCRIPT" --dry-run
+  assert_success
+  assert_output --partial 'would make ~/.gnupg private'
+  [ "$(stat -c %a "$HOME/.gnupg" 2>/dev/null || stat -f %Lp "$HOME/.gnupg")" = 755 ]
+}
