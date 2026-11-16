@@ -13,7 +13,7 @@
 
 - **`mise-config.toml`** (global config): `[tools]`, `[settings]`, and `[bootstrap.packages]` (OS prerequisites via `apt:`/`pacman:`, formulae via `brew:`). Machine-wide, so it applies from any directory.
 - **`mise.toml`** (project config for this checkout): `[dotfiles]` symlinks, `[bootstrap.repos]` (TPM, vim-plug), the `pre-dotfiles` hook, and the `bootstrap` and `upgrade` tasks. Relative sources and `{{ config_root }}` resolve to the checkout.
-- **`scripts/bootstrap/run.sh`**: shared by `bootstrap.sh` and `just install`. Runs `mise bootstrap --yes`, or with `-n`/`--dry-run` previews it (see Run order).
+- **`scripts/bootstrap/run.sh`**: shared by `bootstrap.sh` and `just install`. Runs `mise bootstrap --yes`, or with `-n`/`--dry-run` previews it (see Run order). `scripts/bootstrap/is_dry_run.sh` decides what counts as a dry run for both.
 - **`scripts/bootstrap/pre_dotfiles.sh`**: the `pre-dotfiles` hook (`--dry-run` reports without changing anything). Creates directories, keeps `~/.ssh` and `~/.gnupg` at `0700`, and moves a regular file at any `[dotfiles]` target to `<target>.backup` (mise refuses to replace files it did not write).
 - **`scripts/bootstrap/converge.sh`**: the `bootstrap` task, run last with `[tools]` on PATH. SSH keys, the macOS keychain block, terminfo, `~/.gnupg` file modes, Neovim/CoC and TPM plugins, the `~/.z` → zoxide migration, pynvim, corepack shims, legacy Homebrew cleanup (`scripts/brew_cleanup.sh`), verification, and the `~/.dotfiles-bootstrap-done` marker.
 - **`scripts/upgrade.sh`**: the `upgrade` task (`just upgrade`).
@@ -22,7 +22,7 @@ Every declarative part (packages, repos, dotfiles, tools) skips what already mat
 
 ### Run order
 
-`mise bootstrap` applies, in order: packages (both configs) → repos → `pre-dotfiles` hook → dotfiles → tools → the `bootstrap` task. `just install --dry-run` (or `./bootstrap.sh --dry-run`) previews it. Don't call `mise bootstrap --dry-run` directly: it neither clones repos nor runs the hook, so on a machine that was never bootstrapped its dotfiles check fails on the missing vim-plug source and on files the hook would back up, and it never previews the later parts. `run.sh` instead has mise preview everything except dotfiles, then runs `pre_dotfiles.sh --dry-run` and `mise dot diff`. `mise bootstrap status` and `mise dot status` report drift.
+`mise bootstrap` applies, in order: packages (both configs) → repos → `pre-dotfiles` hook → dotfiles → tools → the `bootstrap` task. `just install --dry-run` (or `./bootstrap.sh --dry-run`) previews it. Don't call `mise bootstrap --dry-run` directly: it neither clones repos nor runs the hook, so on a machine that was never bootstrapped its dotfiles check fails on the missing vim-plug source and on files the hook would back up, and it never previews the later parts. `run.sh` instead has mise preview everything except dotfiles, then runs `pre_dotfiles.sh --dry-run` and `mise dot diff`. A dry run through `bootstrap.sh` skips the Linux package step and applies nothing, but it still installs mise when missing and links the global config (backing up an existing `~/.config/mise/config.toml`); it stops if the installed mise is older than `min_version` instead of updating it. `just install --dry-run` changes nothing and warns when the global config is not linked, because mise then previews no packages or global tools. `mise bootstrap status` and `mise dot status` report drift.
 
 ### Upgrades
 

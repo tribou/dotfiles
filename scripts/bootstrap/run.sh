@@ -16,23 +16,32 @@ mise_bin="$1"
 shift
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-dry_run=0
-for arg in "$@"; do
-  case "$arg" in -n | --dry-run) dry_run=1 ;; esac
-done
-if [ "$dry_run" = 0 ]; then
+if ! "$repo/scripts/bootstrap/is_dry_run.sh" "$@"; then
   exec "$mise_bin" -C "$repo" bootstrap --yes "$@"
+fi
+
+die() {
+  echo "run.sh: $1" >&2
+  exit 2
+}
+
+# mise reads packages and global tools from the global config; without the
+# link it previews neither and reports that everything is installed.
+if [ ! "$HOME/.config/mise/config.toml" -ef "$repo/mise-config.toml" ]; then
+  echo "run.sh: ~/.config/mise/config.toml is not linked to this repo, so packages and global tools are missing from this preview (./bootstrap.sh links it)." >&2
 fi
 
 args=()
 only_given=0    # any --only seen
+skip_given=0    # any --skip seen
 only_dotfiles=0 # an --only listed dotfiles
 only_others=0   # an --only listed some other part
 dotfiles=1      # whether the dotfiles part is selected
 
 # keep_parts FLAG SEP LIST: re-emit an --only flag without the dotfiles part.
 keep_parts() {
-  local flag="$1" sep="$2" list="$3" part kept=()
+  local flag="$1" sep="$2" list="$3" part parts kept=()
+  [ -n "$list" ] || die "$flag needs a value"
   IFS=, read -ra parts <<<"$list"
   for part in "${parts[@]}"; do
     if [ "$part" = dotfiles ]; then
@@ -64,11 +73,15 @@ while [ "$#" -gt 0 ]; do
       keep_parts --only = "${1#--only=}"
       ;;
     --skip)
-      [[ ",${2:-}," == *,dotfiles,* ]] && dotfiles=0
-      args+=("$1" "${2:-}")
+      skip_given=1
+      [ -n "${2:-}" ] || die "--skip needs a value"
+      [[ ",$2," == *,dotfiles,* ]] && dotfiles=0
+      args+=("$1" "$2")
       shift
       ;;
     --skip=*)
+      skip_given=1
+      [ -n "${1#--skip=}" ] || die "--skip needs a value"
       [[ ",${1#--skip=}," == *,dotfiles,* ]] && dotfiles=0
       args+=("$1")
       ;;
@@ -76,6 +89,7 @@ while [ "$#" -gt 0 ]; do
   esac
   shift
 done
+[ "$only_given$skip_given" != 11 ] || die "--only and --skip cannot be combined"
 
 if [ "$only_given" = 1 ]; then
   dotfiles="$only_dotfiles"
@@ -91,7 +105,7 @@ fi
 
 [ "$dotfiles" = 1 ] || exit 0
 
-echo "mise bootstrap: dotfiles (preview)"
+echo "mise bootstrap: dotfiles (preview; a real run applies these before tools and the task)"
 "$repo/scripts/bootstrap/pre_dotfiles.sh" --dry-run "$repo/mise.toml"
 echo "Dotfiles whose source comes from a [bootstrap.repos] clone show as missing until the repo is cloned."
 "$mise_bin" -C "$repo" dot diff

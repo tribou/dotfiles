@@ -4,7 +4,9 @@ set -euo pipefail
 # Thin bootstrapper: install mise, link its global config, then hand off to
 # `mise bootstrap`, which applies mise.toml (dotfiles, repos, hooks, the
 # bootstrap task) and mise-config.toml (packages and tools). Extra arguments
-# pass through to `mise bootstrap` (e.g. --skip task, --dry-run).
+# go to scripts/bootstrap/run.sh, which passes them to `mise bootstrap`
+# (e.g. --skip task). -n/--dry-run previews: it installs no system packages
+# and applies nothing, but still installs mise and links its global config.
 
 REPO_URL="https://github.com/tribou/dotfiles.git"
 REPO_DIR="$HOME/dev/dotfiles"
@@ -21,8 +23,11 @@ else
   cd "$REPO_DIR"
 fi
 
+dry_run=0
+./scripts/bootstrap/is_dry_run.sh "$@" && dry_run=1
+
 # 2. Linux prerequisites for installing mise and compiling tools.
-if [ "$(uname -s)" != "Darwin" ]; then
+if [ "$dry_run" = 0 ] && [ "$(uname -s)" != "Darwin" ]; then
   if command -v apt-get >/dev/null 2>&1; then
     sudo apt-get update
     sudo apt-get install -y curl git build-essential ca-certificates
@@ -40,6 +45,7 @@ fi
 required="$(awk -F'"' '/^min_version/ { print $2; exit }' mise-config.toml)"
 current="$("$MISE_BIN" version | awk '{ print $1 }')"
 if [ "$(printf '%s\n%s\n' "$required" "$current" | sort -V | head -1)" != "$required" ]; then
+  [ "$dry_run" = 0 ] || { echo "mise $current is older than the required $required; update it first: $MISE_BIN self-update" >&2; exit 1; }
   "$MISE_BIN" self-update --yes
 fi
 
@@ -55,7 +61,7 @@ esac
 # 5. Converge.
 "$MISE_BIN" trust "$PWD/mise.toml"
 ./scripts/bootstrap/run.sh "$MISE_BIN" "$@"
-
+[ "$dry_run" = 0 ] || { printf '\nDry run complete: mise bootstrap applied nothing.\n'; exit 0; }
 cat <<'EOF'
 
 Done. Open a new login shell (or: exec $SHELL -l) so mise/gpg-agent/brew/cargo

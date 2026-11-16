@@ -63,7 +63,7 @@ test-changed *args:
 # mise-config.toml (packages, tools). Extra args pass through (e.g. --skip task);
 # --dry-run previews without changing anything (scripts/bootstrap/run.sh).
 install *args:
-    {{justfile_directory()}}/scripts/bootstrap/run.sh ~/.local/bin/mise {{args}}
+    "{{justfile_directory()}}/scripts/bootstrap/run.sh" ~/.local/bin/mise {{args}}
 
 # Upgrade everything: OS packages, mise packages and tools, repos, and plugins
 # (the `upgrade` task in mise.toml, scripts/upgrade.sh)

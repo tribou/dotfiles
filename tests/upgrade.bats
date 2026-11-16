@@ -80,7 +80,7 @@ line_of() { grep -nF -- "$1" "$LOG" | head -1 | cut -d: -f1; }
 
 @test "justfile: install converges through scripts/bootstrap/run.sh and upgrade runs the mise upgrade task" {
   run just --justfile "$REPO_ROOT/justfile" --show install
-  assert_output --partial 'scripts/bootstrap/run.sh ~/.local/bin/mise'
+  assert_output --partial 'scripts/bootstrap/run.sh" ~/.local/bin/mise'
   run just --justfile "$REPO_ROOT/justfile" --show upgrade
   assert_output --partial 'mise -C {{ justfile_directory() }} run upgrade'
 }

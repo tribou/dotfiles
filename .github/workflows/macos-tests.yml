@@ -24,6 +24,16 @@ jobs:
       - name: Require Apple Silicon runner
         run: test "$(uname -m)" = arm64
 
+      # The documented preview command, before mise or its config exists, so
+      # bootstrap.sh installs mise itself. The runner image still ships
+      # Homebrew, git and Xcode, so this is not a stock macOS machine.
+      - name: Dry-run the full mise bootstrap on macOS
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MISE_DISABLE_TOOLS: rust
+        run: ./bootstrap.sh --dry-run
+
       - name: Install and verify mise packages and tools
         shell: bash
         env:
@@ -39,13 +49,6 @@ jobs:
           "$HOME/.local/bin/mise" install --yes
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
           MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
-
-      - name: Dry-run the full mise bootstrap on macOS
-        shell: bash
-        env:
-          MISE_DISABLE_TOOLS: rust
-        # The documented preview command, on a runner that was never bootstrapped
-        run: ./bootstrap.sh --dry-run
 
       - name: Install just
         uses: extractions/setup-just@v3

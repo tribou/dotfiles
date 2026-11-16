@@ -1,4 +1,4 @@
-# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh
+# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh scripts/bootstrap/is_dry_run.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -94,8 +94,71 @@ run_bootstrap() {
   grep -qxF -- "-C $REPO_ROOT bootstrap --yes --dry-run --skip dotfiles" "$CALLS"
   grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
   assert_output --partial 'would back up ~/.gitconfig to ~/.gitconfig.backup'
+  assert_output --partial 'a real run applies these before tools and the task'
+  refute_output --partial 'is not linked'
   [ "$(cat "$FIXTURE_HOME/.gitconfig")" = mine ]
   [ ! -e "$FIXTURE_HOME/.gitconfig.backup" ]
+}
+
+# fake_linux: a Linux uname plus sudo and apt-get that log to $CALLS.
+fake_linux() {
+  printf '#!/usr/bin/env bash\ncase "$1" in -s) echo Linux ;; -m) echo x86_64 ;; esac\n' > "$FIXTURE_BIN/uname"
+  printf '#!/usr/bin/env bash\nprintf "sudo %%s\\n" "$*" >> "$MISE_CALLS"\n' > "$FIXTURE_BIN/sudo"
+  printf '#!/usr/bin/env bash\n' > "$FIXTURE_BIN/apt-get"
+  chmod +x "$FIXTURE_BIN/sudo" "$FIXTURE_BIN/apt-get"
+}
+
+@test "bootstrap: installs the Linux prerequisites with sudo on a real run" {
+  fake_linux
+  run_bootstrap
+  assert_success
+  grep -qxF 'sudo apt-get install -y curl git build-essential ca-certificates' "$CALLS"
+}
+
+@test "bootstrap --dry-run: installs no Linux packages" {
+  fake_linux
+  run_bootstrap --dry-run
+  assert_success
+  ! grep -q '^sudo' "$CALLS"
+}
+
+@test "bootstrap --dry-run: stops instead of updating a mise older than min_version" {
+  fake_mise 2026.9.11
+  run_bootstrap --dry-run
+  assert_failure
+  assert_output --partial 'mise 2026.9.11 is older than the required'
+  ! grep -q 'self-update' "$CALLS"
+  ! grep -qF -- "-C $REPO_ROOT" "$CALLS"
+}
+
+@test "bootstrap --dry-run: reports a finished dry run, not a finished bootstrap" {
+  run_bootstrap --dry-run
+  assert_success
+  assert_output --partial 'Dry run complete'
+  refute_output --partial 'Open a new login shell'
+}
+
+@test "bootstrap -ny: combined short flags are a dry run too" {
+  run_bootstrap -ny
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes -ny --skip dotfiles" "$CALLS"
+  grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
+}
+
+@test "bootstrap --dry-run --only/--skip: a missing or empty value is an error" {
+  for flags in '--only' '--skip' '--only=' '--skip='; do
+    run_bootstrap --dry-run $flags
+    assert_failure
+    assert_output --partial "${flags%=} needs a value"
+  done
+  ! grep -qF -- "-C $REPO_ROOT" "$CALLS"
+}
+
+@test "bootstrap --dry-run --only with --skip: rejected, as mise does" {
+  run_bootstrap --dry-run --only dotfiles --skip task
+  assert_failure
+  assert_output --partial '--only and --skip cannot be combined'
+  ! grep -qF -- "-C $REPO_ROOT" "$CALLS"
 }
 
 @test "bootstrap -n: is the same as --dry-run" {
@@ -135,6 +198,18 @@ run_bootstrap() {
   grep -qxF -- "-C $REPO_ROOT bootstrap --yes --dry-run --skip dotfiles" "$CALLS"
   grep -qxF -- "-C $REPO_ROOT dot diff" "$CALLS"
   [ ! -e "$FIXTURE_HOME/.gitconfig.backup" ]
+}
+
+# Without the global config, mise previews no packages and no global tools.
+@test "just install --dry-run: warns when the global mise config is not linked" {
+  run env HOME="$FIXTURE_HOME" PATH="$PATH" MISE_CALLS="$CALLS" \
+    just --justfile "$REPO_ROOT/justfile" install --dry-run
+  assert_success
+  assert_output --partial '~/.config/mise/config.toml is not linked to this repo'
+}
+
+@test "just install: quotes the script path, so a checkout path with spaces works" {
+  grep -qF '"{{justfile_directory()}}/scripts/bootstrap/run.sh"' "$REPO_ROOT/justfile"
 }
 
 @test "just install: applies with mise bootstrap" {
