@@ -52,7 +52,7 @@ setup() {
   macos_timeout="$(awk '/timeout-minutes:/ { print $2; exit }' "$REPO_ROOT/.github/workflows/macos-tests.yml")"
   ubuntu_timeout="$(awk '/timeout-minutes:/ { print $2; exit }' "$REPO_ROOT/.github/workflows/ubuntu-tests.yml")"
 
-  [ "$macos_timeout" -eq 5 ]
+  [ "$macos_timeout" -eq 15 ]
   [ "$ubuntu_timeout" -eq 15 ]
 }
 
