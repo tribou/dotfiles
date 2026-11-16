@@ -1,4 +1,4 @@
-# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh scripts/bootstrap/is_dry_run.sh
+# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -127,8 +127,45 @@ fake_linux() {
   run_bootstrap --dry-run
   assert_failure
   assert_output --partial 'mise 2026.9.11 is older than the required'
-  ! grep -q 'self-update' "$CALLS"
+  assert_output --partial 'then re-run'
+  run grep -q 'self-update' "$CALLS"
+  assert_failure
   ! grep -qF -- "-C $REPO_ROOT" "$CALLS"
+}
+
+# run_piped_bootstrap ARGS: bootstrap.sh from stdin outside the repo, as
+# `curl ... | bash -s -- ARGS` runs it; ~/dev/dotfiles already holds the repo.
+run_piped_bootstrap() {
+  mkdir -p "$FIXTURE_HOME/dev"
+  ln -s "$REPO_ROOT" "$FIXTURE_HOME/dev/dotfiles"
+  printf '#!/usr/bin/env bash\n' > "$FIXTURE_BIN/git"
+  chmod +x "$FIXTURE_BIN/git"
+  cd "$BATS_TEST_TMPDIR"
+  run env HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
+    bash -s -- "$@" < "$REPO_ROOT/bootstrap.sh"
+}
+
+@test "bootstrap piped: installs git with sudo before cloning on a real run" {
+  fake_linux
+  run_piped_bootstrap
+  assert_success
+  grep -qxF 'sudo apt-get install -y curl git ca-certificates' "$CALLS"
+}
+
+@test "bootstrap piped --dry-run: installs no Linux packages" {
+  fake_linux
+  run_piped_bootstrap --dry-run
+  assert_success
+  assert_output --partial 'Dry run complete'
+  ! grep -q '^sudo' "$CALLS"
+}
+
+@test "bootstrap -nC: -n ahead of a short flag that takes a value is a dry run too" {
+  fake_linux
+  run_bootstrap -nj4
+  assert_success
+  grep -qxF -- "-C $REPO_ROOT bootstrap --yes -nj4 --skip dotfiles" "$CALLS"
+  ! grep -q '^sudo' "$CALLS"
 }
 
 @test "bootstrap --dry-run: reports a finished dry run, not a finished bootstrap" {
@@ -205,7 +242,7 @@ fake_linux() {
   run env HOME="$FIXTURE_HOME" PATH="$PATH" MISE_CALLS="$CALLS" \
     just --justfile "$REPO_ROOT/justfile" install --dry-run
   assert_success
-  assert_output --partial '~/.config/mise/config.toml is not linked to this repo'
+  assert_output --partial "~/.config/mise/config.toml is not linked to this checkout's mise-config.toml"
 }
 
 @test "just install: quotes the script path, so a checkout path with spaces works" {

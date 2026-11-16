@@ -4,27 +4,27 @@ set -euo pipefail
 # Thin bootstrapper: install mise, link its global config, then hand off to
 # `mise bootstrap`, which applies mise.toml (dotfiles, repos, hooks, the
 # bootstrap task) and mise-config.toml (packages and tools). Extra arguments
-# go to scripts/bootstrap/run.sh, which passes them to `mise bootstrap`
-# (e.g. --skip task). -n/--dry-run previews: it installs no system packages
-# and applies nothing, but still installs mise and links its global config.
+# go to scripts/bootstrap/run.sh and on to `mise bootstrap` (e.g. --skip task).
+# -n/--dry-run previews: no system packages, nothing applied, but it still
+# installs mise, links its global config and, piped from curl, clones the repo.
 
 REPO_URL="https://github.com/tribou/dotfiles.git"
 REPO_DIR="$HOME/dev/dotfiles"
+
+dry_run=0 # same test as scripts/bootstrap/run.sh
+for arg in "$@"; do if [[ "$arg" =~ ^(--dry-run|-[yqvh]*n.*)$ ]]; then dry_run=1; fi; done
 
 # 1. Self-locate or self-clone (supports curl|bash).
 if [ -f "$(dirname "${BASH_SOURCE[0]:-$0}")/mise.toml" ]; then
   cd "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 else
-  if [ "$(uname -s)" != "Darwin" ] && command -v apt-get >/dev/null 2>&1; then
+  if [ "$dry_run" = 0 ] && [ "$(uname -s)" != "Darwin" ] && command -v apt-get >/dev/null 2>&1; then
     sudo apt-get update && sudo apt-get install -y curl git ca-certificates
   fi
   mkdir -p "$HOME/dev"
   [ -d "$REPO_DIR/.git" ] || git clone "$REPO_URL" "$REPO_DIR"
   cd "$REPO_DIR"
 fi
-
-dry_run=0
-./scripts/bootstrap/is_dry_run.sh "$@" && dry_run=1
 
 # 2. Linux prerequisites for installing mise and compiling tools.
 if [ "$dry_run" = 0 ] && [ "$(uname -s)" != "Darwin" ]; then
@@ -45,7 +45,7 @@ fi
 required="$(awk -F'"' '/^min_version/ { print $2; exit }' mise-config.toml)"
 current="$("$MISE_BIN" version | awk '{ print $1 }')"
 if [ "$(printf '%s\n%s\n' "$required" "$current" | sort -V | head -1)" != "$required" ]; then
-  [ "$dry_run" = 0 ] || { echo "mise $current is older than the required $required; update it first: $MISE_BIN self-update" >&2; exit 1; }
+  [ "$dry_run" = 0 ] || { echo "mise $current is older than the required $required; run $MISE_BIN self-update, then re-run" >&2; exit 1; }
   "$MISE_BIN" self-update --yes
 fi
 

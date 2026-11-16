@@ -16,7 +16,13 @@ mise_bin="$1"
 shift
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-if ! "$repo/scripts/bootstrap/is_dry_run.sh" "$@"; then
+# A dry run is --dry-run, or a short-flag cluster with -n after only mise's
+# valueless short flags (-n, -ny, -vn, -nC dir). Same test as bootstrap.sh.
+dry_run=0
+for arg in "$@"; do
+  if [[ "$arg" =~ ^(--dry-run|-[yqvh]*n.*)$ ]]; then dry_run=1; fi
+done
+if [ "$dry_run" = 0 ]; then
   exec "$mise_bin" -C "$repo" bootstrap --yes "$@"
 fi
 
@@ -26,9 +32,9 @@ die() {
 }
 
 # mise reads packages and global tools from the global config; without the
-# link it previews neither and reports that everything is installed.
+# link it previews another config's, or none and reports everything installed.
 if [ ! "$HOME/.config/mise/config.toml" -ef "$repo/mise-config.toml" ]; then
-  echo "run.sh: ~/.config/mise/config.toml is not linked to this repo, so packages and global tools are missing from this preview (./bootstrap.sh links it)." >&2
+  echo "run.sh: ~/.config/mise/config.toml is not linked to this checkout's mise-config.toml, so this preview may not reflect its packages and global tools (./bootstrap.sh links it)." >&2
 fi
 
 args=()
