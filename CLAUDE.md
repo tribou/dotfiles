@@ -13,7 +13,7 @@
 ## Key Commands
 
 ```bash
-./bootstrap.sh      # Initial setup (symlinks + optional deps with -i flag)
+./bootstrap.sh      # Initial setup: installs mise, then runs `mise bootstrap`
 just test-changed   # Only the tests affected by your changes (default agent check)
 just test-unit      # Fast bash unit tests (bats-core, no Docker)
 just test           # Full test suite in Docker

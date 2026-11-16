@@ -14,6 +14,8 @@
 - **`mise-config.toml`** (global config): `[tools]`, `[settings]`, and `[bootstrap.packages]` (OS prerequisites via `apt:`/`pacman:`, formulae via `brew:`). Machine-wide, so it applies from any directory.
 - **`mise.toml`** (project config for this checkout): `[dotfiles]` symlinks, `[bootstrap.repos]` (TPM, vim-plug), the `pre-dotfiles` hook, and the `bootstrap` and `upgrade` tasks. Relative sources and `{{ config_root }}` resolve to the checkout.
 - **`scripts/bootstrap/run.sh`**: shared by `bootstrap.sh` and `just install`. Runs `mise bootstrap --yes`, or with `-n`/`--dry-run` previews it (see Run order).
+- **`scripts/bootstrap/preflight.sh`**: macOS checks before anything is installed. Rejects Intel, and says when mise will ask for a sudo password to create `/opt/homebrew`. `bootstrap.sh` itself first requires the Xcode Command Line Tools (`xcode-select -p`), since stock macOS ships `git`, `clang` and `make` as stubs and the self-clone needs git.
+- **`scripts/bootstrap/next_steps.sh`**: the closing message. On macOS, when the login shell is not `/opt/homebrew/bin/bash`, it prints the `/etc/shells` and `chsh` commands; the user runs them, because they need sudo and a password. Only bash is configured: zsh gets no Homebrew or mise on `PATH`, and `/bin/bash` 3.2 is too old for `lib/`.
 - **`scripts/bootstrap/pre_dotfiles.sh`**: the `pre-dotfiles` hook (`--dry-run` reports without changing anything). Creates directories, keeps `~/.ssh` and `~/.gnupg` at `0700`, and moves a regular file at any `[dotfiles]` target to `<target>.backup` (mise refuses to replace files it did not write).
 - **`scripts/bootstrap/converge.sh`**: the `bootstrap` task, run last with `[tools]` on PATH. SSH keys, the macOS keychain block, terminfo, `~/.gnupg` file modes, Neovim/CoC and TPM plugins, the `~/.z` → zoxide migration, pynvim, corepack shims, legacy Homebrew cleanup (`scripts/brew_cleanup.sh`), verification, and the `~/.dotfiles-bootstrap-done` marker.
 - **`scripts/upgrade.sh`**: the `upgrade` task (`just upgrade`).
@@ -117,7 +119,6 @@ The `agent/` directory contains the isolated LLM agent-user subsystem:
 The `scripts/` directory contains standalone utility scripts (not sourced; run directly):
 
 - **`battery.sh`**: Battery level reporting for terminal prompt or notifications
-- **`install.sh`**: Dependency installer (called by bootstrap.sh with `-i` flag)
 - **`internet.sh`**: Internet connectivity check
 
 ## Version Management (mise)
