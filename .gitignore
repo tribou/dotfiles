@@ -6,10 +6,9 @@ private
 .worktrees/
 tests/.perf_log.jsonl
 
-# Beads / Dolt files (added by bd init)
+# Leftover local data from the retired beads issue tracker.
+.beads/
 .beads-credential-key
-
-# Beads / Dolt files (added by bd init)
 .dolt/
 *.db
 .agent/

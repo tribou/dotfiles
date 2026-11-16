@@ -11,9 +11,17 @@ services:
       service: base
     init: true
     environment:
-      DOTFILES_ANSIBLE_EXTRA_ARGS: ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust}
+      # The rust toolchain is slow to install and nothing in goss or the
+      # integration tests uses it; `just test-clean` sets this empty.
+      MISE_DISABLE_TOOLS: ${MISE_DISABLE_TOOLS-rust}
+      # Any of these in the second converge's log means it was not idempotent.
+      DOTFILES_CHANGE_PATTERN: '^changed: |created symlink|repos: applied|\[[0-9]+/[0-9]+\] install|Installing'
+      # Lets mise install ~40 GitHub-hosted tools without the 60/hour anonymous limit.
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     volumes:
       - ./.ci-cache/nvim:/root/.local/share/nvim
+      # mise pours its brew: bootstrap packages here.
+      - ./.ci-cache/linuxbrew:/home/linuxbrew/.linuxbrew
       - ./.ci-cache/mise:/root/.local/share/mise
       - ./.ci-cache/mise-cache:/root/.cache/mise
       - ./.ci-cache/tmux:/root/.tmux/plugins
@@ -21,7 +29,11 @@ services:
       - ./.ci-cache/coc:/root/.config/coc
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust} &&
+        set -o pipefail &&
+        ./bootstrap.sh | tee /tmp/first-converge.log &&
+        ./bootstrap.sh | tee /tmp/second-converge.log &&
+        ! grep -Eq "$$DOTFILES_CHANGE_PATTERN" /tmp/second-converge.log &&
+        /root/.local/bin/mise -C /dotfiles bootstrap status --missing &&
         source ~/.bash_profile &&
         DOTFILES=/dotfiles goss validate --format tap &&
         ./tests/test_helper/bats-core/bin/bats tests/integration/
@@ -34,5 +46,5 @@ services:
     tty: true
     command: >
       bash -c "
-        ansible-playbook -i localhost, -c local playbook.yml -e dotfiles_home=/root -e dotfiles_repo_root=/dotfiles ${DOTFILES_ANSIBLE_EXTRA_ARGS---skip-tags brew,rust} && bash
+        ./bootstrap.sh && bash
       "

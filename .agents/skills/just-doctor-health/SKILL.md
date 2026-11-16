@@ -1,13 +1,14 @@
 ---
 name: just-doctor-health
-description: Use when `scripts/doctor.sh` may have drifted from Ansible provisioning, especially after changes to managed symlinks, installed tools, remediation commands, or summary-count logic.
+description: Use when `scripts/doctor.sh` may have drifted from mise provisioning, especially after changes to managed symlinks, installed tools, remediation commands, or summary-count logic.
 ---
 
 # just doctor Health Audit
 
 ## Overview
 
-`scripts/doctor.sh` is derived from the Ansible role. Audit that contract—not
+`scripts/doctor.sh` is derived from the mise configs (`mise.toml`,
+`mise-config.toml`). Audit that contract—not
 the machine—and report separate, non-duplicate issues. Scheduled audits are
 read-only: never edit, commit, add `in-progress`, or run the Docker suite.
 
@@ -15,10 +16,9 @@ read-only: never edit, commit, add `in-progress`, or run the Docker suite.
 
 | Doctor behavior | Source | Invariant |
 |---|---|---|
-| Symlinks | `roles/dotfiles/tasks/links.yml` | Each `dest`/`src` pair appears once; no extras |
-| Brew | `roles/dotfiles/defaults/main.yml`, `tasks/brew.yml` | Membership and remediation match |
-| mise | `roles/dotfiles/defaults/main.yml`, `tasks/mise.yml` | `mise` and every runtime, including Ruby, are checked; remediation matches |
-| Delta | `tasks/brew.yml` | Check and install/reinstall guidance match |
+| Symlinks | `[dotfiles]` in `mise.toml` (repo-relative sources) | Each target/source pair appears once; no extras |
+| Packages | `[bootstrap.packages]` in `mise-config.toml` | Membership and remediation match |
+| mise | `[tools]` in `mise-config.toml` | `mise` and every runtime, including Ruby, are checked; remediation matches |
 | Summary | `scripts/doctor.sh`, `tests/doctor.bats` | `total_checks = symlinks + tools + delta`; comment and assertions agree |
 
 Derive mappings and counts every run; never copy expected values into this skill.
@@ -28,10 +28,10 @@ Derive mappings and counts every run; never copy expected values into this skill
 1. Run `git status --porcelain`. If non-empty, stop and report. Otherwise run
    `git pull --ff-only`.
 2. Run `just test-unit tests/doctor.bats`; diagnose before filing.
-3. Normalize every role link as `~/<dest>~<src>` and compare the complete sorted
+3. Normalize every repo-sourced `[dotfiles]` entry as `~/<target>~<src>` and compare the complete sorted
    set with doctor's default array. Counts are only a summary; equal counts never
    replace set comparison.
-4. Compare tool/delta membership **and remediation** with the role. Ruby is required.
+4. Compare tool membership **and remediation** with the configs. Ruby is required.
 5. Recalculate the summary invariant, comment, and both Bats assertions. A test
    failure and bad arithmetic with one cause belong in one issue.
 6. Run `just doctor`. Report machine drift; file only when static evidence proves

@@ -11,9 +11,9 @@ Use this skill to help any repo organize its AI agent context into standard file
 This skill can be used to either setup a new repository or groom an existing one to realign its project context. Run this periodically to continually align and improve the context—much like weeding a garden.
 
 ## Mandatory Step: Task Management
-Before taking action, you MUST check if the repository uses BEADS by running the command `bd prime`.
-- **If the repository uses BEADS**: You MUST use the `bd` issue tracker for all task management. Do NOT use `todowrite` or custom markdown files. Claim, create, and close issues using `bd` as documented in `bd prime`.
-- **If the repository does NOT use BEADS**: You MUST use the `todowrite` tool (or a local markdown file/task tracker if `todowrite` is unavailable) to create a clear checklist of planned work before taking action.
+Before taking action, find the repository's issue tracker in `CLAUDE.md` or `AGENTS.md` (for example, GitHub issues via `gh`).
+- **If the repository names a tracker**: You MUST use it for all task management. Do NOT use `todowrite` or custom markdown files.
+- **If it names none**: You MUST use the `todowrite` tool (or a local markdown file/task tracker if `todowrite` is unavailable) to create a clear checklist of planned work before taking action.
 
 ## File Segmentation & Evolution Rule
 To maintain a clean and highly readable workspace, you MUST adhere to these segmentation rules:
@@ -97,12 +97,11 @@ You MUST also prompt the user to review and suggest additional global rules when
 - **Putting everything in the root CLAUDE.md**: Putting detailed architectural diagrams, error-handling conventions, or test scripts in `CLAUDE.md` instead of separate modular `docs/*` files.
 - **Combining separate context files**: Thinking a repository is "too simple" and combining `docs/DEVELOPMENT.md` and `docs/TESTING.md` into one single file, violating the separation requirement.
 - **Silently dropping user rules**: Overwriting an existing `CLAUDE.md` or `docs/*` file and dropping existing user-defined rules or custom instructions.
-- **Forgetting to check for Beads**: Bypassing task tracking or failing to check if the repository uses Beads by running `bd prime` before executing changes.
-- **Using Beads on non-Beads repositories**: Running `bd` commands or worrying about Beads tasks when the repository does not use it.
+- **Skipping task tracking**: Executing changes without first finding the repository's issue tracker (or creating a `todowrite` checklist when it has none).
 - **Drafting rules without local context**: Generating generic rules (e.g., standard Node/Python test commands) that do not match the actual codebase tech stack.
 
 ## Red Flags - STOP
-- Any modification to `CLAUDE.md` or `docs/` is made before checking for Beads using `bd prime` (if the repo supports it).
+- Any modification to `CLAUDE.md` or `docs/` is made before task tracking is set up.
 - A `CLAUDE.md` file that exceeds 100 lines or contains architectural design / testing details.
 - User-defined rules or custom instructions in `CLAUDE.md` are missing after grooming.
 - Context files are combined under `docs/` instead of being kept separate.

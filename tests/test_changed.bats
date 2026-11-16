@@ -72,10 +72,10 @@ fixture_plan() {
   refute_line "unit all"
 }
 
-@test "test_changed: role changes select their tests and the Docker suite" {
-  plan_for roles/dotfiles/tasks/upgrade.yml
+@test "test_changed: bootstrap config changes select their tests and the Docker suite" {
+  plan_for mise.toml
   assert_success
-  assert_line "unit tests/upgrade_nvim.bats"
+  assert_line "unit tests/mise_bootstrap_config.bats"
   assert_line "docker yes"
 }
 
@@ -135,7 +135,7 @@ fixture_plan() {
   assert_output --partial "nothing to test"
 }
 
-@test "test_changed: startup lib, justfile, and ansible-linked script changes run the Docker suite" {
+@test "test_changed: startup lib, justfile, and dotfile-linked script changes run the Docker suite" {
   for file in lib/index.sh lib/path.sh lib/platform.sh justfile scripts/dotfiles_remote_browser_open.sh scripts/dotfiles_local_browser_helper.sh; do
     plan_for "$file"
     assert_success

@@ -13,13 +13,46 @@ jobs:
   test:
     name: Run bash function tests
     runs-on: macos-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           submodules: true
+
+      - name: Require Apple Silicon runner
+        run: test "$(uname -m)" = arm64
+
+      - name: Install and verify mise packages and tools
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          # rust is slow to install and no test uses it
+          MISE_DISABLE_TOOLS: rust
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin" "$HOME/.config/mise"
+          curl -fsSL https://mise.run | MISE_INSTALL_PATH="$HOME/.local/bin/mise" sh
+          ln -sfn "$GITHUB_WORKSPACE/mise-config.toml" "$HOME/.config/mise/config.toml"
+          "$HOME/.local/bin/mise" bootstrap packages apply --yes
+          "$HOME/.local/bin/mise" install --yes
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+          MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
+
+      - name: Dry-run the full mise bootstrap on macOS
+        shell: bash
+        env:
+          MISE_DISABLE_TOOLS: rust
+        run: |
+          set -euo pipefail
+          "$HOME/.local/bin/mise" trust "$GITHUB_WORKSPACE/mise.toml"
+          # --dry-run neither clones repos nor runs hooks, so its dotfiles check
+          # would fail on the missing vim-plug source and the runner's own
+          # ~/.bash_profile and ~/.gitconfig. Apply those two phases for real.
+          "$HOME/.local/bin/mise" -C "$GITHUB_WORKSPACE" bootstrap repos apply --yes
+          "$GITHUB_WORKSPACE/scripts/bootstrap/pre_dotfiles.sh"
+          "$HOME/.local/bin/mise" -C "$GITHUB_WORKSPACE" bootstrap --dry-run
 
       - name: Install just
         uses: extractions/setup-just@v3

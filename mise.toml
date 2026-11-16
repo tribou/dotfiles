@@ -1,0 +1,45 @@
+# Machine setup for this dotfiles checkout, applied by `mise bootstrap`.
+#
+# This is project config: bootstrap.sh trusts it and runs
+# `mise -C <repo> bootstrap`, so relative sources and {{ config_root }} resolve
+# to this checkout. Tools, settings, and host packages stay in the global
+# config (mise-config.toml, linked to ~/.config/mise/config.toml), which mise
+# merges in. See docs/ARCHITECTURE.md.
+
+# Symlinks into this checkout. The pre-dotfiles hook moves an existing regular
+# file at any of these targets to <target>.backup first, so mise never stops on
+# (or overwrites) a file it does not own.
+[dotfiles]
+"~/.bash_profile" = "bash_profile"
+"~/.vimrc" = "init.vim"
+"~/.gitconfig" = "gitconfig"
+"~/.zshrc" = "zshrc"
+"~/.tmux.conf" = "tmux/tmux-conf"
+"~/.gnupg/gpg-agent.conf" = "gpg-agent-conf"
+"~/.config/nvim/init.vim" = "init.vim"
+"~/.config/nvim/coc-settings.json" = "coc-settings.json"
+"~/.config/alacritty/alacritty.toml" = "alacritty.toml"
+"~/.config/mise/config.toml" = "mise-config.toml"
+"~/.local/bin/dotfiles_remote_browser_open.sh" = "scripts/dotfiles_remote_browser_open.sh"
+"~/.local/bin/dotfiles_local_browser_helper.sh" = "scripts/dotfiles_local_browser_helper.sh"
+"~/.local/share/nvim/site/autoload/plug.vim" = "~/.local/share/vim-plug/plug.vim"
+
+# Cloned before dotfiles are applied; `mise bootstrap repos update` (run by
+# `just upgrade`) fast-forwards them.
+[bootstrap.repos]
+"~/.tmux/plugins/tpm" = { url = "https://github.com/tmux-plugins/tpm", depth = 1 }
+"~/.local/share/vim-plug" = { url = "https://github.com/junegunn/vim-plug", depth = 1 }
+
+[bootstrap.hooks.pre-dotfiles]
+description = "Create private dirs and back up files mise would otherwise refuse to replace"
+run = "{{ config_root }}/scripts/bootstrap/pre_dotfiles.sh"
+
+# Runs last, with [tools] on PATH: SSH keys, terminfo, editor and tmux
+# plugins, one-time migrations, and a final verification.
+[tasks.bootstrap]
+description = "Converge setup the declarative bootstrap sections cannot express"
+run = "scripts/bootstrap/converge.sh"
+
+[tasks.upgrade]
+description = "Upgrade OS packages, mise packages and tools, repos, and plugins"
+run = "scripts/upgrade.sh"
