@@ -81,8 +81,8 @@ export EDITOR='nvim'
 # Set React Native editor
 export REACT_EDITOR='vscode'
 
-# Commit AI backend: claude or opencode (opencode uses Kimi 2.7)
-export DOTFILES_COMMIT_BACKEND=opencode
+# Shared AI backend for commit and qq: claude, opencode, or agy
+export DOTFILES_AI_BACKEND=opencode
 
 # Seconds to wait for the commit backend before falling back to a manual commit
 export DOTFILES_COMMIT_TIMEOUT=30
