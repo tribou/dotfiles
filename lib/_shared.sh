@@ -122,7 +122,10 @@ function _eval_script() {
   local SCRIPT="$1"
 
   if [ -n "$TMUX" ]; then
-    tmux send-keys -t "$TMUX_PANE" "$SCRIPT" Enter;
+    # -l types the script literally, so text that looks like a key name or
+    # an option is not interpreted by tmux
+    tmux send-keys -l -t "$TMUX_PANE" -- "$SCRIPT" \
+      && tmux send-keys -t "$TMUX_PANE" Enter
   else
     echo "$SCRIPT"
     echo

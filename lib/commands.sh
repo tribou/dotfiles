@@ -52,7 +52,7 @@ function _dotfiles_grep_history_files ()
   # shellcheck disable=SC2012
   ls -d "$HOME"/.history/20*/* \
     | sort -r -n \
-    | xargs grep -r "$1" \
+    | xargs grep -r -e "$1" \
     | awk -F "$AWK_REMOVE_HISTDIR" '{print $NF}'
 }
 
@@ -82,7 +82,7 @@ function histgrep ()
   # Pipe results from two history sources into cat
   local RESULT
   RESULT=$(cat \
-    <(history | grep "$1") \
+    <(history | grep -e "$1") \
     <(_dotfiles_grep_history_files "$1") \
     | fzf --tmux="70%,80%" \
     | awk -F "$DOTFILES_HISTFILE_DELIM" '{print $NF}' \
@@ -91,7 +91,7 @@ function histgrep ()
   # If in tmux or herdr, type the selection into the current pane's prompt
   if [ -n "$TMUX" ]
   then
-    _dotfiles_send_to_prompt tmux send-keys -t "$TMUX_PANE" "$RESULT"
+    _dotfiles_send_to_prompt tmux send-keys -l -t "$TMUX_PANE" -- "$RESULT"
   elif [ -n "$HERDR_PANE_ID" ]
   then
     _dotfiles_send_to_prompt herdr pane send-text "$HERDR_PANE_ID" "$RESULT"

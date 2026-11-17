@@ -76,6 +76,26 @@ setup() {
   assert_equal "$stderr" "histgrep: no saved history in ~/.history (is Google Drive mounted?); searching current shell history only"
 }
 
+@test "histgrep treats a pattern starting with a dash as a pattern, not an option" {
+  mkdir -p "$BATS_TEST_TMPDIR/home/.history/2024/01"
+  printf '%s\n' "grep -v foo" "ls" > "$BATS_TEST_TMPDIR/home/.history/2024/01/15.10.30.00_server"
+
+  run --separate-stderr timeout 10 bash -c "
+    unset TMUX HERDR_PANE_ID
+    export HOME='$BATS_TEST_TMPDIR/home'
+    cd '$BATS_TEST_TMPDIR'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/commands.sh'
+    fzf() { cat; }
+    copy_to_clipboard() { :; }
+    histgrep -v
+  "
+
+  assert_success
+  assert_output "grep -v foo"
+  assert_equal "$stderr" ""
+}
+
 # Runs histgrep in a fake pane whose prompt leaves canonical mode on the 3rd
 # stty check; the multiplexer stub records how many checks preceded the send.
 _run_histgrep_in_pane() {
@@ -116,6 +136,6 @@ EOF
   _run_histgrep_in_pane -u HERDR_PANE_ID TMUX='/tmp/tmux-1/default,1,0' TMUX_PANE='%7'
 
   assert_success
-  assert_output "checks=3 tmux [send-keys] [-t] [%7] [ssh remote]"
+  assert_output "checks=3 tmux [send-keys] [-l] [-t] [%7] [--] [ssh remote]"
   assert_equal "$stderr" ""
 }
