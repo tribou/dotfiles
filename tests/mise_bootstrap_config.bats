@@ -30,7 +30,8 @@ dotfile_entries() {
     "~/.gnupg/gpg-agent.conf gpg-agent-conf"
     "~/.config/nvim/init.vim init.vim"
     "~/.config/nvim/coc-settings.json coc-settings.json"
-    "~/.config/alacritty/alacritty.toml alacritty.toml"
+    "~/.config/ghostty/config.ghostty ghostty/config.ghostty"
+    "~/.config/ghostty/themes/dotfiles-night ghostty/themes/dotfiles-night"
     "~/.config/mise/config.toml mise-config.toml"
     "~/.local/bin/dotfiles_remote_browser_open.sh scripts/dotfiles_remote_browser_open.sh"
     "~/.local/bin/dotfiles_local_browser_helper.sh scripts/dotfiles_local_browser_helper.sh"
@@ -88,9 +89,8 @@ dotfile_entries() {
   grep -qF '"go:golang.org/x/tools/gopls" = "latest"' "$GLOBAL"
 }
 
-@test "macOS casks are mise brew-cask packages, opt-in via the optional drop-in" {
+@test "optional macOS casks are mise brew-cask packages, opt-in via the optional drop-in" {
   grep -qF '"brew-cask:' "$REPO_ROOT/mise-config.optional.toml.example"
-  ! grep -qE '^[[:space:]]*"brew-cask:alacritty"' "$GLOBAL" "$REPO_ROOT/mise-config.optional.toml.example"
   ! grep -qE '^[^#]*"brew-cask:' "$REPO_ROOT/mise-config.optional.toml.example"
 }
 

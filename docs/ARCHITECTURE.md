@@ -42,6 +42,11 @@ machine. mise auto-loads `conf.d/*.toml` and merges it over `config.toml`:
   `[bootstrap.packages]`. mise installs casks itself, without Homebrew, into
   `/Applications`; on Linux it takes only font casks.
 
+The one core cask is Ghostty, the terminal (`"brew-cask:ghostty"`, macOS only,
+`adopt = true` so an identical Ghostty.app already in `/Applications` is taken
+over rather than replaced). On Linux, Ghostty is opt-in: `pacman:ghostty` on
+Arch, or a package from ghostty.org on Debian/Ubuntu.
+
 Run `just install` after uncommenting entries. A `~/.Brewfile` from the old
 Homebrew cask flow is no longer applied; move its casks into the drop-in.
 
@@ -104,6 +109,7 @@ The `lib/` directory contains modular shell functions sourced by `lib/index.sh`:
 - **`sizes.sh`**: File/directory size utilities
 - **`curl_it.sh`**: HTTP request helpers
 - **`notify.sh`**: System notification utilities
+- **`ghostty.sh`**: Decides whether `bash_profile` should source Ghostty's bash shell integration (in Ghostty, outside tmux, not already loaded)
 
 ## Agent Directory
 
@@ -200,6 +206,13 @@ packages](#opt-in-packages)).
 - Uses vim-plug for plugin management
 - ALE for linting/fixing
 - Language support: JavaScript/TypeScript, React, Python, Ruby, Elixir, Go
+
+## Terminal (Ghostty)
+
+- **`ghostty/config.ghostty`** → `~/.config/ghostty/config.ghostty`, **`ghostty/themes/dotfiles-night`** → `~/.config/ghostty/themes/dotfiles-night` (both via `[dotfiles]` in `mise.toml`, both checked by `just doctor`)
+- Runs `/bin/bash --login`; `TERM=xterm-ghostty` (terminfo bundled with Ghostty). Inside tmux, `TERM` is `tmux-256color` (`tmux/tmux-256color.terminfo`, compiled by the `bootstrap` task), and `tmux-conf` declares Ghostty's features (`terminal-features`) so truecolor, undercurl, extended keys, sync and OSC 52 pass through
+- Shell integration is sourced manually (`shell-integration = none`, see `lib/ghostty.sh`), because Ghostty cannot auto-inject into macOS's `/bin/bash`. It is skipped inside tmux
+- tmux stays the multiplexer. Ghostty's native tabs and splits stay on their default `cmd`/`ctrl+shift` keys, which do not collide with tmux's `C-f` prefix; `ctrl+shift+left/right` are unbound in Ghostty so tmux's window swaps keep working
 
 ## Tmux Configuration
 

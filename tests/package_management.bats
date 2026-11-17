@@ -31,8 +31,6 @@ setup() {
   done
   run grep -qF '"brew:gpg" = "latest"' "$config"
   assert_failure
-  run grep -qF '"brew:alacritty"' "$config"
-  assert_failure
   grep -qF '"brew:gcc" = { version = "latest", os = "linux" }' "$config"
   for formula in bash-completion reattach-to-user-namespace tmux-mem-cpu-load; do
     grep -qF "\"brew:${formula}\" = { version = \"latest\", os = \"macos/arm64\" }" "$config"

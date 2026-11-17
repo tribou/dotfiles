@@ -57,12 +57,11 @@ step_macos_ssh() {
 # TUIs (opencode, lazygit, gh dash) detect these caps at startup; without them
 # they fall back to 256-color approximation and stream each redraw unbracketed,
 # which over SSH+tmux visibly renders "piece by piece". Do NOT strip these caps
-# when editing the .terminfo sources or opencode will jank again.
+# when editing the .terminfo source or opencode will jank again.
+# The outer terminal's entry, xterm-ghostty, ships with Ghostty, and Ghostty's
+# ssh-terminfo shell integration installs it on remote hosts.
 step_terminfo() {
-  local entry
-  for entry in xterm-256color-italic.terminfo tmux-256color.terminfo; do
-    tic -x "$DOTFILES_REPO/tmux/$entry"
-  done
+  tic -x "$DOTFILES_REPO/tmux/tmux-256color.terminfo"
 }
 
 step_gnupg_perms() {

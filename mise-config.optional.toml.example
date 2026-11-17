@@ -36,3 +36,6 @@
 # "brew-cask:font-fira-code-nerd-font" = "latest"
 # "brew-cask:font-hack-nerd-font" = "latest"
 # "brew-cask:font-fontawesome" = "latest"
+# Ghostty on Linux (macOS gets it from the core config). Arch packages it;
+# Debian/Ubuntu have no apt package, so install it from ghostty.org/download.
+# "pacman:ghostty" = "latest"

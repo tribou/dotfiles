@@ -45,7 +45,7 @@ fixture_plan() {
 }
 
 @test "test_changed: an unmapped file runs the full unit suite and Docker suite" {
-  plan_for alacritty.toml
+  plan_for ripgreprc
   assert_success
   assert_line "unit all"
   assert_line "docker yes"

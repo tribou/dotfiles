@@ -264,6 +264,14 @@ _dotfiles_debug_timing "$LINENO"
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
 
+# Ghostty shell integration (prompt marks, cwd reporting, ssh/sudo terminfo
+# wrappers). Sourced late so it wraps PROMPT_COMMAND after the hooks above.
+# See lib/ghostty.sh.
+if _dotfiles_ghostty_bash_integration; then
+  builtin source "$_DOTFILES_GHOSTTY_SCRIPT"
+fi
+unset _DOTFILES_GHOSTTY_SCRIPT
+
 # Deduplicate PATH while preserving canonical package manager prefixes.
 _path_dedup
 

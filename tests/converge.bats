@@ -78,11 +78,12 @@ stub() {
   [ ! -s "$LOG" ]
 }
 
-@test "converge: compiles both custom terminfo entries" {
+@test "converge: compiles the custom tmux terminfo entry" {
   stub tic
   run step_terminfo
   assert_success
-  grep -qF "tic -x $REPO_ROOT/tmux/xterm-256color-italic.terminfo" "$LOG"
+  run grep -F "xterm-256color-italic" "$LOG"
+  assert_failure
   grep -qF "tic -x $REPO_ROOT/tmux/tmux-256color.terminfo" "$LOG"
 }
 

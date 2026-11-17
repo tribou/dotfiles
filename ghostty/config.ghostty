@@ -1,0 +1,155 @@
+# Ghostty config, linked to ~/.config/ghostty/config.ghostty by mise.toml.
+# Reference: https://ghostty.org/docs/config/reference
+# Check:     ghostty +validate-config --config-file=ghostty/config.ghostty
+# Reload:    cmd+shift+, (macOS) / ctrl+shift+, (Linux). Ghostty does not
+#            reload automatically when the file changes.
+#
+# Settings marked "Ghostty:" are Ghostty-only features. The rest keep the
+# look and behaviour of the previous terminal config (see issue #225 for the
+# setting-by-setting mapping).
+
+# --- Font -------------------------------------------------------------------
+font-family = Hack Nerd Font
+font-size = 13
+# 24px of extra line spacing. Ghostty centres the glyphs in the taller cell
+# itself, so no separate glyph offset is needed.
+adjust-cell-height = 24
+# Hack has no programming ligatures, so there are no font-feature settings.
+
+# --- Colors -----------------------------------------------------------------
+# The palette lives in themes/dotfiles-night.
+# Automatic light/dark switching (theme = light:X,dark:dotfiles-night) is left
+# off: the tmux status bar and the nvim colorscheme are dark-only.
+theme = dotfiles-night
+# Bold text uses the bright palette colors.
+bold-color = bright
+
+# --- Cursor -----------------------------------------------------------------
+# Steady block cursor. Ghostty draws the unfocused cursor as a hollow block.
+# Ghostty has no vi mode (and so no vi-mode cursor style); tmux copy-mode
+# (mode-keys vi) fills that role.
+cursor-style = block
+cursor-style-blink = false
+
+# --- Window -----------------------------------------------------------------
+# On macOS a change to the opacity needs a full app restart.
+background-opacity = 0.98
+# No padding; spread the leftover space evenly around the grid.
+window-padding-x = 0
+window-padding-y = 0
+window-padding-balance = equal
+# Transparent macOS titlebar (Ghostty's default, set here so it is explicit).
+macos-titlebar-style = transparent
+# Ghostty: restore window size, position and tabs on relaunch (macOS only).
+# tmux still owns the sessions; this just reopens the window where it was.
+window-save-state = always
+# Windowed startup, the OS-chosen size, titles set by programs and the default
+# working directory are Ghostty's defaults.
+
+# --- Shell ------------------------------------------------------------------
+# A login shell, so bash_profile also loads on Linux, where Ghostty does not
+# start one by default.
+command = /bin/bash --login
+# TERM is left to Ghostty: xterm-ghostty, whose terminfo ships with Ghostty
+# and includes italics, truecolor, styled underlines and synchronized output.
+
+# --- Shell integration (Ghostty) ---------------------------------------------
+# Not auto-injected: Ghostty cannot inject into macOS's /bin/bash. bash_profile
+# (lib/ghostty.sh) sources the script instead, outside tmux only, so behaviour
+# is the same on macOS and Linux. That gives prompt marks (jump_to_prompt,
+# select a command's output), the working directory for new tabs and windows,
+# and no close prompt at an idle prompt. The features below still apply.
+shell-integration = none
+#   no-cursor    keep the block cursor at the prompt (the default is a bar)
+#   sudo         keep TERMINFO through sudo, so xterm-ghostty still resolves
+#   ssh-env      send COLORTERM/TERM_PROGRAM, fall back to xterm-256color
+#   ssh-terminfo install xterm-ghostty on a remote host on first connect
+shell-integration-features = no-cursor,sudo,ssh-env,ssh-terminfo
+
+# --- Mouse and selection ----------------------------------------------------
+# Keep the mouse pointer visible while typing.
+mouse-hide-while-typing = false
+# Copy each selection to the system clipboard as well as the selection
+# clipboard (Linux). `both` needs Ghostty 1.4.0+; Ghostty's own macOS default
+# would be `none`.
+copy-on-select = both
+# Characters that end a double-click word selection.
+selection-word-chars = " ,│`|:\"'()[]{}<>"
+# Middle click pastes the selection (Ghostty's default) and right click pastes
+# too. With tmux's mouse mode on, tmux gets
+# right clicks and shows its own menu (tmux/tmux-right-click-menu.conf).
+right-click-action = paste
+# A wheel multiplier of 3 is Ghostty's default. Ghostty caps scrollback in
+# bytes, not lines (scrollback-limit); its 10 MB default holds well over
+# 10,000 lines.
+
+# --- Clipboard (OSC 52) -----------------------------------------------------
+# tmux (set-clipboard on, allow-passthrough on) and nvim (g:clipboard OSC 52)
+# write the system clipboard with OSC 52, locally and over SSH, so writes are
+# allowed without a prompt. Reads still ask: nvim pastes from its own
+# registers and never needs to read.
+clipboard-write = allow
+clipboard-read = ask
+
+# --- Bell -------------------------------------------------------------------
+# No visual bell flash. Ghostty never flashes by default; its default
+# bell-features (dock bounce and a bell in the title when unfocused) are kept.
+
+# --- macOS ------------------------------------------------------------------
+# Treat Option as Alt for readline (M-b, M-f, M-backspace) and tmux M- keys,
+# whatever the keyboard layout.
+macos-option-as-alt = true
+
+# --- Quick terminal (Ghostty) -----------------------------------------------
+# A drop-down terminal from anywhere. On macOS, global: keybinds need
+# Accessibility permission for Ghostty. On Linux they need the XDG Global
+# Shortcuts portal (KDE, GNOME 48+) and a Wayland compositor with
+# wlr-layer-shell (not GNOME). Elsewhere the binding just does nothing.
+# ctrl+alt+` avoids cmd+` (cycle windows) and VS Code's ctrl+`.
+keybind = global:ctrl+alt+backquote=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-size = 40%
+
+# --- Keybindings ------------------------------------------------------------
+# Ghostty's defaults already cover cmd+0/=/- (font size), cmd+c/cmd+v and
+# the Copy/Paste keys, cmd+n (new window), cmd+q (quit), cmd+ctrl+f
+# (fullscreen) and cmd+h (hide, from the macOS menu). Only the differences
+# are listed here.
+#
+# cmd+f toggles fullscreen. Ghostty binds cmd+f to search by default, so search
+# moves to cmd+shift+f (escape closes it; it is also in the command palette,
+# cmd+shift+p).
+keybind = super+f=toggle_fullscreen
+keybind = super+shift+f=start_search
+# cmd+k sends ^L (the shell or app redraws). Ghostty has no scrollback-only
+# clear: its clear_screen erases everything above the cursor, which would
+# corrupt the tmux layout. Clear tmux's history with prefix C-k.
+keybind = super+k=text:\x0c
+# cmd+w closes the focused tab, split or window (Ghostty's default, kept
+# because native tabs are available), not the whole app. Ghostty asks before
+# closing while a program such as tmux is still running.
+#
+# Shift+PageUp/PageDown scroll the terminal's scrollback. These are Ghostty's
+# Linux defaults; set them on macOS as well.
+keybind = shift+page_up=scroll_page_up
+keybind = shift+page_down=scroll_page_down
+#
+# tmux binds C-S-Left/C-S-Right (bind -n) to swap windows. Ghostty's Linux
+# defaults use them for previous/next tab, so give them back to tmux. Ghostty's
+# other tab and split defaults stay available: cmd+t/cmd+d on macOS,
+# ctrl+shift+t/o/e on Linux. None of them collide with tmux's C-f prefix.
+keybind = ctrl+shift+arrow_left=unbind
+keybind = ctrl+shift+arrow_right=unbind
+#
+# Home/End, PageUp/PageDown, arrows, Insert/Delete, Backspace, Shift+Tab,
+# F1-F12 with modifiers and NumpadEnter need no bindings: Ghostty sends the
+# standard xterm sequences for them natively, and supports the kitty keyboard
+# protocol for apps that ask for it.
+#
+# Kitty graphics, the kitty keyboard protocol, OSC 8 hyperlinks, styled
+# underlines and synchronized output are on by default and need no settings.
+# tmux does not pass kitty graphics through.
+#
+# tmux key integration: to drive tmux from a Command key, send its prefix
+# bytes, e.g. `keybind = super+d=text:\x06\x76` sends C-f v (vertical split).
+# Not enabled: those keys are Ghostty's own tab and split shortcuts.
