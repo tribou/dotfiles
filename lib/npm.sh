@@ -1,33 +1,15 @@
 #!/bin/bash
-function npm-install-global ()
-{
-  echo "Installing global modules"
-  npm install -g \
-    eas-cli \
-    eslint_d \
-    editorconfig \
-    intelephense \
-    js-yaml \
-    jsonlint \
-    neovim \
-    prettier \
-    react-devtools \
-    nodemon \
-    tern \
-    tslint \
-    typescript \
-    bash-language-server \
-    flow-bin \
-    vue-language-server \
-    vscode-css-languageserver-bin \
-    vscode-html-languageserver-bin
-  corepack enable
-}
-# npm up or yarn upgrade any dependency or devDependency in package.json
+# Upgrade any dependency or devDependency in package.json with the project's
+# package manager
 function nu () {
   [ ! -f "package.json" ] && echo "No package.json to upgrade" && return 1
-  local UPGRADE_CMD="npm update"
-  [ -f "yarn.lock" ] && UPGRADE_CMD="yarn upgrade"
+  local UPGRADE_CMD
+  UPGRADE_CMD="$(_dotfiles_npm_detect_exec)"
+  if [ "$UPGRADE_CMD" = "yarn" ]; then
+    UPGRADE_CMD="yarn upgrade"
+  else
+    UPGRADE_CMD="$UPGRADE_CMD update"
+  fi
   if [ -n "$1" ]
   then
     local SCRIPT="$UPGRADE_CMD $*"
@@ -52,7 +34,7 @@ function _dotfiles_npm_detect_exec ()
     echo "pnpm"
   elif [ -f "yarn.lock" ]; then
     echo "yarn"
-  elif [ -f "bun.lock" ]; then
+  elif [ -f "bun.lock" ] || [ -f "bun.lockb" ]; then
     echo "bun"
   else
     echo "npm"
@@ -132,7 +114,7 @@ function useLocalIfAvailable ()
   # Use local node module if available
   if [ -f "$(which ./node_modules/.bin/"${1}")" ]
   then
-    "./node_modules/.bin/$*"
+    "./node_modules/.bin/$1" "${@:2}"
 
   # Then check for existing global install
   elif [ -f "$(which "${1}")" ]
@@ -141,12 +123,9 @@ function useLocalIfAvailable ()
 
   # Otherwise, use npx
   else
-    npx "$*"
+    npx "$@"
   fi
 }
-alias edld='ember deploy:list --environment development'
-alias edlp='ember deploy:list --environment production'
-alias edls='ember deploy:list --environment staging'
 alias j='TZ=UTC yarn jest --watch'
 alias ni='npm-install'
 alias nis='npm install --save'
@@ -162,18 +141,9 @@ alias yr='npm-run'
 alias ytsc='yarn tsc --noemit --watch --pretty'
 alias yw='yarn workspaces'
 
-alias app-icon='npx app-icon'
-alias babel-eslint='npx babel-eslint'
 alias devtools='react-devtools'
-alias ember='npx ember-cli'
 alias eslint='npx eslint'
-alias flow-typed='npx flow-typed'
-alias flow='npx flow'
-alias gatsby='npx gatsby'
-alias nodemon='nodemon'
 alias npm-check-updates='npx npm-check-updates'
-alias nsp='npx nsp'
-alias react-devtools='react-devtools'
 alias react-native='npx react-native'
 alias rn='react-native'
 alias serverless='npx serverless'

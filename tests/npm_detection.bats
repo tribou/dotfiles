@@ -137,3 +137,81 @@ teardown() {
   assert_failure
   assert_output "No package.json to upgrade"
 }
+
+# --- nu package manager detection ---
+
+@test "detects bun when the legacy binary bun.lockb exists" {
+  touch "$TEST_DIR/bun.lockb"
+  run bash -c "cd '$TEST_DIR' && . '$REPO_ROOT/lib/_shared.sh' && . '$REPO_ROOT/lib/npm.sh' && _dotfiles_npm_detect_exec"
+  assert_output "bun"
+}
+
+@test "nu: upgrades with pnpm when pnpm-lock.yaml exists" {
+  touch "$TEST_DIR/package.json" "$TEST_DIR/pnpm-lock.yaml"
+  run bash -c "
+    cd '$TEST_DIR'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/npm.sh'
+    eval() { :; }
+    nu lodash
+  "
+  assert_success
+  assert_line --index 0 "pnpm update lodash"
+}
+
+@test "nu: upgrades with bun when bun.lock exists" {
+  touch "$TEST_DIR/package.json" "$TEST_DIR/bun.lock"
+  run bash -c "
+    cd '$TEST_DIR'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/npm.sh'
+    eval() { :; }
+    nu lodash
+  "
+  assert_success
+  assert_line --index 0 "bun update lodash"
+}
+
+@test "nu: still upgrades with yarn and npm" {
+  touch "$TEST_DIR/package.json"
+  run bash -c "
+    cd '$TEST_DIR'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/npm.sh'
+    eval() { :; }
+    nu lodash
+    touch yarn.lock
+    nu lodash
+  "
+  assert_success
+  assert_line --index 0 "npm update lodash"
+  assert_line --index 1 "yarn upgrade lodash"
+}
+
+# --- useLocalIfAvailable ---
+
+@test "useLocalIfAvailable: passes each argument separately to the local binary" {
+  mkdir -p "$TEST_DIR/node_modules/.bin"
+  printf '#!/bin/sh\nprintf "[%%s]" "$@"\n' > "$TEST_DIR/node_modules/.bin/mytool"
+  chmod +x "$TEST_DIR/node_modules/.bin/mytool"
+  run bash -c "
+    cd '$TEST_DIR'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/npm.sh'
+    useLocalIfAvailable mytool --mode 'two words'
+  "
+  assert_success
+  assert_output "[--mode][two words]"
+}
+
+@test "useLocalIfAvailable: passes each argument separately to npx" {
+  run bash -c "
+    cd '$TEST_DIR'
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/npm.sh'
+    npx() { printf '[%s]' \"\$@\"; }
+    useLocalIfAvailable dotfiles-no-such-tool --mode 'two words'
+  "
+  assert_success
+  assert_output "[dotfiles-no-such-tool][--mode][two words]"
+}
