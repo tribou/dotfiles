@@ -48,3 +48,22 @@ EOF
   [[ "$output" == *"local browser helper not running"* ]]
   [[ "$output" == *"dotfiles_local_browser_helper.sh"* ]]
 }
+
+@test "remote_browser_open: passes the URL as data, never as Python source" {
+  cat > "$STUB_BIN/curl" <<'STUB'
+#!/usr/bin/env bash
+echo "$@" > "$CURL_CAPTURE"
+exit 0
+STUB
+  chmod +x "$STUB_BIN/curl"
+  export CURL_CAPTURE="$BATS_TEST_TMPDIR/curl_args"
+  export PATH="$STUB_BIN:$PATH"
+
+  run "$REPO_ROOT/scripts/dotfiles_remote_browser_open.sh" "http://h/a\\nb'''+str(6*7)+'''"
+
+  assert_success
+  local captured_args
+  captured_args="$(cat "$CURL_CAPTURE")"
+  [[ "$captured_args" == *"a%5Cnb%27%27%27%2Bstr%286%2A7%29%2B%27%27%27"* ]]
+  [[ "$captured_args" != *"42"* ]]
+}
