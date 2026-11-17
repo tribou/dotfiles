@@ -44,7 +44,7 @@ function aws-set-current-account-id () {
 }
 function digitalocean ()
 {
-  curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python -m json.tool
+  curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" "https://api.digitalocean.com/v2/$1?page=1&per_page=1000" | python3 -m json.tool
 }
 
 function da ()
@@ -81,12 +81,15 @@ function supabase-profile() {
   # Create config if missing
   if [[ ! -f "$cfg" ]]; then
     mkdir -p "$(dirname "$cfg")"
-    umask 077
-    cat > "$cfg" <<'EOF'
+    # Subshell keeps the private umask from leaking into the interactive shell
+    (
+      umask 077
+      cat > "$cfg" <<'EOF'
 # name<TAB>token<TAB>project_ref(optional)<TAB>url(optional)
 work	<paste-work-token-here>	<project-ref>	https://<project>.supabase.co
 personal	<paste-personal-token-here>	<project-ref>	https://<project>.supabase.co
 EOF
+    )
     chmod 600 "$cfg"
     echo "Created $cfg — please fill in your tokens and rerun." >&2
     return 1
@@ -108,7 +111,10 @@ EOF
 
   name=$(awk -F'\t' '{print $1}' <<<"$sel")
   line="$(awk -F'\t' -v n="$name" '/^[^#]/ && $1==n {print; exit}' "$cfg")" || return 1
-  IFS=$'\t' read -r _ token proj url <<<"$line"
+  # Tab is IFS whitespace, so read would collapse an empty project field
+  token=$(cut -f2 <<<"$line")
+  proj=$(cut -f3 <<<"$line")
+  url=$(cut -f4 <<<"$line")
 
   export SUPABASE_ACCESS_TOKEN="$token"
   if [[ -n "$proj" ]]; then
