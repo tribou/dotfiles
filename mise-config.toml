@@ -61,6 +61,7 @@ tmux = "latest"
 "pacman:git" = "latest"
 "pacman:base-devel" = "latest"
 "pacman:zlib" = "latest"
+"pacman:xdg-utils" = "latest"
 "pacman:bash-completion" = "latest"
 "pacman:openssh" = "latest"
 # Formulae, poured by mise into the standard Homebrew prefix (no Homebrew needed).

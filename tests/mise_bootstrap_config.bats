@@ -79,7 +79,7 @@ dotfile_entries() {
   for pkg in curl git build-essential zlib1g-dev xdg-utils bash-completion openssh-client; do
     grep -qF "\"apt:${pkg}\" = \"latest\"" "$GLOBAL" || fail "apt:$pkg"
   done
-  for pkg in curl git base-devel zlib bash-completion openssh; do
+  for pkg in curl git base-devel zlib xdg-utils bash-completion openssh; do
     grep -qF "\"pacman:${pkg}\" = \"latest\"" "$GLOBAL" || fail "pacman:$pkg"
   done
 }
