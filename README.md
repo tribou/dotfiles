@@ -2,7 +2,7 @@
 
 ### Quick Start
 
-Setting up a new machine takes three steps. Nothing needs installing beforehand except where step 1 says so: no Homebrew, mise, `just`, SSH keys or GitHub login.
+Setting up a new machine takes three steps. Step 1 lists everything that must be installed beforehand; you do not need Homebrew, mise, `just`, SSH keys or a GitHub login.
 
 #### 1. Before you start
 
@@ -17,11 +17,18 @@ Setting up a new machine takes three steps. Nothing needs installing beforehand 
   Until then `git`, `clang` and `make` are stubs. `bootstrap.sh` checks for the tools and stops with this instruction if they are missing.
 - Use an admin account. mise asks for your password once (sudo) to create `/opt/homebrew`.
 
-**Linux** (Debian/Ubuntu or Arch): use an account with sudo. `bootstrap.sh` installs `curl`, `git` and the compiler toolchain itself.
+**Linux** (Debian/Ubuntu or Arch): use an account with sudo, and install `curl` and `git` if the machine lacks them:
+
+```sh
+sudo apt-get update && sudo apt-get install -y curl git   # Debian/Ubuntu
+sudo pacman -S --needed curl git                          # Arch
+```
+
+`bootstrap.sh` installs the compiler toolchain itself.
 
 #### 2. Get the script and run it
 
-Either command works on a stock machine.
+Either command works once step 1 is done.
 
 - **Without cloning first.** The script clones the repo to `~/dev/dotfiles` and continues from there:
 
@@ -29,7 +36,7 @@ Either command works on a stock machine.
   curl -fsSL https://raw.githubusercontent.com/tribou/dotfiles/main/bootstrap.sh | bash
   ```
 
-- **With a local copy first** (on Linux this needs `git` already installed):
+- **With a local copy first:**
 
   ```sh
   git clone https://github.com/tribou/dotfiles.git ~/dev/dotfiles
@@ -50,7 +57,7 @@ mise downloads many tools from GitHub releases. If the install stops on a GitHub
   chsh -s /opt/homebrew/bin/bash
   ```
 
-- Open a new terminal window (or `exec $SHELL -l` on Linux) so the new `PATH` takes effect.
+- Then open a new terminal window (or `exec $SHELL -l` on Linux) so the new `PATH` takes effect.
 
 From then on, use `just install` to repair or sync and `just upgrade` to update; see the [Runbook](#runbook).
 

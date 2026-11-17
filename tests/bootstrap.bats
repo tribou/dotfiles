@@ -106,6 +106,7 @@ fake_linux() {
   printf '#!/usr/bin/env bash\ncase "$1" in -s) echo Linux ;; -m) echo x86_64 ;; esac\n' > "$FIXTURE_BIN/uname"
   printf '#!/usr/bin/env bash\nprintf "sudo %%s\\n" "$*" >> "$MISE_CALLS"\n' > "$FIXTURE_BIN/sudo"
   printf '#!/usr/bin/env bash\n' > "$FIXTURE_BIN/apt-get"
+  printf '#!/usr/bin/env bash\nexit 2\n' > "$FIXTURE_BIN/xcode-select" # never consulted on Linux
   chmod +x "$FIXTURE_BIN/sudo" "$FIXTURE_BIN/apt-get"
 }
 
@@ -279,9 +280,10 @@ run_piped_bootstrap() {
 @test "bootstrap: on macOS with a zsh login shell says how to switch to Homebrew bash" {
   LOGIN_SHELL=/bin/zsh run_bootstrap
   assert_success
-  assert_output --partial 'Open a new login shell'
   assert_output --partial 'Your login shell is /bin/zsh'
   assert_output --partial 'chsh -s /opt/homebrew/bin/bash'
+  assert_output --partial 'open a new terminal window'
+  refute_output --partial 'exec $SHELL -l'
 }
 
 @test "bootstrap: says nothing about the login shell when it is already Homebrew bash" {

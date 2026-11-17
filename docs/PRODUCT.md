@@ -12,7 +12,7 @@ As a developer setting up a new machine (or helping someone else set up theirs),
 
 ## Core Requirements
 
-- **Single-command bootstrap**: `./bootstrap.sh -i` sets up a fully working environment from scratch
+- **Single-command bootstrap**: `./bootstrap.sh` sets up a fully working environment from scratch
 - **Idempotent**: Running bootstrap repeatedly must not break anything
 - **Fast shell startup**: Lib scripts and mise activation are optimized to minimize prompt latency
 - **Fuzzy-first UX**: Common tasks (branch checkout, npm scripts, AWS profiles) use fzf for interactive selection when no args are provided
