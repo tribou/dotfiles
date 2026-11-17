@@ -19,10 +19,6 @@ node_modules/
 *.pem
 *.key
 private
-
-# Leftover local data from the retired beads issue tracker
-.beads/
-.dolt/
 *.db
 
 .DS_Store
