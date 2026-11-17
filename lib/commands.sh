@@ -1,10 +1,5 @@
 #!/bin/bash -l
 
-
-
-
-
-
 # Returns the write command for the system clipboard (no args: just the command string).
 function _dotfiles_clipboard_write_cmd ()
 {
@@ -31,11 +26,6 @@ function copy_to_clipboard ()
   cmd="$(_dotfiles_clipboard_write_cmd)"
   [ -n "$cmd" ] && eval "$cmd"
 }
-
-
-
-
-
 
 function _dotfiles_grep_history_files ()
 {
@@ -101,35 +91,6 @@ function histgrep ()
   fi
 }
 
-function install-swap ()
-{
-  local usage='Usage: install-swap HOST'
-
-  # Return usage if 0 or more than 2 args are passed
-  if [ $# -lt 1 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-  if [ $# -gt 2 ]
-  then
-    echo "$usage"
-    return 1
-  fi
-
-  ansible-playbook "$DEVPATH/ansible-swap/site.yml" \
-    -i "${1}," \
-    --extra-vars "target=${1}"
-}
-
-
-
-
-
-
-
-
-
 function mise-run ()
 {
   if [ -n "$1" ]
@@ -149,14 +110,12 @@ function mise-run ()
   fi
 }
 
-
 function paste_from_clipboard ()
 {
   local cmd
   cmd="$(_dotfiles_clipboard_read_cmd)"
   [ -n "$cmd" ] && eval "$cmd"
 }
-
 
 function restart-gpg ()
 {
@@ -186,10 +145,6 @@ function search ()
     ':!package-lock.json' \
     ':!pnpm-lock.yaml'
 }
-
-
-
-
 
 function bashcheck ()
 {
@@ -247,7 +202,6 @@ alias ack='ag'
 alias ag='rg'
 alias back='cd "$OLDPWD"'
 alias be='bundle exec'
-alias bfg='java -jar /usr/local/bin/bfg.jar'
 alias convert-tabs-spaces="replace '	' '  '"
 alias count='sed "/^\s*$/d" | wc -l | xargs'
 
@@ -271,5 +225,3 @@ fi
 alias tree='tree -I "bower_components|dist|node_modules|temp|tmp"'
 alias unsetdotglob='shopt -u dotglob'
 alias v='nvim'
-alias vc='vimcat'
-alias youcompleteme-install='cd ~/.vim/plugged/YouCompleteMe; ./install.py --clang-completer --gocode-completer --tern-completer; cd "$OLDPWD"'
