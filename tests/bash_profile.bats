@@ -1,5 +1,6 @@
 # covers: bash_profile
 # tests/bash_profile.bats
+bats_require_minimum_version 1.5.0
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -40,20 +41,45 @@ _source_profile() {
   assert_output --partial "$TEST_HOME/.composer/vendor/bin"
 }
 
-@test "bash_profile: debug timing reports elapsed milliseconds" {
-  run bash -c "
+# Load only _dotfiles_debug_timing from bash_profile, then run "$1".
+_debug_timing() {
+  run --separate-stderr bash -c "
     eval \"\$(sed -n '/^function _dotfiles_debug_timing/,/^}/p' '$REPO_ROOT/bash_profile')\"
-    date() {
-      case \"\$*\" in
-        *'+%Y-%m-%dT%H:%M:%S.%NZ'*) echo 2024-01-01T00:00:00.250000000Z ;;
-        *) command date \"\$@\" ;;
-      esac
-    }
-    OS=Linux DEBUG_BASH_PROFILE=1 DOTFILES_DEBUG_LAST_TIME=2024-01-01T00:00:00.000000000Z
-    _dotfiles_debug_timing here
+    DEBUG_BASH_PROFILE=1
+    $1
   "
+}
+
+@test "bash_profile: debug timing reports elapsed milliseconds" {
+  # Unsetting EPOCHREALTIME drops its special meaning, so it can be faked.
+  _debug_timing '
+    unset EPOCHREALTIME
+    EPOCHREALTIME=1704067200.000000; _dotfiles_debug_timing here
+    EPOCHREALTIME=1704067200.250123; _dotfiles_debug_timing there
+  '
   assert_success
-  assert_output "2024-01-01T00:00:00.250000000Z here +250"
+  assert_output $'2024-01-01T00:00:00.000Z here +0\n2024-01-01T00:00:00.250Z there +250'
+  assert_equal "$stderr" ""
+}
+
+@test "bash_profile: debug timing works with BSD date and no EPOCHREALTIME (macOS /bin/bash)" {
+  # BSD date has no -d or %N; the fallback must not need either.
+  _debug_timing '
+    unset EPOCHREALTIME
+    date() {
+      case " $* " in
+        *" -d "*|*%N*) echo "date: illegal option -- d" >&2; return 1 ;;
+      esac
+      [ -e "$BATS_TEST_TMPDIR/later" ] && echo "1704067202 2024-01-01T00:00:02Z" && return
+      touch "$BATS_TEST_TMPDIR/later"
+      echo "1704067200 2024-01-01T00:00:00Z"
+    }
+    _dotfiles_debug_timing here
+    _dotfiles_debug_timing there
+  '
+  assert_success
+  assert_output $'2024-01-01T00:00:00Z here +0\n2024-01-01T00:00:02Z there +2000'
+  assert_equal "$stderr" ""
 }
 
 @test "bash_profile: tmux version lookup is quiet when tmux is not installed" {

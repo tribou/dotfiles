@@ -10,28 +10,32 @@ function _dotfiles_debug_timing ()
 {
   if [ -n "$DEBUG_BASH_PROFILE" ]
   then
-    local _date_cmd="date"
-    if [ "$OS" = "Darwin" ] && command -v gdate >/dev/null 2>&1
+    # Track epoch milliseconds directly instead of parsing timestamps back with
+    # GNU `date -d`/`%N`, which BSD date lacks. EPOCHREALTIME (bash 5+) gives
+    # microseconds; macOS's /bin/bash 3.2 falls back to whole seconds.
+    local NOW NOW_MS
+    if [ -n "$EPOCHREALTIME" ]
     then
-      _date_cmd="gdate"
+      local _secs="${EPOCHREALTIME%[.,]*}"
+      local _frac="${EPOCHREALTIME#*[.,]}000"
+      _frac="${_frac:0:3}"
+      NOW_MS=$(( _secs * 1000 + 10#$_frac ))
+      TZ=UTC0 printf -v NOW '%(%Y-%m-%dT%H:%M:%S)T' "$_secs"
+      NOW="$NOW.${_frac}Z"
+    else
+      local _secs
+      read -r _secs NOW <<< "$(date -u '+%s %Y-%m-%dT%H:%M:%SZ')"
+      NOW_MS=$(( _secs * 1000 ))
     fi
 
-    local LAST_TIME="$DOTFILES_DEBUG_LAST_TIME"
-    local LAST_TIME_NANO=$($_date_cmd -u -d "$LAST_TIME" +"%s%N")
-    local NOW=$($_date_cmd -u +"%Y-%m-%dT%H:%M:%S.%NZ")
-    local NOW_NANO=$($_date_cmd -u -d "$NOW" +"%s%N")
     local DIFF="0"
-    local MSG="$NOW $1 +$DIFF"
-
-    if [ -n "$LAST_TIME" ]
+    if [ -n "$DOTFILES_DEBUG_LAST_MS" ]
     then
-      # nanoseconds -> milliseconds
-      DIFF=$(( (NOW_NANO - LAST_TIME_NANO) / 1000000 ))
-      MSG="$NOW $1 +$DIFF"
+      DIFF=$(( NOW_MS - DOTFILES_DEBUG_LAST_MS ))
     fi
 
-    DOTFILES_DEBUG_LAST_TIME="$NOW"
-    echo "$MSG"
+    DOTFILES_DEBUG_LAST_MS="$NOW_MS"
+    echo "$NOW $1 +$DIFF"
   fi
 }
 
@@ -264,7 +268,7 @@ _dotfiles_debug_timing "$LINENO"
 _path_dedup
 
 # Cleanup debug timing
-unset DOTFILES_DEBUG_LAST_TIME
+unset DOTFILES_DEBUG_LAST_MS
 unset DEBUG_BASH_PROFILE
 
 if [ -d "$STARTPATH" ]
