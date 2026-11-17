@@ -330,7 +330,7 @@ augroup dotfiles
   autocmd BufNewFile,BufRead .env* set filetype=sh
   autocmd BufNewFile,BufRead .env*.php set filetype=php
   autocmd BufNewFile,BufRead Podfile,Fastfile,Matchfile,Appfile set filetype=ruby
-  autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
+  autocmd FileType make setlocal ts=4 sw=4 sts=0 noexpandtab
   autocmd FileType json syntax match Comment +\/\/.\+$+
   autocmd FileType markdown setlocal spell
   autocmd BufNewFile,BufRead *.tsx set filetype=typescriptreact

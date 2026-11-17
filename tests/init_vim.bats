@@ -70,3 +70,16 @@ source_init_vim_isolated() {
   run diff "$BATS_TEST_TMPDIR/once.sorted" "$BATS_TEST_TMPDIR/twice.sorted"
   assert_success
 }
+
+@test "init.vim: Makefiles keep hard tabs at a width of 4" {
+  local mk="$BATS_TEST_TMPDIR/Makefile"
+  printf 'all:\n\techo hi\n' > "$mk"
+  run source_init_vim_isolated -c "edit $mk" \
+    -c "call writefile([&filetype, &expandtab, &tabstop, &shiftwidth], '$BATS_TEST_TMPDIR/out')"
+  [ "$status" -eq 0 ]
+  run cat "$BATS_TEST_TMPDIR/out"
+  assert_line --index 0 "make"
+  assert_line --index 1 "0"
+  assert_line --index 2 "4"
+  assert_line --index 3 "4"
+}
