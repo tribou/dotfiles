@@ -355,6 +355,25 @@ function ga ()
   git add --all "$@" && _dotfiles_git_status
 }
 
+# git stash save is deprecated; push takes the message with -m
+function gss ()
+{
+  if [ $# -gt 0 ]; then
+    git stash push -m "$*"
+  else
+    git stash push
+  fi
+}
+
+function gssk ()
+{
+  if [ $# -gt 0 ]; then
+    git stash push --keep-index -m "$*"
+  else
+    git stash push --keep-index
+  fi
+}
+
 function _dotfiles_prompt_git_branch_delete ()
 {
   echo
@@ -550,13 +569,12 @@ alias fix='git commit --amend -a --no-edit && _dotfiles_git_log_commit && _dotfi
 # shellcheck disable=SC2142
 alias gall='echo; echo; git log --oneline --all --graph --decorate  $(git reflog | awk '"'"'{print $1}'"'"')'
 # shellcheck disable=SC2142
-alias gall2='echo; echo; git log --oneline --all --graph --decorate --date=local --date=short --pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>" $(git reflog | awk '"'"'{print $1}'"'"')'
+alias gall2='echo; echo; git log --oneline --all --graph --decorate --date=short --pretty=format:"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>" $(git reflog | awk '"'"'{print $1}'"'"')'
 alias gbdr='git branch -d -r'
 alias gd='git diff'
 alias gds='git diff --staged'
 alias gdw='git diff --color-words'
 alias gdww='git diff-word'
-alias gf='git flow'
 alias gfix='git commit --amend -a --no-edit'
 alias gpl='git pull'
 alias gps='git push'
@@ -564,8 +582,6 @@ alias gpst='git push --follow-tags'
 alias gr2='git rebase -i HEAD~2'
 alias gs='git show'
 alias gsp='git stash pop'
-alias gss='git stash save'
-alias gssk='git stash save --keep-index'
 alias md='merge develop'
 alias mm='merge main'
 alias mp='merge prod'
