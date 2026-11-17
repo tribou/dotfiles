@@ -11,7 +11,7 @@ function mkrepo()
   cd "$1" || return
 
   # 2. Initialize git, create README and .gitignore
-  git init -b main
+  git init -b main || return 1
   echo "# $1" > README.md
   cat > .gitignore <<'EOF'
 # OS / editor noise
@@ -54,13 +54,13 @@ mise.local.lock
 EOF
 
   # 3. Initial commit
-  git add README.md .gitignore
-  git commit -m "Initial commit"
+  git add README.md .gitignore || return 1
+  git commit -m "Initial commit" || return 1
 
   # 4. Create the repo under the 'tribou' owner
   # --source=. tells gh to use the current folder
   # --push automatically pushes the initial commit
-  gh repo create "tribou/$1" --private --source=. --remote=origin --push
+  gh repo create "tribou/$1" --private --source=. --remote=origin --push || return 1
 
   # Handle bug where claude skills don't install without the directory
   mkdir -p .claude/skills
@@ -73,9 +73,9 @@ EOF
         --skill organize-ai-context --skill plan-to-implementation \
         --skill prd --skill session-outline \
         --agent opencode --agent claude-code -y; then
-    git add -A
-    git commit -m "Add AI agent skills"
-    git push
+    git add -A || return 1
+    git commit -m "Add AI agent skills" || return 1
+    git push || return 1
   else
     echo "⚠️  Skill installation failed. Install manually with 'npx skills@latest add obra/superpowers'."
   fi

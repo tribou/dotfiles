@@ -96,3 +96,47 @@ setup() {
   assert grep -qFx '.opencode/local/' "$ignore"
   assert grep -qFx '.worktrees/' "$ignore"
 }
+
+@test "mkrepo: stops without claiming success when the initial commit fails" {
+  run bash -c "
+    tmp=\$(mktemp -d)
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/repo.sh'
+    git() { echo \"git \$*\"; [ \"\$1\" != commit ]; }
+    gh() { echo \"gh \$*\"; }
+    npx() { echo \"npx \$*\"; }
+    mkrepo \"\$tmp/myrepo\" 2>&1
+  "
+  assert_failure
+  refute_output --partial "gh repo create"
+  refute_output --partial "Created https://github.com"
+}
+
+@test "mkrepo: stops without claiming success when gh repo create fails" {
+  run bash -c "
+    tmp=\$(mktemp -d)
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/repo.sh'
+    git() { echo \"git \$*\"; }
+    gh() { echo \"gh \$*\"; return 1; }
+    npx() { echo \"npx \$*\"; }
+    mkrepo \"\$tmp/myrepo\" 2>&1
+  "
+  assert_failure
+  refute_output --partial "npx"
+  refute_output --partial "Created https://github.com"
+}
+
+@test "mkrepo: fails without claiming success when pushing the skills commit fails" {
+  run bash -c "
+    tmp=\$(mktemp -d)
+    . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/repo.sh'
+    git() { echo \"git \$*\"; [ \"\$1\" != push ]; }
+    gh() { echo \"gh \$*\"; }
+    npx() { echo \"npx \$*\"; }
+    mkrepo \"\$tmp/myrepo\" 2>&1
+  "
+  assert_failure
+  refute_output --partial "Created https://github.com"
+}
