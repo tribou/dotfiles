@@ -19,7 +19,7 @@ NO_UNIT_PATTERNS=('*.md' 'docs/*' LICENSE goss.yaml 'tests/integration/*' '.gith
 # their helpers, and the lib files bash_profile runs to set up the environment.
 DOCKER_PATTERNS=('tests/integration/*' 'tests/test_helper/*' lib/index.sh lib/path.sh lib/platform.sh)
 # Files the Docker suite never touches; any change not listed here or above runs it.
-DOCKER_SKIP_PATTERNS=('*.md' 'docs/*' LICENSE 'lib/*' scripts/doctor.sh scripts/perf_report.sh scripts/test_changed.sh 'skills/*' 'agent/*' 'tests/fixtures/*' '.github/*')
+DOCKER_SKIP_PATTERNS=('*.md' 'docs/*' LICENSE 'lib/*' scripts/doctor.sh scripts/perf_report.sh scripts/test_changed.sh 'skills/*' '.agents/*' skills-lock.json 'agent/*' 'tests/fixtures/*' '.github/*')
 
 note() { printf 'test-changed: %s\n' "$1" >&2; }
 

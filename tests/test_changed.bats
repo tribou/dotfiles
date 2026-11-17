@@ -149,6 +149,12 @@ fixture_plan() {
   assert_line "docker no"
 }
 
+@test "test_changed: installed agent skills and the skills lock skip the Docker suite" {
+  plan_for .agents/skills/brainstorming/SKILL.md skills-lock.json
+  assert_success
+  assert_line "docker no"
+}
+
 @test "test_changed: detects committed changes since the merge-base with origin/main" {
   make_fixture_repo
   (
