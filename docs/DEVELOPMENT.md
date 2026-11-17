@@ -169,8 +169,8 @@ needed beyond running `bootstrap.sh` on the remote machine.
 mouse spams the terminal with `35;133;37M...` sequences.
 
 **Cause**: `set -g mouse on` (`tmux/tmux-conf`) enables mouse tracking on the
-local alacritty; an unclean disconnect skips the "off" sequences, so alacritty
-stays in motion-reporting mode. The stuck state is local — reconnecting SSH
+local terminal (Ghostty); an unclean disconnect skips the "off" sequences, so
+the terminal stays in motion-reporting mode. The stuck state is local — reconnecting SSH
 doesn't clear it.
 
 **Fix** (local shell prompt, dead `ssh` exited; keep mouse still while typing,
@@ -178,12 +178,14 @@ doesn't clear it.
 
 - `reset` — works, but also clears scrollback.
 - Mouse-mode only (keeps scrollback): `printf '\033[?1000l\033[?1002l\033[?1003l\033[?1006l\033[?1015l'`
+- In Ghostty, the command palette's Reset Terminal (`cmd+shift+p` on macOS,
+  `ctrl+shift+p` on Linux) does the same as `reset` from any window.
 
 ## Configuration Files
 
 - **`.editorconfig`**: Consistent formatting across editors
 - **`gitconfig`**: GPG signing, useful aliases (`tree`, `tree-one`, `diff-word`, `forget`), LFS, SSH for GitHub, nvimdiff merge tool
-- **`alacritty.toml`**: Alacritty terminal emulator config
+- **`ghostty/config.ghostty`**: Ghostty terminal config (linked to `~/.config/ghostty/config.ghostty`), with its colors in `ghostty/themes/dotfiles-night`. Bash shell integration is loaded by `bash_profile` through `lib/ghostty.sh`, outside tmux only. Check edits with `ghostty +validate-config --config-file=ghostty/config.ghostty` and reload with `cmd+shift+,`. Over SSH, the `ssh-terminfo` feature installs `xterm-ghostty` on the remote host on first connect (`ghostty +ssh-cache --remove=user@host` forces a reinstall); `ssh` run from inside tmux sends `TERM=tmux-256color` as before
 - **`ripgreprc`**: Ripgrep defaults (exported via `RIPGREP_CONFIG_PATH`)
 
 ## AI Skills
