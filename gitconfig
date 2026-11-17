@@ -12,7 +12,6 @@
   dark = true
   line-numbers = true
   syntax-theme = TwoDark
-[credential]
 [color]
   ui = true
   interactive = true
@@ -33,13 +32,13 @@
   changed = red
   untracked = cyan
 [alias]
-  diff-word = diff --color-words="[^[:space:]]|([[:alnum:]]|UTF_8_GUARD)+"
+  diff-word = diff --color-words="[[:alnum:]]+|[^[:space:]]"
   forget = reset HEAD --hard
   history = log --follow -p --
-  tree = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
-  tree-short = log --graph --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
+  tree = log --graph --abbrev-commit --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\" --all
+  tree-short = log --graph --abbrev-commit --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
 	changes = log --format=%B --since=\"24 hours ago\" --date=local
-  tree-one = log --abbrev-commit --date=local --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
+  tree-one = log --abbrev-commit --date=short --pretty=format:\"%C(yellow)%h %C(cyan)%ad%C(auto)%d %Creset%s %C(blue)<%aN>\"
 [push]
   default = simple
 [rerere]
@@ -49,8 +48,6 @@
   required = true
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
-[filter "omitsigningkey"]
-  clean = sed -E '/signingkey = [A-Z0-9]+$/d'
 [pull]
 	ff = only
 ; [commit]
