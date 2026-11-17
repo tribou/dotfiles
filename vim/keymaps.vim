@@ -3,7 +3,7 @@
 "
 " misc
 nnoremap <silent> <esc><esc> :<c-u>noh<CR>
-nnoremap <Leader>r :<c-u>source ~/.vimrc<CR>
+nnoremap <Leader>r :<c-u>source $MYVIMRC<CR>
 nnoremap <Leader>w <c-w><c-w>
 nnoremap <Leader>q :<c-u>q<CR>
 

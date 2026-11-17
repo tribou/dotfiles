@@ -83,3 +83,12 @@ source_init_vim_isolated() {
   assert_line --index 2 "4"
   assert_line --index 3 "4"
 }
+
+@test "keymaps: <Leader>r re-sources the running config (\$MYVIMRC), not ~/.vimrc" {
+  # ~/.vimrc is not nvim's config; nvim loads ~/.config/nvim/init.vim.
+  run source_init_vim_isolated \
+    -c "call writefile([maparg('<Leader>r', 'n')], '$BATS_TEST_TMPDIR/out')"
+  [ "$status" -eq 0 ]
+  run cat "$BATS_TEST_TMPDIR/out"
+  assert_output --partial 'source $MYVIMRC'
+}
