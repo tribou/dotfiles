@@ -83,7 +83,7 @@ Both platform workflows passed mise package apply, every tool install configured
   - Implements prompt customization with git branch detection
   - Activates mise, which selects Node (and other runtimes) from `.nvmrc`, `.node-version`, and similar files
 
-- **`zshrc`**: Minimal zsh configuration — primarily delegates to bash-compatible configurations
+- **`zshrc`**: Minimal, secondary zsh configuration (prompt, fzf, zoxide, completion). It does not source `bash_profile` or `lib/`, so the shell functions and aliases are bash-only
 
 ## Library Structure
 
@@ -181,7 +181,7 @@ packages](#opt-in-packages)).
 
 - **Project Paths**:
   - `DEVPATH`: `~/dev`
-  - `DOTFILES`: `~/dev/dotfiles`
+  - `DOTFILES`: derived by `bash_profile` from the checkout it is symlinked from (resolves the `~/.bash_profile` symlink), so the repo can live anywhere
   - `GOPATH`: `~/dev/go`
   - `STARTPATH`: optional, user-set start directory. When set, the initial login shell (the `STARTPATH` block near the end of `bash_profile`) and new tmux windows (`prefix c`) open there instead of `DEVPATH`
   - `PRIMARY_REPO`, `SECONDARY_REPO`: Defaults for the tmux layout functions (`tmux-large [primary] [secondary]`, etc.) when no argument is given; fuzzy matched via zoxide
@@ -205,7 +205,7 @@ packages](#opt-in-packages)).
 
 - **`tmux/tmux-conf`**: Main tmux configuration
 - Prefix key: `Ctrl-f`
-- Integration with system clipboard via reattach-to-user-namespace
+- System clipboard: copy-mode yanks reach it through OSC 52 (`set-clipboard on`, `allow-passthrough on`); the right-click menu's Copy and Paste items use `scripts/tmux-copy.sh` and `scripts/tmux-paste.sh` (pbcopy/pbpaste or xclip)
 - Predefined layouts via shell functions: `tmux-large`, `tmux-small`, `tmux-xl`
 - **Working directory of new windows vs splits** (two intentionally different rules):
   - **New windows** (`prefix c`) open at `$STARTPATH` if set, otherwise `$DEVPATH`, via the `#{?STARTPATH,#{STARTPATH},#{DEVPATH}}` format (`tmux/tmux-conf`). Requires `STARTPATH`/`DEVPATH` to be present in tmux's global environment (inherited from the launching login shell). Mirrors the initial-shell cd logic in `bash_profile`
@@ -239,4 +239,4 @@ This repo uses **GitHub issues** for issue tracking. Issues live on the GitHub r
 - `gh issue create` — create a new issue
 - `gh issue close <n>` — close an issue
 
-Priority is tracked via `P1`/`P2`/`P3` labels. Bugs use the `bug` label; tasks/features use `enhancement`.
+Priority is tracked via `P1`/`P2`/`P3` labels. Type is tracked via `type::bug`, `type::feature`, `type::task`, or `type::chore` (older issues may still carry the legacy `bug`/`enhancement` labels).
