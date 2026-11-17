@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # pre-dotfiles hook (see mise.toml): create the directories dotfiles live in,
 # keep ~/.ssh and ~/.gnupg private, and move a pre-existing regular file at any
-# managed [dotfiles] target to <target>.backup. mise refuses to replace files it
+# managed [dotfiles] target to <target>.backup (or .backup.N when that already
+# exists). mise refuses to replace files it
 # did not write (short of --force-dotfiles, which would discard them), so this
 # keeps the old bootstrap's back-up-then-link behaviour.
 #
@@ -57,7 +58,14 @@ awk '/^\[dotfiles\]/ { in_table = 1; next } /^\[/ { in_table = 0 } in_table && /
   while IFS= read -r target; do
     path="$HOME/${target#\~/}"
     if [ -e "$path" ] && [ ! -L "$path" ]; then
-      change "back up $target to $target.backup" "backed up $target to $target.backup" \
-        mv -f "$path" "$path.backup"
+      # Never overwrite an earlier backup: use .backup.1, .backup.2, ... instead.
+      suffix=.backup
+      n=1
+      while [ -e "$path$suffix" ] || [ -L "$path$suffix" ]; do
+        suffix=".backup.$n"
+        n=$((n + 1))
+      done
+      change "back up $target to $target$suffix" "backed up $target to $target$suffix" \
+        mv "$path" "$path$suffix"
     fi
   done

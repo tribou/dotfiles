@@ -21,6 +21,17 @@ teardown() {
   [ "$(cat "$TMP/home/.config/mise/config.toml.backup")" = 'my = "config"' ]
 }
 
+@test "link_mise_config: keeps an existing backup and numbers the new one" {
+  mkdir -p "$TMP/home/.config/mise"
+  printf 'old\n' > "$TMP/home/.config/mise/config.toml.backup"
+  printf 'new\n' > "$TMP/home/.config/mise/config.toml"
+  run "$REPO_ROOT/scripts/link_mise_config.sh" "$REPO_ROOT/mise-config.toml" "$TMP/home/.config/mise/config.toml"
+  assert_success
+  [ -L "$TMP/home/.config/mise/config.toml" ]
+  [ "$(cat "$TMP/home/.config/mise/config.toml.backup")" = old ]
+  [ "$(cat "$TMP/home/.config/mise/config.toml.backup.1")" = new ]
+}
+
 @test "link_mise_config: replaces an existing symlink without a backup" {
   mkdir -p "$TMP/home/.config/mise"
   ln -s /nonexistent "$TMP/home/.config/mise/config.toml"
@@ -34,6 +45,11 @@ teardown() {
   run "$REPO_ROOT/scripts/link_mise_config.sh" "$REPO_ROOT/mise-config.toml" "$TMP/home/.config/mise/config.toml"
   assert_success
   [ -L "$TMP/home/.config/mise/config.toml" ]
+}
+
+@test "bootstrap: installs Arch prerequisites without a full system upgrade" {
+  grep -qF 'sudo pacman -S --needed --noconfirm curl git base-devel' "$REPO_ROOT/bootstrap.sh"
+  ! grep -qF 'pacman -Syu' "$REPO_ROOT/bootstrap.sh"
 }
 
 @test "bootstrap: links the mise config through the backup-aware helper" {

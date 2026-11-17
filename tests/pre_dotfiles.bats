@@ -35,6 +35,16 @@ setup() {
   assert_output --partial 'changed: backed up ~/.bash_profile'
 }
 
+@test "pre_dotfiles: keeps an existing backup and numbers the new one" {
+  printf 'old\n' > "$HOME/.bash_profile.backup"
+  printf 'mine\n' > "$HOME/.bash_profile"
+  run "$SCRIPT"
+  assert_success
+  [ "$(cat "$HOME/.bash_profile.backup")" = old ]
+  [ "$(cat "$HOME/.bash_profile.backup.1")" = mine ]
+  assert_output --partial 'changed: backed up ~/.bash_profile to ~/.bash_profile.backup.1'
+}
+
 @test "pre_dotfiles: leaves symlinks and unmanaged files alone" {
   ln -s /nonexistent "$HOME/.zshrc"
   printf 'x\n' > "$HOME/.unmanaged"
