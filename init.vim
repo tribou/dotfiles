@@ -273,8 +273,6 @@ if has("persistent_undo")
 endif
 
 " enable true color support
-let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 set termguicolors
 
 "" colorscheme settings
@@ -283,9 +281,6 @@ let g:jellybeans_overrides = {
 \    'background': { 'guibg': '011627' },
 \}
 let g:jellybeans_background_color_256='NONE'
-
-" twodark.vim
-let g:twodark_terminal_italics = 1
 
 try
   colorscheme challenger_deep
@@ -381,10 +376,6 @@ let g:copilot_filetypes = {
   \ 'gitcommit': v:true,
   \ }
 
-" deoplete
-let g:deoplete#enable_at_startup = 1
-
-
 " editorconfig-vim
 let g:EditorConfig_core_mode = 'external_command'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
@@ -408,17 +399,6 @@ let g:NERDTreeExactMatchHighlightFullName = 1
 let g:NERDTreePatternMatchHighlightFullName = 1
 
 
-" UltiSnips
-" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
-" let g:UltiSnipsExpandTrigger="<tab>"
-" let g:UltiSnipsJumpForwardTrigger="<c-n>"
-" let g:UltiSnipsJumpBackwardTrigger="<c-p>"
-
-
-" If you want :UltiSnipsEdit to split your window.
-"let g:UltiSnipsEditSplit="vertical"
-
-
 " buftabline
 let g:buftabline_show=2
 let g:buftabline_indicators=1
@@ -437,11 +417,6 @@ augroup END
 function! s:env(var) abort
   return exists('*DotenvGet') ? DotenvGet(a:var) : eval('$'.a:var)
 endfunction
-
-
-" vim-flow
-let g:flow#autoclose = 1
-let g:flow#enable = 0
 
 
 " vim-fugitive
@@ -466,10 +441,6 @@ let g:jsdoc_input_description = 1
 let g:jsdoc_access_descriptions = 2
 let g:jsdoc_underscore_private = 1
 let g:jsdoc_enable_es6 = 1
-
-
-" vim-jsx
-let g:jsx_ext_required = 0
 
 
 " vim-markdown-composer
@@ -507,10 +478,6 @@ let g:surround_custom_mapping.html = {
 
 " vim-test
 let test#strategy = "dispatch"
-
-
-" nvim-typescript
-let g:nvim_typescript#diagnostics_enable = 0 " Use ALE for linting
 
 
 " vim-vdebug
