@@ -37,7 +37,7 @@ if [ "$dry_run" = 0 ] && [ "$(uname -s)" != "Darwin" ]; then
     sudo apt-get update
     sudo apt-get install -y curl git build-essential ca-certificates
   elif command -v pacman >/dev/null 2>&1; then
-    sudo pacman -Syu --noconfirm curl git base-devel
+    sudo pacman -S --needed --noconfirm curl git base-devel
   fi
 fi
 
