@@ -8,7 +8,7 @@ A personal dotfiles repository that bootstraps developer environments quickly, p
 
 ## User Story
 
-As a developer setting up a new machine (or helping someone else set up theirs), I want to run a single command (`./bootstrap.sh`) and have my complete development environment ready — with all my preferred tools, aliases, key bindings, tmux layouts, editor plugins, and AI agent user configured — so I can be productive immediately without manual configuration.
+As a developer setting up a new machine (or helping someone else set up theirs), I want to run a single command (`./bootstrap.sh`) and have my complete development environment ready — with all my preferred tools, aliases, key bindings, tmux layouts, and editor plugins configured — so I can be productive immediately without manual configuration. The isolated AI agent user is a separate, manual, Linux-only step (`agent/setup-user.sh`); `bootstrap.sh` does not create it.
 
 ## Core Requirements
 

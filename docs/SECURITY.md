@@ -23,4 +23,4 @@
 ## Version-Controlled Files
 
 - No secrets, API keys, tokens, or personal credentials should ever be committed to this repository.
-- The `.gitconfig` in this repo contains only non-sensitive configuration (aliases, signing settings, merge tool); email/name are set per-machine.
+- The `.gitconfig` in this repo contains only non-sensitive configuration (aliases, signing settings, merge tool) plus the owner's public commit identity: `user.name` and a GitHub `noreply` `user.email` are hardcoded, not set per-machine. Override them per-repo (`git config user.email ...`) where a different identity is needed.
