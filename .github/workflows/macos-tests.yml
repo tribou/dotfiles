@@ -50,14 +50,12 @@ jobs:
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
           MISE_BIN="$HOME/.local/bin/mise" ./scripts/verify_mise_tools.sh
 
-      - name: Install just
-        uses: extractions/setup-just@v3
-
+      # just and shellcheck come from mise [tools] via the shims added above.
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install shellcheck and GNU parallel
-        run: brew install shellcheck parallel
+      - name: Install GNU parallel
+        run: brew install parallel
 
       - name: Run bash function tests
         run: just test-unit
