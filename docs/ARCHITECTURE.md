@@ -81,7 +81,7 @@ Both platform workflows passed mise package apply, all 43 configured tool instal
   - Sets up environment variables (DEVPATH, DOTFILES, GOPATH, etc.)
   - Configures PATH for Homebrew, mise, and other tools
   - Implements prompt customization with git branch detection
-  - Auto-loads correct Node version from .nvmrc or .node-version files
+  - Activates mise, which selects Node (and other runtimes) from `.nvmrc`, `.node-version`, and similar files
 
 - **`zshrc`**: Minimal zsh configuration — primarily delegates to bash-compatible configurations
 
@@ -167,19 +167,19 @@ packages](#opt-in-packages)).
 ## Environment Configuration
 
 - **API Keys**: Stored in `~/.ssh/api_keys`, sourced by bash_profile
-  - `GIT_SIGNING_KEY`: GPG signing key for commits (warns if unset)
   - Can contain any sensitive environment variables (e.g., DIGITALOCEAN_API_TOKEN)
 
 - **Project Paths**:
   - `DEVPATH`: `~/dev`
   - `DOTFILES`: `~/dev/dotfiles`
   - `GOPATH`: `~/dev/go`
-  - `STARTPATH`: optional, user-set start directory. When set, the initial login shell (`bash_profile:337`) and new tmux windows (`prefix c`) open there instead of `DEVPATH`
-  - `PRIMARY_REPO`, `SECONDARY_REPO`: Used by tmux layout functions; fuzzy matched via z
+  - `STARTPATH`: optional, user-set start directory. When set, the initial login shell (the `STARTPATH` block near the end of `bash_profile`) and new tmux windows (`prefix c`) open there instead of `DEVPATH`
+  - `PRIMARY_REPO`, `SECONDARY_REPO`: Defaults for the tmux layout functions (`tmux-large [primary] [secondary]`, etc.) when no argument is given; fuzzy matched via zoxide
 
-- **Directory Navigation**: Uses `z` (rupa/z) for frecency-based directory jumping
-  - Installed at `~/dev/z/z.sh`
-  - `_dotfiles_full_path` uses `_z -e` to resolve directory names
+- **Directory Navigation**: Uses [zoxide](https://github.com/ajeetdsouza/zoxide) for frecency-based directory jumping
+  - Initialized in `bash_profile` and `zshrc` with `zoxide init` when installed (mise `[tools]`)
+  - `_dotfiles_full_path` uses `zoxide query` to resolve directory names
+  - Bootstrap imports a legacy rupa/z `~/.z` database into zoxide once
 
 - **History**: Timestamped files in `~/.history/YYYY/MM/DD.HH.MM.SS_hostname_pid`
 
@@ -198,7 +198,7 @@ packages](#opt-in-packages)).
 - Integration with system clipboard via reattach-to-user-namespace
 - Predefined layouts via shell functions: `tmux-large`, `tmux-small`, `tmux-xl`
 - **Working directory of new windows vs splits** (two intentionally different rules):
-  - **New windows** (`prefix c`) open at `$STARTPATH` if set, otherwise `$DEVPATH`, via the `#{?STARTPATH,#{STARTPATH},#{DEVPATH}}` format (`tmux/tmux-conf`). Requires `STARTPATH`/`DEVPATH` to be present in tmux's global environment (inherited from the launching login shell). Mirrors the initial-shell cd logic in `bash_profile:337-343`
+  - **New windows** (`prefix c`) open at `$STARTPATH` if set, otherwise `$DEVPATH`, via the `#{?STARTPATH,#{STARTPATH},#{DEVPATH}}` format (`tmux/tmux-conf`). Requires `STARTPATH`/`DEVPATH` to be present in tmux's global environment (inherited from the launching login shell). Mirrors the initial-shell cd logic in `bash_profile`
   - **Splits** (`C-v` vertical, `C-h` horizontal) deliberately open in the **current pane's directory** (`#{pane_current_path}`, `tmux/tmux-conf`) so a split stays in the same project you are working in. This divergence from the new-window rule is intentional — do not "unify" the two
 - **`tmux/tmux-right-click-menu.conf`**: Right-click pane menu with custom Paste item
   - Sourced conditionally by `tmux-conf` on non-SSH sessions only
