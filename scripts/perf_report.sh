@@ -39,7 +39,7 @@ for metric in "startup_ms" "prompt_nongit_ms" "prompt_git_ms"; do
   max_val=$(grep "\"metric\": \"$metric\"" "$PERF_LOG" | jq -r '.value' | sort -rn | head -n 1 || echo 1)
   [ -z "$max_val" ] && max_val=1
   
-  grep "\"metric\": \"$metric\"" "$PERF_LOG" | tail -n 10 | while read -r line; do
+  { grep "\"metric\": \"$metric\"" "$PERF_LOG" || true; } | tail -n 10 | while read -r line; do
     commit=$(echo "$line" | jq -r '.commit')
     val=$(echo "$line" | jq -r '.value')
     timestamp=$(echo "$line" | jq -r '.timestamp' | cut -d'T' -f2 | cut -d':' -f1,2)
