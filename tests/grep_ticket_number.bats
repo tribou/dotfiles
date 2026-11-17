@@ -74,6 +74,21 @@ setup() {
   assert_output "A2-123"
 }
 
+@test "ab1-foo extracts single-digit AB1" {
+  run bash -c 'echo "ab1-foo" | _dotfiles_grep_ticket_number'
+  assert_output "AB1"
+}
+
+@test "abc-1-foo extracts single-digit ABC-1" {
+  run bash -c 'echo "abc-1-foo" | _dotfiles_grep_ticket_number'
+  assert_output "ABC-1"
+}
+
+@test "ab12xyz (trailing junk) returns empty" {
+  run bash -c 'echo "ab12xyz" | _dotfiles_grep_ticket_number'
+  assert_output ""
+}
+
 # --- Multi-word prefix format (super-123) ---
 @test "super-123 extracts SUPER-123" {
   run bash -c 'echo "super-123" | _dotfiles_grep_ticket_number'
