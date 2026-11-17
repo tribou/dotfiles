@@ -92,3 +92,21 @@ source_init_vim_isolated() {
   run cat "$BATS_TEST_TMPDIR/out"
   assert_output --partial 'source $MYVIMRC'
 }
+
+@test "ale.vim: every configured linter exists in the installed ALE" {
+  # Reads the installed ALE (never installs or updates it); CI has none and skips.
+  command -v nvim >/dev/null || skip "nvim not installed"
+  local ale="${DOTFILES_TEST_ALE_DIR:-$HOME/.local/share/nvim/plugged/ale}"
+  [ -d "$ale/ale_linters" ] || skip "ALE not installed at $ale"
+  run nvim --headless -u NONE -i NONE \
+    -c "set rtp^=$ale" \
+    -c "runtime plugin/ale.vim" \
+    -c "source $REPO_ROOT/vim/ale.vim" \
+    -c "let g:missing = []" \
+    -c "for [g:ft, g:names] in items(g:ale_linters) | let g:have = map(ale#linter#Get(g:ft), 'v:val.name') | let g:missing += map(filter(copy(g:names), 'index(g:have, v:val) < 0'), 'g:ft . \":\" . v:val') | endfor" \
+    -c "call writefile(['checked'] + g:missing, '$BATS_TEST_TMPDIR/out')" \
+    -c 'qa!'
+  [ "$status" -eq 0 ]
+  run cat "$BATS_TEST_TMPDIR/out"
+  assert_output "checked"
+}

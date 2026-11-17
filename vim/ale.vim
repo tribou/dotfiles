@@ -1,5 +1,5 @@
 " ale
-let g:ale_completion_enabled = 0 " using deoplete instead
+let g:ale_completion_enabled = 0 " coc.nvim provides completion
 let g:ale_fix_on_save = 0 " enable on project-by-project basis with local .exrc
 let g:ale_floating_preview = 1
 let g:ale_use_neovim_diagnostics_api = 1
@@ -48,16 +48,13 @@ let g:ale_linters = {
   \       'php',
   \       'langserver',
   \   ],
-  \   'sql': [
-  \       'pgformatter',
-  \   ],
+  \   'sql': [],
   \   'sh': [
   \       'language_server',
   \       'shellcheck',
   \   ],
   \   'go': [
   \       'gofmt',
-  \       'golint',
   \       'gopls',
   \   ],
   \   'vue': [
