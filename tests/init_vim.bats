@@ -1,4 +1,4 @@
-# covers: init.vim
+# covers: init.vim vim/*.vim
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -42,4 +42,31 @@ setup() {
   run cat "$BATS_TEST_TMPDIR/out"
   assert_line --index 0 "[['alpha'], 'V']"
   assert_line --index 1 "[['alpha'], 'V']"
+}
+
+# Source init.vim (and the vim/*.vim files it sources) in an nvim that has no
+# plugins: HOME and XDG dirs point at the test tmpdir, so vim-plug and every
+# plugin are absent and their errors are silenced. Extra -c commands follow.
+source_init_vim_isolated() {
+  command -v nvim >/dev/null || skip "nvim not installed"
+  local home="$BATS_TEST_TMPDIR/home"
+  mkdir -p "$home"
+  HOME="$home" XDG_CONFIG_HOME="$home/.config" XDG_DATA_HOME="$home/.local/share" \
+    XDG_STATE_HOME="$home/.local/state" XDG_CACHE_HOME="$home/.cache" \
+    DOTFILES="$REPO_ROOT" \
+    nvim --headless -u NONE -i NONE -c "silent! source $REPO_ROOT/init.vim" "$@" -c 'qa!'
+}
+
+@test "init.vim: re-sourcing (<Leader>r) does not duplicate its autocmds" {
+  run source_init_vim_isolated \
+    -c "redir! > $BATS_TEST_TMPDIR/once | silent autocmd | redir END" \
+    -c "silent! source $REPO_ROOT/init.vim" \
+    -c "redir! > $BATS_TEST_TMPDIR/twice | silent autocmd | redir END"
+  [ "$status" -eq 0 ]
+  [ -s "$BATS_TEST_TMPDIR/once" ]
+  # Sorted: re-running `syntax enable` reorders its own group without adding to it.
+  sort "$BATS_TEST_TMPDIR/once" > "$BATS_TEST_TMPDIR/once.sorted"
+  sort "$BATS_TEST_TMPDIR/twice" > "$BATS_TEST_TMPDIR/twice.sorted"
+  run diff "$BATS_TEST_TMPDIR/once.sorted" "$BATS_TEST_TMPDIR/twice.sorted"
+  assert_success
 }

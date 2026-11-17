@@ -199,12 +199,16 @@ lua << EOF
 local _ts_ok, _ts = pcall(require, "nvim-treesitter")
 if _ts_ok then
   _ts.install({ "prisma" })
+  -- cleared group so re-sourcing this file does not stack duplicates
+  local group = vim.api.nvim_create_augroup("dotfiles_treesitter", { clear = true })
   -- vim-polyglot's filetype detection replaces nvim's and has no prisma rule
   vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+    group = group,
     pattern = "*.prisma",
     command = "setfiletype prisma",
   })
   vim.api.nvim_create_autocmd("FileType", {
+    group = group,
     pattern = { "prisma" },
     callback = function() pcall(vim.treesitter.start) end,
   })
@@ -312,24 +316,28 @@ set exrc
 
 
 "" custom filetype settings
-autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
-autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
-autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
-autocmd BufNewFile,BufRead tsconfig.json,tsconfig.*.json set filetype=jsonc
-autocmd BufNewFile,BufRead .ripgreprc set filetype=conf
-autocmd BufNewFile,BufRead *.conf,.*ignore,.git* set filetype=conf
-autocmd BufNewFile,BufRead *.css set filetype=scss
-autocmd BufNewFile,BufRead .env* set filetype=sh
-autocmd BufNewFile,BufRead .env*.php set filetype=php
-autocmd BufNewFile,BufRead Podfile,Fastfile,Matchfile,Appfile set filetype=ruby
-autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
-autocmd FileType json syntax match Comment +\/\/.\+$+
-autocmd FileType markdown setlocal spell
-autocmd BufNewFile,BufRead *.tsx set filetype=typescriptreact
+" Every autocmd lives in the dotfiles group, cleared here, so re-sourcing this
+" file (<Leader>r) replaces them instead of stacking duplicates.
+augroup dotfiles
+  autocmd!
+  autocmd BufNewFile,BufRead apple-app-site-association set filetype=json
+  autocmd BufNewFile,BufRead *Dockerfile* set filetype=dockerfile
+  autocmd BufNewFile,BufRead .babelrc,.bowerrc,.eslintrc,.jshintrc set filetype=json
+  autocmd BufNewFile,BufRead tsconfig.json,tsconfig.*.json set filetype=jsonc
+  autocmd BufNewFile,BufRead .ripgreprc set filetype=conf
+  autocmd BufNewFile,BufRead *.conf,.*ignore,.git* set filetype=conf
+  autocmd BufNewFile,BufRead *.css set filetype=scss
+  autocmd BufNewFile,BufRead .env* set filetype=sh
+  autocmd BufNewFile,BufRead .env*.php set filetype=php
+  autocmd BufNewFile,BufRead Podfile,Fastfile,Matchfile,Appfile set filetype=ruby
+  autocmd Filetype Makefile setlocal ts=4 sw=4 sts=0 expandtab
+  autocmd FileType json syntax match Comment +\/\/.\+$+
+  autocmd FileType markdown setlocal spell
+  autocmd BufNewFile,BufRead *.tsx set filetype=typescriptreact
 
-
-" crontab editing
-autocmd filetype crontab setlocal nobackup nowritebackup
+  " crontab editing
+  autocmd FileType crontab setlocal nobackup nowritebackup
+augroup END
 
 
 " macros/registers
@@ -361,7 +369,9 @@ set signcolumn=yes
 " Use <c-space> to trigger completion.
 inoremap <silent><expr> <c-space> coc#refresh()
 " Highlight symbol under cursor on CursorHold
-autocmd CursorHold * silent call CocActionAsync('highlight')
+augroup dotfiles
+  autocmd CursorHold * silent call CocActionAsync('highlight')
+augroup END
 " autocmd CursorHold * silent call CocActionAsync('doHover')
 " Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
 " Coc only does snippet and additional edit on confirm.
@@ -423,8 +433,10 @@ let g:buftabline_path=1
 
 
 " vim-commentary
-autocmd FileType json setlocal commentstring=//\ %s
-autocmd FileType sql setlocal commentstring=--\ %s
+augroup dotfiles
+  autocmd FileType json setlocal commentstring=//\ %s
+  autocmd FileType sql setlocal commentstring=--\ %s
+augroup END
 
 
 " vim-dotenv
