@@ -160,8 +160,7 @@ function paste_from_clipboard ()
 
 function restart-gpg ()
 {
-  gpgconf --kill gpg-agent
-  eval "$(gpg-agent --daemon 2>/dev/null)"
+  gpgconf --kill gpg-agent && gpgconf --launch gpg-agent
 }
 
 function search ()

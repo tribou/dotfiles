@@ -91,15 +91,10 @@ export DOTFILES_COMMIT_TIMEOUT="${DOTFILES_COMMIT_TIMEOUT:-30}"
 
 _dotfiles_debug_timing "$LINENO"
 
-# Set GPG TTY and start agent
+# Tell gpg-agent which terminal to prompt on (GnuPG 2.1+ starts the agent on demand)
 if [[ $- == *i* ]]; then
-  export GPG_TTY=$(tty 2>/dev/null)
-  if [ -S "${GPG_AGENT_INFO%%:*}" ]
-  then
-    export GPG_AGENT_INFO
-  else
-    eval $(gpg-agent --daemon 2>/dev/null)
-  fi
+  GPG_TTY=$(tty 2>/dev/null)
+  export GPG_TTY
 fi
 
 # Case insensitive auto-completion
@@ -143,7 +138,7 @@ done
 
 
 export GOPATH=$DEVPATH/go
-export PATH=/usr/local/sbin:/usr/local/bin:$HOME/.fastlane/bin:$PATH:/usr/local/share/npm/bin:$GOPATH/bin:$DEVPATH/bin
+export PATH=/usr/local/sbin:/usr/local/bin:$PATH:$GOPATH/bin:$DEVPATH/bin
 if [[ "$OSTYPE" == "darwin"* ]]; then
   export ANDROID_HOME=$HOME/Library/Android/sdk
 else
@@ -204,27 +199,12 @@ _dotfiles_debug_timing "$LINENO"
 
 # brew install bash-completion
 [[ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]] && . "/opt/homebrew/etc/profile.d/bash_completion.sh"
-[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 [[ -r "/etc/profile.d/bash_completion.sh" ]] && . "/etc/profile.d/bash_completion.sh"
 
 _dotfiles_debug_timing "$LINENO"
 
 # composer
 [ -d "$HOME/.composer/vendor/bin" ] && export PATH="$HOME/.composer/vendor/bin:$PATH"
-
-# gcloud sourcing
-# OLD_GCLOUD_PATH=/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
-# NEW_GCLOUD_PATH=/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
-# if [ -d "$OLD_GCLOUD_PATH" ]
-# then
-#   . "$OLD_GCLOUD_PATH/path.bash.inc"
-#   . "$OLD_GCLOUD_PATH/completion.bash.inc"
-# fi
-# if [ -d "$NEW_GCLOUD_PATH" ]
-# then
-#   . "$NEW_GCLOUD_PATH/path.bash.inc"
-#   . "$NEW_GCLOUD_PATH/completion.bash.inc"
-# fi
 
 # Google Antigravity
 [ -d "$HOME/.antigravity/antigravity/bin" ] && export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
@@ -238,19 +218,6 @@ fi
 
 _dotfiles_debug_timing "$LINENO"
 
-
-# Lua/Torch
-if [ -s "$DEVPATH/torch/install/bin/torch-activate" ]
-then
-  . "$DEVPATH/torch/install/bin/torch-activate"
-fi
-
-_dotfiles_debug_timing "$LINENO"
-
-# Marker
-[[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
-
-_dotfiles_debug_timing "$LINENO"
 
 # mySQL
 [ -d "/opt/homebrew/opt/mysql-client/bin" ] && export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
@@ -284,40 +251,11 @@ fi
 
 _dotfiles_debug_timing "$LINENO"
 
-# THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+# SDKMAN (keep after the PATH setup above so its candidates take precedence)
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
 _dotfiles_debug_timing "$LINENO"
-
-# Clean up any stale direnv hooks from PROMPT_COMMAND (since direnv is disabled)
-if [[ "$PROMPT_COMMAND" == *"_direnv_hook"* ]]; then
-  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook;/}"
-  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook /}"
-  export PROMPT_COMMAND="${PROMPT_COMMAND//_direnv_hook/}"
-fi
-
-# Clean up stale read_node_version from PROMPT_COMMAND (replaced by mise)
-if [[ "$PROMPT_COMMAND" == *"read_node_version"* ]]; then
-  export PROMPT_COMMAND="${PROMPT_COMMAND// read_node_version ;/}"
-  export PROMPT_COMMAND="${PROMPT_COMMAND//read_node_version ;/}"
-  export PROMPT_COMMAND="${PROMPT_COMMAND//read_node_version/}"
-fi
-
-# Set iTerm2 badge
-function set_badge()
-{
-  printf "\e]1337;SetBadgeFormat=%s\a"   $(printf '%q\n' "${PWD##*/}:$(get_git_location)" | base64)
-}
-[ "$TERM_PROGRAM" == "iTerm.app" ] && [[ $PROMPT_COMMAND != *"set_badge"* ]] && export PROMPT_COMMAND="$PROMPT_COMMAND set_badge ;"
-
-_dotfiles_debug_timing "$LINENO"
-
-# # direnv
-# if [ -n "$(command -v direnv)" ]
-# then
-#   eval "$(direnv hook bash)"
-# fi
 
 # Source all lib scripts
 . "$DOTFILES/lib/index.sh"
@@ -337,12 +275,9 @@ then
   cd "$DEVPATH"
 fi
 
-# Welcome message and warnings (interactive only)
+# Welcome message (interactive only)
 if [[ $- == *i* ]]; then
   remind 'Welcome. 👋'
-
-  # Warnings for unset env vars
-  [ ! -n "$GIT_SIGNING_KEY" ] && echo 'WARNING: $GIT_SIGNING_KEY not set!'
 fi
 
 # Color various outputs including fd which is used by ctrl-p in vim-fzf
