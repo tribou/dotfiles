@@ -14,16 +14,11 @@
       "filetypes": ["sh"],
       "ignoredRootPaths": ["~"]
     },
-    "elixirLS": {
-      "command": "~/dev/elixir-ls/rel/language_server.sh",
-      "filetypes": ["elixir", "eelixir"]
-    },
     "golang": {
       "command": "gopls",
       "rootPatterns": ["go.mod"],
       "filetypes": ["go"]
     },
-
     "intelephense": {
       "command": "intelephense",
       "args": ["--stdio"],
@@ -31,13 +26,6 @@
       "initializationOptions": {
         "storagePath": "/tmp/intelephense"
       }
-    },
-    "terraform": {
-      "command": "terraform-ls",
-      "args": ["serve"],
-      "filetypes": ["terraform", "tf"],
-      "initializationOptions": {},
-      "settings": {}
     }
   },
   "snippets.ultisnips.pythonPrompt": false
