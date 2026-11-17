@@ -71,7 +71,10 @@ Plug 'mbbill/undotree'
 Plug 'janko/vim-test'
 Plug 'benmills/vimux'
 Plug 'sk1418/HowMuch'
-Plug 'norcalli/nvim-colorizer.lua'
+if has('nvim-0.10')
+  " maintained fork of norcalli/nvim-colorizer.lua (needs nvim 0.10+)
+  Plug 'catgoose/nvim-colorizer.lua'
+endif
 Plug 'kdheepak/lazygit.nvim'
 
 " Debugging

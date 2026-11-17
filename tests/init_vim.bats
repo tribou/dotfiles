@@ -110,3 +110,12 @@ source_init_vim_isolated() {
   run cat "$BATS_TEST_TMPDIR/out"
   assert_output "checked"
 }
+
+@test "init.vim: uses the maintained colorizer fork (norcalli's calls deprecated vim.tbl_flatten)" {
+  # norcalli/nvim-colorizer.lua warns "vim.tbl_flatten is deprecated" on every
+  # start under nvim 0.12; catgoose/nvim-colorizer.lua is the maintained fork.
+  run grep -nE "^[[:space:]]*Plug 'norcalli/nvim-colorizer\.lua'" "$REPO_ROOT/init.vim"
+  [ "$status" -ne 0 ]
+  run grep -nE "^[[:space:]]*Plug 'catgoose/nvim-colorizer\.lua'" "$REPO_ROOT/init.vim"
+  assert_success
+}
