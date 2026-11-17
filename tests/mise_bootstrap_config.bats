@@ -89,7 +89,7 @@ dotfile_entries() {
   grep -qF '"go:golang.org/x/tools/gopls" = "latest"' "$GLOBAL"
 }
 
-@test "macOS casks are mise brew-cask packages, opt-in via the optional drop-in" {
+@test "optional macOS casks are mise brew-cask packages, opt-in via the optional drop-in" {
   grep -qF '"brew-cask:' "$REPO_ROOT/mise-config.optional.toml.example"
   ! grep -qE '^[^#]*"brew-cask:' "$REPO_ROOT/mise-config.optional.toml.example"
 }
