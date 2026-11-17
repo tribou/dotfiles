@@ -57,6 +57,19 @@ stub() {
   [ "$(grep -c '# BEGIN dotfiles' "$HOME/.ssh/config")" -eq 1 ]
 }
 
+@test "converge: macOS keychain block starts on its own line when ~/.ssh/config lacks a final newline" {
+  mkdir -p "$HOME/.ssh"
+  printf 'Host example\n  User me' > "$HOME/.ssh/config"
+  stub ssh-add
+  DOTFILES_UNAME=Darwin run step_macos_ssh
+  assert_success
+  grep -qx '  User me' "$HOME/.ssh/config"
+  grep -qx '# BEGIN dotfiles' "$HOME/.ssh/config"
+  DOTFILES_UNAME=Darwin run step_macos_ssh
+  refute_output --partial 'changed:'
+  [ "$(grep -c '# BEGIN dotfiles' "$HOME/.ssh/config")" -eq 1 ]
+}
+
 @test "converge: macOS keychain step does nothing on Linux" {
   stub ssh-add
   DOTFILES_UNAME=Linux run step_macos_ssh
@@ -141,6 +154,13 @@ stub() {
   stub python 'echo "Successfully installed pynvim-0.6.0"'
   run step_pynvim
   assert_output --partial 'changed: installed pynvim'
+}
+
+@test "converge: a failed pynvim install fails the step and shows pip's output" {
+  stub python 'echo "ERROR: no matching distribution for pynvim"; exit 1'
+  run step_pynvim
+  assert_failure
+  assert_output --partial 'ERROR: no matching distribution for pynvim'
 }
 
 @test "converge: enables corepack shims only when yarn or pnpm is missing" {

@@ -31,7 +31,12 @@ step_macos_ssh() {
   [ "$(_uname)" = Darwin ] || return 0
   local config="$HOME/.ssh/config"
   if ! grep -qxF '# BEGIN dotfiles' "$config" 2>/dev/null; then
+    # A config lacking a final newline would glue the marker onto its last
+    # line, so the grep above would never match and the block would repeat.
+    local lead=""
+    if [ -s "$config" ] && [ -n "$(tail -c 1 "$config")" ]; then lead=$'\n'; fi
     {
+      printf '%s' "$lead"
       echo '# BEGIN dotfiles'
       echo 'Host *'
       echo '  AddKeysToAgent yes'
@@ -110,7 +115,10 @@ step_zoxide() {
 # pynvim explicitly for an already-present python.
 step_pynvim() {
   local out
-  out="$(python -m pip install pynvim 2>&1)"
+  if ! out="$(python -m pip install pynvim 2>&1)"; then
+    printf '%s\n' "$out" >&2
+    return 1
+  fi
   if [[ "$out" == *"Successfully installed"* ]]; then
     echo "changed: installed pynvim"
   fi
