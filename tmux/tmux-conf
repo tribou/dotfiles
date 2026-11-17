@@ -52,7 +52,7 @@ set -g focus-events
 
 # clipboard
 set -g set-clipboard on
-set -g allow-passthrough on # CRITICAL: Allow escape sequences (like OSC 52) to pass through to Alacritty. (Required for tmux 3.3+)
+set -g allow-passthrough on # CRITICAL: Allow escape sequences (like OSC 52) to pass through to the outer terminal (Ghostty). (Required for tmux 3.3+)
 
 # Forward xterm keys (like Home, End, etc.) to the terminal
 set -g xterm-keys on
@@ -191,6 +191,11 @@ bind-key l select-pane -R
 bind-key x kill-pane
 
 # Color and line support
+# Ghostty (TERM=xterm-ghostty): declare what the outer terminal supports, so
+# tmux passes through truecolor, styled and coloured underlines (undercurl),
+# extended keys, synchronized output, OSC 52, hyperlinks and cursor
+# style/colour. The xterm* overrides below still cover other terminals.
+set -as terminal-features ',xterm-ghostty:RGB:extkeys:usstyle:sync:clipboard:hyperlinks:focus:strikethrough:overline:title:ccolour:cstyle'
 set -as terminal-overrides ',xterm*:Tc:sitm=\E[3m'
 set -as terminal-overrides ",*:U8=0"
 # Cursor shape support
@@ -275,63 +280,24 @@ bind-key -n C-n if-shell "echo '#{pane_current_command}' | grep -qE '^(bash|zsh|
 # which tmux inteprets it as opening a new pane.
 ###############################################
 
-######## Alacritty + Tmux key integration #########
-# First of all, Alacritty can send hex codes for shortcuts you define. So for
-# example you can send a hex code for the shortcut "c-f v" which in my case
-# opens a vertical pane (see setting above). The hex code for this combination
-# is: 0x06 0x76. There are many cases to find it out. One of them is the tool
-# 'xxd'
-
-# If you run "xxd -psd" and hit "c-f v" and then enter and finally c-c to exit
-# , it outputs the following:
+######## Ghostty + Tmux key integration #########
+# Ghostty can send raw bytes for a key with the text: action, so a Command key
+# can drive a tmux binding by sending the prefix (C-f = 0x06) and then the key.
+# Find the bytes with `xxd -psd` as described above (e.g. "c-f v" is 0x06 0x76).
 #
-# 	$ xxd -psd
-# 	^Fv
-# 	06760a^C
+# Add lines like these to ghostty/config.ghostty:
 #
-# What matters is the sequence  06760a^C where:
+#   keybind = super+d=text:\x06\x76         # c-f v  vertical split
+#   keybind = super+shift+d=text:\x06\x73   # c-f s  choose session
+#   keybind = super+h=text:\x06\x68         # c-f h  select pane left
+#   keybind = super+j=text:\x06\x6a         # c-f j  select pane down
+#   keybind = super+k=text:\x06\x6b         # c-f k  select pane up
+#   keybind = super+l=text:\x06\x6c         # c-f l  select pane right
+#   keybind = super+t=text:\x06\x63         # c-f c  new window
+#   keybind = super+1=text:\x06\x31         # c-f 1  window 1 (2-9 likewise)
 #
-# 	06 -> c-f
-# 	76 -> v
-# 	0a -> return
-#	^C -> c-c
-#
-# From here, we know that 0x06 0x76 corresponds to "c-f v".
-#
-# Next step is to add a line to 'key_binding' setting in Alacritty:
-#
-#   - { key: D,        mods: Command,       chars: "\x06\x76"  }
-#
-# That's it! The followings are the ones that I'm using:
-#
-#   key_bindings:
-#     - { key: D,        mods: Command,       chars: "\x06\x76" }
-#     - { key: D,        mods: Command|Shift, chars: "\x06\x73" }
-#     - { key: W,        mods: Command,       chars: "\x06\x78" }
-#     - { key: H,        mods: Command,       chars: "\x06\x68" }
-#     - { key: J,        mods: Command,       chars: "\x06\x6a" }
-#     - { key: K,        mods: Command,       chars: "\x06\x6b" }
-#     - { key: L,        mods: Command,       chars: "\x06\x6c" }
-#     - { key: T,        mods: Command,       chars: "\x06\x63" }
-#     - { key: Key1,     mods: Command,       chars: "\x06\x31" }
-#     - { key: Key2,     mods: Command,       chars: "\x06\x32" }
-#     - { key: Key3,     mods: Command,       chars: "\x06\x33" }
-#     - { key: Key4,     mods: Command,       chars: "\x06\x34" }
-#     - { key: Key5,     mods: Command,       chars: "\x06\x35" }
-#     - { key: Key6,     mods: Command,       chars: "\x06\x36" }
-#     - { key: Key7,     mods: Command,       chars: "\x06\x37" }
-#     - { key: Key8,     mods: Command,       chars: "\x06\x38" }
-#     - { key: Key9,     mods: Command,       chars: "\x06\x39" }
-#     - { key: Left,     mods: Command,       chars: "\x06\x48" }
-#     - { key: Down,     mods: Command,       chars: "\x06\x4a" }
-#     - { key: Up,       mods: Command,       chars: "\x06\x4b" }
-#     - { key: Right,    mods: Command,       chars: "\x06\x4c" }
-#
-# Finally, inside the iTerm2 Key settings, I'm adding just various shortcuts,
-# such as cmd-j, cmd-left, etc.. , select the option "send hex code" and the
-# enter the hex code which I want to be executed, hence the tmux sequence. So
-# when I press CMD + d in iterm, I send the sequence 0x06 0x76,
-# which tmux inteprets it as opening a new pane.
+# They are not enabled: cmd+d, cmd+t, cmd+1-9 and cmd+w are Ghostty's own
+# split and tab shortcuts, which stay available alongside tmux.
 ###############################################
 
 # List of plugins
