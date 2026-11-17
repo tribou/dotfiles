@@ -15,8 +15,12 @@ setup() {
   for tool in neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux; do
     grep -qE "^${tool}[[:space:]]*=[[:space:]]*\"latest\"$" "$config"
   done
-  for package in eas-cli eslint_d editorconfig intelephense js-yaml jsonlint neovim prettier react-devtools nodemon tern tslint typescript bash-language-server flow-bin vue-language-server vscode-css-languageserver-bin vscode-html-languageserver-bin; do
+  for package in eas-cli eslint_d editorconfig intelephense js-yaml jsonlint neovim prettier react-devtools nodemon typescript bash-language-server vue-language-server; do
     grep -qF "\"npm:${package}\" = \"latest\"" "$config"
+  done
+  # Nothing in init.vim, vim/ or coc-settings.json uses these.
+  for package in tern tslint flow-bin vscode-css-languageserver-bin vscode-html-languageserver-bin; do
+    ! grep -qF "\"npm:${package}\"" "$config" || fail "unused npm:$package is still installed"
   done
   for package in neovim solargraph; do
     grep -qF "\"gem:${package}\" = \"latest\"" "$config"
