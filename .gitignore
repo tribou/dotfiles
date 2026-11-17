@@ -11,7 +11,5 @@ tests/.perf_log.jsonl
 .beads-credential-key
 .dolt/
 *.db
-.agent/
 .claude/worktrees/
-.ansible/
 .ci-cache/

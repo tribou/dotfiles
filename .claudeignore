@@ -1,33 +1,29 @@
-# Version Control
+# Version control and worktrees
 .git/
+.worktrees/
+.claude/worktrees/
 
-# Node & Bun Dependencies
+# Docker test caches (mise installs, nvim plugins, go, coc)
+.ci-cache/
+
+# Local test output
+tests/.perf_log.jsonl
+*.log
+
+# Dependencies
 node_modules/
-.bun/
 
-# Framework Build Outputs
-.next/
-.expo/
-dist/
-build/
-out/
-coverage/
-
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.backup
-.terraform.lock.hcl
-*.tfvars
-
-# Local Databases & Supabase
-.supabase/
-*.sqlite
-*.db
-
-# Secrets
+# Secrets and machine-local config
 .env*
 .mise.local.toml
 *.pem
 *.key
-*.cert
+private
+
+# Leftover local data from the retired beads issue tracker
+.beads/
+.dolt/
+*.db
+
+.DS_Store
+*.swp
