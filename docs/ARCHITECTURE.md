@@ -71,7 +71,7 @@ Only Apple Silicon macOS and Linux are supported by this ownership model; Intel 
 
 ### Qualification Evidence
 
-Both platform workflows passed mise package apply, all 43 configured tool installs, and the shared smoke verifier after `[settings.npm] package_manager = "npm"` selected external npm. That setting avoids embedded aube aborts for three required npm packages on both platforms.
+Both platform workflows passed mise package apply, every tool install configured at the time, and the shared smoke verifier after `[settings.npm] package_manager = "npm"` selected external npm. That setting avoids embedded aube aborts for three required npm packages on both platforms.
 
 - macOS arm64: [workflow run 34425518410, job 102709799798](https://github.com/tribou/dotfiles/actions/runs/34425518410/job/102709799798)
 - Ubuntu: [workflow run 34425518399, job 102709799806](https://github.com/tribou/dotfiles/actions/runs/34425518399/job/102709799806)
@@ -118,6 +118,16 @@ The `agent/` directory contains the isolated LLM agent-user subsystem:
 
 The `scripts/` directory contains standalone utility scripts (not sourced; run directly):
 
+- **`bootstrap/`**: Bootstrap stages — `preflight.sh`, `run.sh` (drives `mise bootstrap`), `pre_dotfiles.sh` (pre-dotfiles hook), `converge.sh` (the `bootstrap` mise task), `next_steps.sh`
+- **`link_mise_config.sh`**: Links `mise-config.toml` as the global mise config, backing up any existing file
+- **`verify_mise_tools.sh`**: Smoke-checks every mise package and tool (bootstrap and CI)
+- **`upgrade.sh`**: The `upgrade` mise task behind `just upgrade`
+- **`brew_cleanup.sh`**: One-time removal of Homebrew copies of tools mise now owns
+- **`doctor.sh`**: `just doctor` health checks for symlinks and tools
+- **`test_changed.sh`**: `just test-changed` change-based test selection
+- **`perf_report.sh`**: Prints the startup/prompt latency history from `tests/.perf_log.jsonl`
+- **`tmux-copy.sh`** / **`tmux-paste.sh`**: tmux buffer ↔ system clipboard bridges
+- **`dotfiles_remote_browser_open.sh`** / **`dotfiles_local_browser_helper.sh`**: Open browser URLs from an SSH session on the local machine via a reverse tunnel
 - **`battery.sh`**: Battery level reporting for terminal prompt or notifications
 - **`internet.sh`**: Internet connectivity check
 
@@ -209,8 +219,10 @@ packages](#opt-in-packages)).
 
 - **`tests/*.bats`**: Unit tests (bats-core); run fast with no Docker required
 - **`tests/integration/`**: Integration tests run inside Docker
+  - `mise_packages.bats`: Verifies mise's brew-backend formulae install without Homebrew
   - `nvim_health.bats`: Validates Neovim plugin health
   - `nvim_keymaps.bats`: Verifies key mappings are configured correctly
+  - `nvim_python_provider.bats`: Verifies Neovim's python3 provider finds pynvim
   - `tmux_environment.bats`: Validates tmux session and environment setup
 - **`goss.yaml`**: Infrastructure assertions (binary presence, environment variables) validated by goss inside Docker
 - **`Dockerfile`** + **`docker-compose.yml`**: Defines the CI/CD test environment
