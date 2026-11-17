@@ -4,7 +4,7 @@
 function command_reference()
 {
   local REFERENCE_MESSAGE
-  read -r -d '' REFERENCE_MESSAGE << EOF
+  read -r -d '' REFERENCE_MESSAGE << EOF || true
 android: adb reverse tcp:8081 tcp:8081
 android: adb shell input keyevent 82
 android: adb uninstall com.package
@@ -38,8 +38,9 @@ function _dotfiles_display_reference()
   fi
 
   # Text coloring helpers
-  local RESET=`tput sgr0`
-  local DARK_GRAY=`tput setaf 0`
+  local RESET DARK_GRAY
+  RESET=$(tput sgr0)
+  DARK_GRAY=$(tput setaf 0)
 
   # Format it nicely
   echo "$REFERENCE_MESSAGE" \
@@ -55,7 +56,7 @@ alias ref="command_reference"
 
 function vim_reference() {
   local REFERENCE_MESSAGE
-  read -r -d '' REFERENCE_MESSAGE << EOF
+  read -r -d '' REFERENCE_MESSAGE << EOF || true
   location list: lopen
   location list: lclose
   location list: lnext
