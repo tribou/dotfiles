@@ -1,0 +1,26 @@
+# dotfiles-night: this repo's dark palette (Night Owl-like), as a Ghostty
+# theme. Linked to ~/.config/ghostty/themes/dotfiles-night by mise.toml
+# and selected with `theme = dotfiles-night` in ../config.ghostty.
+
+background = #011627
+foreground = #91ddff
+
+# Normal colors
+palette = 0=#002b36
+palette = 1=#ef5350
+palette = 2=#95ffa4
+palette = 3=#f7ecb5
+palette = 4=#00a6e9
+palette = 5=#d280ff
+palette = 6=#5abeb0
+palette = 7=#eeefff
+
+# Bright colors
+palette = 8=#6279b8
+palette = 9=#c32534
+palette = 10=#23d18b
+palette = 11=#f5f543
+palette = 12=#a7dbf7
+palette = 13=#7e57c2
+palette = 14=#cecece
+palette = 15=#ffffff
