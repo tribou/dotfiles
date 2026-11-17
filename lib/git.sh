@@ -373,10 +373,9 @@ function gbd ()
     eval "$SCRIPT"
   else
     local RESULT
-    RESULT=$({
-      git for-each-ref refs/heads --sort=-committerdate --format='%(refname:short)'
-      git for-each-ref refs/remotes --sort=-committerdate --format='%(refname:strip=3)' | grep -v '^HEAD$'
-    } | sort -u | fzf --preview-window wrap --color)
+    # Only local branches: remote-only ones can't be deleted with git branch -d
+    RESULT=$(git for-each-ref refs/heads --sort=-committerdate --format='%(refname:short)' \
+      | fzf --preview-window wrap --color)
     if [ -n "$RESULT" ]
     then
       local SCRIPT="git branch -d \"$RESULT\" || _dotfiles_prompt_git_branch_delete \"$RESULT\""
