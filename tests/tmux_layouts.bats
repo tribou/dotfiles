@@ -50,6 +50,7 @@ setup() {
 }
 
 @test "tmux-xl: still adds its extra pane when primary and secondary are the same" {
-  TMUX=yes tmux-xl "$BATS_TEST_TMPDIR/primary"
+  cd "$BATS_TEST_TMPDIR/primary"
+  TMUX=yes tmux-xl
   grep -qF "split-window -v -l 20%" "$TMUX_LOG"
 }
