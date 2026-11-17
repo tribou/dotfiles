@@ -27,6 +27,6 @@ fi
 
 cat <<'MSG'
 
-Done. Open a new login shell (or: exec $SHELL -l) so mise/gpg-agent/brew/cargo
+Done. Open a new login shell (or: exec $SHELL -l) so mise/brew/cargo
 PATH take effect.
 MSG

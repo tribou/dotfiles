@@ -34,7 +34,6 @@ The root-level `lib/*.sh` files are shell modules loaded by `lib/index.sh`.
 ## Reliability
 - Use `bashcheck` instead of `bash -n` for syntax verification
 - Include bats tests for new functions in `tests/*.bats`
-- GPG signing required for commits — set `GIT_SIGNING_KEY` in `~/.ssh/api_keys`
 - New infrastructure dependencies (binaries, env vars) should have a `goss.yaml` assertion
 
 ## Provisioning Development
@@ -130,7 +129,7 @@ Many commands use fzf for interactive selection when called without arguments:
 Short aliases and functions, by the `lib/` module that defines them:
 
 - **Git** (`lib/git.sh`): `s` (status), `amend` (commit --amend), `fix` (amend without editor), `mm`/`md`/`mp`/`ms` (merge main/develop/prod/staging), `f` (fetch), `ga` (git add --all)
-- **Editor** (`lib/commands.sh`): `v` (nvim), `vc` (vimcat)
+- **Editor** (`lib/commands.sh`): `v` (nvim)
 - **Package managers** (`lib/npm.sh`): `y` (npm-install, or `yarn <args>` with args), `yi` (npm-install), `nr` / `yr` (npm-run)
 - **Navigation** (`lib/commands.sh`): `..`, `...`, `....` (up directories), `back` (cd to $OLDPWD)
 - **Utilities** (`lib/commands.sh`): `ll` (ls -lah), `lt` (ls sorted by time), `tree` (excludes node_modules/dist)

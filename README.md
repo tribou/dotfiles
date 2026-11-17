@@ -95,4 +95,3 @@ After any run, open a new login shell (or `exec $SHELL -l`) so mise/gpg-agent/br
 
 **`~/.ssh/api_keys`** file
 
-- `GIT_SIGNING_KEY` - export the gpg public signing key if it should be used. Find it with `gpg --list-keys`.

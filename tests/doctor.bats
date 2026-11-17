@@ -116,7 +116,6 @@ setup() {
     # Set up valid symlinks for all role-owned entries.
     local symlinks=(
         "~/.bash_profile~bash_profile"
-        "~/.vimrc~init.vim"
         "~/.gitconfig~gitconfig"
         "~/.zshrc~zshrc"
         "~/.tmux.conf~tmux/tmux-conf"

@@ -19,7 +19,6 @@ check_symlinks() {
         # shellcheck disable=SC2088  # Tildes are parsed and expanded below.
         symlinks=(
             "~/.bash_profile~bash_profile"
-            "~/.vimrc~init.vim"
             "~/.gitconfig~gitconfig"
             "~/.zshrc~zshrc"
             "~/.tmux.conf~tmux/tmux-conf"

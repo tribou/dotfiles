@@ -195,7 +195,7 @@ packages](#opt-in-packages)).
 
 ## Neovim/Vim Configuration
 
-- **`init.vim`**: Main Neovim config (also symlinked as ~/.vimrc)
+- **`init.vim`**: Main Neovim config
 - **`coc-settings.json`**: CoC LSP configuration
 - Uses vim-plug for plugin management
 - ALE for linting/fixing

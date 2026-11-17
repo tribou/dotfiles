@@ -24,7 +24,6 @@ dotfile_entries() {
 @test "mise.toml deploys every managed dotfile as a symlink from the repo" {
   local expected=(
     "~/.bash_profile bash_profile"
-    "~/.vimrc init.vim"
     "~/.gitconfig gitconfig"
     "~/.zshrc zshrc"
     "~/.tmux.conf tmux/tmux-conf"
