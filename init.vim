@@ -28,7 +28,6 @@ call plug#begin('~/.local/share/nvim/plugged')
 " Themes
 Plug 'altercation/vim-colors-solarized'
 Plug 'lifepillar/vim-solarized8'
-Plug 'lifepillar/vim-colortemplate'
 Plug 'Rigellute/rigel'
 Plug 'nanotech/jellybeans.vim'
 Plug 'joshdick/onedark.vim'
@@ -64,12 +63,10 @@ Plug 'tpope/vim-dotenv'
 Plug 'tpope/vim-dadbod'
 Plug 'kristijanhusak/vim-dadbod-ui'
 Plug 'kristijanhusak/vim-dadbod-completion'
-Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
 " Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'mbbill/undotree'
 Plug 'janko/vim-test'
-Plug 'benmills/vimux'
 Plug 'sk1418/HowMuch'
 if has('nvim-0.10')
   " maintained fork of norcalli/nvim-colorizer.lua (needs nvim 0.10+)
@@ -91,19 +88,19 @@ Plug 'prettier/vim-prettier', {
 Plug 'dense-analysis/ale', { 'tag': 'v4.*' }
 " coc.nvim framework (extensions managed via g:coc_global_extensions below)
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" VSCode snippet extension; coc-snippets loads it from the runtimepath
 Plug 'andys8/vscode-jest-snippets'
 " Plug 'flowtype/flow-for-vscode', {'do': 'yarn install --frozen-lockfile'}
 if has('nvim-0.10')
-  Plug 'zbirenbaum/copilot.lua'
   Plug 'CopilotC-Nvim/CopilotChat.nvim', { 'branch': 'main' }
 endif
+" CopilotChat dependency
 Plug 'nvim-lua/plenary.nvim'
+" Copilot completion; also signs in the GitHub token CopilotChat uses
 Plug 'github/copilot.vim', {'branch': 'release'}
 
-" Telescope
+" Tree-sitter
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
 
 " TODO: test ncm2 for autocompletion
 " Plug 'ncm2/ncm2'
@@ -355,12 +352,6 @@ let @n = '/@wwwv/,hykPa I.jj'
 " Insert return
 let @r = 'A'
 map , @r
-
-
-" ack.vim
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep'
-endif
 
 
 " coc.nvim
