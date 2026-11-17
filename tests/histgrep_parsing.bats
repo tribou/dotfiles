@@ -80,7 +80,7 @@ setup() {
   mkdir -p "$BATS_TEST_TMPDIR/home/.history/2024/01"
   printf '%s\n' "grep -v foo" "ls" > "$BATS_TEST_TMPDIR/home/.history/2024/01/15.10.30.00_server"
 
-  run --separate-stderr timeout 10 bash -c "
+  run --separate-stderr with_timeout 10 bash -c "
     unset TMUX HERDR_PANE_ID
     export HOME='$BATS_TEST_TMPDIR/home'
     cd '$BATS_TEST_TMPDIR'

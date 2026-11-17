@@ -75,6 +75,7 @@ teardown() {
 }
 
 @test "wrg: rewrites matching files and keeps loop variables local" {
+  command -v rg >/dev/null || skip "rg (ripgrep) not installed"
   cd "$TEMP_REPO"
   printf 'one\nhello world\nthree\n' > test.txt
   . "$REPO_ROOT/lib/replace.sh"

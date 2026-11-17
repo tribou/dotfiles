@@ -44,11 +44,15 @@ setup() {
   assert_line --index 1 "[['alpha'], 'V']"
 }
 
+require_nvim() {
+  command -v nvim >/dev/null || skip "nvim not installed"
+}
+
 # Source init.vim (and the vim/*.vim files it sources) in an nvim that has no
 # plugins: HOME and XDG dirs point at the test tmpdir, so vim-plug and every
 # plugin are absent and their errors are silenced. Extra -c commands follow.
+# Call require_nvim first: a skip inside `run` only ends run's subshell.
 source_init_vim_isolated() {
-  command -v nvim >/dev/null || skip "nvim not installed"
   local home="$BATS_TEST_TMPDIR/home"
   mkdir -p "$home"
   HOME="$home" XDG_CONFIG_HOME="$home/.config" XDG_DATA_HOME="$home/.local/share" \
@@ -58,6 +62,7 @@ source_init_vim_isolated() {
 }
 
 @test "init.vim: re-sourcing (<Leader>r) does not duplicate its autocmds" {
+  require_nvim
   run source_init_vim_isolated \
     -c "redir! > $BATS_TEST_TMPDIR/once | silent autocmd | redir END" \
     -c "silent! source $REPO_ROOT/init.vim" \
@@ -72,6 +77,7 @@ source_init_vim_isolated() {
 }
 
 @test "init.vim: Makefiles keep hard tabs at a width of 4" {
+  require_nvim
   local mk="$BATS_TEST_TMPDIR/Makefile"
   printf 'all:\n\techo hi\n' > "$mk"
   run source_init_vim_isolated -c "edit $mk" \
@@ -86,6 +92,7 @@ source_init_vim_isolated() {
 
 @test "keymaps: <Leader>r re-sources the running config (\$MYVIMRC), not ~/.vimrc" {
   # ~/.vimrc is not nvim's config; nvim loads ~/.config/nvim/init.vim.
+  require_nvim
   run source_init_vim_isolated \
     -c "call writefile([maparg('<Leader>r', 'n')], '$BATS_TEST_TMPDIR/out')"
   [ "$status" -eq 0 ]

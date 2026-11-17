@@ -6,7 +6,7 @@ setup() {
 }
 
 @test "curlit: stops with an error when the request fails" {
-  run timeout 5 bash -c "
+  run with_timeout 5 bash -c "
     . '$REPO_ROOT/lib/curl_it.sh'
     curl() { return 6; }
     sleep() { :; }
@@ -17,7 +17,7 @@ setup() {
 }
 
 @test "curlit: stops with an error when the response is empty" {
-  run timeout 5 bash -c "
+  run with_timeout 5 bash -c "
     . '$REPO_ROOT/lib/curl_it.sh'
     curl() { return 0; }
     sleep() { :; }
@@ -28,7 +28,7 @@ setup() {
 }
 
 @test "curlit: prints a timestamped status line and passes the URL as one argument" {
-  run timeout 5 bash -c "
+  run with_timeout 5 bash -c "
     . '$REPO_ROOT/lib/curl_it.sh'
     calls=0
     curl() {

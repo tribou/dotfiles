@@ -99,6 +99,11 @@ Tests must not share fixed paths; use `$BATS_TEST_TMPDIR`. Parallel jobs
 inherit an ignored SIGINT, so tests that send SIGINT wrap the command under
 test in `with_default_sigint` from `tests/test_helper/common_setup.bash`.
 
+macOS has no coreutils `timeout`, so guard a test against hangs with
+`run with_timeout <seconds> <command>` from the same helper. Guard a tool the
+runners may lack (`nvim`, `rg`) with `command -v <tool> || skip` before `run`:
+a `skip` inside the `run`'d function only ends its subshell.
+
 ## Running a Specific Test
 
 ```bash

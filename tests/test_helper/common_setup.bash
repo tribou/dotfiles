@@ -28,3 +28,9 @@ common_setup() {
 with_default_sigint() {
   perl -e '$SIG{INT} = "DEFAULT"; exec @ARGV or die "exec failed: $!"' -- "$@"
 }
+
+# Run a command, killing it with SIGALRM (status 142) after $1 seconds. macOS
+# ships no coreutils `timeout`; perl's alarm survives exec on both platforms.
+with_timeout() {
+  perl -e 'alarm shift; exec @ARGV or die "exec failed: $!"' -- "$@"
+}
