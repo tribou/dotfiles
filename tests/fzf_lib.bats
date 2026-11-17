@@ -112,3 +112,38 @@ setup() {
   assert_success
   assert_output "exited_ok"
 }
+
+@test "fo: does not change IFS or leak variables into the shell" {
+  fzf-tmux() { printf 'ctrl-e\nsome file.txt\n'; }
+  myeditor() { echo "edit [$1]"; }
+  EDITOR=myeditor
+  unset out key file
+  local before_ifs="$IFS"
+  fo > "$BATS_TEST_TMPDIR/out"
+  assert_equal "$IFS" "$before_ifs"
+  [ -z "${out+set}" ]
+  [ -z "${key+set}" ]
+  [ -z "${file+set}" ]
+  run cat "$BATS_TEST_TMPDIR/out"
+  assert_output "edit [some file.txt]"
+}
+
+@test "fo: ctrl-o opens with xdg-open on Linux" {
+  fzf-tmux() { printf 'ctrl-o\nsome file.txt\n'; }
+  is_macos() { return 1; }
+  is_linux() { return 0; }
+  xdg-open() { echo "xdg-open [$1]"; }
+  open() { echo "open [$1]"; }
+  run fo
+  assert_output "xdg-open [some file.txt]"
+}
+
+@test "fo: ctrl-o opens with open on macOS" {
+  fzf-tmux() { printf 'ctrl-o\nsome file.txt\n'; }
+  is_macos() { return 0; }
+  is_linux() { return 1; }
+  xdg-open() { echo "xdg-open [$1]"; }
+  open() { echo "open [$1]"; }
+  run fo
+  assert_output "open [some file.txt]"
+}
