@@ -250,11 +250,11 @@ setup() {
 # --- durable default ---
 
 @test "bash_profile: exports a DOTFILES_COMMIT_BACKEND default" {
-  run grep -E "^export DOTFILES_COMMIT_BACKEND=opencode" "$REPO_ROOT/bash_profile"
+  run grep -F 'export DOTFILES_COMMIT_BACKEND="${DOTFILES_COMMIT_BACKEND:-opencode}"' "$REPO_ROOT/bash_profile"
   assert_success
 }
 
 @test "bash_profile: exports a DOTFILES_COMMIT_TIMEOUT default" {
-  run grep -E "^export DOTFILES_COMMIT_TIMEOUT=30" "$REPO_ROOT/bash_profile"
+  run grep -F 'export DOTFILES_COMMIT_TIMEOUT="${DOTFILES_COMMIT_TIMEOUT:-30}"' "$REPO_ROOT/bash_profile"
   assert_success
 }

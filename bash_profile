@@ -25,7 +25,8 @@ function _dotfiles_debug_timing ()
 
     if [ -n "$LAST_TIME" ]
     then
-      DIFF=$(( $(($NOW_NANO - $LAST_TIME_NANO)) / $((60*60*1000)) ))
+      # nanoseconds -> milliseconds
+      DIFF=$(( (NOW_NANO - LAST_TIME_NANO) / 1000000 ))
       MSG="$NOW $1 +$DIFF"
     fi
 
@@ -81,11 +82,12 @@ export EDITOR='nvim'
 # Set React Native editor
 export REACT_EDITOR='vscode'
 
-# Commit AI backend: claude or opencode (opencode uses Kimi 2.7)
-export DOTFILES_COMMIT_BACKEND=opencode
+# Commit AI backend: claude or opencode (opencode uses Kimi 2.7). Defaults only,
+# so a value set in ~/.ssh/api_keys or the environment wins.
+export DOTFILES_COMMIT_BACKEND="${DOTFILES_COMMIT_BACKEND:-opencode}"
 
 # Seconds to wait for the commit backend before falling back to a manual commit
-export DOTFILES_COMMIT_TIMEOUT=30
+export DOTFILES_COMMIT_TIMEOUT="${DOTFILES_COMMIT_TIMEOUT:-30}"
 
 _dotfiles_debug_timing "$LINENO"
 
@@ -208,7 +210,7 @@ _dotfiles_debug_timing "$LINENO"
 _dotfiles_debug_timing "$LINENO"
 
 # composer
-export PATH="$HOME/.composer/vendor/bin:$PATH"
+[ -d "$HOME/.composer/vendor/bin" ] && export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 # gcloud sourcing
 # OLD_GCLOUD_PATH=/opt/homebrew-cask/Caskroom/google-cloud-sdk/latest/google-cloud-sdk
@@ -245,9 +247,6 @@ fi
 
 _dotfiles_debug_timing "$LINENO"
 
-# Local bin
-[ -d "$HOME/.local/bin" ] && export PATH=$PATH:$HOME/.local/bin
-
 # Marker
 [[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
 
@@ -275,7 +274,10 @@ export RIPGREP_CONFIG_PATH="$DOTFILES/ripgreprc"
 [ -s "$(command -v terraform)" ] && complete -C "$(command -v terraform)" terraform
 
 # tmux
-export TMUX_VERSION=$(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")
+if command -v tmux >/dev/null 2>&1; then
+  TMUX_VERSION=$(tmux -V | sed -En "s/^tmux[^0-9]*([.0-9]+).*/\1/p")
+  export TMUX_VERSION
+fi
 
 # yarn
 [ -d "$HOME/.yarn/bin" ] && export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
