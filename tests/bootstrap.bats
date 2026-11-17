@@ -1,4 +1,4 @@
-# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh
+# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh scripts/bootstrap/preflight.sh scripts/bootstrap/next_steps.sh bash_profile
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -7,7 +7,8 @@ setup() {
   CALLS="$BATS_TEST_TMPDIR/mise-calls"
   mkdir -p "$FIXTURE_HOME/.local/bin" "$FIXTURE_BIN"
   printf '#!/usr/bin/env bash\ncase "$1" in -s) echo Darwin ;; -m) echo arm64 ;; esac\n' > "$FIXTURE_BIN/uname"
-  chmod +x "$FIXTURE_BIN/uname"
+  printf '#!/usr/bin/env bash\necho /Library/Developer/CommandLineTools\n' > "$FIXTURE_BIN/xcode-select"
+  chmod +x "$FIXTURE_BIN/uname" "$FIXTURE_BIN/xcode-select"
   fake_mise 2026.11.7
 }
 
@@ -25,7 +26,7 @@ fake_mise() {
 
 run_bootstrap() {
   run env HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
-    bash "$REPO_ROOT/bootstrap.sh" "$@"
+    SHELL="${LOGIN_SHELL:-/opt/homebrew/bin/bash}" bash "$REPO_ROOT/bootstrap.sh" "$@"
 }
 
 @test "bootstrap: self-clones to ~/dev/dotfiles when run outside the repo" {
@@ -105,6 +106,7 @@ fake_linux() {
   printf '#!/usr/bin/env bash\ncase "$1" in -s) echo Linux ;; -m) echo x86_64 ;; esac\n' > "$FIXTURE_BIN/uname"
   printf '#!/usr/bin/env bash\nprintf "sudo %%s\\n" "$*" >> "$MISE_CALLS"\n' > "$FIXTURE_BIN/sudo"
   printf '#!/usr/bin/env bash\n' > "$FIXTURE_BIN/apt-get"
+  printf '#!/usr/bin/env bash\nexit 2\n' > "$FIXTURE_BIN/xcode-select" # never consulted on Linux
   chmod +x "$FIXTURE_BIN/sudo" "$FIXTURE_BIN/apt-get"
 }
 
@@ -140,9 +142,9 @@ run_piped_bootstrap() {
   ln -s "$REPO_ROOT" "$FIXTURE_HOME/dev/dotfiles"
   printf '#!/usr/bin/env bash\n' > "$FIXTURE_BIN/git"
   chmod +x "$FIXTURE_BIN/git"
-  cd "$BATS_TEST_TMPDIR"
+  cd "${PIPED_CWD:-$BATS_TEST_TMPDIR}"
   run env HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
-    bash -s -- "$@" < "$REPO_ROOT/bootstrap.sh"
+    SHELL=/opt/homebrew/bin/bash bash -s -- "$@" < "$REPO_ROOT/bootstrap.sh"
 }
 
 @test "bootstrap piped: installs git with sudo before cloning on a real run" {
@@ -254,4 +256,84 @@ run_piped_bootstrap() {
     just --justfile "$REPO_ROOT/justfile" install --skip task
   assert_success
   grep -qxF -- "-C $REPO_ROOT bootstrap --yes --skip task" "$CALLS"
+}
+
+# Stock macOS: git, clang and make are stubs until the Command Line Tools are
+# installed, and the login shell is zsh, which these dotfiles do not configure (#229).
+@test "bootstrap: on macOS stops before doing anything when the Command Line Tools are missing" {
+  printf '#!/usr/bin/env bash\nexit 2\n' > "$FIXTURE_BIN/xcode-select"
+  run_bootstrap
+  assert_failure
+  assert_output --partial 'xcode-select --install'
+  [ ! -e "$CALLS" ]
+}
+
+@test "bootstrap: rejects Intel macOS" {
+  printf '#!/usr/bin/env bash\ncase "$1" in -s) echo Darwin ;; -m) echo x86_64 ;; esac\n' > "$FIXTURE_BIN/uname"
+  run_bootstrap
+  assert_failure
+  assert_output --partial 'Intel macOS is not supported'
+  run grep -qF -- "-C $REPO_ROOT bootstrap" "$CALLS"
+  assert_failure
+}
+
+@test "bootstrap: on macOS with a zsh login shell says how to switch to Homebrew bash" {
+  LOGIN_SHELL=/bin/zsh run_bootstrap
+  assert_success
+  assert_output --partial 'Your login shell is /bin/zsh'
+  assert_output --partial 'chsh -s /opt/homebrew/bin/bash'
+  assert_output --partial 'open a new terminal window'
+  refute_output --partial 'exec $SHELL -l'
+}
+
+@test "bootstrap: says nothing about the login shell when it is already Homebrew bash" {
+  run_bootstrap
+  assert_success
+  assert_output --partial 'Open a new login shell'
+  refute_output --partial 'chsh'
+}
+
+@test "bootstrap: on Linux says nothing about the login shell" {
+  fake_linux
+  LOGIN_SHELL=/bin/zsh run_bootstrap
+  assert_success
+  refute_output --partial 'chsh'
+}
+
+@test "bootstrap --dry-run: says nothing about the login shell" {
+  LOGIN_SHELL=/bin/zsh run_bootstrap --dry-run
+  assert_success
+  refute_output --partial 'chsh'
+}
+
+run_preflight() {
+  run env PATH="$FIXTURE_BIN:/usr/bin:/bin" bash "$REPO_ROOT/scripts/bootstrap/preflight.sh" "$@"
+}
+
+@test "preflight: warns about the sudo prompt when the Homebrew prefix is missing" {
+  run_preflight "$BATS_TEST_TMPDIR/no-brew" 0
+  assert_success
+  assert_output --partial "password once (sudo) to create $BATS_TEST_TMPDIR/no-brew"
+}
+
+@test "preflight: is silent when the Homebrew prefix exists, and in a dry run" {
+  run_preflight "$BATS_TEST_TMPDIR" 0
+  assert_success
+  refute_output --partial 'sudo'
+  run_preflight "$BATS_TEST_TMPDIR/no-brew" 1
+  assert_success
+  refute_output --partial 'sudo'
+}
+
+# Piped from curl there is no script path, so the repo is never the current directory.
+@test "bootstrap piped: ignores a mise.toml in the current directory" {
+  mkdir "$BATS_TEST_TMPDIR/project"
+  touch "$BATS_TEST_TMPDIR/project/mise.toml"
+  PIPED_CWD="$BATS_TEST_TMPDIR/project" run_piped_bootstrap --skip task
+  assert_success
+  grep -qxF -- "-C $FIXTURE_HOME/dev/dotfiles bootstrap --yes --skip task" "$CALLS"
+}
+
+@test "bash_profile: sources bash-completion from the Apple Silicon Homebrew prefix" {
+  grep -qF '. "/opt/homebrew/etc/profile.d/bash_completion.sh"' "$REPO_ROOT/bash_profile"
 }
