@@ -105,12 +105,12 @@ macOS casks are `brew-cask:` bootstrap packages (installed by mise, no Homebrew 
 ## Development Environment
 
 ```bash
-z dotfiles         # Jump to frequently used directory (frecency-based)
-tmux-xl ~/myapp    # Create XL layout for myapp (uses z to resolve)
+z dotfiles         # Jump to frequently used directory (frecency-based, zoxide)
+tmux-xl ~/myapp    # Create XL layout for myapp (resolves names via zoxide)
 search "pattern"   # Git grep excluding vendor/node_modules/lockfiles
 ```
 
-- `z` must be installed at `~/dev/z/z.sh`
+- `z` is [zoxide](https://github.com/ajeetdsouza/zoxide): a mise tool in `mise-config.toml`, initialized by `bash_profile` (and `zshrc`)
 
 ## FZF Integration
 
@@ -127,14 +127,14 @@ Many commands use fzf for interactive selection when called without arguments:
 
 ## Common Aliases
 
-Defined in `lib/commands.sh`:
+Short aliases and functions, by the `lib/` module that defines them:
 
-- **Git**: `s` (status), `amend` (commit --amend), `fix` (amend without editor), `mm`/`md`/`mp`/`ms` (merge main/develop/prod/staging), `f` (fetch), `ga` (git add --all)
-- **Editor**: `v` (nvim), `vc` (vimcat)
-- **Package managers**: `y` / `yi` (npm-install), `nr` / `yr` (npm-run)
-- **Navigation**: `..`, `...`, `....` (up directories), `back` (cd to $OLDPWD)
-- **Utilities**: `ll` (ls -lah), `lt` (ls sorted by time), `tree` (excludes node_modules/dist)
-- **Docker**: `d` (docker), `dc` (docker compose), `dps` (docker ps), `da` (attach), `ds` (stop)
+- **Git** (`lib/git.sh`): `s` (status), `amend` (commit --amend), `fix` (amend without editor), `mm`/`md`/`mp`/`ms` (merge main/develop/prod/staging), `f` (fetch), `ga` (git add --all)
+- **Editor** (`lib/commands.sh`): `v` (nvim), `vc` (vimcat)
+- **Package managers** (`lib/npm.sh`): `y` (npm-install, or `yarn <args>` with args), `yi` (npm-install), `nr` / `yr` (npm-run)
+- **Navigation** (`lib/commands.sh`): `..`, `...`, `....` (up directories), `back` (cd to $OLDPWD)
+- **Utilities** (`lib/commands.sh`): `ll` (ls -lah), `lt` (ls sorted by time), `tree` (excludes node_modules/dist)
+- **Docker**: `d` (docker), `dc` (docker compose), `dps` (docker ps) in `lib/docker.sh`; `da` (pick a container to start and attach), `ds` (pick one to stop) in `lib/cloud.sh`
 
 ## Remote Development (SSH)
 
@@ -217,7 +217,7 @@ description: Use when setting up a new repository, when AI agents lack project c
 
 ### Discovery Behavior
 
-- **Claude Code**: Skills are discovered from the `skills/` directory in the project root and from the user's global skills path.
+- **Claude Code**: Project skills are discovered from `.claude/skills/` (in this repo, symlinks into `.agents/skills/`, which link to `skills/` — see below) and from the user's global `~/.claude/skills/`. A skill under `skills/` that is not linked into `.claude/skills/` is invisible to Claude Code.
 - **opencode**: Skills are discovered from the `skills/` directory in the project root and from `~/.config/opencode/skills/`. The opencode `skill` tool loads the full `SKILL.md` content on demand.
 
 Per-tool paths (`~/.claude/skills/`, `~/.config/opencode/skills/`, `~/.gemini/skills/`, etc.) are populated with `npx skills add` ([vercel-labs/skills](https://github.com/vercel-labs/skills)), not by `bootstrap.sh` — see below.
