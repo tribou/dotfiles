@@ -46,3 +46,43 @@ teardown() {
   run cat unrelated.bak
   assert_output "preserve me"
 }
+
+@test "replace: handles tracked file names containing spaces" {
+  cd "$TEMP_REPO"
+  echo "hello world" > "my file.txt"
+  git add "my file.txt"
+  git commit -q -m "add spaced file"
+  . "$REPO_ROOT/lib/replace.sh"
+
+  run replace "world" "earth"
+  assert_success
+  run cat "my file.txt"
+  assert_output "hello earth"
+}
+
+@test "replace: succeeds quietly when nothing matches" {
+  cd "$TEMP_REPO"
+  echo "hello world" > test.txt
+  git add test.txt
+  git commit -q -m "add test"
+  . "$REPO_ROOT/lib/replace.sh"
+
+  run replace "no-such-text" "earth"
+  assert_success
+  assert_output ""
+  run cat test.txt
+  assert_output "hello world"
+}
+
+@test "wrg: rewrites matching files and keeps loop variables local" {
+  cd "$TEMP_REPO"
+  printf 'one\nhello world\nthree\n' > test.txt
+  . "$REPO_ROOT/lib/replace.sh"
+
+  unset arg part
+  wrg world --replace earth . </dev/null >/dev/null
+  run cat test.txt
+  assert_output $'one\nhello earth\nthree'
+  [ -z "${arg+set}" ]
+  [ -z "${part+set}" ]
+}

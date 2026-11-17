@@ -75,7 +75,7 @@ Examples:
     sed_i=(-i "")
   fi
 
-  git grep --untracked -I -l "$1" -- \
+  git grep --untracked -I -l -z "$1" -- \
     "$search_dir" \
     ':!build/**' \
     ':!bin/**' \
@@ -86,7 +86,17 @@ Examples:
     ':!*.pnp.*' \
     ':!pnpm-lock.yaml' \
     ':!package-lock.json' \
-    | xargs sed "${sed_i[@]}" -e ''s/"$1"/"$2"/g''
+    | {
+      # NUL-separated so names with spaces survive; skip sed when nothing
+      # matched (GNU xargs would otherwise run it with no files)
+      local -a files=()
+      local file
+      while IFS= read -r -d '' file; do
+        files+=("$file")
+      done
+      [ "${#files[@]}" -eq 0 ] && return 0
+      sed "${sed_i[@]}" -e "s/$1/$2/g" -- "${files[@]}"
+    }
 }
 
 # "Write" complement to ripgrep (rg --replace)
@@ -110,11 +120,11 @@ Examples:
     return 1
   fi
 
-  local seenReplace=''
+  local seenReplace='' arg part
 
   for arg in "$@"; do
     if test "$arg" == '--replace' -o "$arg" == '-r'; then
-      local seenReplace='true'
+      seenReplace='true'
       break
     fi
   done
@@ -129,7 +139,7 @@ Examples:
 
   (
     rg \
-      --context 999999 \
+      --passthru \
       --with-filename --heading --null \
       --color=never --no-line-number \
       --max-columns=0 \
