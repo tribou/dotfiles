@@ -74,6 +74,10 @@ tmux = "latest"
 "brew:bash-completion" = { version = "latest", os = "macos/arm64" }
 "brew:reattach-to-user-namespace" = { version = "latest", os = "macos/arm64" }
 "brew:tmux-mem-cpu-load" = { version = "latest", os = "macos/arm64" }
+# Terminal (config: ghostty/). adopt takes over an identical Ghostty.app that
+# is already in /Applications instead of replacing it, which would reset its
+# Accessibility grant (needed by the global quick-terminal keybind).
+"brew-cask:ghostty" = { version = "latest", os = "macos", adopt = true }
 
 [settings]
 legacy_version_file = true
