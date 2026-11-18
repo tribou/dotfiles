@@ -57,7 +57,20 @@ run_loader() {
 @test "ghostty: config uses manual shell integration with the ssh and sudo features" {
   grep -qxF 'shell-integration = none' "$CONFIG"
   grep -qxF 'shell-integration-features = no-cursor,sudo,ssh-env,ssh-terminfo' "$CONFIG"
-  grep -qxF 'command = /bin/bash --login' "$CONFIG"
+}
+
+# Ghostty runs a command with arguments through a shell (on macOS, the bash that
+# /usr/bin/login starts with SHELL reset from the passwd entry), so the config
+# must launch "$SHELL", not /bin/bash: macOS's /bin/bash is 3.2, too old for lib/.
+@test "ghostty: config starts the login shell from SHELL, not /bin/bash" {
+  local cmd
+  cmd="$(sed -n 's/^command = //p' "$CONFIG")"
+  [ -n "$cmd" ] || fail "no command line in $CONFIG"
+  printf '#!/bin/sh\necho "ran $*"\n' > "$BATS_TEST_TMPDIR/fake-shell"
+  chmod +x "$BATS_TEST_TMPDIR/fake-shell"
+  SHELL="$BATS_TEST_TMPDIR/fake-shell" run /bin/sh -c "$cmd"
+  assert_success
+  assert_output 'ran --login'
 }
 
 @test "ghostty: config keeps the font, opacity, padding and theme" {

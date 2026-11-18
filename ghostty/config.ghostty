@@ -50,8 +50,11 @@ window-save-state = always
 
 # --- Shell ------------------------------------------------------------------
 # A login shell, so bash_profile also loads on Linux, where Ghostty does not
-# start one by default.
-command = /bin/bash --login
+# start one by default. It is "$SHELL", not /bin/bash: macOS's /bin/bash is 3.2,
+# too old for lib/, and the login shell is Homebrew's bash (chsh). Ghostty runs
+# a command with arguments through a shell, and on macOS /usr/bin/login resets
+# SHELL from the passwd entry first, so a chsh applies without logging out.
+command = "${SHELL:-/bin/bash}" --login
 # TERM is left to Ghostty: xterm-ghostty, whose terminfo ships with Ghostty
 # and includes italics, truecolor, styled underlines and synchronized output.
 

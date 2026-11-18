@@ -213,7 +213,7 @@ packages](#opt-in-packages)).
 ## Terminal (Ghostty)
 
 - **`ghostty/config.ghostty`** → `~/.config/ghostty/config.ghostty`, **`ghostty/themes/dotfiles-night`** → `~/.config/ghostty/themes/dotfiles-night` (both via `[dotfiles]` in `mise.toml`, both checked by `just doctor`)
-- Runs `/bin/bash --login`; `TERM=xterm-ghostty` (terminfo bundled with Ghostty). Inside tmux, `TERM` is `tmux-256color` (`tmux/tmux-256color.terminfo`, compiled by the `bootstrap` task), and `tmux-conf` declares Ghostty's features (`terminal-features`) so truecolor, undercurl, extended keys, sync and OSC 52 pass through
+- Runs `"${SHELL:-/bin/bash}" --login` (Homebrew bash after `chsh`, never macOS's bash 3.2); `TERM=xterm-ghostty` (terminfo bundled with Ghostty). Inside tmux, `TERM` is `tmux-256color` (`tmux/tmux-256color.terminfo`, compiled by the `bootstrap` task), and `tmux-conf` declares Ghostty's features (`terminal-features`) so truecolor, undercurl, extended keys, sync and OSC 52 pass through
 - Shell integration is sourced manually (`shell-integration = none`, see `lib/ghostty.sh`), because Ghostty cannot auto-inject into macOS's `/bin/bash`. It is skipped inside tmux
 - tmux stays the multiplexer. Ghostty's native tabs and splits stay on their default `cmd`/`ctrl+shift` keys, which do not collide with tmux's `C-f` prefix; `ctrl+shift+left/right` are unbound in Ghostty so tmux's window swaps keep working
 
