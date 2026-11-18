@@ -5,8 +5,8 @@
 # Lists installed formulae once, and only when something on the list is still
 # installed does it verify the mise replacements (stopping if they are broken)
 # before uninstalling. An uninstall failure warns but does not fail. It removes
-# only the listed formulae, honoring dependents: formulae installed outside this
-# repo stay untouched.
+# only the listed formulae, and only those no installed formula depends on:
+# formulae installed outside this repo stay untouched.
 #
 # Overrides (for tests): DOTFILES_BREW_BIN, DOTFILES_VERIFY_MISE.
 set -euo pipefail
@@ -40,6 +40,17 @@ while IFS= read -r formula; do
   [ -n "$formula" ] && targets+=("$formula")
 done < <(grep -E '^python@3' <<< "$installed" || true)
 [ "${#targets[@]}" -gt 0 ] || exit 0
+
+# brew refuses to remove a formula another installed formula depends on (mise's
+# brew:watchman pours python@3.x), so keep only leaves rather than warn about
+# a removal that can never succeed.
+leaves="$("$brew_bin" leaves 2>/dev/null || true)"
+removable=()
+for formula in "${targets[@]}"; do
+  grep -qxF "$formula" <<< "$leaves" && removable+=("$formula")
+done
+[ "${#removable[@]}" -gt 0 ] || exit 0
+targets=("${removable[@]}")
 
 if ! MISE_BIN="${MISE_BIN:-$HOME/.local/bin/mise}" "$verify" >/dev/null; then
   echo "error: mise replacements failed verification; not removing Homebrew ${targets[*]}" >&2
