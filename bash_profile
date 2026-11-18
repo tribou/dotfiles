@@ -55,9 +55,6 @@ unset _dotfiles_source _dotfiles_dir
 # Reset debug timing
 _dotfiles_debug_timing "$LINENO"
 
-# import api keys and local workstation-related scripts
-[ -s "$HOME/.ssh/api_keys" ] && . "$HOME/.ssh/api_keys"
-
 # Set terminal language and UTF-8
 export LANG=en_US.UTF-8
 
@@ -87,7 +84,7 @@ export EDITOR='nvim'
 export REACT_EDITOR='vscode'
 
 # Commit AI backend: claude or opencode (opencode uses Kimi 2.7). Defaults only,
-# so a value set in ~/.ssh/api_keys or the environment wins.
+# so a value set in the environment wins; ~/.ssh/api_keys, sourced later, also wins.
 export DOTFILES_COMMIT_BACKEND="${DOTFILES_COMMIT_BACKEND:-opencode}"
 
 # Seconds to wait for the commit backend before falling back to a manual commit
@@ -271,6 +268,14 @@ if _dotfiles_ghostty_bash_integration; then
   builtin source "$_DOTFILES_GHOSTTY_SCRIPT"
 fi
 unset _DOTFILES_GHOSTTY_SCRIPT
+
+# Import api keys and per-machine overrides. Sourced after all PATH setup so
+# its values win, including PATH priority: a dir prepended here (e.g.
+# `export PATH="$HOME/.local/bin:$PATH"`) stays ahead of mise tool dirs and
+# Homebrew, and _path_dedup below drops the dir's later copy. Keep it plain
+# bash: init.vim also uses this file as Neovim's shell --rcfile, where the
+# dotfiles lib functions are not loaded.
+[ -s "$HOME/.ssh/api_keys" ] && . "$HOME/.ssh/api_keys"
 
 # Deduplicate PATH while preserving canonical package manager prefixes.
 _path_dedup

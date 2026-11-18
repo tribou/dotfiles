@@ -185,8 +185,11 @@ packages](#opt-in-packages)).
 
 ## Environment Configuration
 
-- **API Keys**: Stored in `~/.ssh/api_keys`, sourced by bash_profile
+- **API Keys and per-machine overrides**: Stored in `~/.ssh/api_keys`, sourced at the end of bash_profile, just before the final `_path_dedup`
   - Can contain any sensitive environment variables (e.g., DIGITALOCEAN_API_TOKEN)
+  - Sourced after all PATH setup and every other setting except the trailing `LS_COLORS` export, so its values win over the profile's defaults
+  - **PATH priority**: the default order is mise tool dirs, then `~/.local/bin`, then Homebrew, then system dirs. A machine that needs a dir first adds `export PATH="$HOME/.local/bin:$PATH"` there. mise (with `activate_aggressive` off) keeps PATH entries added after `mise activate` ahead of its tool dirs at every prompt, and `_path_dedup` keeps the first copy of a dir, so the later one is dropped
+  - Keep it plain bash: `init.vim` also uses it as Neovim's shell `--rcfile`, where `bash_profile` and the `lib/` functions are not loaded
 
 - **Project Paths**:
   - `DEVPATH`: `~/dev`

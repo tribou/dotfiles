@@ -5,7 +5,7 @@
 ## API Keys and Secrets
 
 - All environment variables containing secrets, tokens, or personal API keys MUST be stored in `~/.ssh/api_keys`.
-- This file is sourced by `bash_profile` but is **never** checked into version control.
+- This file is sourced at the end of `bash_profile` (so it can also hold per-machine overrides such as PATH priority; see [ARCHITECTURE.md](ARCHITECTURE.md#environment-configuration)) but is **never** checked into version control.
 - Examples of keys stored here include third-party API tokens (e.g., `DIGITALOCEAN_API_TOKEN`).
 - If `~/.ssh/api_keys` does not exist, the shell silently skips sourcing it — no error is raised, but secrets will be absent.
 

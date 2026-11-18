@@ -22,6 +22,15 @@ _source_profile() {
   assert_output "claude 60"
 }
 
+@test "bash_profile: a PATH prepend in ~/.ssh/api_keys comes first, once" {
+  # ~/.yarn/bin stands in for any dir the profile prepends late (mise, brew, installers).
+  mkdir -p "$TEST_HOME/.yarn/bin"
+  printf 'export PATH="$HOME/.local/bin:$PATH"\n' > "$TEST_HOME/.ssh/api_keys"
+  _source_profile 'echo "${PATH%%:*}"; echo ":$PATH:" | grep -o ":$HOME/.local/bin:" | wc -l | tr -d " "'
+  assert_success
+  assert_output "$TEST_HOME/.local/bin"$'\n'"1"
+}
+
 @test "bash_profile: commit backend and timeout default to opencode and 30" {
   _source_profile 'echo "$DOTFILES_COMMIT_BACKEND $DOTFILES_COMMIT_TIMEOUT"'
   assert_success

@@ -93,5 +93,9 @@ After any run, open a new login shell (or `exec $SHELL -l`) so mise/gpg-agent/br
 
 ### Config
 
-**`~/.ssh/api_keys`** file
+**`~/.ssh/api_keys`** file: secrets and per-machine overrides, never committed. `bash_profile` sources it near the end, after all PATH setup, so its values win. To give a directory top PATH priority on one machine (ahead of mise tools and Homebrew), add a plain prepend:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
 
