@@ -7,6 +7,7 @@ set -euo pipefail
 # go to scripts/bootstrap/run.sh and on to `mise bootstrap` (e.g. --skip task).
 # -n/--dry-run previews: no system packages, nothing applied, but it still
 # installs mise, links its global config and, piped from curl, clones the repo.
+# Piped from curl onto an existing clean checkout on main, it fast-forwards it.
 
 REPO_URL="https://github.com/tribou/dotfiles.git"
 REPO_DIR="$HOME/dev/dotfiles"
@@ -25,7 +26,14 @@ else
     sudo apt-get update && sudo apt-get install -y curl git ca-certificates
   fi
   mkdir -p "$HOME/dev"
-  [ -d "$REPO_DIR/.git" ] || git clone "$REPO_URL" "$REPO_DIR"
+  if [ ! -d "$REPO_DIR/.git" ]; then
+    git clone "$REPO_URL" "$REPO_DIR"
+  elif [ "$dry_run" = 0 ] && [ "$(git -C "$REPO_DIR" branch --show-current)" = main ] &&
+    [ -z "$(git -C "$REPO_DIR" status --porcelain --untracked-files=no)" ]; then # so curl|bash runs current code
+    git -C "$REPO_DIR" pull --ff-only -q || echo "bootstrap.sh: could not fast-forward $REPO_DIR; running it as is" >&2
+  else
+    echo "bootstrap.sh: running $REPO_DIR as is (dry run, local changes, or not on main)" >&2
+  fi
   cd "$REPO_DIR"
 fi
 

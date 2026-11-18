@@ -75,8 +75,8 @@ run_bootstrap() {
   [ "$update_line" -lt "$bootstrap_line" ]
 }
 
-@test "bootstrap: is thin (fewer than 70 lines)" {
-  [ "$(wc -l < "$REPO_ROOT/bootstrap.sh")" -lt 70 ]
+@test "bootstrap: is thin (fewer than 80 lines)" {
+  [ "$(wc -l < "$REPO_ROOT/bootstrap.sh")" -lt 80 ]
 }
 
 @test "repo: ships mise-config.optional.toml.example as a commented drop-in template" {
@@ -404,6 +404,76 @@ run_preflight() {
   run_preflight "$BATS_TEST_TMPDIR/no-brew" 1
   assert_success
   refute_output --partial 'sudo'
+}
+
+# fake_checkout_git BRANCH [dirty] [pullfails]: a git for the existing
+# ~/dev/dotfiles checkout that reports BRANCH, optional uncommitted changes,
+# and logs every call; with pullfails, `pull` fails as offline would.
+fake_checkout_git() {
+  {
+    printf '#!/usr/bin/env bash\n'
+    printf 'echo "git $*" >> "$MISE_CALLS"\n'
+    printf 'case "$*" in\n'
+    printf '  *"branch --show-current") echo %s ;;\n' "$1"
+    [ "${2:-}" = dirty ] && printf '  *"status --porcelain"*) echo " M bash_profile" ;;\n'
+    [ "${2:-}" = pullfails ] && printf '  *" pull "*) echo "fatal: unable to access" >&2; exit 1 ;;\n'
+    printf 'esac\n'
+  } > "$FIXTURE_BIN/git.fake"
+  chmod +x "$FIXTURE_BIN/git.fake"
+}
+
+# run_piped_bootstrap replaces bin/git with a no-op; this swaps the fake back in.
+run_piped_bootstrap_with_fake_git() {
+  mkdir -p "$FIXTURE_HOME/dev"
+  ln -s "$REPO_ROOT" "$FIXTURE_HOME/dev/dotfiles"
+  cp "$FIXTURE_BIN/git.fake" "$FIXTURE_BIN/git"
+  cd "$BATS_TEST_TMPDIR"
+  run env HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
+    SHELL=/opt/homebrew/bin/bash bash -s -- "$@" < "$REPO_ROOT/bootstrap.sh"
+}
+
+@test "bootstrap piped: fast-forwards an existing clean checkout on main before running it" {
+  fake_checkout_git main
+  run_piped_bootstrap_with_fake_git --skip task
+  assert_success
+  grep -qxF "git -C $FIXTURE_HOME/dev/dotfiles pull --ff-only -q" "$CALLS"
+  pull_line="$(grep -nF ' pull --ff-only' "$CALLS" | cut -d: -f1)"
+  bootstrap_line="$(grep -nF -- "-C $FIXTURE_HOME/dev/dotfiles bootstrap" "$CALLS" | cut -d: -f1)"
+  [ "$pull_line" -lt "$bootstrap_line" ]
+}
+
+@test "bootstrap piped: leaves a checkout with local changes as is, and says so" {
+  fake_checkout_git main dirty
+  run_piped_bootstrap_with_fake_git --skip task
+  assert_success
+  assert_output --partial "running $FIXTURE_HOME/dev/dotfiles as is"
+  run grep -F ' pull' "$CALLS"
+  assert_failure
+}
+
+@test "bootstrap piped: leaves a checkout on another branch as is, and says so" {
+  fake_checkout_git feature
+  run_piped_bootstrap_with_fake_git --skip task
+  assert_success
+  assert_output --partial "running $FIXTURE_HOME/dev/dotfiles as is"
+  run grep -F ' pull' "$CALLS"
+  assert_failure
+}
+
+@test "bootstrap piped --dry-run: does not update the checkout" {
+  fake_checkout_git main
+  run_piped_bootstrap_with_fake_git --dry-run
+  assert_success
+  run grep -F ' pull' "$CALLS"
+  assert_failure
+}
+
+@test "bootstrap piped: a failed fast-forward warns and continues with the checkout as is" {
+  fake_checkout_git main pullfails
+  run_piped_bootstrap_with_fake_git --skip task
+  assert_success
+  assert_output --partial "could not fast-forward $FIXTURE_HOME/dev/dotfiles"
+  grep -qxF -- "-C $FIXTURE_HOME/dev/dotfiles bootstrap --yes --skip task" "$CALLS"
 }
 
 # Piped from curl there is no script path, so the repo is never the current directory.
