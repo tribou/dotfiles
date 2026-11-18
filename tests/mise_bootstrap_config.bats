@@ -75,12 +75,12 @@ dotfile_entries() {
   grep -qF 'min_version = "2026.11.7"' "$GLOBAL"
 }
 
-@test "global config owns OS prerequisites that Ansible used to install" {
+@test "global config owns OS prerequisites that Ansible used to install, linux-only so macOS bootstrap does not report them skipped" {
   for pkg in curl git build-essential zlib1g-dev xdg-utils bash-completion openssh-client; do
-    grep -qF "\"apt:${pkg}\" = \"latest\"" "$GLOBAL" || fail "apt:$pkg"
+    grep -qF "\"apt:${pkg}\" = { version = \"latest\", os = \"linux\" }" "$GLOBAL" || fail "apt:$pkg"
   done
   for pkg in curl git base-devel zlib xdg-utils bash-completion openssh; do
-    grep -qF "\"pacman:${pkg}\" = \"latest\"" "$GLOBAL" || fail "pacman:$pkg"
+    grep -qF "\"pacman:${pkg}\" = { version = \"latest\", os = \"linux\" }" "$GLOBAL" || fail "pacman:$pkg"
   done
 }
 

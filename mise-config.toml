@@ -44,21 +44,22 @@ tmux = "latest"
 
 [bootstrap.packages]
 # OS prerequisites. Entries for a manager this machine lacks are skipped, so
-# apt: applies on Debian/Ubuntu and pacman: on Arch.
-"apt:curl" = "latest"
-"apt:git" = "latest"
-"apt:build-essential" = "latest"
-"apt:zlib1g-dev" = "latest"
-"apt:xdg-utils" = "latest"
-"apt:bash-completion" = "latest"
-"apt:openssh-client" = "latest"
-"pacman:curl" = "latest"
-"pacman:git" = "latest"
-"pacman:base-devel" = "latest"
-"pacman:zlib" = "latest"
-"pacman:xdg-utils" = "latest"
-"pacman:bash-completion" = "latest"
-"pacman:openssh" = "latest"
+# apt: applies on Debian/Ubuntu and pacman: on Arch. os = "linux" keeps macOS
+# from listing them as skipped follow-ups at the end of every bootstrap.
+"apt:curl" = { version = "latest", os = "linux" }
+"apt:git" = { version = "latest", os = "linux" }
+"apt:build-essential" = { version = "latest", os = "linux" }
+"apt:zlib1g-dev" = { version = "latest", os = "linux" }
+"apt:xdg-utils" = { version = "latest", os = "linux" }
+"apt:bash-completion" = { version = "latest", os = "linux" }
+"apt:openssh-client" = { version = "latest", os = "linux" }
+"pacman:curl" = { version = "latest", os = "linux" }
+"pacman:git" = { version = "latest", os = "linux" }
+"pacman:base-devel" = { version = "latest", os = "linux" }
+"pacman:zlib" = { version = "latest", os = "linux" }
+"pacman:xdg-utils" = { version = "latest", os = "linux" }
+"pacman:bash-completion" = { version = "latest", os = "linux" }
+"pacman:openssh" = { version = "latest", os = "linux" }
 # Formulae, poured by mise into the standard Homebrew prefix (no Homebrew needed).
 "brew:bash" = "latest"
 "brew:git" = "latest"

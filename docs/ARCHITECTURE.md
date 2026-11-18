@@ -17,7 +17,7 @@
 - **`scripts/bootstrap/preflight.sh`**: macOS checks before mise or any package is installed. Rejects Intel, and says when mise will ask for a sudo password to create `/opt/homebrew`. `bootstrap.sh` itself first requires the Xcode Command Line Tools (`xcode-select -p`), since stock macOS ships `git`, `clang` and `make` as stubs and the self-clone needs git.
 - **`scripts/bootstrap/next_steps.sh`**: the closing message, ending with a numbered "Manual follow-ups" list of steps bootstrap leaves to the user (add one with its `todo` helper). Everywhere: adding `~/.ssh/id_ed25519.pub` to GitHub, unless `ssh -T git@github.com` already authenticates (that check also records GitHub's host key). On macOS: turning on Accessibility for Ghostty, which the quick terminal's `global:` keybind needs; when the login shell is not `/opt/homebrew/bin/bash`, the `/etc/shells` and `chsh` commands, since they need sudo and a password (only bash is configured: zsh gets no Homebrew or mise on `PATH`, and `/bin/bash` 3.2 is too old for `lib/`); and, on every run, the folders to add to Spotlight's Search Privacy list, since scripting that list needs Full Disk Access for the terminal, which bootstrap deliberately does not require.
 - **`scripts/bootstrap/pre_dotfiles.sh`**: the `pre-dotfiles` hook (`--dry-run` reports without changing anything). Creates directories, keeps `~/.ssh` and `~/.gnupg` at `0700`, and moves a regular file at any `[dotfiles]` target to `<target>.backup` (mise refuses to replace files it did not write).
-- **`scripts/bootstrap/converge.sh`**: the `bootstrap` task, run last with `[tools]` on PATH. SSH keys, the macOS keychain block, terminfo, `~/.gnupg` file modes, Neovim/CoC and TPM plugins, the `~/.z` → zoxide migration, pynvim, corepack shims, legacy Homebrew cleanup (`scripts/brew_cleanup.sh`), verification, and the `~/.dotfiles-bootstrap-done` marker.
+- **`scripts/bootstrap/converge.sh`**: the `bootstrap` task, run last with `[tools]` on PATH. SSH keys, the macOS keychain block, terminfo, `~/.gnupg` file modes, Neovim/CoC and TPM plugins, the `~/.z` → zoxide migration, pynvim, corepack shims, legacy Homebrew cleanup (`scripts/brew_cleanup.sh`, which keeps any formula another one depends on, such as watchman's python@3.x), verification, and the `~/.dotfiles-bootstrap-done` marker.
 - **`scripts/upgrade.sh`**: the `upgrade` task (`just upgrade`).
 
 Every declarative part (packages, repos, dotfiles, tools) skips what already matches, and the hook and task print `changed: ...` only when they change something, so re-running `just install` is safe and a second run is quiet.
@@ -154,8 +154,9 @@ tombi = "latest"
 # Portable tools and explicit npm:/gem: executables continue here.
 
 [bootstrap.packages]
-"apt:build-essential" = "latest"   # skipped where apt is unavailable
-"pacman:base-devel" = "latest"     # skipped where pacman is unavailable
+# os = "linux" keeps macOS from listing them as skipped follow-ups
+"apt:build-essential" = { version = "latest", os = "linux" }  # skipped where apt is unavailable
+"pacman:base-devel" = { version = "latest", os = "linux" }    # skipped where pacman is unavailable
 "brew:bash" = "latest"
 "brew:git" = "latest"
 # Shared-prefix and platform-selected formula artifacts continue here.
