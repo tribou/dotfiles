@@ -76,6 +76,9 @@ step_gnupg_perms() {
 step_nvim_plugins() {
   if [ ! -d "$HOME/.local/share/nvim/plugged" ]; then
     nvim --headless "+PlugInstall --sync" +qall
+    # init.vim starts these installs asynchronously, so a headless run that
+    # quits right away (the CoC one below) would kill them mid-download.
+    nvim --headless -c "lua require('nvim-treesitter').install(vim.g.dotfiles_treesitter_parsers):wait(300000)" -c qall
     echo "changed: installed Neovim plugins"
   fi
   # :CocInstall needs explicit names; it won't read g:coc_global_extensions in

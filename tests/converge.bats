@@ -103,6 +103,10 @@ stub() {
   assert_success
   grep -qF 'nvim --headless +PlugInstall --sync +qall' "$LOG"
   grep -qF 'CocInstall -sync' "$LOG"
+  # Tree-sitter parsers install synchronously before the CoC run, whose quick
+  # quit would otherwise kill init.vim's async install mid-download.
+  grep -qF "install(vim.g.dotfiles_treesitter_parsers):wait(" "$LOG"
+  [ "$(grep -n 'treesitter' "$LOG" | cut -d: -f1)" -lt "$(grep -n 'CocInstall' "$LOG" | cut -d: -f1)" ]
   mkdir -p "$HOME/.local/share/nvim/plugged" "$HOME/.config/coc/extensions/node_modules"
   : > "$LOG"
   run step_nvim_plugins
