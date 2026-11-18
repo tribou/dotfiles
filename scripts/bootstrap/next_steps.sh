@@ -56,22 +56,49 @@ if ! gpg --list-secret-keys --with-colons 2>/dev/null | awk -F: '$1 == "sec" && 
   gpg --armor --export \"\$(git config user.email)\" | gh gpg-key add --title \"\$(hostname)\" -"
 fi
 
+# spotlight_may_index DIR: false only when Spotlight provably skips DIR: it
+# holds a file older than a day (time for Spotlight to have caught up) that
+# `mdfind -onlyin` can't find. Excluded and otherwise unindexed folders both
+# count as done, since the goal is that Spotlight leaves them alone. A folder
+# with no such file, or an mdfind error, can't be judged, so it stays listed.
+spotlight_may_index() {
+  local file hits
+  file="$(find "$1" -maxdepth 3 -name '.*' -prune -o -type f -mtime +0 -print -quit 2>/dev/null || true)"
+  [ -n "$file" ] || return 0
+  hits="$(mdfind -onlyin "$1" -name "$(basename "$file")" 2>/dev/null)" || return 0
+  [ -n "$hits" ]
+}
+
 if [ "$(uname -s)" = Darwin ]; then
   # The quick terminal's global: keybind (ghostty/config.ghostty) needs this.
-  todo "Let Ghostty's quick terminal (ctrl+alt+\`) open from any app: System Settings >
+  # AXIsProcessTrusted() answers for the app that started this process, so it
+  # tells us about Ghostty only when bootstrap runs in Ghostty (and not inside
+  # tmux, which replaces TERM_PROGRAM); anywhere else the item stays listed.
+  if [ "${TERM_PROGRAM:-}" != ghostty ] ||
+    [ "$(osascript -l JavaScript -e 'ObjC.import("ApplicationServices"); $.AXIsProcessTrusted()' 2>/dev/null || true)" != true ]; then
+    todo "Let Ghostty's quick terminal (ctrl+alt+\`) open from any app: System Settings >
 Privacy & Security > Accessibility, turn on Ghostty (open Ghostty once first)."
+  fi
 
   # Scripting Spotlight's Search Privacy list means editing a root-only plist,
-  # which needs Full Disk Access for the terminal; we don't ask for that.
-  todo "Keep Spotlight from indexing build output and caches: System Settings >
-Spotlight > Search Privacy, click +, press Cmd-Shift-G to type each path
-(skip any that don't exist yet):
-  ~/dev
-  ~/Library/Developer/Xcode/DerivedData
-  ~/Library/Developer/Xcode/iOS DeviceSupport
-  ~/Library/Developer/CoreSimulator
-  ~/Library/Caches
-  /opt/homebrew"
+  # which needs Full Disk Access for the terminal; we don't ask for that, so
+  # list each folder that exists and Spotlight may still be indexing.
+  spotlight_paths=()
+  # The quoted ~ is meant: it's what the user types, and expanded below.
+  # shellcheck disable=SC2088
+  for path in '~/dev' '~/Library/Developer/Xcode/DerivedData' \
+    '~/Library/Developer/Xcode/iOS DeviceSupport' '~/Library/Developer/CoreSimulator' \
+    '~/Library/Caches' "${brew_bash%/bin/bash}"; do
+    dir="${path/#\~/$HOME}"
+    if [ -d "$dir" ] && spotlight_may_index "$dir"; then
+      spotlight_paths+=("  $path")
+    fi
+  done
+  if [ "${#spotlight_paths[@]}" -gt 0 ]; then
+    todo "Keep Spotlight from indexing build output and caches: System Settings >
+Spotlight > Search Privacy, click +, press Cmd-Shift-G to type each path:
+$(printf '%s\n' "${spotlight_paths[@]}")"
+  fi
 fi
 
 echo

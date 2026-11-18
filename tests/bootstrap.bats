@@ -12,6 +12,54 @@ setup() {
   fake_github_ssh denied
   fake_gpg none
   fake_mise 2026.11.7
+  fake_accessibility false
+  fake_mdfind
+  spotlight_dir dev indexed
+  spotlight_dir Library/Developer/Xcode/DerivedData indexed
+  spotlight_dir Library/Caches indexed
+}
+
+# fake_accessibility true|false: what AXIsProcessTrusted() reports through
+# osascript, i.e. whether the terminal running bootstrap has Accessibility.
+fake_accessibility() {
+  printf '#!/usr/bin/env bash\necho %s\n' "$1" > "$FIXTURE_BIN/osascript"
+  chmod +x "$FIXTURE_BIN/osascript"
+}
+
+# fake_mdfind: `mdfind -onlyin DIR -name NAME` prints a hit for each DIR listed
+# in $SPOTLIGHT_INDEXED, fails for each in $SPOTLIGHT_BROKEN, else finds nothing.
+fake_mdfind() {
+  SPOTLIGHT_INDEXED="$BATS_TEST_TMPDIR/spotlight-indexed"
+  SPOTLIGHT_BROKEN="$BATS_TEST_TMPDIR/spotlight-broken"
+  : > "$SPOTLIGHT_INDEXED"
+  : > "$SPOTLIGHT_BROKEN"
+  printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    "grep -qxF \"\$2\" '$SPOTLIGHT_BROKEN' && exit 1" \
+    "grep -qxF \"\$2\" '$SPOTLIGHT_INDEXED' && echo \"\$2/\$4\"" \
+    'exit 0' > "$FIXTURE_BIN/mdfind"
+  chmod +x "$FIXTURE_BIN/mdfind"
+}
+
+# spotlight_dir PATH indexed|excluded|new|broken: a directory under the fixture
+# home holding a file older than a day (none for "new"), and what Spotlight
+# reports for it.
+spotlight_dir() {
+  local dir="$FIXTURE_HOME/$1" list
+  mkdir -p "$dir"
+  for list in "$SPOTLIGHT_INDEXED" "$SPOTLIGHT_BROKEN"; do
+    grep -vxF "$dir" "$list" > "$list.tmp" || true
+    mv "$list.tmp" "$list"
+  done
+  if [ "$2" = new ]; then
+    touch "$dir/fresh.txt"
+  else
+    touch -t 202001010000 "$dir/old.txt"
+  fi
+  case "$2" in
+    indexed) echo "$dir" >> "$SPOTLIGHT_INDEXED" ;;
+    broken) echo "$dir" >> "$SPOTLIGHT_BROKEN" ;;
+  esac
 }
 
 # fake_gpg none|active|expired|revoked: the secret key, if any, that
@@ -53,15 +101,18 @@ fake_mise() {
 
 run_bootstrap() {
   run env -u GNUPGHOME HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
-    SHELL="${LOGIN_SHELL:-/opt/homebrew/bin/bash}" bash "$REPO_ROOT/bootstrap.sh" "$@"
+    TERM_PROGRAM="${TERM_PROGRAM_FIXTURE:-}" SHELL="${LOGIN_SHELL:-/opt/homebrew/bin/bash}" bash "$REPO_ROOT/bootstrap.sh" "$@"
 }
 
 # run_next_steps: the closing message alone. bootstrap.sh puts Homebrew's bin
 # ahead of $FIXTURE_BIN, where a real gpg (as on macOS CI runners) would shadow
-# the fake one, so every test that depends on the fake gpg runs this.
+# the fake one, so every test that depends on the fake gpg runs this. Its
+# Homebrew prefix is under the fixture home, so the Spotlight check never looks
+# at this machine's /opt/homebrew.
 run_next_steps() {
   run env -u GNUPGHOME HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" \
-    SHELL=/opt/homebrew/bin/bash bash "$REPO_ROOT/scripts/bootstrap/next_steps.sh" /opt/homebrew/bin/bash 0
+    TERM_PROGRAM="${TERM_PROGRAM_FIXTURE:-}" SHELL="$FIXTURE_HOME/homebrew/bin/bash" \
+    bash "$REPO_ROOT/scripts/bootstrap/next_steps.sh" "$FIXTURE_HOME/homebrew/bin/bash" 0
 }
 
 @test "bootstrap: self-clones to ~/dev/dotfiles when run outside the repo" {
@@ -390,6 +441,51 @@ run_piped_bootstrap() {
   run_bootstrap
   assert_success
   assert_output --partial 'Accessibility'
+  assert_output --partial 'Ghostty'
+}
+
+@test "bootstrap: skips the Ghostty follow-up when run in Ghostty and it has Accessibility" {
+  fake_accessibility true
+  TERM_PROGRAM_FIXTURE=ghostty run_next_steps
+  assert_success
+  refute_output --partial 'Ghostty'
+  assert_output --partial 'Spotlight'
+}
+
+@test "bootstrap: lists the Ghostty follow-up when run in Ghostty without Accessibility" {
+  TERM_PROGRAM_FIXTURE=ghostty run_next_steps
+  assert_success
+  assert_output --partial 'turn on Ghostty'
+}
+
+@test "bootstrap: lists the Ghostty follow-up outside Ghostty, where Accessibility can't be checked" {
+  fake_accessibility true
+  TERM_PROGRAM_FIXTURE=Apple_Terminal run_next_steps
+  assert_success
+  assert_output --partial 'turn on Ghostty'
+}
+
+@test "bootstrap: lists only the Spotlight folders that exist and Spotlight may still index" {
+  spotlight_dir Library/Caches excluded
+  spotlight_dir "Library/Developer/Xcode/iOS DeviceSupport" new
+  spotlight_dir Library/Developer/CoreSimulator broken
+  run_next_steps
+  assert_success
+  assert_line '     ~/dev'
+  assert_line '     ~/Library/Developer/Xcode/DerivedData'
+  assert_line '     ~/Library/Developer/Xcode/iOS DeviceSupport'
+  assert_line '     ~/Library/Developer/CoreSimulator'
+  refute_output --partial '~/Library/Caches'
+  refute_output --partial "don't exist"
+}
+
+@test "bootstrap: skips the Spotlight follow-up when Spotlight indexes none of the folders" {
+  spotlight_dir dev excluded
+  spotlight_dir Library/Developer/Xcode/DerivedData excluded
+  spotlight_dir Library/Caches excluded
+  run_next_steps
+  assert_success
+  refute_output --partial 'Spotlight'
   assert_output --partial 'Ghostty'
 }
 
