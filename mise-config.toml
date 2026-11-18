@@ -79,6 +79,9 @@ tmux = "latest"
 # is already in /Applications instead of replacing it, which would reset its
 # Accessibility grant (needed by the global quick-terminal keybind).
 "brew-cask:ghostty" = { version = "latest", os = "macos", adopt = true }
+# The font ghostty/config.ghostty (and init.vim's guifont) asks for. Without it
+# Ghostty falls back to its built-in JetBrains Mono, with taller rows.
+"brew-cask:font-hack-nerd-font" = { version = "latest", os = "macos" }
 
 [settings]
 legacy_version_file = true

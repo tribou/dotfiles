@@ -62,7 +62,7 @@ setup() {
         ;;
     esac
   done
-  for cask in firefox orbstack bruno balenaetcher appcleaner imageoptim cmake font-fira-code-nerd-font font-hack-nerd-font font-fontawesome; do
+  for cask in firefox orbstack bruno balenaetcher appcleaner imageoptim cmake font-fira-code-nerd-font font-fontawesome; do
     grep -qE "^# \"brew-cask:${cask}\" = " "$mise_optional" || fail "optional cask $cask"
   done
 }

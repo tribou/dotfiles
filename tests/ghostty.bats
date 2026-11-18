@@ -107,6 +107,15 @@ run_loader() {
   grep -qxF '# "pacman:ghostty" = "latest"' "$REPO_ROOT/mise-config.optional.toml.example"
 }
 
+@test "ghostty: the configured font is installed with Ghostty on macOS" {
+  # Without it Ghostty silently falls back to its built-in JetBrains Mono,
+  # which looks different and has taller rows.
+  grep -qxF 'font-family = Hack Nerd Font' "$CONFIG"
+  grep -qxF '"brew-cask:font-hack-nerd-font" = { version = "latest", os = "macos" }' "$REPO_ROOT/mise-config.toml"
+  run grep -F 'brew-cask:font-hack-nerd-font' "$REPO_ROOT/mise-config.optional.toml.example"
+  assert_failure
+}
+
 @test "ghostty: tmux advertises Ghostty's features to tmux" {
   grep -qE "^set -as terminal-features ',xterm-ghostty:" "$REPO_ROOT/tmux/tmux-conf"
 }
