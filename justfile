@@ -6,6 +6,7 @@ default:
 test:
     #!/usr/bin/env bash
     set -euo pipefail
+    trap '"{{just_executable()}}" -f "{{justfile()}}" _own-ci-cache || true' EXIT
     git_mount=()
     if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
         git_mount=(-v "${git_common_dir}:${git_common_dir}:ro")
@@ -16,13 +17,20 @@ test:
 test-clean:
     #!/usr/bin/env bash
     set -euo pipefail
-    # Fallback to docker compose run handles root-owned .ci-cache permissions
+    # Fallback to docker compose run handles a root-owned .ci-cache left by older runs
     rm -rf .ci-cache 2>/dev/null || docker compose run --rm -T ci rm -rf /dotfiles/.ci-cache
+    trap '"{{just_executable()}}" -f "{{justfile()}}" _own-ci-cache || true' EXIT
     git_mount=()
     if git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
         git_mount=(-v "${git_common_dir}:${git_common_dir}:ro")
     fi
     MISE_DISABLE_TOOLS="" docker compose run --rm -T "${git_mount[@]}" ci
+
+# The container runs as root, so hand .ci-cache back to the host user;
+# otherwise `rm -rf` and `git worktree remove` need sudo to delete it
+[private]
+_own-ci-cache:
+    docker compose run --rm -T ci chown -R "$(id -u):$(id -g)" /dotfiles/.ci-cache
 
 # Spin up interactive dev environment (manual tmux/plugin inspection)
 dev:

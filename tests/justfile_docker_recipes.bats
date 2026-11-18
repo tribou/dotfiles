@@ -39,3 +39,15 @@ setup() {
   block="$(sed -n '/^default:/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
   echo "$block" | grep -q -- 'fzf .*--nth=1'
 }
+
+@test "justfile: _own-ci-cache chowns the container's .ci-cache to the host user" {
+  block="$(sed -n '/^_own-ci-cache:/,/^[^[:space:]]/p' "$REPO_ROOT/justfile")"
+  echo "$block" | grep -q 'docker compose run --rm -T ci chown -R "$(id -u):$(id -g)" /dotfiles/.ci-cache'
+}
+
+@test "justfile: test and test-clean hand .ci-cache back to the host user on exit" {
+  for recipe in test test-clean; do
+    block="$(sed -n "/^${recipe}:/,/^[^[:space:]]/p" "$REPO_ROOT/justfile")"
+    echo "$block" | grep -q "trap .*_own-ci-cache.* EXIT"
+  done
+}
