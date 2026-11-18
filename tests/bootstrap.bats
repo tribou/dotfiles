@@ -57,7 +57,8 @@ run_bootstrap() {
 }
 
 # run_next_steps: the closing message alone. bootstrap.sh puts Homebrew's bin
-# ahead of $FIXTURE_BIN, so tests that need the fake gpg on Linux run this.
+# ahead of $FIXTURE_BIN, where a real gpg (as on macOS CI runners) would shadow
+# the fake one, so every test that depends on the fake gpg runs this.
 run_next_steps() {
   run env -u GNUPGHOME HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" \
     SHELL=/opt/homebrew/bin/bash bash "$REPO_ROOT/scripts/bootstrap/next_steps.sh" /opt/homebrew/bin/bash 0
@@ -384,7 +385,7 @@ run_piped_bootstrap() {
 }
 
 @test "bootstrap: lists creating a GPG key and adding it to GitHub when there is no secret key" {
-  run_bootstrap
+  run_next_steps
   assert_success
   assert_output --partial 'gpg --quick-generate-key'
   assert_output --partial 'gh auth refresh --scopes write:gpg_key'
@@ -393,7 +394,7 @@ run_piped_bootstrap() {
 
 @test "bootstrap: skips the GPG key follow-up when an active secret key exists" {
   fake_gpg active
-  run_bootstrap
+  run_next_steps
   assert_success
   refute_output --partial 'GPG key'
   assert_output --partial 'Spotlight'
@@ -401,14 +402,14 @@ run_piped_bootstrap() {
 
 @test "bootstrap: lists the GPG key follow-up when the only secret key has expired" {
   fake_gpg expired
-  run_bootstrap
+  run_next_steps
   assert_success
   assert_output --partial 'gpg --quick-generate-key'
 }
 
 @test "bootstrap: lists the GPG key follow-up when the only secret key is revoked" {
   fake_gpg revoked
-  run_bootstrap
+  run_next_steps
   assert_success
   assert_output --partial 'gpg --quick-generate-key'
 }
