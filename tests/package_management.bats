@@ -12,7 +12,7 @@ setup() {
   grep -qF '[settings.npm]' "$config"
   grep -qF 'package_manager = "npm"' "$config"
 
-  for tool in neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux; do
+  for tool in neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux herdr; do
     grep -qE "^${tool}[[:space:]]*=[[:space:]]*\"latest\"$" "$config"
   done
   for package in eas-cli eslint_d editorconfig intelephense js-yaml jsonlint neovim prettier react-devtools nodemon typescript bash-language-server vue-language-server; do

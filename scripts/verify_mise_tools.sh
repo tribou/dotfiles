@@ -40,5 +40,6 @@ run gh --version
 run glow --version
 run zoxide --version
 run tmux -V
+run herdr --version
 run prettier --version
 run solargraph --version

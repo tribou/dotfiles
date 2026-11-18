@@ -93,6 +93,7 @@ check_tools() {
         "glow~run: mise install glow"
         "zoxide~run: mise install zoxide"
         "tmux~run: mise install tmux"
+        "herdr~run: mise install herdr"
         "prettier~run: mise install npm:prettier"
         "solargraph~run: mise install gem:solargraph"
         "git~run: mise bootstrap packages apply --yes"
