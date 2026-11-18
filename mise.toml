@@ -30,6 +30,10 @@
 "~/.tmux/plugins/tpm" = { url = "https://github.com/tmux-plugins/tpm", depth = 1 }
 "~/.local/share/vim-plug" = { url = "https://github.com/junegunn/vim-plug", depth = 1 }
 
+[bootstrap.hooks.pre-repos]
+description = "Clear known debris that would make a [bootstrap.repos] checkout look dirty"
+run = "{{ config_root }}/scripts/bootstrap/pre_repos.sh"
+
 [bootstrap.hooks.pre-dotfiles]
 description = "Create private dirs and back up files mise would otherwise refuse to replace"
 run = "{{ config_root }}/scripts/bootstrap/pre_dotfiles.sh"

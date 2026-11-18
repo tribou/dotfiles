@@ -1,4 +1,4 @@
-# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh scripts/bootstrap/preflight.sh scripts/bootstrap/next_steps.sh bash_profile
+# covers: bootstrap.sh mise.toml mise-config.toml mise-config.optional.toml.example scripts/link_mise_config.sh justfile scripts/bootstrap/run.sh scripts/bootstrap/pre_dotfiles.sh scripts/bootstrap/pre_repos.sh scripts/bootstrap/preflight.sh scripts/bootstrap/next_steps.sh bash_profile
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -133,6 +133,29 @@ run_next_steps() {
   refute_output --partial 'is not linked'
   [ "$(cat "$FIXTURE_HOME/.gitconfig")" = mine ]
   [ ! -e "$FIXTURE_HOME/.gitconfig.backup" ]
+}
+
+# mise bootstrap --dry-run prints the pre-repos hook instead of running it.
+@test "bootstrap --dry-run: previews the pre-repos cleanup without changing anything" {
+  tpm="$FIXTURE_HOME/.tmux/plugins/tpm"
+  git init -q "$tpm" && git init -q "$tpm/tmux-yank"
+  git -C "$tpm/tmux-yank" remote add origin https://git::@github.com/tmux-plugins/tmux-yank
+  run_bootstrap --dry-run
+  assert_success
+  assert_output --partial 'would move stray ~/.tmux/plugins/tpm/tmux-yank to ~/.tmux/plugins/tmux-yank'
+  [ -d "$tpm/tmux-yank" ] && [ ! -e "$FIXTURE_HOME/.tmux/plugins/tmux-yank" ]
+}
+
+@test "bootstrap --dry-run: skips the pre-repos preview when repos is not selected" {
+  run_bootstrap --dry-run --skip repos
+  assert_success
+  refute_output --partial 'pre-repos hook'
+  run_bootstrap --dry-run --only=packages
+  assert_success
+  refute_output --partial 'pre-repos hook'
+  run_bootstrap --dry-run --only packages,repos
+  assert_success
+  assert_output --partial 'pre-repos hook'
 }
 
 # fake_linux: a Linux uname plus sudo and apt-get that log to $CALLS.

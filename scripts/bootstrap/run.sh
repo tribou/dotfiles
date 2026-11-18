@@ -9,6 +9,8 @@
 # previews every selected part except dotfiles, and dotfiles are previewed here
 # with the hook's own dry run plus `mise dot diff`.
 #
+# The pre-repos hook is likewise printed, not run, so it is previewed here too.
+#
 # Usage: run.sh MISE_BIN [mise bootstrap args]
 set -euo pipefail
 
@@ -43,6 +45,8 @@ skip_given=0    # any --skip seen
 only_dotfiles=0 # an --only listed dotfiles
 only_others=0   # an --only listed some other part
 dotfiles=1      # whether the dotfiles part is selected
+only_repos=0    # an --only listed repos
+repos=1         # whether the repos part is selected
 
 # keep_parts FLAG SEP LIST: re-emit an --only flag without the dotfiles part.
 keep_parts() {
@@ -50,6 +54,7 @@ keep_parts() {
   [ -n "$list" ] || die "$flag needs a value"
   IFS=, read -ra parts <<<"$list"
   for part in "${parts[@]}"; do
+    [ "$part" != repos ] || only_repos=1
     if [ "$part" = dotfiles ]; then
       only_dotfiles=1
     else
@@ -82,6 +87,7 @@ while [ "$#" -gt 0 ]; do
       skip_given=1
       [ -n "${2:-}" ] || die "--skip needs a value"
       [[ ",$2," == *,dotfiles,* ]] && dotfiles=0
+      [[ ",$2," == *,repos,* ]] && repos=0
       args+=("$1" "$2")
       shift
       ;;
@@ -89,6 +95,7 @@ while [ "$#" -gt 0 ]; do
       skip_given=1
       [ -n "${1#--skip=}" ] || die "--skip needs a value"
       [[ ",${1#--skip=}," == *,dotfiles,* ]] && dotfiles=0
+      [[ ",${1#--skip=}," == *,repos,* ]] && repos=0
       args+=("$1")
       ;;
     *) args+=("$1") ;;
@@ -99,6 +106,16 @@ done
 
 if [ "$only_given" = 1 ]; then
   dotfiles="$only_dotfiles"
+  repos="$only_repos"
+fi
+
+# mise prints the pre-repos hook instead of running it, so preview it here.
+if [ "$repos" = 1 ]; then
+  echo "mise bootstrap: pre-repos hook (preview; a real run applies it before repos)"
+  "$repo/scripts/bootstrap/pre_repos.sh" --dry-run
+fi
+
+if [ "$only_given" = 1 ]; then
   # With only dotfiles selected, there is nothing left for mise to preview.
   if [ "$only_others" = 1 ]; then
     "$mise_bin" -C "$repo" bootstrap --yes "${args[@]}"
