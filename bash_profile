@@ -271,7 +271,7 @@ unset _DOTFILES_GHOSTTY_SCRIPT
 
 # Import api keys and per-machine overrides. Sourced after all PATH setup so
 # its values win, including PATH priority: a dir prepended here (e.g.
-# `export PATH="$HOME/.local/bin:$PATH"`) stays ahead of mise tool dirs and
+# `export PATH="$HOME/opt/bin:$PATH"`) stays ahead of mise tool dirs and
 # Homebrew, and _path_dedup below drops the dir's later copy. Keep it plain
 # bash: init.vim also uses this file as Neovim's shell --rcfile, where the
 # dotfiles lib functions are not loaded.

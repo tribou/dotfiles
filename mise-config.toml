@@ -89,6 +89,12 @@ aws-cli = "latest"
 # Linux gets Docker CE from scripts/bootstrap/converge.sh's step_docker.
 "brew-cask:orbstack" = { version = "latest", os = "macos" }
 
+[env]
+# hook-env rebuilds PATH as tool dirs + the PATH saved at activation on every
+# prompt/cd, undoing any bash_profile prepend. _.path is placed ahead of tool
+# dirs, so ~/.local/bin wrappers (e.g. sandbox-agent's opencode shim) win.
+_.path = ["{{env.HOME}}/.local/bin"]
+
 [settings]
 legacy_version_file = true
 ruby.compile = false

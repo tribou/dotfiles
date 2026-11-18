@@ -100,3 +100,12 @@ dotfile_entries() {
   run bash -c "cd '$REPO_ROOT' && git ls-files -z -- . ':!docs/superpowers/' ':!.gitignore' ':!tests/mise_bootstrap_config.bats' | xargs -0 grep -d skip -IliE 'beads|bd prime|bd -C|dolt' --"
   assert_output ''
 }
+
+@test "mise-config.toml puts ~/.local/bin ahead of mise tool dirs so its shims survive hook-env" {
+  # mise hook-env rebuilds PATH as tool dirs + the PATH saved at activation, so
+  # a plain bash_profile prepend of ~/.local/bin is undone on the next prompt/cd.
+  # Only an [env] _.path entry is placed ahead of tool dirs on every hook-env.
+  awk '/^\[env\]/{f=1;next} /^\[/{f=0} f' "$GLOBAL" |
+    grep -qE '^_\.path[[:space:]]*=.*"\{\{ ?env\.HOME ?\}\}/\.local/bin"' ||
+    fail "mise-config.toml [env] must set _.path to {{env.HOME}}/.local/bin"
+}
