@@ -79,6 +79,10 @@ line_of() { grep -nF -- "$1" "$LOG" | head -1 | cut -d: -f1; }
 }
 
 @test "justfile: install converges through scripts/bootstrap/run.sh and upgrade runs the mise upgrade task" {
+  # `just` may be a mise shim. With HOME swapped for a temp dir, mise would read
+  # the real home's ~/.config/mise/config*.toml as untrusted project configs
+  # found above the repo, so stop its config search at the repo.
+  export MISE_CEILING_PATHS="$REPO_ROOT"
   run just --justfile "$REPO_ROOT/justfile" --show install
   assert_output --partial 'scripts/bootstrap/run.sh" ~/.local/bin/mise'
   run just --justfile "$REPO_ROOT/justfile" --show upgrade
