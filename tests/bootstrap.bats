@@ -13,6 +13,12 @@ setup() {
   fake_mise 2026.11.7
 }
 
+# fake_gpg_secret_key: a secret key in the fixture's GnuPG keyring.
+fake_gpg_secret_key() {
+  mkdir -p "$FIXTURE_HOME/.gnupg/private-keys-v1.d"
+  touch "$FIXTURE_HOME/.gnupg/private-keys-v1.d/0123456789ABCDEF0123456789ABCDEF01234567.key"
+}
+
 # fake_github_ssh denied|authenticated: what `ssh -T git@github.com` reports,
 # so no test reaches the network.
 fake_github_ssh() {
@@ -335,8 +341,9 @@ run_piped_bootstrap() {
   assert_success
   assert_line --regexp '^1\. .*login shell'
   assert_line --regexp '^2\. .*SSH key'
-  assert_line --regexp '^3\. .*Ghostty'
-  assert_line --regexp '^4\. .*Spotlight'
+  assert_line --regexp '^3\. .*GPG key'
+  assert_line --regexp '^4\. .*Ghostty'
+  assert_line --regexp '^5\. .*Spotlight'
 }
 
 @test "bootstrap: on macOS asks for Ghostty's Accessibility permission for the quick terminal" {
@@ -360,20 +367,38 @@ run_piped_bootstrap() {
   assert_output --partial 'Spotlight'
 }
 
-@test "bootstrap: on Linux lists only the SSH key follow-up" {
+@test "bootstrap: lists creating a GPG key and adding it to GitHub when there is no secret key" {
+  run_bootstrap
+  assert_success
+  assert_output --partial 'gpg --quick-generate-key'
+  assert_output --partial 'gh auth refresh --scopes write:gpg_key'
+  assert_output --partial 'gh gpg-key add -'
+}
+
+@test "bootstrap: skips the GPG key follow-up when a secret key already exists" {
+  fake_gpg_secret_key
+  run_bootstrap
+  assert_success
+  refute_output --partial 'GPG key'
+  assert_output --partial 'Spotlight'
+}
+
+@test "bootstrap: on Linux lists only the SSH and GPG key follow-ups" {
   fake_linux
   run_bootstrap
   assert_success
   assert_line --regexp '^1\. .*SSH key'
-  refute_line --regexp '^2\. '
+  assert_line --regexp '^2\. .*GPG key'
+  refute_line --regexp '^3\. '
   refute_output --partial 'Spotlight'
   refute_output --partial 'Accessibility'
   assert_output --partial 'Open a new login shell'
 }
 
-@test "bootstrap: on Linux with the key on GitHub lists no manual follow-ups" {
+@test "bootstrap: on Linux with both keys set up lists no manual follow-ups" {
   fake_linux
   fake_github_ssh authenticated
+  fake_gpg_secret_key
   run_bootstrap
   assert_success
   refute_output --partial 'Manual follow-ups'
@@ -385,6 +410,7 @@ run_piped_bootstrap() {
   refute_output --partial 'Manual follow-ups'
   refute_output --partial 'Spotlight'
   refute_output --partial 'SSH key'
+  refute_output --partial 'GPG key'
 }
 
 run_preflight() {

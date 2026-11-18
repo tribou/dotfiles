@@ -45,6 +45,16 @@ if [[ "$github" != *"successfully authenticated"* ]]; then
   gh ssh-key add ~/.ssh/id_ed25519.pub --title \"\$(hostname)\""
 fi
 
+# A GPG key needs a passphrase, so bootstrap leaves creating one to the user.
+# Any secret key in the keyring counts as set up; GnuPG 2.1+ keeps one file
+# per secret key in private-keys-v1.d, so this needs no gpg on PATH.
+if ! compgen -G "${GNUPGHOME:-$HOME/.gnupg}/private-keys-v1.d/*.key" >/dev/null; then
+  todo "Create a GPG key and add it to GitHub so signed commits show as verified:
+  gpg --quick-generate-key \"\$(git config user.name) <\$(git config user.email)>\" ed25519 sign 2y
+  gh auth refresh --scopes write:gpg_key
+  gpg --armor --export \"\$(git config user.email)\" | gh gpg-key add --title \"\$(hostname)\" -"
+fi
+
 if [ "$(uname -s)" = Darwin ]; then
   # The quick terminal's global: keybind (ghostty/config.ghostty) needs this.
   todo "Let Ghostty's quick terminal (ctrl+alt+\`) open from any app: System Settings >
