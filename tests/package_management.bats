@@ -37,6 +37,8 @@ setup() {
   done
   # Docker on macOS; Linux gets Docker CE from scripts/bootstrap/converge.sh.
   grep -qF '"brew-cask:orbstack" = { version = "latest", os = "macos" }' "$config"
+  # Launcher; adopt keeps an existing Raycast.app and its Accessibility grant.
+  grep -qxF '"brew-cask:raycast" = { version = "latest", os = "macos", adopt = true }' "$config"
 }
 
 @test "legacy package files are removed" {
