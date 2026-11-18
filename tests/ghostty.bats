@@ -62,6 +62,7 @@ run_loader() {
 
 @test "ghostty: config keeps the font, opacity, padding and theme" {
   grep -qxF 'font-family = Hack Nerd Font' "$CONFIG"
+  grep -qxF 'font-thicken = true' "$CONFIG"
   grep -qxF 'font-size = 13' "$CONFIG"
   grep -qxF 'background-opacity = 0.98' "$CONFIG"
   grep -qxF 'window-padding-x = 0' "$CONFIG"
