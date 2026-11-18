@@ -46,9 +46,10 @@ if [[ "$github" != *"successfully authenticated"* ]]; then
 fi
 
 # A GPG key needs a passphrase, so bootstrap leaves creating one to the user.
-# Any secret key in the keyring counts as set up; GnuPG 2.1+ keeps one file
-# per secret key in private-keys-v1.d, so this needs no gpg on PATH.
-if ! compgen -G "${GNUPGHOME:-$HOME/.gnupg}/private-keys-v1.d/*.key" >/dev/null; then
+# Only an active secret key counts: an expired or revoked one can't sign. In
+# --with-colons output, field 12 lists usable capabilities in capitals, and gpg
+# drops them for expired or revoked keys, so a usable key shows an S there.
+if ! gpg --list-secret-keys --with-colons 2>/dev/null | awk -F: '$1 == "sec" && $12 ~ /S/ { found = 1 } END { exit !found }'; then
   todo "Create a GPG key and add it to GitHub so signed commits show as verified:
   gpg --quick-generate-key \"\$(git config user.name) <\$(git config user.email)>\" ed25519 sign 2y
   gh auth refresh --scopes write:gpg_key

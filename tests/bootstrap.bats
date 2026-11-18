@@ -10,13 +10,22 @@ setup() {
   printf '#!/usr/bin/env bash\necho /Library/Developer/CommandLineTools\n' > "$FIXTURE_BIN/xcode-select"
   chmod +x "$FIXTURE_BIN/uname" "$FIXTURE_BIN/xcode-select"
   fake_github_ssh denied
+  fake_gpg none
   fake_mise 2026.11.7
 }
 
-# fake_gpg_secret_key: a secret key in the fixture's GnuPG keyring.
-fake_gpg_secret_key() {
-  mkdir -p "$FIXTURE_HOME/.gnupg/private-keys-v1.d"
-  touch "$FIXTURE_HOME/.gnupg/private-keys-v1.d/0123456789ABCDEF0123456789ABCDEF01234567.key"
+# fake_gpg none|active|expired|revoked: the secret key, if any, that
+# `gpg --list-secret-keys --with-colons` reports (field 12 holds usable
+# capabilities in capitals, which gpg drops for expired or revoked keys).
+fake_gpg() {
+  local sec=''
+  case "$1" in
+    active) sec='sec:u:255:22:8AF1C877FDD9FE9C:1794973662:1858045662::u:::scSC:::+::ed25519:::0:' ;;
+    expired) sec='sec:e:255:22:8967E5D8973E0E18:1577836800:1609372800::u:::sc:::+::ed25519:::0:' ;;
+    revoked) sec='sec:r:255:22:D969D3371A1CB814:1794973662:1858045662::-:::sc:::+::ed25519:::0:' ;;
+  esac
+  printf '#!/usr/bin/env bash\nprintf "%%s\\n" "%s"\n' "$sec" > "$FIXTURE_BIN/gpg"
+  chmod +x "$FIXTURE_BIN/gpg"
 }
 
 # fake_github_ssh denied|authenticated: what `ssh -T git@github.com` reports,
@@ -43,8 +52,15 @@ fake_mise() {
 }
 
 run_bootstrap() {
-  run env HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
+  run env -u GNUPGHOME HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" MISE_CALLS="$CALLS" \
     SHELL="${LOGIN_SHELL:-/opt/homebrew/bin/bash}" bash "$REPO_ROOT/bootstrap.sh" "$@"
+}
+
+# run_next_steps: the closing message alone. bootstrap.sh puts Homebrew's bin
+# ahead of $FIXTURE_BIN, so tests that need the fake gpg on Linux run this.
+run_next_steps() {
+  run env -u GNUPGHOME HOME="$FIXTURE_HOME" PATH="$FIXTURE_BIN:/usr/bin:/bin" \
+    SHELL=/opt/homebrew/bin/bash bash "$REPO_ROOT/scripts/bootstrap/next_steps.sh" /opt/homebrew/bin/bash 0
 }
 
 @test "bootstrap: self-clones to ~/dev/dotfiles when run outside the repo" {
@@ -375,12 +391,26 @@ run_piped_bootstrap() {
   assert_output --partial 'gh gpg-key add -'
 }
 
-@test "bootstrap: skips the GPG key follow-up when a secret key already exists" {
-  fake_gpg_secret_key
+@test "bootstrap: skips the GPG key follow-up when an active secret key exists" {
+  fake_gpg active
   run_bootstrap
   assert_success
   refute_output --partial 'GPG key'
   assert_output --partial 'Spotlight'
+}
+
+@test "bootstrap: lists the GPG key follow-up when the only secret key has expired" {
+  fake_gpg expired
+  run_bootstrap
+  assert_success
+  assert_output --partial 'gpg --quick-generate-key'
+}
+
+@test "bootstrap: lists the GPG key follow-up when the only secret key is revoked" {
+  fake_gpg revoked
+  run_bootstrap
+  assert_success
+  assert_output --partial 'gpg --quick-generate-key'
 }
 
 @test "bootstrap: on Linux lists only the SSH and GPG key follow-ups" {
@@ -398,8 +428,8 @@ run_piped_bootstrap() {
 @test "bootstrap: on Linux with both keys set up lists no manual follow-ups" {
   fake_linux
   fake_github_ssh authenticated
-  fake_gpg_secret_key
-  run_bootstrap
+  fake_gpg active
+  run_next_steps
   assert_success
   refute_output --partial 'Manual follow-ups'
 }
