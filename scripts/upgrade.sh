@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # The `upgrade` mise task (`just upgrade`): upgrade the OS, mise packages and
 # tools, bootstrap repos, then re-converge and update editor/tmux plugins.
-# Optional self-updaters (rustup, claude, opencode) never abort the run.
+# Optional self-updaters (rustup, claude) never abort the run; mise upgrades
+# opencode with the other tools.
 set -euo pipefail
 
 DOTFILES_REPO="${DOTFILES_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -44,9 +45,7 @@ tmux set-environment -t _upgrade_tpm -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/pl
 "$HOME/.tmux/plugins/tpm/bin/update_plugins" all
 tmux kill-session -t _upgrade_tpm 2>/dev/null || true
 
-for cli in claude opencode; do
-  if command -v "$cli" >/dev/null 2>&1; then
-    step "$cli"
-    optional "$cli" upgrade
-  fi
-done
+if command -v claude >/dev/null 2>&1; then
+  step "claude"
+  optional claude upgrade
+fi

@@ -60,22 +60,22 @@ line_of() { grep -nF -- "$1" "$LOG" | head -1 | cut -d: -f1; }
   grep -qF 'pacman -Syu --noconfirm' "$LOG"
 }
 
-@test "upgrade: self-updates claude and opencode only when installed" {
+@test "upgrade: self-updates claude only when installed, and leaves mise's opencode to mise" {
   run_upgrade
   grep -qF 'claude upgrade' "$LOG"
-  grep -qF 'opencode upgrade' "$LOG"
-  rm -f "$STUBS/claude" "$STUBS/opencode"
+  ! grep -qF 'opencode upgrade' "$LOG" || fail "unexpected: $(cat "$LOG")"
+  rm -f "$STUBS/claude"
   : > "$LOG"
   run_upgrade
   assert_success
-  ! grep -qE '^(claude|opencode) ' "$LOG"
+  ! grep -qE '^claude ' "$LOG" || fail "unexpected: $(cat "$LOG")"
 }
 
 @test "upgrade: a failing optional self-updater does not abort the run" {
   stub claude 'exit 1'
   run_upgrade
   assert_success
-  grep -qF 'opencode upgrade' "$LOG"
+  grep -qF 'claude upgrade' "$LOG"
 }
 
 @test "justfile: install converges through scripts/bootstrap/run.sh and upgrade runs the mise upgrade task" {

@@ -16,7 +16,7 @@ verify="${DOTFILES_VERIFY_MISE:-$repo/scripts/verify_mise_tools.sh}"
 
 # Keep this migration list local; it is not desired-state inventory.
 legacy=(neovim python jq fd ripgrep bat shellcheck lazydocker lazygit just
-  tree-sitter-cli fzf git-delta gh glow zoxide tmux)
+  tree-sitter-cli fzf git-delta gh glow zoxide tmux awscli)
 
 brew_bin="${DOTFILES_BREW_BIN:-}"
 if [ -z "$brew_bin" ]; then

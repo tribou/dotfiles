@@ -156,6 +156,73 @@ step_corepack() {
   echo "changed: enabled corepack yarn and pnpm"
 }
 
+# Docker on Linux: Docker CE from Docker's own apt repo (docs.docker.com), or
+# Arch's packages. macOS gets Docker from the OrbStack cask. Skipped whenever a
+# docker is already installed, however it got there, so it never replaces an
+# engine (Ubuntu's docker.io conflicts with Docker CE).
+_docker_wanted() {
+  [ "$(_uname)" = Linux ] && ! command -v "${DOTFILES_DOCKER:-docker}" >/dev/null 2>&1
+}
+
+_pkg_manager() {
+  if [ -n "${DOTFILES_PKG_MANAGER:-}" ]; then
+    echo "$DOTFILES_PKG_MANAGER"
+  elif command -v apt-get >/dev/null 2>&1; then
+    echo apt
+  elif command -v pacman >/dev/null 2>&1; then
+    echo pacman
+  fi
+}
+
+step_docker() {
+  _docker_wanted || return 0
+  case "$(_pkg_manager)" in
+    apt)
+      # Docker publishes repos for Ubuntu and Debian; derivatives (Mint, Pop!_OS)
+      # use their base's repo and codename.
+      local distro="" codename=""
+      read -r distro codename < <(
+        # shellcheck disable=SC1090,SC1091
+        . "${DOTFILES_OS_RELEASE:-/etc/os-release}"
+        case " ${ID:-} ${ID_LIKE:-} " in
+          *" ubuntu "*) echo ubuntu "${UBUNTU_CODENAME:-${VERSION_CODENAME:-}}" ;;
+          *" debian "*) echo debian "${VERSION_CODENAME:-}" ;;
+        esac
+      ) || true
+      if [ -z "$distro" ] || [ -z "$codename" ]; then
+        echo "warning: Docker has no apt repo for this distro; install Docker yourself" >&2
+        return 0
+      fi
+      sudo install -m 0755 -d /etc/apt/keyrings
+      sudo curl -fsSL "https://download.docker.com/linux/$distro/gpg" -o /etc/apt/keyrings/docker.asc
+      sudo chmod a+r /etc/apt/keyrings/docker.asc
+      printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/%s %s stable\n' \
+        "$(dpkg --print-architecture)" "$distro" "$codename" |
+        sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+      sudo apt-get update
+      sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      ;;
+    pacman)
+      sudo pacman -S --needed --noconfirm docker docker-buildx docker-compose
+      ;;
+    *)
+      echo "warning: no apt-get or pacman; install Docker yourself" >&2
+      return 0
+      ;;
+  esac
+  echo "changed: installed Docker"
+  # Containers (the Docker test suite) have no systemd to start it.
+  if [ -d "${DOTFILES_SYSTEMD_DIR:-/run/systemd/system}" ]; then
+    sudo systemctl enable --now docker
+  fi
+  local user
+  user="$(id -un)"
+  if ! id -nG "$user" | tr ' ' '\n' | grep -qx docker; then
+    sudo usermod -aG docker "$user"
+    echo "changed: added $user to the docker group (log out and back in to use docker without sudo)"
+  fi
+}
+
 step_brew_cleanup() {
   "$DOTFILES_REPO/scripts/brew_cleanup.sh"
 }
@@ -181,6 +248,9 @@ main() {
   run_step "Importing z history into zoxide" step_zoxide
   run_step "Installing pynvim" step_pynvim
   run_step "Enabling corepack (yarn, pnpm)" step_corepack
+  # sudo may ask for a password, which the spinner would draw over: ask first.
+  if _docker_wanted; then sudo -v; fi
+  run_step "Installing Docker" step_docker
   run_step "Removing legacy Homebrew tools" step_brew_cleanup
   run_step "Verifying mise tools" step_verify
   run_step "Marking bootstrap complete" step_marker

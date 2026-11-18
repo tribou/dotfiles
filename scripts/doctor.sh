@@ -94,10 +94,13 @@ check_tools() {
         "zoxide~run: mise install zoxide"
         "tmux~run: mise install tmux"
         "herdr~run: mise install herdr"
+        "opencode~run: mise install opencode"
+        "aws~run: mise install aws-cli"
         "prettier~run: mise install npm:prettier"
         "solargraph~run: mise install gem:solargraph"
         "git~run: mise bootstrap packages apply --yes"
         "bash~run: mise bootstrap packages apply --yes"
+        "docker~run: ./bootstrap.sh, then open OrbStack once on macOS"
     )
 
     echo "Tools:"

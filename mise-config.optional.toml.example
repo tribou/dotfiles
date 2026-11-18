@@ -10,7 +10,6 @@
 # are macOS-only (Linux takes only font casks) and install into /Applications.
 
 [tools]
-# awscli = "latest"        # pipx backend (AWS CLI v2)
 # terraform-ls = "latest"  # ubi backend (HashiCorp terraform-ls GitHub releases)
 # navi = "latest"          # ubi backend (cheatsheet tool)
 # tlrc = "latest"          # ubi/cargo backend (tldr client)
@@ -27,7 +26,6 @@
 # "brew:renameutils" = { version = "latest", os = "macos/arm64" }
 # "brew:vimpager" = { version = "latest", os = "macos/arm64" }
 # "brew-cask:firefox" = { version = "latest", os = "macos" }
-# "brew-cask:orbstack" = { version = "latest", os = "macos" }
 # "brew-cask:bruno" = { version = "latest", os = "macos" }
 # "brew-cask:balenaetcher" = { version = "latest", os = "macos" }
 # "brew-cask:appcleaner" = { version = "latest", os = "macos" }

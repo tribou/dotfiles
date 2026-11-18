@@ -38,7 +38,7 @@ setup() {
 @test "check_tools passes for available tool" {
     local tool_dir
     tool_dir="$(mktemp -d)"
-    for tool in mise node python ruby go bun tombi nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux herdr prettier solargraph git bash; do
+    for tool in mise node python ruby go bun tombi nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux herdr opencode aws prettier solargraph git bash docker; do
         touch "$tool_dir/$tool"
         chmod +x "$tool_dir/$tool"
     done
@@ -81,10 +81,13 @@ setup() {
         "zoxide~run: mise install zoxide" \
         "tmux~run: mise install tmux" \
         "herdr~run: mise install herdr" \
+        "opencode~run: mise install opencode" \
+        "aws~run: mise install aws-cli" \
         "prettier~run: mise install npm:prettier" \
         "solargraph~run: mise install gem:solargraph" \
         "git~run: mise bootstrap packages apply --yes" \
-        "bash~run: mise bootstrap packages apply --yes"; do
+        "bash~run: mise bootstrap packages apply --yes" \
+        "docker~run: ./bootstrap.sh, then open OrbStack once on macOS"; do
         [[ "$output" == *"✗ ${expected%~*} → ${expected#*~}"* ]]
     done
 }
@@ -108,7 +111,7 @@ setup() {
     export DOTFILES="$(mktemp -d)"
     local tool_dir
     tool_dir="$(mktemp -d)"
-    for tool in mise node python ruby go bun tombi nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux herdr prettier solargraph git bash; do
+    for tool in mise node python ruby go bun tombi nvim jq fd rg bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux herdr opencode aws prettier solargraph git bash docker; do
         touch "$tool_dir/$tool"
         chmod +x "$tool_dir/$tool"
     done

@@ -34,12 +34,13 @@ fake_brew() {
 }
 
 @test "brew_cleanup: lists once, verifies mise, then removes only replaced formulae" {
-  fake_brew bash fzf python@3.13 git-delta zlib
+  fake_brew bash fzf python@3.13 git-delta zlib awscli
   run env DOTFILES_BREW_BIN="$STUBS/brew" "$REPO_ROOT/scripts/brew_cleanup.sh"
   assert_success
   [ "$(grep -cx list "$LOG")" -eq 1 ]
   sed -n 2p "$LOG" | grep -qx verify
   grep -qx 'uninstall fzf' "$LOG"
+  grep -qx 'uninstall awscli' "$LOG"
   grep -qx 'uninstall git-delta' "$LOG"
   grep -qx 'uninstall python@3.13' "$LOG"
   ! grep -qx 'uninstall bash' "$LOG"

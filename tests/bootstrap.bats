@@ -106,7 +106,7 @@ run_next_steps() {
   [ -f "$f" ]
   # every assignment is commented out (user uncomments what they want)
   ! grep -qE '^[[:space:]]*"?[a-z0-9_:/@-]+"?[[:space:]]*=' "$f"
-  for t in awscli terraform-ls navi tlrc tfenv firefox orbstack bruno font-fira-code-nerd-font; do
+  for t in terraform-ls navi tlrc tfenv firefox bruno font-fira-code-nerd-font; do
     grep -q "$t" "$f" || fail "optional template lacks $t"
   done
 }

@@ -26,6 +26,8 @@ glow = "latest"
 zoxide = "latest"
 tmux = "latest"
 herdr = "latest"
+opencode = "latest"
+aws-cli = "latest"
 "npm:corepack" = "latest"
 "npm:eas-cli" = "latest"
 "npm:eslint_d" = "latest"
@@ -83,6 +85,9 @@ herdr = "latest"
 # The font ghostty/config.ghostty (and init.vim's guifont) asks for. Without it
 # Ghostty falls back to its built-in JetBrains Mono, with taller rows.
 "brew-cask:font-hack-nerd-font" = { version = "latest", os = "macos" }
+# Docker on macOS (its docker CLI appears once OrbStack.app has been opened).
+# Linux gets Docker CE from scripts/bootstrap/converge.sh's step_docker.
+"brew-cask:orbstack" = { version = "latest", os = "macos" }
 
 [settings]
 legacy_version_file = true

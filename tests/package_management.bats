@@ -12,7 +12,7 @@ setup() {
   grep -qF '[settings.npm]' "$config"
   grep -qF 'package_manager = "npm"' "$config"
 
-  for tool in neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux herdr; do
+  for tool in neovim jq fd ripgrep bat shellcheck lazydocker lazygit just tree-sitter fzf delta gh glow zoxide tmux herdr opencode aws-cli; do
     grep -qE "^${tool}[[:space:]]*=[[:space:]]*\"latest\"$" "$config"
   done
   for package in eas-cli eslint_d editorconfig intelephense js-yaml jsonlint neovim prettier react-devtools nodemon typescript bash-language-server vue-language-server; do
@@ -35,6 +35,8 @@ setup() {
   for formula in bash-completion reattach-to-user-namespace tmux-mem-cpu-load; do
     grep -qF "\"brew:${formula}\" = { version = \"latest\", os = \"macos/arm64\" }" "$config"
   done
+  # Docker on macOS; Linux gets Docker CE from scripts/bootstrap/converge.sh.
+  grep -qF '"brew-cask:orbstack" = { version = "latest", os = "macos" }' "$config"
 }
 
 @test "legacy package files are removed" {
@@ -47,7 +49,7 @@ setup() {
 @test "optional mise config owns optional tools, formulae, and casks" {
   local mise_optional="$REPO_ROOT/mise-config.optional.toml.example"
 
-  for tool in awscli terraform-ls navi tlrc tfenv; do
+  for tool in terraform-ls navi tlrc tfenv; do
     grep -qE "^#[[:space:]]+${tool}[[:space:]]*=" "$mise_optional"
   done
   for formula in nmap tree dos2unix tidy-html5 ngrok tor rename renameutils vimpager; do
@@ -62,9 +64,11 @@ setup() {
         ;;
     esac
   done
-  for cask in firefox orbstack bruno balenaetcher appcleaner imageoptim cmake font-fira-code-nerd-font font-fontawesome; do
+  for cask in firefox bruno balenaetcher appcleaner imageoptim cmake font-fira-code-nerd-font font-fontawesome; do
     grep -qE "^# \"brew-cask:${cask}\" = " "$mise_optional" || fail "optional cask $cask"
   done
+  # Now installed by default from mise-config.toml.
+  ! grep -qE 'awscli|orbstack' "$mise_optional" || fail "awscli or orbstack is still listed as optional"
 }
 
 @test "repository never uses manager-wide brew prune" {

@@ -184,6 +184,85 @@ stub() {
   ! grep -q '^corepack' "$LOG"
 }
 
+# docker_stubs [GROUPS]: sudo logs (and swallows piped input), id reports GROUPS.
+docker_stubs() {
+  stub sudo 'if [ "$1" = tee ]; then sed "s/^/tee< /" >> "$CALL_LOG"; fi'
+  stub dpkg 'echo amd64'
+  stub id "if [ \"\$1\" = -un ]; then echo tester; else echo '${1:-tester sudo}'; fi"
+  export DOTFILES_DOCKER="$BATS_TEST_TMPDIR/no-docker"
+  export DOTFILES_SYSTEMD_DIR="$BATS_TEST_TMPDIR/systemd"
+  mkdir -p "$DOTFILES_SYSTEMD_DIR"
+  export DOTFILES_OS_RELEASE="$BATS_TEST_TMPDIR/os-release"
+}
+
+@test "converge: installs Docker CE from Docker's apt repo on Ubuntu and adds the user to the docker group" {
+  docker_stubs
+  printf 'ID=ubuntu\nID_LIKE=debian\nVERSION_CODENAME=noble\nUBUNTU_CODENAME=noble\n' > "$DOTFILES_OS_RELEASE"
+  DOTFILES_UNAME=Linux DOTFILES_PKG_MANAGER=apt run step_docker
+  assert_success
+  grep -qF 'sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc' "$LOG"
+  grep -qF 'tee< deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable' "$LOG"
+  grep -qF 'sudo tee /etc/apt/sources.list.d/docker.list' "$LOG"
+  grep -qF 'sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin' "$LOG"
+  grep -qF 'sudo systemctl enable --now docker' "$LOG"
+  grep -qF 'sudo usermod -aG docker tester' "$LOG"
+  assert_output --partial 'changed: installed Docker'
+  assert_output --partial 'changed: added tester to the docker group'
+}
+
+@test "converge: an Ubuntu derivative uses Docker's Ubuntu repo and its Ubuntu codename" {
+  docker_stubs
+  printf 'ID=linuxmint\nID_LIKE="ubuntu debian"\nVERSION_CODENAME=xia\nUBUNTU_CODENAME=noble\n' > "$DOTFILES_OS_RELEASE"
+  DOTFILES_UNAME=Linux DOTFILES_PKG_MANAGER=apt run step_docker
+  assert_success
+  grep -qF 'https://download.docker.com/linux/ubuntu noble stable' "$LOG"
+}
+
+@test "converge: Debian uses Docker's Debian repo" {
+  docker_stubs
+  printf 'ID=debian\nVERSION_CODENAME=trixie\n' > "$DOTFILES_OS_RELEASE"
+  DOTFILES_UNAME=Linux DOTFILES_PKG_MANAGER=apt run step_docker
+  assert_success
+  grep -qF 'https://download.docker.com/linux/debian trixie stable' "$LOG"
+}
+
+@test "converge: an apt distro Docker has no repo for is left alone with a warning" {
+  docker_stubs
+  printf 'ID=someos\nVERSION_CODENAME=x\n' > "$DOTFILES_OS_RELEASE"
+  DOTFILES_UNAME=Linux DOTFILES_PKG_MANAGER=apt run --separate-stderr step_docker
+  assert_success
+  [[ "$stderr" == *"install Docker yourself"* ]] || fail "no warning: $stderr"
+  ! grep -q '^sudo ' "$LOG" || fail "unexpected: $(cat "$LOG")"
+}
+
+@test "converge: installs Docker with pacman on Arch and skips systemd and the group when not needed" {
+  docker_stubs 'tester wheel docker'
+  rmdir "$DOTFILES_SYSTEMD_DIR"
+  DOTFILES_UNAME=Linux DOTFILES_PKG_MANAGER=pacman run step_docker
+  assert_success
+  grep -qF 'sudo pacman -S --needed --noconfirm docker docker-buildx docker-compose' "$LOG"
+  ! grep -qF 'systemctl' "$LOG" || fail "unexpected: $(cat "$LOG")"
+  ! grep -qF 'usermod' "$LOG" || fail "unexpected: $(cat "$LOG")"
+  assert_output 'changed: installed Docker'
+}
+
+@test "converge: Docker step does nothing when docker is installed or on macOS" {
+  docker_stubs
+  stub docker
+  DOTFILES_DOCKER=docker DOTFILES_UNAME=Linux DOTFILES_PKG_MANAGER=apt run step_docker
+  assert_success
+  assert_output ''
+  DOTFILES_UNAME=Darwin DOTFILES_PKG_MANAGER=apt run step_docker
+  assert_success
+  assert_output ''
+  [ ! -s "$LOG" ]
+}
+
+@test "converge: main asks for sudo before the spinner only when Docker will be installed" {
+  run grep -B2 -E '^  run_step "Installing Docker" step_docker$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
+  assert_output --partial 'if _docker_wanted; then sudo -v; fi'
+}
+
 @test "converge: writes the bootstrap-done marker once" {
   run step_marker
   assert_output --partial 'changed: marked bootstrap complete'
@@ -194,7 +273,7 @@ stub() {
 
 @test "converge: main runs every step, verification before the marker" {
   run grep -nE '^ *(run_step "[^"]+" )?step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
-  for step in ssh_keys macos_ssh terminfo gnupg_perms nvim_plugins tmux_plugins zoxide pynvim corepack brew_cleanup verify marker; do
+  for step in ssh_keys macos_ssh terminfo gnupg_perms nvim_plugins tmux_plugins zoxide pynvim corepack docker brew_cleanup verify marker; do
     echo "$output" | grep -qE " step_${step}$|:step_${step}$" || fail "main does not run step_$step"
   done
   verify_line="$(echo "$output" | grep -E 'step_verify$' | cut -d: -f1)"
@@ -206,7 +285,7 @@ stub() {
   run grep -cE '^  step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
   assert_output 1
   run grep -cE '^  run_step "[^"]+" step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
-  assert_output 11
+  assert_output 12
 }
 
 @test "converge: run_step shows the label, then replays the step's stdout and stderr" {
