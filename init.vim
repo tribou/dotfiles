@@ -1,3 +1,10 @@
+" $DOTFILES comes from bash_profile. nvim started outside that shell (the
+" bootstrap's headless runs, a GUI, another login shell) derives it from this
+" file's real path, or every `source $DOTFILES/vim/...` below fails with E484.
+if empty($DOTFILES)
+  let $DOTFILES = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+endif
+
 " Functions that have to load first
 "
 " vim-markdown-composer
@@ -196,9 +203,11 @@ endif
 " Tree-sitter highlighting for filetypes vim-polyglot doesn't cover
 if has('nvim-0.10')
 lua << EOF
+-- scripts/bootstrap/converge.sh installs these synchronously on first run
+vim.g.dotfiles_treesitter_parsers = { "prisma" }
 local _ts_ok, _ts = pcall(require, "nvim-treesitter")
 if _ts_ok then
-  _ts.install({ "prisma" })
+  _ts.install(vim.g.dotfiles_treesitter_parsers)
   -- cleared group so re-sourcing this file does not stack duplicates
   local group = vim.api.nvim_create_augroup("dotfiles_treesitter", { clear = true })
   -- vim-polyglot's filetype detection replaces nvim's and has no prisma rule

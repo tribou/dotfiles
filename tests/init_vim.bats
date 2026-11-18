@@ -126,3 +126,21 @@ source_init_vim_isolated() {
   run grep -nE "^[[:space:]]*Plug 'catgoose/nvim-colorizer\.lua'" "$REPO_ROOT/init.vim"
   assert_success
 }
+
+@test "init.vim: loads vim/*.vim through its symlink when \$DOTFILES is unset (bootstrap, non-bash shells)" {
+  # bootstrap runs nvim before any bash_profile sets $DOTFILES, which made
+  # every `source $DOTFILES/vim/...` fail with E484 on /vim/functions.vim.
+  require_nvim
+  local home="$BATS_TEST_TMPDIR/home"
+  mkdir -p "$home/.config/nvim"
+  ln -s "$REPO_ROOT/init.vim" "$home/.config/nvim/init.vim"
+  run env -u DOTFILES HOME="$home" XDG_CONFIG_HOME="$home/.config" \
+    XDG_DATA_HOME="$home/.local/share" XDG_STATE_HOME="$home/.local/state" \
+    XDG_CACHE_HOME="$home/.cache" \
+    nvim --headless -u NONE -i NONE -c "silent! source $home/.config/nvim/init.vim" \
+    -c "call writefile([\$DOTFILES, maparg('<Leader>r', 'n')], '$BATS_TEST_TMPDIR/out')" -c 'qa!'
+  [ "$status" -eq 0 ]
+  run cat "$BATS_TEST_TMPDIR/out"
+  assert_line --index 0 "$(cd -P "$REPO_ROOT" && pwd)"
+  assert_line --index 1 --partial 'source $MYVIMRC'
+}
