@@ -1,4 +1,4 @@
-# covers: lib/git.sh
+# covers: lib/git.sh lib/spinner.sh
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -24,6 +24,7 @@ setup() {
   run --separate-stderr bash -c "
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     git() { echo 'mock diff'; }
     claude() { echo 'fix(bootstrap): silence brew prompt'; }
@@ -41,6 +42,7 @@ setup() {
     export PATH='$empty_path'
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     _dotfiles_commit_generate_message ''
   "
@@ -53,6 +55,7 @@ setup() {
   run --separate-stderr bash -c "
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     git() { echo 'mock diff'; }
     claude() { return 1; }
@@ -67,6 +70,7 @@ setup() {
   run --separate-stderr bash -c "
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     git() { echo ''; }
     claude() { echo ''; }
@@ -81,6 +85,7 @@ setup() {
   run --separate-stderr bash -c "
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     git() { yes a | head -c 200000; }
     claude() { wc -c | tr -d ' '; }
@@ -95,6 +100,7 @@ setup() {
   run -130 --separate-stderr with_default_sigint bash -c "
     export DOTFILES_COMMIT_BACKEND=claude
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     git() { echo 'mock diff'; }
     claude() { sleep 1; echo 'should not be seen'; }
@@ -109,6 +115,7 @@ setup() {
     export DOTFILES_COMMIT_BACKEND=claude
     export DOTFILES_COMMIT_TIMEOUT=1
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     git() { echo 'mock diff'; }
     claude() { command sleep 10; echo 'too late'; }
@@ -121,6 +128,7 @@ setup() {
 @test "generate_message: opencode backend invokes opencode run with the kimi model" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=opencode
     git() { echo 'mock diff'; }
@@ -138,6 +146,7 @@ setup() {
     export PATH='$empty_path'
     export DOTFILES_COMMIT_BACKEND=opencode
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     _dotfiles_commit_generate_message ''
   "
@@ -149,6 +158,7 @@ setup() {
 @test "generate_message: agy backend invokes agy --print with the gemini model" {
   run --separate-stderr bash -c "
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     export DOTFILES_COMMIT_BACKEND=agy
     git() { echo 'mock diff'; }
@@ -171,6 +181,7 @@ setup() {
     export PATH='$empty_path'
     export DOTFILES_COMMIT_BACKEND=agy
     . '$REPO_ROOT/lib/_shared.sh'
+    . '$REPO_ROOT/lib/spinner.sh'
     . '$REPO_ROOT/lib/git.sh'
     _dotfiles_commit_generate_message ''
   "

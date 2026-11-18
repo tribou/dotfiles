@@ -4,15 +4,36 @@
 # dotfiles, and tools, with [tools] on PATH, on every `mise bootstrap`, so every
 # step is idempotent and prints "changed: ..." only when it changes something.
 #
+# Each step runs under the `commit` command's spinner, labelled with what it is
+# doing; its output is held until it finishes, then shown.
+#
 # Sourcing this file defines the steps without running them (for tests).
 set -euo pipefail
 
 DOTFILES_REPO="${DOTFILES_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+# shellcheck disable=SC1091 # lib/spinner.sh is checked on its own
+. "$DOTFILES_REPO/lib/spinner.sh"
 DOTFILES_SSH_KEY_EMAIL="${DOTFILES_SSH_KEY_EMAIL:-tribou@users.noreply.github.com}"
 
 _uname() { printf '%s\n' "${DOTFILES_UNAME:-$(uname -s)}"; }
 _mise() { "${MISE_BIN:-$(command -v mise || echo "$HOME/.local/bin/mise")}" "$@"; }
 _mode() { stat -c %a "$1" 2>/dev/null || stat -f %Lp "$1"; }
+
+# run_step LABEL STEP: run STEP in the background behind a spinner showing
+# LABEL, then print what it wrote to stdout and stderr and return its status.
+# A background job starts with SIGINT ignored; restore it so Ctrl-C stops the
+# step's commands too, not only the spinner.
+run_step() {
+  local label="$1" step="$2" out err status=0
+  out="$(mktemp)"
+  err="$(mktemp)"
+  ( trap - INT; set -e; "$step" ) </dev/null >"$out" 2>"$err" &
+  _dotfiles_spinner_wait "$!" "$label" || status=$?
+  cat "$out"
+  cat "$err" >&2
+  rm -f "$out" "$err"
+  return "$status"
+}
 
 step_ssh_keys() {
   local type args
@@ -150,18 +171,19 @@ step_marker() {
 }
 
 main() {
-  step_ssh_keys
+  run_step "Generating SSH keys" step_ssh_keys
+  # Not behind the spinner: ssh-add may prompt for a key's passphrase.
   step_macos_ssh
-  step_terminfo
-  step_gnupg_perms
-  step_nvim_plugins
-  step_tmux_plugins
-  step_zoxide
-  step_pynvim
-  step_corepack
-  step_brew_cleanup
-  step_verify
-  step_marker
+  run_step "Compiling tmux terminfo" step_terminfo
+  run_step "Fixing ~/.gnupg permissions" step_gnupg_perms
+  run_step "Installing Neovim plugins" step_nvim_plugins
+  run_step "Installing tmux plugins" step_tmux_plugins
+  run_step "Importing z history into zoxide" step_zoxide
+  run_step "Installing pynvim" step_pynvim
+  run_step "Enabling corepack (yarn, pnpm)" step_corepack
+  run_step "Removing legacy Homebrew tools" step_brew_cleanup
+  run_step "Verifying mise tools" step_verify
+  run_step "Marking bootstrap complete" step_marker
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

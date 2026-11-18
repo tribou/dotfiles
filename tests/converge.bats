@@ -1,4 +1,6 @@
 # covers: scripts/bootstrap/converge.sh
+bats_require_minimum_version 1.5.0
+
 setup() {
   load 'test_helper/common_setup'
   common_setup
@@ -191,11 +193,50 @@ stub() {
 }
 
 @test "converge: main runs every step, verification before the marker" {
-  run grep -nE '^ *step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
+  run grep -nE '^ *(run_step "[^"]+" )?step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
   for step in ssh_keys macos_ssh terminfo gnupg_perms nvim_plugins tmux_plugins zoxide pynvim corepack brew_cleanup verify marker; do
-    echo "$output" | grep -qE ":? *step_${step}$" || fail "main does not run step_$step"
+    echo "$output" | grep -qE " step_${step}$|:step_${step}$" || fail "main does not run step_$step"
   done
   verify_line="$(echo "$output" | grep -E 'step_verify$' | cut -d: -f1)"
   marker_line="$(echo "$output" | grep -E 'step_marker$' | cut -d: -f1)"
   [ "$verify_line" -lt "$marker_line" ]
+}
+
+@test "converge: main labels every step but macos_ssh with a spinner" {
+  run grep -cE '^  step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
+  assert_output 1
+  run grep -cE '^  run_step "[^"]+" step_[a-z_]+$' "$REPO_ROOT/scripts/bootstrap/converge.sh"
+  assert_output 11
+}
+
+@test "converge: run_step shows the label, then replays the step's stdout and stderr" {
+  noisy() { echo "changed: did a thing"; echo "a warning" >&2; }
+  run --separate-stderr run_step "Doing a thing" noisy
+  assert_success
+  assert_output "changed: did a thing"
+  [[ "$stderr" == *"Doing a thing"* ]] || fail "label missing from stderr: $stderr"
+  [[ "$stderr" == *"a warning"* ]] || fail "step stderr missing: $stderr"
+}
+
+@test "converge: run_step returns the step's failure status and still shows its output" {
+  broken() { echo "partial"; echo "boom" >&2; return 3; }
+  run -3 --separate-stderr run_step "Breaking" broken
+  assert_output "partial"
+  [[ "$stderr" == *"boom"* ]] || fail "step stderr missing: $stderr"
+}
+
+@test "converge: run_step keeps errexit inside the step" {
+  halfway() { false; echo "should not run"; }
+  run -1 --separate-stderr run_step "Halfway" halfway
+  refute_output --partial "should not run"
+}
+
+@test "converge: run_step leaves SIGINT at its default so Ctrl-C stops what the step runs" {
+  run with_default_sigint bash -c "
+    source '$REPO_ROOT/scripts/bootstrap/converge.sh'
+    probe() { bash -c 'trap -p INT; echo probed'; }
+    run_step 'Probing' probe 2>/dev/null
+  "
+  assert_success
+  assert_output "probed"
 }
