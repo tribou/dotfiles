@@ -88,6 +88,9 @@ aws-cli = "latest"
 # Docker on macOS (its docker CLI appears once OrbStack.app has been opened).
 # Linux gets Docker CE from scripts/bootstrap/converge.sh's step_docker.
 "brew-cask:orbstack" = { version = "latest", os = "macos" }
+# Launcher. adopt takes over an existing Raycast.app instead of replacing it,
+# which would reset its Accessibility grant (needed for window management).
+"brew-cask:raycast" = { version = "latest", os = "macos", adopt = true }
 
 [settings]
 legacy_version_file = true

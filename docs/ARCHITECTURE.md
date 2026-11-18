@@ -45,7 +45,9 @@ machine. mise auto-loads `conf.d/*.toml` and merges it over `config.toml`:
 The one core cask is Ghostty, the terminal (`"brew-cask:ghostty"`, macOS only,
 `adopt = true` so an identical Ghostty.app already in `/Applications` is taken
 over rather than replaced). On Linux, Ghostty is opt-in: `pacman:ghostty` on
-Arch, or a package from ghostty.org on Debian/Ubuntu.
+Arch, or a package from ghostty.org on Debian/Ubuntu. Raycast, the launcher
+(`"brew-cask:raycast"`), is a core macOS cask too, also with `adopt = true` to
+keep an existing install's Accessibility grant.
 
 Run `just install` after uncommenting entries. A `~/.Brewfile` from the old
 Homebrew cask flow is no longer applied; move its casks into the drop-in.
