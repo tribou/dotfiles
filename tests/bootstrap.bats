@@ -306,6 +306,41 @@ run_piped_bootstrap() {
   refute_output --partial 'chsh'
 }
 
+# Manual follow-ups: things bootstrap cannot or should not do itself, such as
+# Spotlight's Search Privacy list, which only Full Disk Access could script.
+@test "bootstrap: on macOS lists Spotlight folders to exclude as a manual follow-up" {
+  run_bootstrap
+  assert_success
+  assert_output --partial 'Manual follow-ups:'
+  assert_output --partial 'Search Privacy'
+  assert_output --partial '~/dev'
+  assert_output --partial '~/Library/Developer/Xcode/DerivedData'
+  assert_output --partial '~/Library/Caches'
+}
+
+@test "bootstrap: on macOS with a zsh login shell numbers the shell switch and Spotlight follow-ups" {
+  LOGIN_SHELL=/bin/zsh run_bootstrap
+  assert_success
+  assert_line --regexp '^1\. .*login shell'
+  assert_line --regexp '^2\. .*Spotlight'
+}
+
+@test "bootstrap: on Linux lists no manual follow-ups" {
+  fake_linux
+  run_bootstrap
+  assert_success
+  refute_output --partial 'Manual follow-ups'
+  refute_output --partial 'Spotlight'
+  assert_output --partial 'Open a new login shell'
+}
+
+@test "bootstrap --dry-run: lists no manual follow-ups" {
+  run_bootstrap --dry-run
+  assert_success
+  refute_output --partial 'Manual follow-ups'
+  refute_output --partial 'Spotlight'
+}
+
 run_preflight() {
   run env PATH="$FIXTURE_BIN:/usr/bin:/bin" bash "$REPO_ROOT/scripts/bootstrap/preflight.sh" "$@"
 }
