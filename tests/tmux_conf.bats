@@ -10,6 +10,24 @@ setup() {
   grep -E '^set-environment -g PATH ' "$REPO_ROOT/tmux/tmux-conf" | grep -qF '.local/share/mise/shims'
 }
 
+# TPM and its plugins call tmux hundreds of times at server start. Through the
+# mise shim each call re-runs mise (~40ms vs ~5ms), which made startup take 15s,
+# so the real mise tmux must come before the shims.
+@test "tmux-conf: tmux inside the server resolves to the mise install, not the shim" {
+  command -v tmux >/dev/null || skip "tmux not installed"
+  local home="$BATS_TEST_TMPDIR/home" sock="dotfiles-test-$$-$BATS_TEST_NUMBER" d
+  for d in shims installs/tmux/latest; do
+    mkdir -p "$home/.local/share/mise/$d"
+    printf '#!/bin/sh\n' > "$home/.local/share/mise/$d/tmux"
+    chmod +x "$home/.local/share/mise/$d/tmux"
+  done
+  ln -s "$REPO_ROOT/tmux/tmux-conf" "$home/.tmux.conf"
+  env -u TMUX HOME="$home" tmux -L "$sock" -f "$home/.tmux.conf" new-session -d
+  run tmux -L "$sock" run-shell 'command -v tmux'
+  tmux -L "$sock" kill-server
+  assert_output "$home/.local/share/mise/installs/tmux/latest/tmux"
+}
+
 # The checkout can live anywhere, so the status bar finds its scripts through
 # DOTFILES (set by bash_profile) rather than ~/dev/dotfiles.
 @test "tmux-conf: status bar scripts resolve through DOTFILES" {

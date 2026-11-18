@@ -16,7 +16,9 @@ bind C-f send-prefix
 
 set -s extended-keys on
 
-set-environment -g PATH "$HOME/.local/share/mise/shims:/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin:/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin"
+# The real mise tmux goes before the shims: TPM and its plugins call tmux
+# hundreds of times at startup, and each call through the shim re-runs mise.
+set-environment -g PATH "$HOME/.local/share/mise/installs/tmux/latest:$HOME/.local/share/mise/shims:/usr/local/bin:/bin:/usr/bin:/opt/c9/local/bin:/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin"
 
 if-shell 'uname | grep -q Darwin' \
     'set-option -g default-command "reattach-to-user-namespace -l $SHELL"' \

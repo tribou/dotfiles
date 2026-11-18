@@ -226,6 +226,7 @@ packages](#opt-in-packages)).
 
 - **`tmux/tmux-conf`**: Main tmux configuration
 - Prefix key: `Ctrl-f`
+- Server `PATH` lists `~/.local/share/mise/installs/tmux/latest` before the mise shims: TPM and its plugins call `tmux` hundreds of times at server start, and going through the shim (which re-runs mise per call) made `tma` take ~15s
 - System clipboard: copy-mode yanks reach it through OSC 52 (`set-clipboard on`, `allow-passthrough on`); the right-click menu's Copy and Paste items use `scripts/tmux-copy.sh` and `scripts/tmux-paste.sh` (pbcopy/pbpaste or xclip)
 - Predefined layouts via shell functions: `tmux-large`, `tmux-small`, `tmux-xl`
 - **Working directory of new windows vs splits** (two intentionally different rules):
