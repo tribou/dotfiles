@@ -31,6 +31,24 @@ Switch to Homebrew's bash, then open a new terminal window:
   grep -qx $brew_bash /etc/shells || echo $brew_bash | sudo tee -a /etc/shells
   chsh -s $brew_bash"
   fi
+fi
+
+# converge.sh generates SSH keys but can't register them with GitHub. BatchMode
+# keeps ssh from prompting; accept-new records GitHub's host key on first use,
+# as the first git-over-ssh would. ssh -T exits 1 even on success, so only
+# GitHub's greeting tells whether the key is registered.
+github="$(ssh -T -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+  git@github.com 2>&1 || true)"
+if [[ "$github" != *"successfully authenticated"* ]]; then
+  todo "Add this machine's SSH key to GitHub so git@github.com remotes work:
+  gh auth login --scopes admin:public_key
+  gh ssh-key add ~/.ssh/id_ed25519.pub --title \"\$(hostname)\""
+fi
+
+if [ "$(uname -s)" = Darwin ]; then
+  # The quick terminal's global: keybind (ghostty/config.ghostty) needs this.
+  todo "Let Ghostty's quick terminal (ctrl+alt+\`) open from any app: System Settings >
+Privacy & Security > Accessibility, turn on Ghostty (open Ghostty once first)."
 
   # Scripting Spotlight's Search Privacy list means editing a root-only plist,
   # which needs Full Disk Access for the terminal; we don't ask for that.

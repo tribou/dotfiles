@@ -9,7 +9,19 @@ setup() {
   printf '#!/usr/bin/env bash\ncase "$1" in -s) echo Darwin ;; -m) echo arm64 ;; esac\n' > "$FIXTURE_BIN/uname"
   printf '#!/usr/bin/env bash\necho /Library/Developer/CommandLineTools\n' > "$FIXTURE_BIN/xcode-select"
   chmod +x "$FIXTURE_BIN/uname" "$FIXTURE_BIN/xcode-select"
+  fake_github_ssh denied
   fake_mise 2026.11.7
+}
+
+# fake_github_ssh denied|authenticated: what `ssh -T git@github.com` reports,
+# so no test reaches the network.
+fake_github_ssh() {
+  if [ "$1" = authenticated ]; then
+    printf '#!/usr/bin/env bash\necho "Hi tribou! You'"'"'ve successfully authenticated, but GitHub does not provide shell access." >&2\nexit 1\n' > "$FIXTURE_BIN/ssh"
+  else
+    printf '#!/usr/bin/env bash\necho "git@github.com: Permission denied (publickey)." >&2\nexit 255\n' > "$FIXTURE_BIN/ssh"
+  fi
+  chmod +x "$FIXTURE_BIN/ssh"
 }
 
 # fake_mise VERSION: a standalone mise that logs its args and PATH.
@@ -318,20 +330,53 @@ run_piped_bootstrap() {
   assert_output --partial '~/Library/Caches'
 }
 
-@test "bootstrap: on macOS with a zsh login shell numbers the shell switch and Spotlight follow-ups" {
+@test "bootstrap: on macOS with a zsh login shell numbers every manual follow-up" {
   LOGIN_SHELL=/bin/zsh run_bootstrap
   assert_success
   assert_line --regexp '^1\. .*login shell'
-  assert_line --regexp '^2\. .*Spotlight'
+  assert_line --regexp '^2\. .*SSH key'
+  assert_line --regexp '^3\. .*Ghostty'
+  assert_line --regexp '^4\. .*Spotlight'
 }
 
-@test "bootstrap: on Linux lists no manual follow-ups" {
+@test "bootstrap: on macOS asks for Ghostty's Accessibility permission for the quick terminal" {
+  run_bootstrap
+  assert_success
+  assert_output --partial 'Accessibility'
+  assert_output --partial 'Ghostty'
+}
+
+@test "bootstrap: lists adding the SSH key to GitHub when GitHub rejects it" {
+  run_bootstrap
+  assert_success
+  assert_output --partial 'gh ssh-key add ~/.ssh/id_ed25519.pub'
+}
+
+@test "bootstrap: skips the SSH key follow-up when GitHub already accepts the key" {
+  fake_github_ssh authenticated
+  run_bootstrap
+  assert_success
+  refute_output --partial 'gh ssh-key add'
+  assert_output --partial 'Spotlight'
+}
+
+@test "bootstrap: on Linux lists only the SSH key follow-up" {
   fake_linux
   run_bootstrap
   assert_success
-  refute_output --partial 'Manual follow-ups'
+  assert_line --regexp '^1\. .*SSH key'
+  refute_line --regexp '^2\. '
   refute_output --partial 'Spotlight'
+  refute_output --partial 'Accessibility'
   assert_output --partial 'Open a new login shell'
+}
+
+@test "bootstrap: on Linux with the key on GitHub lists no manual follow-ups" {
+  fake_linux
+  fake_github_ssh authenticated
+  run_bootstrap
+  assert_success
+  refute_output --partial 'Manual follow-ups'
 }
 
 @test "bootstrap --dry-run: lists no manual follow-ups" {
@@ -339,6 +384,7 @@ run_piped_bootstrap() {
   assert_success
   refute_output --partial 'Manual follow-ups'
   refute_output --partial 'Spotlight'
+  refute_output --partial 'SSH key'
 }
 
 run_preflight() {
