@@ -1,0 +1,311 @@
+<title>write-spec Sign-off</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<style>
+/* Layout: one column of case rows, summary first; a row opens into input / output / evidence. */
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #1c2330; --muted: #5d6778; --line: #dde1e8;
+  --accent: #2f55d4; --accent-soft: #e6ecff;
+  --ok: #1f7a4d; --ok-soft: #e2f3ea; --warn: #9a6200; --warn-soft: #fbefd6;
+  --bad: #b3261e; --bad-soft: #fbe4e2; --add: #6b3fb5; --add-soft: #efe7fb;
+  --display: "Source Serif 4", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161d; --panel: #1a2029; --ink: #e4e8ef; --muted: #9aa4b5; --line: #2c3442;
+  --accent: #8aa6ff; --accent-soft: #232e4d;
+  --ok: #6fcf9b; --ok-soft: #173426; --warn: #f0b95a; --warn-soft: #3a2c12;
+  --bad: #ff8a80; --bad-soft: #3d1c1a; --add: #c4a5ff; --add-soft: #2d2342; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161d; --panel: #1a2029; --ink: #e4e8ef; --muted: #9aa4b5; --line: #2c3442;
+  --accent: #8aa6ff; --accent-soft: #232e4d;
+  --ok: #6fcf9b; --ok-soft: #173426; --warn: #f0b95a; --warn-soft: #3a2c12;
+  --bad: #ff8a80; --bad-soft: #3d1c1a; --add: #c4a5ff; --add-soft: #2d2342; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); padding: 0 16px; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 20px 60px; display: grid; gap: 16px; }
+h1 { font: 600 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 600 1.15rem/1.3 var(--display); margin: 8px 0 0; }
+.meta { color: var(--muted); font: 0.8rem var(--mono); }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg);
+  border-bottom: 1px solid var(--line); padding-block: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tally { display: flex; flex-wrap: wrap; gap: 14px; margin-right: auto; font-variant-numeric: tabular-nums; }
+.tally b { font-weight: 600; }
+button, select { font: inherit; color: inherit; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { background: var(--panel); border: 0; padding: 4px 10px; cursor: pointer; font-size: 0.85rem; }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+button:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.notice { background: var(--warn-soft); color: var(--warn); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; }
+.group { display: grid; gap: 8px; }
+.case { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.case.attn { border-left: 4px solid var(--warn); }
+.case.rejected { border-left: 4px solid var(--bad); }
+.case.approved { border-left: 4px solid var(--ok); }
+.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; }
+.row .name { flex: 1 1 260px; min-width: 0; cursor: pointer; background: none; border: 0; text-align: left; padding: 0; }
+.row .name .id { font: 500 0.85rem var(--mono); color: var(--muted); margin-right: 6px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font: 500 0.75rem var(--mono); padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
+.p-ok { background: var(--ok-soft); color: var(--ok); } .p-bad { background: var(--bad-soft); color: var(--bad); }
+.p-warn { background: var(--warn-soft); color: var(--warn); } .p-add { background: var(--add-soft); color: var(--add); }
+.p-n { background: var(--accent-soft); color: var(--accent); }
+.verdict { display: flex; gap: 6px; }
+.verdict button { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 3px 10px; cursor: pointer; font-size: 0.85rem; }
+.verdict button.on-approve { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
+.verdict button.on-reject { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.verdict button:disabled { opacity: 0.5; cursor: default; }
+.detail { border-top: 1px solid var(--line); padding: 12px; display: grid; gap: 12px; }
+.judge { font-size: 0.9rem; color: var(--muted); }
+.judge b { color: var(--ink); }
+.reps { display: flex; flex-wrap: wrap; gap: 6px; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.pane { min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; background: var(--bg); }
+.pane h3 { margin: 0 0 6px; font: 600 0.75rem var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.md { font-size: 0.92rem; overflow-wrap: anywhere; }
+.md h1, .md h2, .md h3 { font: 600 1rem/1.3 var(--body); margin: 12px 0 4px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.md h1 { font-size: 1.1rem; }
+.md p, .md ul, .md ol { margin: 4px 0; } .md ul, .md ol { padding-left: 20px; }
+.md code, pre { font: 0.82rem var(--mono); }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.md pre { overflow-x: auto; white-space: pre; }
+.ev { display: grid; gap: 4px; font-size: 0.88rem; }
+.ev li { margin: 2px 0; } .ev ul { margin: 0; padding-left: 18px; }
+.q { color: var(--muted); font-style: italic; }
+details > summary { cursor: pointer; color: var(--muted); font-size: 0.88rem; }
+textarea { width: 100%; box-sizing: border-box; min-height: 52px; font: 0.9rem var(--body); color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+td, th { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 0.72rem var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tbl { overflow-x: auto; }
+.empty { color: var(--muted); padding: 24px; text-align: center; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>write-spec sign-off</h1>
+    <div class="meta" id="meta">Loading run data…</div>
+  </header>
+  <div class="bar">
+    <div class="tally" id="tally"></div>
+    <div class="seg" role="group" aria-label="View">
+      <button id="v-out" aria-pressed="true">Outputs</button><button id="v-keys" aria-pressed="false">Keys</button>
+    </div>
+    <div class="seg" role="group" aria-label="Filter" id="filters">
+      <button data-f="all" aria-pressed="true">All</button><button data-f="attn" aria-pressed="false">Flagged</button><button data-f="open" aria-pressed="false">Unreviewed</button>
+    </div>
+  </div>
+  <div id="notice" class="notice" hidden></div>
+  <main id="main"><div class="empty">Loading…</div></main>
+</div>
+
+<script>
+const S = { data: null, view: "out", filter: "all", open: new Set(), rep: {}, verdicts: {}, keyState: {}, db: null };
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const safeId = (s) => String(s).replace(/[^A-Za-z0-9_\-.~:@+]/g, "_");
+
+if (window.marked) marked.use({ renderer: { html(t) { return esc(typeof t === "string" ? t : t.text); } } });
+const md = (s) => (window.marked ? marked.parse(s || "") : "<pre>" + esc(s) + "</pre>");
+
+function need(keyName, item) {
+  const o = S.keyState[keyName]?.needs?.[item.id];
+  return o || item.need;
+}
+// One rep's evidence: failed checks, must-items lost, hedged, and added claims.
+function evidence(r) {
+  const failed = r.checks.filter((c) => !c.pass);
+  const items = r.fid?.items || [];
+  const lost = items.filter((i) => need(r.key, i) === "must" && (i.status === "missing" || i.status === "contradicted"));
+  const hedged = items.filter((i) => i.status === "hedged");
+  const mayLost = items.filter((i) => need(r.key, i) !== "must" && i.status === "missing");
+  return { failed, lost, hedged, mayLost, added: r.fid?.added || [] };
+}
+function cases() {
+  const m = new Map();
+  for (const r of S.data.runs) {
+    const k = r.arm + "|" + r.id;
+    if (!m.has(k)) m.set(k, { arm: r.arm, id: r.id, title: r.title, kind: r.kind, judge: r.judge, key: r.key, reps: [] });
+    m.get(k).reps.push(r);
+  }
+  const list = [...m.values()];
+  for (const c of list) {
+    c.reps.sort((a, b) => a.rep - b.rep);
+    c.ev = c.reps.map(evidence);
+    c.checkPass = c.ev.filter((e) => e.failed.length === 0).length;
+    c.lostReps = c.ev.filter((e) => e.lost.length > 0).length;
+    c.added = c.ev.reduce((n, e) => n + e.added.length, 0);
+    c.hasFid = c.reps.some((r) => r.fid);
+    c.attn = c.checkPass < c.reps.length || c.lostReps > 0;
+    c.doc = safeId(S.data.run + "__" + c.arm + "__" + c.id);
+  }
+  return list;
+}
+const KIND_ORDER = ["Issue", "Bug", "Tiny task", "Investigation", "Project brief", "ADR"];
+
+function renderTally(list) {
+  const done = list.filter((c) => S.verdicts[c.doc]).length;
+  const rej = list.filter((c) => S.verdicts[c.doc]?.verdict === "reject").length;
+  $("#tally").innerHTML =
+    `<span><b>${list.length}</b> cases</span><span><b>${list.filter((c) => c.attn).length}</b> flagged</span>` +
+    `<span><b>${done}</b> reviewed</span>${rej ? `<span><b>${rej}</b> rejected</span>` : ""}`;
+}
+
+function caseRow(c) {
+  const v = S.verdicts[c.doc]?.verdict;
+  const n = c.reps.length;
+  const words = c.reps.map((r) => r.outWords);
+  const pills = [
+    `<span class="pill ${c.checkPass === n ? "p-ok" : "p-bad"}">checks ${c.checkPass}/${n}</span>`,
+    c.hasFid ? `<span class="pill ${c.lostReps ? "p-bad" : "p-ok"}">${c.lostReps ? "lost in " + c.lostReps + "/" + n : "kept " + n + "/" + n}</span>` : "",
+    c.added ? `<span class="pill p-add">${c.added} added</span>` : "",
+    `<span class="pill p-n">${c.reps[0].inWords}→${Math.min(...words)}–${Math.max(...words)} w</span>`,
+    c.arm !== "green" ? `<span class="pill p-warn">${esc(c.arm)}</span>` : "",
+  ].join("");
+  const open = S.open.has(c.doc);
+  const ro = !S.db;
+  return `<article class="case ${v === "approve" ? "approved" : v === "reject" ? "rejected" : c.attn ? "attn" : ""}" data-doc="${c.doc}">
+    <div class="row">
+      <button class="name" data-toggle="${c.doc}" aria-expanded="${open}"><span class="id">${esc(c.id)}</span>${esc(c.title)}</button>
+      <div class="pills">${pills}</div>
+      <div class="verdict">
+        <button data-v="approve" class="${v === "approve" ? "on-approve" : ""}" ${ro ? "disabled" : ""}>Approve</button>
+        <button data-v="reject" class="${v === "reject" ? "on-reject" : ""}" ${ro ? "disabled" : ""}>Reject</button>
+      </div>
+    </div>
+    ${open ? caseDetail(c) : ""}
+  </article>`;
+}
+
+function caseDetail(c) {
+  const i = Math.min(S.rep[c.doc] ?? 0, c.reps.length - 1);
+  const r = c.reps[i], e = c.ev[i];
+  const reps = c.reps.map((x, j) => {
+    const ej = c.ev[j];
+    const cls = ej.failed.length || ej.lost.length ? "p-bad" : "p-ok";
+    return `<button class="pill ${cls}" data-rep="${j}" aria-pressed="${j === i}" style="border:${j === i ? "1px solid currentColor" : "1px solid transparent"};cursor:pointer">r${x.rep} · ${x.outWords}w</button>`;
+  }).join("");
+  const li = (arr, f) => arr.length ? "<ul>" + arr.map(f).join("") + "</ul>" : "";
+  const ev = [
+    e.failed.length ? `<div><b>Failed checks</b>${li(e.failed, (x) => `<li><code>${esc(x.line)}</code></li>`)}</div>` : `<div><b>All ${r.checks.length} checks pass</b></div>`,
+    r.fid ? (e.lost.length ? `<div style="color:var(--bad)"><b>Must-keep items lost</b>${li(e.lost, (x) => `<li>${esc(x.text)} <span class="q">${esc(x.status)}${x.quote ? ": " + esc(x.quote) : ""}</span></li>`)}</div>` : `<div style="color:var(--ok)"><b>Every must-keep item kept</b></div>`) : `<div class="q">No fidelity check for this run.</div>`,
+    e.hedged.length ? `<div style="color:var(--warn)"><b>Kept as something to check</b>${li(e.hedged, (x) => `<li>${esc(x.text)} <span class="q">${esc(x.quote)}</span></li>`)}</div>` : "",
+    e.added.length ? `<div style="color:var(--add)"><b>Not supported by the input</b>${li(e.added, (x) => `<li>${esc(x.text)} <span class="q">${esc(x.quote)}</span></li>`)}</div>` : "",
+    e.mayLost.length ? `<details><summary>${e.mayLost.length} optional items dropped</summary>${li(e.mayLost, (x) => `<li>${esc(x.text)}</li>`)}</details>` : "",
+    r.reply ? `<details><summary>Reply to the user</summary><pre>${esc(r.reply)}</pre></details>` : "",
+    r.tools ? `<details><summary>Tool calls (${r.tools.split("\n").length})</summary><pre>${esc(r.tools)}</pre></details>` : "",
+  ].join("");
+  const note = S.verdicts[c.doc]?.note || "";
+  return `<div class="detail">
+    ${c.judge ? `<div class="judge"><b>Judge:</b> ${esc(c.judge)}</div>` : ""}
+    <div class="reps">${reps}</div>
+    <div class="cols">
+      <section class="pane"><h3>Output r${r.rep}</h3><div class="md">${md(r.output)}</div></section>
+      <section class="pane"><h3>Evidence</h3><div class="ev">${ev}</div>
+        <details style="margin-top:8px"><summary>Input (${r.inWords} words)</summary><pre>${esc(r.input)}</pre></details></section>
+    </div>
+    <label class="q" for="note-${c.doc}">Note for Claude (saved with your verdict)</label>
+    <textarea id="note-${c.doc}" data-note="${c.doc}" ${S.db ? "" : "disabled"} placeholder="What is wrong, or what to keep">${esc(note)}</textarea>
+  </div>`;
+}
+
+function renderOutputs() {
+  const list = cases();
+  renderTally(list);
+  const shown = list.filter((c) => S.filter === "all" || (S.filter === "attn" ? c.attn : !S.verdicts[c.doc]));
+  if (!shown.length) { $("#main").innerHTML = `<div class="empty">No cases match this filter.</div>`; return; }
+  const kinds = [...new Set(shown.map((c) => c.kind))].sort((a, b) => KIND_ORDER.indexOf(a) - KIND_ORDER.indexOf(b));
+  $("#main").innerHTML = kinds.map((k) => `<section class="group"><h2>${esc(k)}</h2>${shown.filter((c) => c.kind === k).map(caseRow).join("")}</section>`).join("");
+}
+
+function renderKeys() {
+  const keys = S.data.keys;
+  renderTally(cases());
+  if (!keys.length) { $("#main").innerHTML = `<div class="empty">No must-survive keys in this run.</div>`; return; }
+  $("#main").innerHTML = keys.map((k) => {
+    const st = S.keyState[k.key] || {};
+    const ro = S.db ? "" : "disabled";
+    const rows = k.items.map((it) => `<tr><td class="meta">${esc(it.id)}</td><td class="meta">${esc(it.type)}</td>
+      <td>${esc(it.text)}${it.exact ? `<div class="meta">exact: <code>${esc(it.exact)}</code></div>` : ""}</td>
+      <td><select data-key="${esc(k.key)}" data-item="${esc(it.id)}" ${ro} aria-label="Need for ${esc(it.id)}">
+        ${["must", "may"].map((o) => `<option ${need(k.key, it) === o ? "selected" : ""}>${o}</option>`).join("")}</select></td></tr>`).join("");
+    const used = [...new Set(S.data.runs.filter((r) => r.key === k.key).map((r) => r.id))].join(", ");
+    return `<article class="case ${st.approved ? "approved" : "attn"}">
+      <div class="row"><div class="name"><span class="id">key ${esc(k.key)}</span>${k.items.length} items · used by ${esc(used || "none")}</div>
+        <div class="verdict"><button data-keyok="${esc(k.key)}" class="${st.approved ? "on-approve" : ""}" ${ro}>${st.approved ? "Approved" : "Approve key"}</button></div></div>
+      <div class="detail"><div class="tbl"><table><thead><tr><th>Id</th><th>Type</th><th>Item</th><th>Need</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <textarea data-keynote="${esc(k.key)}" ${ro} aria-label="Note on key ${esc(k.key)}" placeholder="Missing items, or items that should not be here">${esc(st.note || "")}</textarea></div>
+    </article>`;
+  }).join("");
+}
+const render = () => (S.view === "out" ? renderOutputs() : renderKeys());
+
+async function saveVerdict(doc, patch) {
+  if (!S.db) return;
+  const c = cases().find((x) => x.doc === doc);
+  const cur = S.verdicts[doc] || {};
+  const body = { run: S.data.run, arm: c.arm, id: c.id, verdict: cur.verdict || null, note: cur.note || "", ...patch, at: new Date().toISOString() };
+  S.verdicts[doc] = body; render();
+  try { await S.db.doc("verdicts/" + doc).set(body); } catch (e) { showNotice("Your verdict was not saved (" + e.code + "). Reload and try again."); }
+}
+async function saveKey(key, patch) {
+  if (!S.db) return;
+  const cur = S.keyState[key] || { needs: {} };
+  const body = { needs: cur.needs || {}, approved: !!cur.approved, note: cur.note || "", ...patch, at: new Date().toISOString() };
+  S.keyState[key] = body; render();
+  try { await S.db.doc("keys/" + safeId(key)).set(body); } catch (e) { showNotice("The key change was not saved (" + e.code + ")."); }
+}
+function showNotice(t) { const n = $("#notice"); n.textContent = t; n.hidden = !t; }
+
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("button"); if (!t) return;
+  if (t.id === "v-out" || t.id === "v-keys") {
+    S.view = t.id === "v-out" ? "out" : "keys";
+    $("#v-out").setAttribute("aria-pressed", S.view === "out"); $("#v-keys").setAttribute("aria-pressed", S.view === "keys");
+    $("#filters").hidden = S.view !== "out"; return render();
+  }
+  if (t.dataset.f) { S.filter = t.dataset.f; document.querySelectorAll("#filters button").forEach((b) => b.setAttribute("aria-pressed", b === t)); return render(); }
+  const card = t.closest("[data-doc]");
+  if (t.dataset.toggle) { S.open.has(t.dataset.toggle) ? S.open.delete(t.dataset.toggle) : S.open.add(t.dataset.toggle); return render(); }
+  if (t.dataset.rep && card) { S.rep[card.dataset.doc] = +t.dataset.rep; return render(); }
+  if (t.dataset.v && card) {
+    const cur = S.verdicts[card.dataset.doc]?.verdict;
+    if (t.dataset.v === "reject") S.open.add(card.dataset.doc);
+    return saveVerdict(card.dataset.doc, { verdict: cur === t.dataset.v ? null : t.dataset.v });
+  }
+  if (t.dataset.keyok) return saveKey(t.dataset.keyok, { approved: !S.keyState[t.dataset.keyok]?.approved });
+});
+document.addEventListener("change", (ev) => {
+  const t = ev.target;
+  if (t.dataset.note) saveVerdict(t.dataset.note, { note: t.value });
+  if (t.dataset.keynote) saveKey(t.dataset.keynote, { note: t.value });
+  if (t.dataset.key) {
+    const cur = S.keyState[t.dataset.key] || {};
+    saveKey(t.dataset.key, { needs: { ...(cur.needs || {}), [t.dataset.item]: t.value }, approved: false });
+  }
+});
+
+(async () => {
+  try {
+    S.data = await (await fetch("data/run.json")).json();
+  } catch {
+    $("#main").innerHTML = `<div class="empty">The run data did not load. Republish the page with data/run.json.</div>`; return;
+  }
+  $("#meta").textContent = `run ${S.data.run} · skill ${S.data.skillRev} · ${S.data.runs.length} outputs · generated ${S.data.generated.replace("T", " ").slice(0, 16)} UTC`;
+  render();
+  const db = await (window.claude?.use ? window.claude.use("db") : Promise.resolve(null));
+  if (!db) { showNotice("Verdicts can't be saved in this view. Open the page signed in to claude.ai to approve or reject."); return; }
+  S.db = db; render();
+  db.collection("verdicts").where("run", "==", S.data.run).onSnapshot((snap) => {
+    S.verdicts = {}; snap.docs.forEach((d) => { S.verdicts[d.id] = d.data(); }); render();
+  }, (e) => showNotice("Saved verdicts stopped updating (" + e.code + "). Reload the page."));
+  db.collection("keys").onSnapshot((snap) => {
+    const byId = {}; snap.docs.forEach((d) => { byId[d.id] = d.data(); });
+    S.keyState = {}; for (const k of S.data.keys) if (byId[safeId(k.key)]) S.keyState[k.key] = byId[safeId(k.key)];
+    render();
+  }, (e) => showNotice("Saved keys stopped updating (" + e.code + "). Reload the page."));
+})();
+</script>

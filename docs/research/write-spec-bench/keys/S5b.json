@@ -1,0 +1,58 @@
+{
+  "key": "S5b",
+  "source": "S5b",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "identifier",
+      "need": "must",
+      "text": "The config loader to change is at src/config/load.ts.",
+      "exact": "src/config/load.ts"
+    },
+    {
+      "id": "k2",
+      "type": "evidence",
+      "need": "must",
+      "text": "Loader ignores --profile; `app --profile staging` still reads prod settings. Checked last sprint on v2.3."
+    },
+    {
+      "id": "k3",
+      "type": "constraint",
+      "need": "must",
+      "text": "Platform sync decision: read the profile from $APP_PROFILE rather than adding more flag parsing."
+    },
+    {
+      "id": "k4",
+      "type": "identifier",
+      "need": "must",
+      "text": "The environment variable that selects the profile is APP_PROFILE.",
+      "exact": "APP_PROFILE"
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "When the profile file is missing, the loader fails with an exact error message.",
+      "exact": "profile file not found: config/<profile>.yaml"
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "Once the flag works, --profile takes precedence over $APP_PROFILE."
+    },
+    {
+      "id": "k7",
+      "type": "open",
+      "need": "must",
+      "text": "Is fixing --profile in scope, given the decision not to add more flag parsing?"
+    },
+    {
+      "id": "k8",
+      "type": "evidence",
+      "need": "may",
+      "text": "Motivation: staging deploys keep reading prod credentials."
+    }
+  ]
+}
