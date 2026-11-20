@@ -4,7 +4,6 @@
 # DEBUG_BASH_PROFILE=1
 
 OS=$(uname)
-SHELL=/bin/bash
 
 function _dotfiles_debug_timing ()
 {

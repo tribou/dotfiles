@@ -101,3 +101,14 @@ _debug_timing() {
   assert_output "[]"
   assert_equal "$stderr" ""
 }
+
+# tmux takes default-shell/default-command from $SHELL in the login shell that
+# starts its server, so bash_profile must keep the login shell (Homebrew bash after
+# chsh) instead of forcing macOS's bash 3.2, which rejects `complete -o nosort`.
+@test "bash_profile: keeps the SHELL it was started with" {
+  run --separate-stderr env HOME="$TEST_HOME" STARTPATH="$BATS_TEST_TMPDIR" TERM=dumb \
+    SHELL=/opt/homebrew/bin/bash \
+    bash -c "cd '$BATS_TEST_TMPDIR' && source '$REPO_ROOT/bash_profile' >/dev/null && echo \"\$SHELL\""
+  assert_success
+  assert_output "/opt/homebrew/bin/bash"
+}
