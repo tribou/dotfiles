@@ -13,7 +13,7 @@ font-family = Hack Nerd Font
 font-size = 13
 # 24px of extra line spacing. Ghostty centres the glyphs in the taller cell
 # itself, so no separate glyph offset is needed.
-adjust-cell-height = 24
+adjust-cell-height = 20
 # Hack has no programming ligatures, so there are no font-feature settings.
 # Draw glyphs with heavier strokes (macOS only; Linux ignores it).
 font-thicken = true
