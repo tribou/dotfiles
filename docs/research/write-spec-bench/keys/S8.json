@@ -1,0 +1,39 @@
+{
+  "key": "S8",
+  "source": "S8",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "open",
+      "need": "must",
+      "text": "Decide whether to start using GitHub stacked PRs for issues exceeding the 65k character limit."
+    },
+    {
+      "id": "k2",
+      "type": "identifier",
+      "need": "must",
+      "text": "The feature under evaluation is GitHub's new stacked PRs.",
+      "exact": "stacked PRs"
+    },
+    {
+      "id": "k3",
+      "type": "evidence",
+      "need": "must",
+      "text": "Some issues run past GitHub's 65k character limit; this is the problem being solved.",
+      "exact": "65k"
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "Pressure test the idea, actively probing its weaknesses rather than just describing it."
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "Finish with a clear recommendation on whether to adopt it."
+    }
+  ]
+}

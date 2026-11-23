@@ -1,0 +1,98 @@
+{
+  "key": "154",
+  "source": "S12-154",
+  "status": "draft",
+  "items": [
+    {
+      "id": "k1",
+      "type": "requirement",
+      "need": "must",
+      "text": "Create roles/dotfiles/ standard layout; top-level playbook.yml targets localhost, connection: local via ansible.cfg, no inventory needed."
+    },
+    {
+      "id": "k2",
+      "type": "non-goal",
+      "need": "must",
+      "text": "Session-daemon evals (gpg-agent, mise activate) stay in bash_profile/zshrc; ssh-agent wiring out of scope (#155)."
+    },
+    {
+      "id": "k3",
+      "type": "requirement",
+      "need": "must",
+      "text": "Dotfiles move to roles/dotfiles/files/, linked via file state: link force: yes; back up regular files first (#41)."
+    },
+    {
+      "id": "k4",
+      "type": "requirement",
+      "need": "must",
+      "text": "Split tasks into tagged files: dirs, links, terminfo, gpg, ssh, tpm, prereqs, rust, mise, claude_opencode, npm, brew, brew_casks, nvim, zoxide, beads, upgrade."
+    },
+    {
+      "id": "k5",
+      "type": "requirement",
+      "need": "must",
+      "text": "ssh: openssh_keypair rsa 4096 + ed25519, no passphrase; macOS config via blockinfile '# BEGIN/END dotfiles' markers (#45)."
+    },
+    {
+      "id": "k6",
+      "type": "requirement",
+      "need": "must",
+      "text": "ssh keeps macOS ssh-add --apple-use-keychain preload; drop dead Linux inline ssh-agent eval."
+    },
+    {
+      "id": "k7",
+      "type": "requirement",
+      "need": "must",
+      "text": "brew: keep tmux --HEAD + pin (#138), git-delta reinstall guard, Linux gcc; brew bundle --global if ~/.Brewfile."
+    },
+    {
+      "id": "k8",
+      "type": "requirement",
+      "need": "must",
+      "text": "dotfiles_state present (default, install-only) | latest includes upgrade.yml covering module and command-based upgrades of all tools."
+    },
+    {
+      "id": "k9",
+      "type": "identifier",
+      "need": "must",
+      "text": "defaults vars: dotfiles_brew_core, dotfiles_brew_linux, dotfiles_brew_macos, dotfiles_mise_tools, dotfiles_npm_globals, dotfiles_ssh_key_email, dotfiles_home."
+    },
+    {
+      "id": "k10",
+      "type": "constraint",
+      "need": "must",
+      "text": "Platform conditionals only: ansible_system == 'Darwin', ansible_os_family Debian / Archlinux; no custom fact gathering."
+    },
+    {
+      "id": "k11",
+      "type": "non-goal",
+      "need": "must",
+      "text": "Out of scope: GPG key generation, ~/.ssh/api_keys, Vault, subsuming #152, changing lib/ or bats unit tests."
+    },
+    {
+      "id": "k12",
+      "type": "requirement",
+      "need": "must",
+      "text": "Residual ~30-line bootstrap.sh: self-clone to ~/dev/dotfiles, Linux brew prereqs, install brew+ansible, exec playbook."
+    },
+    {
+      "id": "k13",
+      "type": "identifier",
+      "need": "must",
+      "text": "bootstrap.sh success message to print after the playbook run.",
+      "exact": "open a new login shell (or: exec $SHELL -l) so mise/gpg-agent/brew/cargo PATH take effect"
+    },
+    {
+      "id": "k14",
+      "type": "constraint",
+      "need": "must",
+      "text": "Role prereqs adds zlib1g-dev xdg-utils bash-completion, apt update_cache every run; apt upgrade only when latest."
+    },
+    {
+      "id": "k15",
+      "type": "requirement",
+      "need": "must",
+      "text": "Molecule with idempotence + goss verifier; Dockerfile runs ansible-playbook; just install/upgrade forward extra args."
+    }
+  ]
+}

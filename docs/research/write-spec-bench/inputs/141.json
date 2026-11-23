@@ -1,0 +1,4 @@
+{
+  "body": "",
+  "title": "Create a ghv command that uses fzf to browse all issues and PRs in a combined list. Selecting one runs the associated 'view' command"
+}
